@@ -61,21 +61,11 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    // The redirect callback controls where the user is sent after sign in.
+    // Simplified redirect callback — no custom URL parsing, no callbackUrl.
+    // Always send to /dashboard after sign-in.
     // When signIn() is called with redirect:false, this callback is NOT invoked.
-    // When NextAuth handles the redirect automatically (e.g. from middleware),
-    // this callback ensures we always send to the correct URL.
-    async redirect({ url, baseUrl }) {
-      // If url is already a full valid URL on our origin, allow it
-      if (url.startsWith("/")) return baseUrl + url;
-      try {
-        const parsed = new URL(url);
-        if (parsed.origin === baseUrl) return url;
-      } catch {
-        // Invalid URL, fall through
-      }
-      // Default: send to dashboard
-      return baseUrl + "/dashboard";
+    async redirect({ baseUrl }) {
+      return `${baseUrl}/dashboard`;
     },
   },
   session: {
@@ -84,8 +74,11 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
-    error: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
-  // debug: process.env.NODE_ENV === "development", // Disabled - causes verbose logging
+  // REQUIRED for preview/proxied environments where the host header
+  // doesn't match NEXTAUTH_URL. Without this, NextAuth cannot detect
+  // the correct host and cookies fail to validate.
+  trustHost: true,
+  debug: true,
 };

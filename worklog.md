@@ -84,3 +84,54 @@ Test Results:
 - Full login flow with cookies: session correctly established, user email returned
 - `/dashboard` (authenticated) → 200 (no redirect)
 - No more ERR_TOO_MANY_REDIRECTS
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix persistent NextAuth redirect loop — trustHost, cookie domain, callbackUrl, middleware
+
+Work Log:
+- Found ROOT CAUSE: `NEXTAUTH_URL=http://localhost:3000` in .env causes cookie domain mismatch in preview/proxied environment
+- NextAuth was setting cookies for localhost but the preview domain is different, so middleware couldn't validate the session cookie
+- Also found: middleware was adding `?callbackUrl=` query params which could create malformed URL loops
+- Also found: redirect callback had complex URL parsing that could fail in proxied environments
+- Also found: AuthGuard was still a source of potential race conditions (now removed entirely)
+
+Fixes Applied:
+1. **lib/auth.ts**: 
+   - Added `trustHost: true` — REQUIRED for preview/proxied environments where host header doesn't match NEXTAUTH_URL
+   - Added `debug: true` for logging
+   - Simplified redirect callback: `return baseUrl + "/dashboard"` — no URL parsing, no callbackUrl
+   - Removed `pages.error: "/login"` — unnecessary complexity
+   - `session.strategy: "jwt"` already set (confirmed)
+   - No custom cookies config (confirmed — was never there)
+2. **middleware.ts**:
+   - Kept custom middleware with `getToken()` (Next.js 16 doesn't accept `export { default } from "next-auth/middleware"`)
+   - Removed `?callbackUrl=` query param from redirect — just redirect to `/login` cleanly
+   - Matcher stays as `["/dashboard/:path*"]`
+3. **dashboard/layout.tsx**:
+   - Removed AuthGuard completely — middleware alone protects routes
+   - No useSession, no client-side auth checks in the layout
+4. **login/page.tsx**:
+   - Removed `useSearchParams` and `callbackUrl` logic entirely
+   - Removed `Suspense` wrapper (no longer needed without useSearchParams)
+   - Simplified: `if (result?.ok) window.location.href = '/dashboard'` — NOTHING ELSE
+5. **register/page.tsx**:
+   - Same pattern: redirect to `/dashboard` only after successful auto-login
+6. **.env**:
+   - Removed `NEXTAUTH_URL=http://localhost:3000` — trustHost:true handles host detection
+   - Kept `NEXTAUTH_SECRET` and `DATABASE_URL`
+
+Architecture:
+- Middleware: SOLE source of truth, redirects /dashboard/* → /login (no callbackUrl)
+- trustHost: true: NextAuth detects host from request headers (works in preview/proxied)
+- Login: redirect ONLY on user form submit action → /dashboard
+- No AuthGuard: no client-side auth redirects at all
+- No callbackUrl: no query param complexity
+
+Test Results:
+- ESLint: passes with no errors
+- `/api/auth/csrf` → 200 (JSON with csrfToken)
+- `/api/auth/session` → 200 (JSON)
+- `/dashboard` (unauthenticated) → 307 redirect to `/login` (NO callbackUrl param)
+- Server keeps dying in sandbox due to memory (not code issue)

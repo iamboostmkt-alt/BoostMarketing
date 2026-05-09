@@ -1,21 +1,19 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
 import { Zap, Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 
 /**
- * Login form — redirect ONLY on explicit user action (form submit).
+ * Login page — redirect ONLY on explicit user action (form submit).
  * NEVER redirect based on useSession() state in effects/renders.
- * Middleware handles route protection server-side.
+ * Middleware (next-auth/middleware) handles route protection.
+ * No callbackUrl — always redirect to /dashboard on success.
  */
-function LoginForm() {
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -33,16 +31,15 @@ function LoginForm() {
         redirect: false,
       });
 
-      if (result?.error) {
+      if (result?.ok) {
+        // Full page reload to /dashboard after successful login.
+        // This is the ONLY redirect — direct result of user action.
+        // window.location.href ensures the JWT cookie is available
+        // for middleware on the next request.
+        window.location.href = '/dashboard';
+      } else {
         setError('Email o contraseña incorrectos');
         setLoading(false);
-      } else {
-        // Full page reload after successful login.
-        // This is the ONLY place redirect happens — as a direct
-        // result of user action, not from session state effects.
-        // window.location.href ensures the cookie is available
-        // for middleware on the next request.
-        window.location.href = callbackUrl;
       }
     } catch {
       setError('Error al iniciar sesión');
@@ -151,17 +148,5 @@ function LoginForm() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[#0b0b0f]">
-        <Loader2 className="h-8 w-8 animate-spin text-brand" />
-      </div>
-    }>
-      <LoginForm />
-    </Suspense>
   );
 }
