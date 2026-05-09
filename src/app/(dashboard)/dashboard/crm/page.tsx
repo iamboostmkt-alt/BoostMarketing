@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import CRMColumn from '@/components/dashboard/CRMColumn';
 import ContactForm from '@/components/dashboard/ContactForm';
 import { crmStages, statusLabels } from '@/lib/theme-maps';
+import { useMounted } from '@/hooks/use-mounted';
 import type { Contact } from '@/lib/types';
 
 const container = {
@@ -33,6 +34,7 @@ export default function CRMPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<string>('lead');
+  const mounted = useMounted();
 
   const fetchContacts = useCallback(async () => {
     try {
@@ -100,7 +102,7 @@ export default function CRMPage() {
   };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial={mounted ? 'hidden' : false} animate="show" className="space-y-6">
       {/* Header */}
       <motion.div variants={itemAnim} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

@@ -41,6 +41,7 @@ import {
 import ClientForm from '@/components/dashboard/ClientForm';
 import { statusColors, statusLabels } from '@/lib/theme-maps';
 import type { Client } from '@/lib/types';
+import { useMounted } from '@/hooks/use-mounted';
 
 const container = {
   hidden: { opacity: 0 },
@@ -63,6 +64,7 @@ export default function ClientsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
+  const mounted = useMounted();
 
   const fetchClients = useCallback(async () => {
     try {
@@ -124,7 +126,7 @@ export default function ClientsPage() {
   };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial={mounted ? 'hidden' : false} animate="show" className="space-y-6">
       {/* Header */}
       <motion.div
         variants={itemAnim}

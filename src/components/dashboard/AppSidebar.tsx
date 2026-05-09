@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -21,8 +21,9 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSidebar } from './SidebarContext';
-import { signOut } from 'next-auth/react';
+import { useMounted } from '@/hooks/use-mounted';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -37,8 +38,10 @@ const navItems = [
 export default function AppSidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const mounted = useMounted();
 
+  const isLoading = status === 'loading';
   const userName = session?.user?.name || 'Usuario';
   const userRole = (session?.user as any)?.role || 'client';
   const userImage = session?.user?.image;
@@ -141,12 +144,16 @@ export default function AppSidebar() {
       {/* Bottom: User + Collapse */}
       <div className="mt-auto border-t border-white/[0.06]">
         <div className="flex items-center gap-3 px-3 py-3">
-          <Avatar className="w-9 h-9 shrink-0">
-            <AvatarImage src={userImage || undefined} alt={userName} />
-            <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          {isLoading ? (
+            <Skeleton className="w-9 h-9 rounded-full shrink-0" />
+          ) : (
+            <Avatar className="w-9 h-9 shrink-0">
+              <AvatarImage src={userImage || undefined} alt={userName} />
+              <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          )}
           <AnimatePresence>
             {!collapsed && (
               <motion.div
@@ -156,13 +163,22 @@ export default function AppSidebar() {
                 transition={{ duration: 0.2 }}
                 className="flex-1 min-w-0 overflow-hidden"
               >
-                <p className="text-sm font-medium text-white truncate">{userName}</p>
-                <p className="text-xs text-white/40 capitalize truncate">{userRole}</p>
+                {isLoading ? (
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3.5 w-20" />
+                    <Skeleton className="h-3 w-14" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-white truncate">{userName}</p>
+                    <p className="text-xs text-white/40 capitalize truncate">{userRole}</p>
+                  </>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
           <AnimatePresence>
-            {!collapsed && (
+            {!collapsed && !isLoading && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -223,7 +239,7 @@ export default function AppSidebar() {
 
       {/* Mobile sidebar panel */}
       <motion.aside
-        initial={{ x: -280 }}
+        initial={false}
         animate={{ x: mobileOpen ? 0 : -280 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         className="fixed top-0 left-0 z-50 h-screen w-[256px] bg-[#0e0e14] border-r border-white/[0.06] md:hidden"

@@ -61,17 +61,20 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    // Prevent NextAuth automatic redirects - we handle them manually
+    // The redirect callback controls where the user is sent after sign in.
+    // When signIn() is called with redirect:false, this callback is NOT invoked.
+    // When NextAuth handles the redirect automatically (e.g. from middleware),
+    // this callback ensures we always send to the correct URL.
     async redirect({ url, baseUrl }) {
-      // If url is a relative path, prepend baseUrl
+      // If url is already a full valid URL on our origin, allow it
       if (url.startsWith("/")) return baseUrl + url;
-      // If url is on the same origin, allow it
       try {
-        if (new URL(url).origin === baseUrl) return url;
+        const parsed = new URL(url);
+        if (parsed.origin === baseUrl) return url;
       } catch {
         // Invalid URL, fall through
       }
-      // Default redirect to dashboard after sign in
+      // Default: send to dashboard
       return baseUrl + "/dashboard";
     },
   },
@@ -81,9 +84,8 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
-  // Let NextAuth handle cookie names automatically
-  // In dev: uses "next-auth.session-token"
-  // In prod (HTTPS): uses "__Secure-next-auth.session-token"
+  // debug: process.env.NODE_ENV === "development", // Disabled - causes verbose logging
 };

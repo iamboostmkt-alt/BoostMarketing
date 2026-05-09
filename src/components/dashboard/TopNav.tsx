@@ -2,9 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { Menu, Search, Bell, Moon, User, LogOut, Settings } from 'lucide-react';
+import { Menu, Search, Bell, Moon, User, LogOut, Settings, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -15,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSidebar } from './SidebarContext';
 import { NotificationsDropdown } from './NotificationsDropdown';
 
@@ -32,8 +31,9 @@ const pageTitles: Record<string, string> = {
 export default function TopNav() {
   const pathname = usePathname();
   const { setMobileOpen, setCommandOpen } = useSidebar();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
+  const isLoading = status === 'loading';
   const userName = session?.user?.name || 'Usuario';
   const userImage = session?.user?.image;
 
@@ -107,51 +107,57 @@ export default function TopNav() {
                 variant="ghost"
                 className="relative h-9 w-9 rounded-full"
               >
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={userImage || undefined} alt={userName} />
-                  <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
+                {isLoading ? (
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                ) : (
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={userImage || undefined} alt={userName} />
+                    <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-56 bg-[#15151c] border-white/[0.06] text-white"
-              align="end"
-              forceMount
-            >
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{userName}</p>
-                  <p className="text-xs leading-none text-white/40">
-                    {session?.user?.email || ''}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/[0.06]" />
-              <DropdownMenuGroup>
-                <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
-                  Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <a href="/dashboard/settings" className="flex-1">Ajustes</a>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer">
-                  <Moon className="mr-2 h-4 w-4" />
-                  Tema Oscuro
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-white/[0.06]" />
-              <DropdownMenuItem
-                className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
-                onClick={() => signOut({ callbackUrl: '/' })}
+            {!isLoading && (
+              <DropdownMenuContent
+                className="w-56 bg-[#15151c] border-white/[0.06] text-white"
+                align="end"
+                forceMount
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                Cerrar Sesión
-              </DropdownMenuItem>
-            </DropdownMenuContent>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{userName}</p>
+                    <p className="text-xs leading-none text-white/40">
+                      {session?.user?.email || ''}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/[0.06]" />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <a href="/dashboard/settings" className="flex-1">Ajustes</a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer">
+                    <Moon className="mr-2 h-4 w-4" />
+                    Tema Oscuro
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator className="bg-white/[0.06]" />
+                <DropdownMenuItem
+                  className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Cerrar Sesión
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            )}
           </DropdownMenu>
         </div>
       </div>

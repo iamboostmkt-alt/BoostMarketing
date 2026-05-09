@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { UserProfile } from '@/lib/types';
+import { useMounted } from '@/hooks/use-mounted';
 
 const container = {
   hidden: { opacity: 0 },
@@ -58,6 +59,7 @@ export default function SettingsPage() {
   const [pushNotifications, setPushNotifications] = useState(false);
   const [weeklyReport, setWeeklyReport] = useState(true);
   const [language, setLanguage] = useState('es');
+  const mounted = useMounted();
 
   useEffect(() => {
     async function fetchProfile() {
@@ -119,7 +121,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial={mounted ? 'hidden' : false} animate="show" className="space-y-6">
       {/* Header */}
       <motion.div variants={itemAnim}>
         <h2 className="text-2xl md:text-3xl font-bold text-white">Configuración</h2>

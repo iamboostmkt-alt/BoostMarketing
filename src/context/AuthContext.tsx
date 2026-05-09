@@ -35,7 +35,11 @@ function AuthInner({ children }: { children: ReactNode }) {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider
+      // Prevent unnecessary refetches that cause loading flicker
+      refetchOnWindowFocus={false}
+      refetchInterval={5 * 60} // Refetch every 5 minutes to keep session alive
+    >
       <AuthInner>{children}</AuthInner>
     </SessionProvider>
   );

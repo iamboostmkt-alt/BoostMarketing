@@ -12,6 +12,7 @@ import TaskForm from '@/components/dashboard/TaskForm';
 import CalendarGrid from '@/components/dashboard/CalendarGrid';
 import type { Task } from '@/lib/types';
 import { statusColors, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
+import { useMounted } from '@/hooks/use-mounted';
 
 const container = {
   hidden: { opacity: 0 },
@@ -29,6 +30,7 @@ export default function CalendarPage() {
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const mounted = useMounted();
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -86,7 +88,7 @@ export default function CalendarPage() {
   return (
     <motion.div
       variants={container}
-      initial="hidden"
+      initial={mounted ? 'hidden' : false}
       animate="show"
       className="space-y-6"
     >

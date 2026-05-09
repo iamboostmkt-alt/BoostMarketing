@@ -5,13 +5,7 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only protect /dashboard routes
-  const isDashboardRoute = pathname.startsWith('/dashboard');
-
-  if (!isDashboardRoute) {
-    return NextResponse.next();
-  }
-
+  // Only protect /dashboard routes — matcher ensures this runs only on /dashboard/*
   // Check for JWT token
   const token = await getToken({
     req: request,
@@ -29,15 +23,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico
-     * - Public assets (svg, png, jpg, etc.)
-     * - API routes (they handle their own auth)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  // Only run middleware on /dashboard routes — public routes are never touched
+  matcher: ['/dashboard/:path*'],
 };

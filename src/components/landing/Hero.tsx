@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Play, TrendingUp, Users, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useMounted } from '@/hooks/use-mounted'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -15,6 +16,8 @@ const fadeInUp = {
 }
 
 export default function Hero() {
+  const mounted = useMounted()
+
   return (
     <section className="hero-gradient relative min-h-screen overflow-hidden pt-16">
       {/* Animated background elements */}
@@ -30,7 +33,7 @@ export default function Hero() {
           <motion.div
             custom={0}
             variants={fadeInUp}
-            initial="hidden"
+            initial={mounted ? 'hidden' : false}
             animate="visible"
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-4 py-1.5 text-xs font-medium text-brand-light">
@@ -42,7 +45,7 @@ export default function Hero() {
           <motion.h1
             custom={1}
             variants={fadeInUp}
-            initial="hidden"
+            initial={mounted ? 'hidden' : false}
             animate="visible"
             className="mt-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl"
           >
@@ -54,18 +57,18 @@ export default function Hero() {
           <motion.p
             custom={2}
             variants={fadeInUp}
-            initial="hidden"
+            initial={mounted ? 'hidden' : false}
             animate="visible"
             className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg"
           >
-            Impulsamos tu presencia digital con estrategia, creatividad y tecnología. 
+            Impulsamos tu presencia digital con estrategia, creatividad y tecnología.
             Desde producción de contenido hasta gestión de clientes, todo en una sola plataforma.
           </motion.p>
 
           <motion.div
             custom={3}
             variants={fadeInUp}
-            initial="hidden"
+            initial={mounted ? 'hidden' : false}
             animate="visible"
             className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4"
           >
@@ -88,7 +91,7 @@ export default function Hero() {
         <motion.div
           custom={4}
           variants={fadeInUp}
-          initial="hidden"
+          initial={mounted ? 'hidden' : false}
           animate="visible"
           className="relative mt-12 flex-1 lg:mt-0"
         >

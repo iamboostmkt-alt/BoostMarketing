@@ -30,6 +30,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import type { DashboardStats, Contact, Task } from '@/lib/types';
+import { useMounted } from '@/hooks/use-mounted';
 
 const container = {
   hidden: { opacity: 0 },
@@ -85,6 +86,7 @@ export default function AnalyticsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const mounted = useMounted();
 
   useEffect(() => {
     async function fetchData() {
@@ -202,7 +204,7 @@ export default function AnalyticsPage() {
   const hasData = contacts.length > 0 || tasks.length > 0;
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial={mounted ? 'hidden' : false} animate="show" className="space-y-6">
       {/* Header */}
       <motion.div
         variants={itemAnim}

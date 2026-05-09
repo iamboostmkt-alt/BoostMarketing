@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
 import type { DashboardStats, Task } from '@/lib/types';
 import { statusLabels, statusColors, priorityLabels, priorityColors } from '@/lib/theme-maps';
+import { useMounted } from '@/hooks/use-mounted';
 
 const container = {
   hidden: { opacity: 0 },
@@ -34,15 +35,20 @@ const itemAnim = {
 };
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(true);
+  const mounted = useMounted();
 
   const userName = session?.user?.name || 'Usuario';
 
+  // Only fetch data when authenticated — prevents 401 errors
+  // and avoids race conditions with session cookie
   useEffect(() => {
+    if (status !== 'authenticated') return;
+
     async function fetchStats() {
       try {
         const res = await fetch('/api/stats');
@@ -57,9 +63,11 @@ export default function DashboardPage() {
       }
     }
     fetchStats();
-  }, []);
+  }, [status]);
 
   useEffect(() => {
+    if (status !== 'authenticated') return;
+
     async function fetchTasks() {
       try {
         const res = await fetch('/api/tasks?limit=5');
@@ -75,7 +83,7 @@ export default function DashboardPage() {
       }
     }
     fetchTasks();
-  }, []);
+  }, [status]);
 
   const statCards = [
     {
@@ -117,7 +125,12 @@ export default function DashboardPage() {
   ];
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div
+      variants={container}
+      initial={mounted ? 'hidden' : false}
+      animate="show"
+      className="space-y-6"
+    >
       {/* Welcome */}
       <motion.div variants={itemAnim}>
         <h2 className="text-2xl md:text-3xl font-bold text-white">

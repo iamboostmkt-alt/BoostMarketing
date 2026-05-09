@@ -20,6 +20,7 @@ import {
 import TaskCard from '@/components/dashboard/TaskCard';
 import TaskForm from '@/components/dashboard/TaskForm';
 import type { Task } from '@/lib/types';
+import { useMounted } from '@/hooks/use-mounted';
 import { statusColors, taskStatuses } from '@/lib/theme-maps';
 
 const container = {
@@ -56,6 +57,7 @@ function TasksContent() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deleteTask, setDeleteTask] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const mounted = useMounted();
 
   // Open form if query param action=create
   useEffect(() => {
@@ -142,7 +144,7 @@ function TasksContent() {
   return (
     <motion.div
       variants={container}
-      initial="hidden"
+      initial={mounted ? 'hidden' : false}
       animate="show"
       className="space-y-6"
     >
