@@ -39,6 +39,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Prevent unnecessary refetches that cause loading flicker
       refetchOnWindowFocus={false}
       refetchInterval={5 * 60} // Refetch every 5 minutes to keep session alive
+      // If the session fetch fails, NextAuth will retry on the next
+      // navigation or refetchInterval tick. The AuthGuard in the dashboard
+      // layout has a 15-second timeout that shows a retry button if
+      // the session fetch gets stuck in "loading" state.
     >
       <AuthInner>{children}</AuthInner>
     </SessionProvider>

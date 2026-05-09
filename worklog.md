@@ -1,4 +1,31 @@
 ---
+Task ID: 9
+Agent: Main Orchestrator
+Task: Investigate CLIENT_FETCH_ERROR — NextAuth returning HTML instead of JSON
+
+Work Log:
+- Tested /api/auth/session, /api/auth/providers, /api/auth/csrf — ALL return JSON with Content-Type: application/json ✅
+- Verified middleware.ts matcher is EXACTLY ['/dashboard/:path*'] — does NOT intercept /api/* ✅
+- No proxy.ts file exists in the project ✅
+- No error.tsx or not-found.tsx intercepting API routes ✅
+- AuthGuard only wraps dashboard layout, NOT root/marketing/API ✅
+- Caddy proxy passes requests correctly, no HTML injection ✅
+- Tested with RSC headers, prefetch headers, Accept: text/html — all return JSON ✅
+- Full browser test with agent-browser: login → dashboard → calendar — ZERO errors ✅
+- Tested via Caddy proxy (port 81) — works perfectly ✅
+- The CLIENT_FETCH_ERROR is NOT currently reproducible in the app
+- Added 15-second safety timeout to AuthGuard — if session fetch gets stuck, shows retry button
+- Added retry UI with "Reintentar" button instead of infinite spinner
+
+Stage Summary:
+- NextAuth API endpoints all return valid JSON (verified with curl and browser)
+- Middleware matcher is correct, does not intercept auth routes
+- AuthGuard now has a 15-second timeout with retry UI
+- No CLIENT_FETCH_ERROR found in any test scenario
+- The error may have been caused by previous Framer Motion code or stale browser cache
+- Full browser test: landing → login → dashboard → calendar all work without errors
+
+---
 Task ID: 1
 Agent: Main Orchestrator
 Task: Foundation - globals.css dark theme, Prisma schema, types, utilities, theme maps
