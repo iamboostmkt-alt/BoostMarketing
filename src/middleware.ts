@@ -5,34 +5,21 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public routes that don't require authentication
-  const publicRoutes = ['/', '/login', '/register'];
-  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
-  const isApiRoute = pathname.startsWith('/api/');
-  const isAuthApiRoute = pathname.startsWith('/api/auth/');
+  // Only protect /dashboard routes
+  const isDashboardRoute = pathname.startsWith('/dashboard');
 
-  // Allow API auth routes (login, register, etc.)
-  if (isAuthApiRoute) {
+  if (!isDashboardRoute) {
     return NextResponse.next();
   }
 
-  // Allow public routes
-  if (isPublicRoute) {
-    return NextResponse.next();
-  }
-
-  // Allow non-auth API routes to handle their own auth
-  if (isApiRoute) {
-    return NextResponse.next();
-  }
-
-  // Protect dashboard and other routes
+  // Check for JWT token
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET || 'boostmarketing-secret-key-2024',
+    secret: process.env.NEXTAUTH_SECRET,
   });
 
   if (!token) {
+    // Redirect to login with callback URL
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl);
@@ -47,8 +34,9 @@ export const config = {
      * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files
+     * - favicon.ico
+     * - Public assets (svg, png, jpg, etc.)
+     * - API routes (they handle their own auth)
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],

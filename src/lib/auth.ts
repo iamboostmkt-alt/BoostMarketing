@@ -61,12 +61,29 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    // Prevent NextAuth automatic redirects - we handle them manually
+    async redirect({ url, baseUrl }) {
+      // If url is a relative path, prepend baseUrl
+      if (url.startsWith("/")) return baseUrl + url;
+      // If url is on the same origin, allow it
+      try {
+        if (new URL(url).origin === baseUrl) return url;
+      } catch {
+        // Invalid URL, fall through
+      }
+      // Default redirect to dashboard after sign in
+      return baseUrl + "/dashboard";
+    },
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: "/login",
   },
-  secret: process.env.NEXTAUTH_SECRET || "boostmarketing-secret-key-2024",
+  secret: process.env.NEXTAUTH_SECRET,
+  // Let NextAuth handle cookie names automatically
+  // In dev: uses "next-auth.session-token"
+  // In prod (HTTPS): uses "__Secure-next-auth.session-token"
 };

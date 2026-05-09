@@ -2,15 +2,13 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Zap, Eye, EyeOff } from 'lucide-react';
+import { Zap, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,15 +56,17 @@ export default function RegisterPage() {
       });
 
       if (result?.error) {
-        // If auto-login fails, redirect to login
-        router.push('/login');
+        // If auto-login fails, redirect to login page
+        window.location.href = '/login';
       } else {
-        router.push('/dashboard');
+        // Full page reload to ensure cookie is read by middleware
+        window.location.href = '/dashboard';
       }
     } catch {
       setError('Ocurrió un error al crear la cuenta');
       setLoading(false);
     }
+    // Do NOT reset loading on success — keep spinner during redirect
   };
 
   return (
@@ -105,6 +105,7 @@ export default function RegisterPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              disabled={loading}
               className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:border-brand focus:ring-brand/20"
             />
           </div>
@@ -120,6 +121,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
               className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:border-brand focus:ring-brand/20"
             />
           </div>
@@ -136,6 +138,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
                 className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:border-brand focus:ring-brand/20 pr-10"
               />
               <button
@@ -163,6 +166,7 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              disabled={loading}
               className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:border-brand focus:ring-brand/20"
             />
           </div>
@@ -174,7 +178,7 @@ export default function RegisterPage() {
           >
             {loading ? (
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
                 Creando cuenta...
               </div>
             ) : (

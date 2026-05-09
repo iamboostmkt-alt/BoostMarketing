@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Zap, Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,6 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   const [email, setEmail] = useState('');
@@ -32,15 +31,20 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError('Email o contraseña incorrectos');
+        setLoading(false);
       } else {
-        router.push(callbackUrl);
-        router.refresh();
+        // Use window.location.href for a FULL page reload
+        // This ensures the middleware can read the newly set JWT cookie
+        // router.push() alone can cause a race condition where middleware
+        // runs before the cookie is available
+        window.location.href = callbackUrl;
       }
     } catch {
       setError('Error al iniciar sesión');
-    } finally {
       setLoading(false);
     }
+    // Do NOT call setLoading(false) in finally — if login succeeded,
+    // we want the button to stay in loading state during redirect
   };
 
   return (
@@ -93,6 +97,8 @@ export default function LoginPage() {
                   placeholder="demo@boostmarketing.com"
                   className="pl-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
                   required
+                  autoComplete="email"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -108,6 +114,8 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   className="pl-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
                   required
+                  autoComplete="current-password"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -128,6 +136,18 @@ export default function LoginPage() {
           <div className="mt-6 pt-4 border-t border-white/[0.06]">
             <p className="text-xs text-white/30 text-center">
               Demo: <span className="text-white/50">demo@boostmarketing.com</span> / <span className="text-white/50">demo1234</span>
+            </p>
+          </div>
+
+          <div className="mt-4 text-center">
+            <p className="text-sm text-white/40">
+              ¿No tienes cuenta?{' '}
+              <Link
+                href="/register"
+                className="text-brand-light hover:text-brand transition-colors font-medium"
+              >
+                Regístrate
+              </Link>
             </p>
           </div>
         </div>
