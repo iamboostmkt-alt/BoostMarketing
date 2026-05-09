@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, LayoutList, Columns3, CheckSquare, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -20,18 +19,7 @@ import {
 import TaskCard from '@/components/dashboard/TaskCard';
 import TaskForm from '@/components/dashboard/TaskForm';
 import type { Task } from '@/lib/types';
-import { useMounted } from '@/hooks/use-mounted';
 import { statusColors, taskStatuses } from '@/lib/theme-maps';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.05 } },
-};
-
-const itemAnim = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-};
 
 type ViewMode = 'list' | 'board';
 
@@ -57,7 +45,6 @@ function TasksContent() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deleteTask, setDeleteTask] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const mounted = useMounted();
 
   // Open form if query param action=create
   useEffect(() => {
@@ -142,14 +129,9 @@ function TasksContent() {
   }
 
   return (
-    <motion.div
-      variants={container}
-      initial={mounted ? 'hidden' : false}
-      animate="show"
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* Header */}
-      <motion.div variants={itemAnim} className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">Tareas</h1>
           <p className="text-white/40 text-sm mt-1">
@@ -163,10 +145,10 @@ function TasksContent() {
           <Plus className="w-4 h-4" />
           Nueva Tarea
         </Button>
-      </motion.div>
+      </div>
 
       {/* Filter tabs + View toggle */}
-      <motion.div variants={itemAnim} className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex gap-1.5 overflow-x-auto pb-1">
           {filterTabs.map((tab) => (
             <button
@@ -207,12 +189,11 @@ function TasksContent() {
             <Columns3 className="w-4 h-4" />
           </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Empty state */}
       {filteredTasks.length === 0 && (
-        <motion.div
-          variants={itemAnim}
+        <div
           className="flex flex-col items-center justify-center py-16 text-center"
         >
           <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
@@ -231,24 +212,22 @@ function TasksContent() {
             <Plus className="w-4 h-4" />
             Nueva Tarea
           </Button>
-        </motion.div>
+        </div>
       )}
 
       {/* List View */}
       {viewMode === 'list' && filteredTasks.length > 0 && (
-        <motion.div variants={container} className="space-y-3">
-          <AnimatePresence mode="popLayout">
-            {filteredTasks.map((task) => (
-              <motion.div key={task.id} variants={itemAnim} layout>
-                <TaskCard
-                  task={task}
-                  onEdit={handleEdit}
-                  onDelete={(t) => setDeleteTask(t)}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <div className="space-y-3">
+          {filteredTasks.map((task) => (
+            <div key={task.id}>
+              <TaskCard
+                task={task}
+                onEdit={handleEdit}
+                onDelete={(t) => setDeleteTask(t)}
+              />
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Board View */}
@@ -273,17 +252,15 @@ function TasksContent() {
 
                 {/* Column body */}
                 <div className="space-y-2.5 min-h-[120px] bg-white/[0.02] rounded-xl p-2.5 border border-white/[0.04]">
-                  <AnimatePresence mode="popLayout">
-                    {stageTasks.map((task) => (
-                      <motion.div key={task.id} variants={itemAnim} layout>
-                        <TaskCard
-                          task={task}
-                          onEdit={handleEdit}
-                          onDelete={(t) => setDeleteTask(t)}
-                        />
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+                  {stageTasks.map((task) => (
+                    <div key={task.id}>
+                      <TaskCard
+                        task={task}
+                        onEdit={handleEdit}
+                        onDelete={(t) => setDeleteTask(t)}
+                      />
+                    </div>
+                  ))}
                   {stageTasks.length === 0 && (
                     <div className="flex items-center justify-center h-20 text-xs text-white/20">
                       Sin tareas
@@ -335,7 +312,7 @@ function TasksContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </motion.div>
+    </div>
   );
 }
 

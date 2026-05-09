@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Calendar, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/types';
@@ -42,13 +41,7 @@ export default function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
   const overdue = isOverdue(task.dueDate) && task.status !== 'completed';
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2 }}
+    <div
       className="bg-[#15151c] border border-white/[0.06] rounded-xl p-4 hover:border-white/[0.1] transition-colors group"
     >
       <div className="flex items-start gap-3">
@@ -118,6 +111,6 @@ export default function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

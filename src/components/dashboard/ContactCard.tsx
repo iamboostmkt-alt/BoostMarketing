@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Building2, Mail, DollarSign } from 'lucide-react';
 import { statusColors, statusLabels } from '@/lib/theme-maps';
 import type { Contact } from '@/lib/types';
@@ -22,10 +21,7 @@ export default function ContactCard({ contact, onClick, index = 0 }: ContactCard
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05, ease: 'easeOut' }}
+    <div
       onClick={() => onClick(contact)}
       className="
         cursor-grab active:cursor-grabbing
@@ -71,6 +67,6 @@ export default function ContactCard({ contact, onClick, index = 0 }: ContactCard
           </span>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

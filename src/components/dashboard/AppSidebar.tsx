@@ -19,8 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import { useSidebar } from './SidebarContext';
 
 const navItems = [
@@ -36,9 +35,9 @@ const navItems = [
 export default function AppSidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
-  const isLoading = status === 'loading';
+  // NON-BLOCKING: always render with defaults, update when session resolves
   const userName = session?.user?.name || 'Usuario';
   const userRole = (session?.user as any)?.role || 'client';
   const userImage = session?.user?.image;
@@ -121,32 +120,19 @@ export default function AppSidebar() {
       {/* Bottom: User + Collapse */}
       <div className="mt-auto border-t border-white/[0.06]">
         <div className="flex items-center gap-3 px-3 py-3">
-          {isLoading ? (
-            <Skeleton className="w-9 h-9 rounded-full shrink-0" />
-          ) : (
-            <Avatar className="w-9 h-9 shrink-0">
-              <AvatarImage src={userImage || undefined} alt={userName} />
-              <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          )}
+          <Avatar className="w-9 h-9 shrink-0">
+            <AvatarImage src={userImage || undefined} alt={userName} />
+            <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0 overflow-hidden transition-all duration-200">
-              {isLoading ? (
-                <div className="space-y-1.5">
-                  <Skeleton className="h-3.5 w-20" />
-                  <Skeleton className="h-3 w-14" />
-                </div>
-              ) : (
-                <>
-                  <p className="text-sm font-medium text-white truncate">{userName}</p>
-                  <p className="text-xs text-white/40 capitalize truncate">{userRole}</p>
-                </>
-              )}
+              <p className="text-sm font-medium text-white truncate">{userName}</p>
+              <p className="text-xs text-white/40 capitalize truncate">{userRole}</p>
             </div>
           )}
-          {!collapsed && !isLoading && (
+          {!collapsed && (
             <Button
               variant="ghost"
               size="icon"

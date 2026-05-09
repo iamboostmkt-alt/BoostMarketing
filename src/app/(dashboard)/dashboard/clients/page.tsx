@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import {
   Plus,
   Search,
@@ -41,20 +40,6 @@ import {
 import ClientForm from '@/components/dashboard/ClientForm';
 import { statusColors, statusLabels } from '@/lib/theme-maps';
 import type { Client } from '@/lib/types';
-import { useMounted } from '@/hooks/use-mounted';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06 },
-  },
-};
-
-const itemAnim = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
-};
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -64,8 +49,6 @@ export default function ClientsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
-  const mounted = useMounted();
-
   const fetchClients = useCallback(async () => {
     try {
       const params = new URLSearchParams();
@@ -126,10 +109,9 @@ export default function ClientsPage() {
   };
 
   return (
-    <motion.div variants={container} initial={mounted ? 'hidden' : false} animate="show" className="space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        variants={itemAnim}
+      <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
@@ -143,11 +125,10 @@ export default function ClientsPage() {
           <Plus className="w-4 h-4" />
           Nuevo Cliente
         </Button>
-      </motion.div>
+      </div>
 
       {/* Search & Filter */}
-      <motion.div
-        variants={itemAnim}
+      <div
         className="flex flex-col sm:flex-row gap-3"
       >
         <div className="relative flex-1">
@@ -169,10 +150,10 @@ export default function ClientsPage() {
             <SelectItem value="inactive">Inactivo</SelectItem>
           </SelectContent>
         </Select>
-      </motion.div>
+      </div>
 
       {/* Table */}
-      <motion.div variants={itemAnim} className="glass-card rounded-xl overflow-hidden">
+      <div className="glass-card rounded-xl overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="border-white/[0.06] hover:bg-transparent">
@@ -304,7 +285,7 @@ export default function ClientsPage() {
             )}
           </TableBody>
         </Table>
-      </motion.div>
+      </div>
 
       {/* Client Form Dialog */}
       <ClientForm
@@ -346,6 +327,6 @@ export default function ClientsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </motion.div>
+    </div>
   );
 }

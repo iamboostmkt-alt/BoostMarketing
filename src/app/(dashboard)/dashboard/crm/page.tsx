@@ -1,29 +1,14 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Filter, Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import CRMColumn from '@/components/dashboard/CRMColumn';
 import ContactForm from '@/components/dashboard/ContactForm';
-import { crmStages, statusLabels } from '@/lib/theme-maps';
-import { useMounted } from '@/hooks/use-mounted';
+import { crmStages } from '@/lib/theme-maps';
 import type { Contact } from '@/lib/types';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const itemAnim = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
-};
 
 export default function CRMPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -34,8 +19,6 @@ export default function CRMPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<string>('lead');
-  const mounted = useMounted();
-
   const fetchContacts = useCallback(async () => {
     try {
       const res = await fetch('/api/contacts');
@@ -102,9 +85,9 @@ export default function CRMPage() {
   };
 
   return (
-    <motion.div variants={container} initial={mounted ? 'hidden' : false} animate="show" className="space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <motion.div variants={itemAnim} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold text-white">
             Pipeline CRM
@@ -123,10 +106,10 @@ export default function CRMPage() {
           <Plus className="w-4 h-4" />
           Nuevo Contacto
         </Button>
-      </motion.div>
+      </div>
 
       {/* Search bar */}
-      <motion.div variants={itemAnim} className="flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <Input
@@ -136,7 +119,7 @@ export default function CRMPage() {
             className="pl-9 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30 h-9"
           />
         </div>
-      </motion.div>
+      </div>
 
       {/* Loading Skeleton */}
       {loading ? (
@@ -176,10 +159,7 @@ export default function CRMPage() {
         </div>
       ) : (
         /* Kanban Board - horizontal scroll */
-        <motion.div
-          variants={itemAnim}
-          className="flex gap-6 overflow-x-auto pb-4 custom-scrollbar"
-        >
+        <div className="flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
           {grouped.map(({ stage, contacts: stageContacts }) => (
             <CRMColumn
               key={stage.id}
@@ -189,7 +169,7 @@ export default function CRMPage() {
               onAddClick={() => handleAddClick(stage.id)}
             />
           ))}
-        </motion.div>
+        </div>
       )}
 
       {/* Contact Form Dialog */}
@@ -200,6 +180,6 @@ export default function CRMPage() {
         defaultStatus={defaultStatus}
         onSuccess={handleFormSuccess}
       />
-    </motion.div>
+    </div>
   );
 }

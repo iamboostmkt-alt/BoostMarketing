@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import {
   Users,
   CheckCircle2,
@@ -30,20 +29,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import type { DashboardStats, Contact, Task } from '@/lib/types';
-import { useMounted } from '@/hooks/use-mounted';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06 },
-  },
-};
-
-const itemAnim = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
-};
 
 const CHART_COLORS = ['#7c3aed', '#06b6d4', '#f59e0b', '#10b981'];
 const GRID_COLOR = 'rgba(255,255,255,0.05)';
@@ -86,8 +71,6 @@ export default function AnalyticsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const mounted = useMounted();
-
   useEffect(() => {
     async function fetchData() {
       try {
@@ -204,10 +187,9 @@ export default function AnalyticsPage() {
   const hasData = contacts.length > 0 || tasks.length > 0;
 
   return (
-    <motion.div variants={container} initial={mounted ? 'hidden' : false} animate="show" className="space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        variants={itemAnim}
+      <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
@@ -218,10 +200,10 @@ export default function AnalyticsPage() {
           <Calendar className="w-4 h-4 text-white/30" />
           <span className="text-sm text-white/40">Últimos 30 días</span>
         </div>
-      </motion.div>
+      </div>
 
       {/* Stats cards */}
-      <motion.div variants={itemAnim} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -257,26 +239,26 @@ export default function AnalyticsPage() {
             </div>
           );
         })}
-      </motion.div>
+      </div>
 
       {/* Charts */}
       {loading ? (
-        <motion.div variants={itemAnim} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="glass-card rounded-xl p-6">
               <Skeleton className="h-5 w-40 mb-4" />
               <Skeleton className="h-[300px] w-full" />
             </div>
           ))}
-        </motion.div>
+        </div>
       ) : !hasData ? (
-        <motion.div variants={itemAnim} className="glass-card rounded-xl p-16 text-center">
+        <div className="glass-card rounded-xl p-16 text-center">
           <BarChart3 className="w-12 h-12 text-white/15 mx-auto mb-3" />
           <p className="text-white/40 text-sm">No hay datos suficientes para mostrar gráficos</p>
           <p className="text-white/25 text-xs mt-1">Agrega contactos y tareas para ver tus analytics</p>
-        </motion.div>
+        </div>
       ) : (
-        <motion.div variants={itemAnim} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Bar Chart: Contacts by Stage */}
           <div className="glass-card rounded-xl p-6">
             <h3 className="text-base font-semibold text-white mb-4">Contactos por Etapa</h3>
@@ -393,8 +375,8 @@ export default function AnalyticsPage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Save, Moon, Bell, Globe, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,20 +19,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { UserProfile } from '@/lib/types';
-import { useMounted } from '@/hooks/use-mounted';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06 },
-  },
-};
-
-const itemAnim = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
-};
 
 const PREDEFINED_COLORS = [
   { value: '#7c3aed', label: 'Violeta' },
@@ -59,7 +44,6 @@ export default function SettingsPage() {
   const [pushNotifications, setPushNotifications] = useState(false);
   const [weeklyReport, setWeeklyReport] = useState(true);
   const [language, setLanguage] = useState('es');
-  const mounted = useMounted();
 
   useEffect(() => {
     async function fetchProfile() {
@@ -121,15 +105,15 @@ export default function SettingsPage() {
   };
 
   return (
-    <motion.div variants={container} initial={mounted ? 'hidden' : false} animate="show" className="space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <motion.div variants={itemAnim}>
+      <div>
         <h2 className="text-2xl md:text-3xl font-bold text-white">Configuración</h2>
         <p className="text-white/40 mt-1">Administra tu perfil y preferencias</p>
-      </motion.div>
+      </div>
 
       {/* Tabs */}
-      <motion.div variants={itemAnim}>
+      <div>
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="bg-white/[0.04] border border-white/[0.06]">
             <TabsTrigger
@@ -397,7 +381,7 @@ export default function SettingsPage() {
             </Button>
           </TabsContent>
         </Tabs>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

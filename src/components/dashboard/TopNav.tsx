@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { Menu, Search, Bell, Moon, User, LogOut, Settings, Loader2 } from 'lucide-react';
+import { Menu, Search, Bell, Moon, User, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import { useSidebar } from './SidebarContext';
 import { NotificationsDropdown } from './NotificationsDropdown';
 
@@ -31,9 +31,9 @@ const pageTitles: Record<string, string> = {
 export default function TopNav() {
   const pathname = usePathname();
   const { setMobileOpen, setCommandOpen } = useSidebar();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
-  const isLoading = status === 'loading';
+  // NON-BLOCKING: always render with defaults, update when session resolves
   const userName = session?.user?.name || 'Usuario';
   const userImage = session?.user?.image;
 
@@ -107,24 +107,19 @@ export default function TopNav() {
                 variant="ghost"
                 className="relative h-9 w-9 rounded-full"
               >
-                {isLoading ? (
-                  <Skeleton className="h-9 w-9 rounded-full" />
-                ) : (
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={userImage || undefined} alt={userName} />
-                    <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={userImage || undefined} alt={userName} />
+                  <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            {!isLoading && (
-              <DropdownMenuContent
-                className="w-56 bg-[#15151c] border-white/[0.06] text-white"
-                align="end"
-                forceMount
-              >
+            <DropdownMenuContent
+              className="w-56 bg-[#15151c] border-white/[0.06] text-white"
+              align="end"
+              forceMount
+            >
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{userName}</p>
@@ -157,8 +152,7 @@ export default function TopNav() {
                   Cerrar Sesión
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            )}
-          </DropdownMenu>
+            </DropdownMenu>
         </div>
       </div>
     </header>

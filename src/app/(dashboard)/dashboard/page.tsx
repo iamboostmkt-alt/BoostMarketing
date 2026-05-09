@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
 import {
   Users,
   CheckSquare,
@@ -19,36 +18,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
 import type { DashboardStats, Task } from '@/lib/types';
 import { statusLabels, statusColors, priorityLabels, priorityColors } from '@/lib/theme-maps';
-import { useMounted } from '@/hooks/use-mounted';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 },
-  },
-};
-
-const itemAnim = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
-};
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(true);
-  const mounted = useMounted();
-
   const userName = session?.user?.name || 'Usuario';
 
-  // Only fetch data when authenticated — prevents 401 errors
-  // and avoids race conditions with session cookie
+  // NON-BLOCKING: fetch data immediately on mount.
+  // Middleware already validated the JWT cookie before this page renders.
+  // No need to wait for useSession() to resolve.
   useEffect(() => {
-    if (status !== 'authenticated') return;
-
     async function fetchStats() {
       try {
         const res = await fetch('/api/stats');
@@ -63,17 +45,14 @@ export default function DashboardPage() {
       }
     }
     fetchStats();
-  }, [status]);
+  }, []);
 
   useEffect(() => {
-    if (status !== 'authenticated') return;
-
     async function fetchTasks() {
       try {
         const res = await fetch('/api/tasks?limit=5');
         if (res.ok) {
           const data = await res.json();
-          // API returns { tasks: [...] }
           setTasks(data.tasks || data || []);
         }
       } catch {
@@ -83,7 +62,7 @@ export default function DashboardPage() {
       }
     }
     fetchTasks();
-  }, [status]);
+  }, []);
 
   const statCards = [
     {
@@ -125,29 +104,23 @@ export default function DashboardPage() {
   ];
 
   return (
-    <motion.div
-      variants={container}
-      initial={mounted ? 'hidden' : false}
-      animate="show"
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* Welcome */}
-      <motion.div variants={itemAnim}>
+      <div>
         <h2 className="text-2xl md:text-3xl font-bold text-white">
           Bienvenido,{' '}
           <span className="text-gradient-brand">{userName}</span>
         </h2>
         <p className="text-white/40 mt-1">Aquí tienes un resumen de tu actividad reciente.</p>
-      </motion.div>
+      </div>
 
       {/* Stats cards */}
-      <motion.div variants={itemAnim} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <motion.div
+            <div
               key={stat.label}
-              variants={itemAnim}
               className="glass-card rounded-xl p-5 hover:border-white/[0.1] transition-colors"
             >
               <div className="flex items-start justify-between">
@@ -175,13 +148,13 @@ export default function DashboardPage() {
                 )}
                 <p className="text-sm text-white/40 mt-0.5">{stat.label}</p>
               </div>
-            </motion.div>
+            </div>
           );
         })}
-      </motion.div>
+      </div>
 
       {/* Quick actions */}
-      <motion.div variants={itemAnim} className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3">
         <Link href="/dashboard/tasks?action=create">
           <Button
             size="sm"
@@ -211,10 +184,10 @@ export default function DashboardPage() {
             Nuevo Cliente
           </Button>
         </Link>
-      </motion.div>
+      </div>
 
       {/* Two column layout */}
-      <motion.div variants={itemAnim} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Recent tasks */}
         <div className="lg:col-span-2 glass-card rounded-xl">
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-white/[0.06]">
@@ -308,7 +281,7 @@ export default function DashboardPage() {
           </div>
           <ActivityTimeline />
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
