@@ -40,3 +40,47 @@ Stage Summary:
 - ESLint passes with no errors
 - NextAuth API endpoints confirmed working correctly
 - Navigation dashboard → "/" should no longer freeze
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix redirect loop during login — remove client-side redirects from AuthGuard, make middleware sole source of truth
+
+Work Log:
+- Identified the redirect loop root cause: AuthGuard's `useEffect(() => { if (status === 'unauthenticated') window.location.href = '/login' })` conflicting with middleware
+- The race condition: After login, cookie is being created → middleware sees authenticated state → BUT useSession() is still temporarily "loading" or "unauthenticated" → AuthGuard redirects back to /login → loop
+- AuthGuard also had a 15-second timeout with retry UI — removed for simplicity
+- Searched all source files for redirect sources: window.location.href, router.push, router.replace, redirect()
+- Verified no server-side `redirect()` calls in any page/layout components
+- Verified signOut() in TopNav and AppSidebar are user-initiated click handlers (safe)
+
+Fixes Applied:
+1. **AuthGuard (dashboard/layout.tsx)**: Made completely PASSIVE:
+   - Removed `window.location.href = '/login'` redirect
+   - Removed `useEffect` for redirect
+   - Removed 15-second timeout with retry UI
+   - Now only: loading → spinner, unauthenticated → null, authenticated → children
+   - Added extensive JSDoc explaining NEVER to add redirects here
+2. **Login page (login/page.tsx)**: Added JSDoc clarifying redirect only on user action
+   - No useSession() used — only `signIn()` in form submit handler
+   - `window.location.href = callbackUrl` only fires after successful signIn (user action)
+3. **Register page (register/page.tsx)**: Same pattern as login
+   - `window.location.href` only fires after successful registration + auto-login (user action)
+   - No useSession() effects or auto-redirects
+
+Architecture After Fix:
+- **Middleware**: SOLE source of truth for route protection (`/dashboard/:path*` → redirect to `/login`)
+- **AuthGuard**: PASSIVE only — shows spinner or nothing, NEVER redirects
+- **Login/Register**: Redirect ONLY on explicit user form submit action, never from session state effects
+- **No double-redirect systems**: No conflicting middleware + client-side + layout redirects
+
+Test Results:
+- ESLint: passes with no errors
+- `/` → 200 (landing)
+- `/login` → 200 (login page)
+- `/dashboard` (unauthenticated) → 307 redirect to `/login?callbackUrl=%2Fdashboard`
+- `/api/auth/session` → 200 (JSON `{}`)
+- `/api/auth/csrf` → 200 (JSON with csrfToken)
+- Full login flow with cookies: session correctly established, user email returned
+- `/dashboard` (authenticated) → 200 (no redirect)
+- No more ERR_TOO_MANY_REDIRECTS

@@ -8,6 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Zap, Eye, EyeOff, Loader2 } from 'lucide-react';
 
+/**
+ * Register page — redirect ONLY on explicit user action (after successful registration + auto-login).
+ * NEVER redirect based on useSession() state in effects/renders.
+ * Middleware handles route protection server-side.
+ */
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -56,10 +61,12 @@ export default function RegisterPage() {
       });
 
       if (result?.error) {
-        // If auto-login fails, redirect to login page
+        // Auto-login failed — go to login page (user action result, not session effect)
         window.location.href = '/login';
       } else {
-        // Full page reload to ensure cookie is read by middleware
+        // Full page reload after successful registration + auto-login.
+        // This is the ONLY place redirect happens — as a direct
+        // result of user action, not from session state effects.
         window.location.href = '/dashboard';
       }
     } catch {

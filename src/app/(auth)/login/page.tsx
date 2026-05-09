@@ -8,6 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 
+/**
+ * Login form — redirect ONLY on explicit user action (form submit).
+ * NEVER redirect based on useSession() state in effects/renders.
+ * Middleware handles route protection server-side.
+ */
 function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
@@ -32,8 +37,11 @@ function LoginForm() {
         setError('Email o contraseña incorrectos');
         setLoading(false);
       } else {
-        // Use window.location.href for a FULL page reload
-        // This ensures the middleware can read the newly set JWT cookie
+        // Full page reload after successful login.
+        // This is the ONLY place redirect happens — as a direct
+        // result of user action, not from session state effects.
+        // window.location.href ensures the cookie is available
+        // for middleware on the next request.
         window.location.href = callbackUrl;
       }
     } catch {

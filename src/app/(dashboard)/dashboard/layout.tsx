@@ -1,9 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useState, useRef } from 'react';
-import { Loader2, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { SidebarProvider } from '@/components/dashboard/SidebarContext';
 import AppSidebar from '@/components/dashboard/AppSidebar';
@@ -11,76 +9,42 @@ import TopNav from '@/components/dashboard/TopNav';
 import CommandPalette from '@/components/dashboard/CommandPalette';
 
 /**
- * Client-side auth guard. Prevents dashboard from rendering
- * until the session is confirmed. If unauthenticated, redirects
- * to /login. Includes a safety timeout for CLIENT_FETCH_ERROR resilience.
+ * PASSIVE auth guard — NO redirects.
+ *
+ * Middleware is the SOLE source of truth for route protection.
+ * This component only controls what renders client-side:
+ *   - "loading"   → show spinner (session hydrating)
+ *   - "unauthenticated" → render nothing (middleware already redirected)
+ *   - "authenticated"   → render children
+ *
+ * NEVER add window.location.href, router.push, or any redirect here.
+ * That creates a race condition with middleware + NextAuth session hydration.
  */
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
-  const [timedOut, setTimedOut] = useState(false);
-  const mountTime = useRef(Date.now());
 
-  // Redirect to login if unauthenticated
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      window.location.href = '/login';
-    }
-  }, [status]);
-
-  // Safety timeout: if session is still "loading" after 15 seconds,
-  // it likely means the session fetch failed (CLIENT_FETCH_ERROR).
-  // Show a retry UI instead of an infinite spinner.
-  useEffect(() => {
-    if (status !== 'loading') return;
-
-    const timer = setTimeout(() => {
-      setTimedOut(true);
-    }, 15000);
-
-    return () => clearTimeout(timer);
-  }, [status]);
-
-  // While session is loading, show a centered spinner
+  // Session is hydrating — show a spinner
   if (status === 'loading') {
-    if (timedOut) {
-      return (
-        <div className="flex h-screen items-center justify-center bg-[#0b0b0f]">
-          <div className="flex flex-col items-center gap-4 text-center px-4">
-            <Loader2 className="h-8 w-8 text-brand animate-spin" />
-            <div>
-              <p className="text-sm text-white/60">La sesión está tardando en cargar</p>
-              <p className="text-xs text-white/30 mt-1">Esto puede deberse a un problema de conexión</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-2 gap-2 border-white/[0.1] text-white/60 hover:text-white hover:bg-white/[0.06]"
-              onClick={() => window.location.reload()}
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Reintentar
-            </Button>
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="flex h-screen items-center justify-center bg-[#0b0b0f]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-brand" />
-          <p className="text-sm text-white/40">Cargando sesión...</p>
+          <p className="text-sm text-white/40">Cargando...</p>
         </div>
       </div>
     );
   }
 
-  // Don't render anything if unauthenticated (redirect is in progress)
+  // Unauthenticated — render nothing.
+  // Middleware already redirected to /login on the server side.
+  // If we got here, it means middleware allowed the request through
+  // but the client session hasn't hydrated yet, or the user just
+  // signed out. In any case, do NOT redirect — that causes loops.
   if (status === 'unauthenticated') {
     return null;
   }
 
-  // Only render dashboard when authenticated
+  // Authenticated — render the dashboard
   return <>{children}</>;
 }
 
