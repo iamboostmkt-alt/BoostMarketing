@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/types';
@@ -17,7 +17,6 @@ import {
   subMonths,
   isSameMonth,
 } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 interface CalendarGridProps {
   tasks: Task[];
@@ -47,8 +46,18 @@ function getTasksForDay(tasks: Task[], day: Date): Task[] {
   });
 }
 
+const DEBUG = true;
+function log(...args: unknown[]) {
+  if (DEBUG) console.log('[CalendarGrid]', ...args);
+}
+
 export default function CalendarGrid({ tasks, selectedDay, onSelectDay }: CalendarGridProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  useEffect(() => {
+    log('MOUNTED — tasks:', tasks.length, 'selectedDay:', selectedDay?.toISOString());
+    return () => log('UNMOUNTED');
+  }, []);
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -59,6 +68,8 @@ export default function CalendarGrid({ tasks, selectedDay, onSelectDay }: Calend
   }, [currentMonth]);
 
   const monthLabel = `${MONTH_NAMES[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+
+  log('render — days:', days.length, 'month:', monthLabel);
 
   return (
     <div className="space-y-4">

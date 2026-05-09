@@ -148,3 +148,34 @@ Stage Summary:
 - Clients page at /dashboard/clients with table, search, filter, CRUD
 - Analytics at /dashboard/analytics with charts (contacts by stage, tasks by week, task distribution)
 - Settings at /dashboard/settings with profile editing and preferences
+
+---
+Task ID: 8
+Agent: Main Orchestrator
+Task: Debug infinite loading on /dashboard/calendar
+
+Work Log:
+- Read all calendar-related files: page.tsx, CalendarGrid.tsx, TaskForm.tsx, layout.tsx, auth.ts, types.ts, theme-maps.ts, use-mounted.ts
+- Identified 3 root causes:
+  1. Framer Motion initial="hidden" with opacity:0 could persist indefinitely if animation engine fails
+  2. Hydration mismatch from useMounted() + Framer Motion (server renders without hidden, client applies hidden)
+  3. No safety timeout on loading state — if fetch hangs, skeleton shows forever
+- Removed Framer Motion entirely from calendar page (replaced motion.div with plain div)
+- Extracted calendar content to CalendarContent.tsx component
+- Added dynamic(() => import(...), { ssr: false }) to eliminate hydration issues
+- Added safety timeout (10s) that forces loading=false if fetch never completes
+- Wrapped format() with es locale in try/catch to prevent render crashes
+- Added comprehensive console.log debugging throughout CalendarContent and CalendarGrid
+- Added fetchAttempted ref to prevent duplicate API calls
+- Fixed login page missing Suspense boundary for useSearchParams() (was blocking build)
+- Removed unused imports (toast, useMounted, framer-motion from calendar page)
+- Verified: build passes, lint passes, HTTP 200 for calendar page, API returns 18 tasks
+- Confirmed no Framer Motion opacity:0 artifacts in HTML output
+
+Stage Summary:
+- Calendar page now uses dynamic import with ssr:false (no hydration issues)
+- Framer Motion completely removed from calendar page
+- Safety timeout prevents infinite loading state
+- Console logs added for debugging in browser DevTools
+- Login page Suspense boundary fixed (was breaking production build)
+- Build succeeds, all routes compile, API verified working

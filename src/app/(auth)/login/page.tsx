@@ -1,23 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { Zap, Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useMounted } from '@/hooks/use-mounted';
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const mounted = useMounted();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,26 +34,17 @@ export default function LoginPage() {
       } else {
         // Use window.location.href for a FULL page reload
         // This ensures the middleware can read the newly set JWT cookie
-        // router.push() alone can cause a race condition where middleware
-        // runs before the cookie is available
         window.location.href = callbackUrl;
       }
     } catch {
       setError('Error al iniciar sesión');
       setLoading(false);
     }
-    // Do NOT call setLoading(false) in finally — if login succeeded,
-    // we want the button to stay in loading state during redirect
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0b0b0f] px-4">
-      <motion.div
-        initial={mounted ? { opacity: 0, y: 20 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
+      <div className="w-full max-w-md">
         {/* Back link */}
         <Link
           href="/"
@@ -153,7 +141,19 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#0b0b0f]">
+        <Loader2 className="h-8 w-8 animate-spin text-brand" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
