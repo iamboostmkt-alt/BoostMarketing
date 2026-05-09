@@ -1,10 +1,11 @@
 'use client';
 
 import { SessionProvider, useSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
 import { createContext, useContext, ReactNode } from 'react';
 
 interface AuthContextType {
-  session: ReturnType<typeof useSession>['session'];
+  session: Session | null;
   status: 'loading' | 'authenticated' | 'unauthenticated';
   userId: string | null;
   userRole: string | null;
@@ -28,9 +29,9 @@ function AuthInner({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     session,
     status,
-    userId: (session?.user as any)?.id ?? null,
-    userRole: (session?.user as any)?.role ?? null,
-    userColor: (session?.user as any)?.color ?? null,
+    userId: session?.user?.id ?? null,
+    userRole: session?.user?.role ?? null,
+    userColor: session?.user?.color ?? null,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

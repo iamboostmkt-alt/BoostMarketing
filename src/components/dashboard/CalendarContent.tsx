@@ -10,12 +10,6 @@ import CalendarGrid from '@/components/dashboard/CalendarGrid';
 import type { Task } from '@/lib/types';
 import { statusColors, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
 
-// Debug flag — set to true to see lifecycle logs in browser console
-const DEBUG = true;
-function log(...args: unknown[]) {
-  if (DEBUG) console.log('[CalendarContent]', ...args);
-}
-
 export default function CalendarContent() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,49 +17,30 @@ export default function CalendarContent() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const fetchAttempted = useRef(false);
-  const mountTime = useRef(Date.now());
-
-  // Log mount
-  useEffect(() => {
-    log('MOUNTED at', new Date().toISOString());
-    return () => log('UNMOUNTED');
-  }, []);
 
   const fetchTasks = useCallback(async () => {
-    log('fetchTasks called');
     try {
       const res = await fetch('/api/tasks');
-      log('fetchTasks response status:', res.status);
       if (res.ok) {
         const data = await res.json();
-        log('fetchTasks data:', Array.isArray(data) ? `${data.length} items` : data.tasks ? `${data.tasks.length} items` : data);
         setTasks(data.tasks || data || []);
-      } else {
-        log('fetchTasks non-ok response:', res.status, res.statusText);
       }
-    } catch (err) {
-      log('fetchTasks ERROR:', err);
     } finally {
-      const elapsed = Date.now() - mountTime.current;
-      log('fetchTasks done, setting loading=false. Elapsed:', elapsed + 'ms');
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     if (fetchAttempted.current) {
-      log('fetchTasks already attempted, skipping duplicate');
       return;
     }
     fetchAttempted.current = true;
     fetchTasks();
   }, [fetchTasks]);
 
-  // Safety timeout: force loading to false after 10 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       if (loading) {
-        log('SAFETY TIMEOUT — forcing loading=false after 10s');
         setLoading(false);
       }
     }, 10000);
@@ -81,22 +56,17 @@ export default function CalendarContent() {
     [tasks, selectedDay]
   );
 
-  // Safe format with es locale — wrap in try/catch to prevent render crash
   let capitalizedLabel = '';
   try {
     const selectedDayLabel = format(selectedDay, "EEEE, d 'de' MMMM yyyy", { locale: es });
     capitalizedLabel = selectedDayLabel.charAt(0).toUpperCase() + selectedDayLabel.slice(1);
-  } catch (err) {
-    log('format() error:', err);
+  } catch {
     capitalizedLabel = selectedDay.toLocaleDateString('es-MX', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
   }
 
-  log('render — loading:', loading, 'tasks:', tasks.length, 'dayTasks:', dayTasks.length);
-
   if (loading) {
-    log('rendering SKELETON (loading=true)');
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -119,10 +89,8 @@ export default function CalendarContent() {
     );
   }
 
-  log('rendering CONTENT (loading=false)');
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">Calendario</h1>
@@ -140,9 +108,7 @@ export default function CalendarContent() {
         </Button>
       </div>
 
-      {/* Main layout: Calendar + Side panel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar grid */}
         <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6">
           <CalendarGrid
             tasks={tasks}
@@ -151,7 +117,6 @@ export default function CalendarContent() {
           />
         </div>
 
-        {/* Side panel: tasks for selected day */}
         <div className="bg-[#15151c] border border-white/[0.06] rounded-xl overflow-hidden">
           <div className="flex items-center justify-between p-4 md:p-5 border-b border-white/[0.06]">
             <div className="flex items-center gap-2">
@@ -226,7 +191,6 @@ export default function CalendarContent() {
         </div>
       </div>
 
-      {/* Task Form Dialog */}
       <TaskForm
         open={formOpen}
         onOpenChange={setFormOpen}

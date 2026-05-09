@@ -81,4 +81,4 @@ Stage Summary:
 - Dev server uses webpack mode (Turbopack disabled due to sandbox instability)
 - Server-side logging added for auth and middleware (dev-only verbosity)
 - Deployment-ready configuration prepared
-- Prisma schema supports both SQLite (dev) and PostgreSQL (prod) via DATABASE_URL
+- Prisma schema uses PostgreSQL only (Supabase / `DATABASE_URL`)

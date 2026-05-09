@@ -1,25 +1,40 @@
+import { Role } from '@prisma/client';
 import { db } from '../src/lib/db';
 import bcrypt from 'bcryptjs';
+import { BCRYPT_ROUNDS } from '../src/lib/password';
 
 async function seed() {
   console.log('🌱 Seeding database...');
 
-  // Create demo user
-  const hashedPassword = await bcrypt.hash('demo1234', 12);
-  
+  const adminHash = await bcrypt.hash('123456', BCRYPT_ROUNDS);
+  await db.user.upsert({
+    where: { email: 'admin@test.com' },
+    update: { password: adminHash, name: 'Admin', role: Role.ADMIN },
+    create: {
+      email: 'admin@test.com',
+      name: 'Admin',
+      password: adminHash,
+      role: Role.ADMIN,
+      color: '#7c3aed',
+    },
+  });
+  console.log('✅ Admin user: admin@test.com / 123456');
+
+  const hashedPassword = await bcrypt.hash('demo1234', BCRYPT_ROUNDS);
+
   const user = await db.user.upsert({
     where: { email: 'demo@boostmarketing.com' },
-    update: {},
+    update: { password: hashedPassword, role: Role.CLIENT },
     create: {
       email: 'demo@boostmarketing.com',
       name: 'Carlos Mendoza',
       password: hashedPassword,
-      role: 'admin',
+      role: Role.CLIENT,
       color: '#7c3aed',
     },
   });
 
-  console.log(`✅ User created: ${user.email}`);
+  console.log(`✅ Demo user: ${user.email} / demo1234`);
 
   // Create demo contacts/CRM
   const contacts = [
@@ -103,9 +118,7 @@ async function seed() {
   }
   console.log(`✅ ${activities.length} activity logs created`);
 
-  console.log('\n🎉 Seed complete! Demo credentials:');
-  console.log('   Email: demo@boostmarketing.com');
-  console.log('   Password: demo1234');
+  console.log('\n🎉 Seed complete!');
 }
 
 seed()

@@ -1,44 +1,124 @@
+import type { User as AdapterUser } from "next-auth";
 import { NextAuthOptions } from "next-auth";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import EmailProvider from "next-auth/providers/email";
+import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
 const isDev = process.env.NODE_ENV === "development";
 
+async function sendMagicLinkEmail(params: {
+  identifier: string;
+  url: string;
+  provider: { from?: string };
+}) {
+  const { identifier, url, provider } = params;
+
+  if (isDev) {
+    console.log("\n========== Magic link (dev) ==========");
+    console.log("To:", identifier);
+    console.log("URL:", url);
+    console.log("=======================================\n");
+    return;
+  }
+
+  const server = process.env.EMAIL_SERVER;
+  const from = process.env.EMAIL_FROM ?? provider.from ?? "noreply@localhost";
+
+  if (!server) {
+    console.error(
+      "[auth] Magic link: set EMAIL_SERVER and EMAIL_FROM for production"
+    );
+    throw new Error("Email no configurado. Contacta al administrador.");
+  }
+
+  const transport = nodemailer.createTransport(server);
+  await transport.sendMail({
+    to: identifier,
+    from,
+    subject: "Tu enlace para iniciar sesión",
+    text: `Inicia sesión con este enlace (válido por tiempo limitado):\n${url}`,
+    html: `<p>Inicia sesión:</p><p><a href="${url}">${url}</a></p>`,
+  });
+}
+
+const googleConfigured =
+  Boolean(process.env.GOOGLE_CLIENT_ID) &&
+  Boolean(process.env.GOOGLE_CLIENT_SECRET);
+
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(db),
   providers: [
+    ...(googleConfigured
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            allowDangerousEmailAccountLinking: false,
+          }),
+        ]
+      : []),
+    EmailProvider({
+      from: process.env.EMAIL_FROM ?? "BoostMarketing <noreply@localhost>",
+      maxAge: 24 * 60 * 60,
+      normalizeIdentifier(identifier: string) {
+        return identifier.trim().toLowerCase();
+      },
+      sendVerificationRequest: async (params) => {
+        await sendMagicLinkEmail({
+          identifier: params.identifier,
+          url: params.url,
+          provider: params.provider,
+        });
+      },
+    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          if (isDev) console.log("[auth] authorize: missing credentials");
-          return null;
+      async authorize(credentials): Promise<AdapterUser | null> {
+        const rawEmail = credentials?.email?.trim();
+        const password = credentials?.password;
+
+        if (!rawEmail || !password) {
+          throw new Error("Email y contraseña son obligatorios.");
         }
 
-        const user = await db.user.findUnique({
-          where: { email: credentials.email },
-        });
+        const email = rawEmail.toLowerCase();
 
-        if (!user || !user.password) {
-          if (isDev) console.log("[auth] authorize: user not found —", credentials.email);
-          return null;
+        let user;
+        try {
+          user = await db.user.findUnique({
+            where: { email },
+          });
+        } catch (err) {
+          if (isDev) console.error("[auth] authorize: database error", err);
+          throw new Error(
+            "No se pudo iniciar sesión. Intenta de nuevo en unos momentos."
+          );
         }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+        if (!user?.password) {
+          throw new Error(
+            "No encontramos una cuenta con ese email o la cuenta no tiene contraseña configurada."
+          );
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
-          if (isDev) console.log("[auth] authorize: invalid password —", credentials.email);
-          return null;
+          throw new Error("La contraseña no es correcta.");
         }
 
-        console.log("[auth] authorize: success —", user.email, `(${user.role})`);
+        if (isDev) {
+          console.log("[auth] authorize: success —", user.email, user.role);
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -50,37 +130,55 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  events: {
+    async signIn({ user }) {
+      if (!user?.id || !user.email) return;
+      const normalized = user.email.toLowerCase();
+      if (normalized !== user.email) {
+        await db.user
+          .update({
+            where: { id: user.id },
+            data: { email: normalized },
+          })
+          .catch(() => undefined);
+      }
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
-        token.color = (user as any).color;
+        token.sub = user.id;
         token.id = user.id;
-        console.log("[auth] jwt: token created for", user.email);
+        token.role = user.role;
+        token.color = (user as { color?: string }).color;
+        if (isDev) {
+          console.log("[auth] jwt: token created for", user.email);
+        }
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role;
-        (session.user as any).color = token.color;
-        (session.user as any).id = token.id;
+        session.user.id = (token.id as string) ?? token.sub ?? "";
+        session.user.role = token.role;
+        session.user.color = token.color as string | undefined;
       }
       return session;
     },
-    async redirect({ baseUrl }) {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
       return `${baseUrl}/dashboard`;
     },
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   },
   pages: {
     signIn: "/login",
+    verifyRequest: "/verify-request",
   },
   secret: process.env.NEXTAUTH_SECRET,
-  trustHost: true,
-  // Only enable debug in development
   debug: isDev,
 };

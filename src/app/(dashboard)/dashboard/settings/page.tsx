@@ -68,8 +68,8 @@ export default function SettingsPage() {
   // Fallback to session data
   const userName = profile?.name || session?.user?.name || 'Usuario';
   const userEmail = profile?.email || session?.user?.email || '';
-  const userRole = profile?.role || (session?.user as any)?.role || 'client';
-  const userColor = profile?.color || (session?.user as any)?.color || '#7c3aed';
+  const userRole = profile?.role || session?.user?.role || 'CLIENT';
+  const userColor = profile?.color || session?.user?.color || '#7c3aed';
 
   const initials = userName
     .split(' ')

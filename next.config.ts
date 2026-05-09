@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   // Comment out for local development / Vercel deployment.
   // output: "standalone",
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   reactStrictMode: false,
   images: {

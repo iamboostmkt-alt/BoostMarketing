@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { Role } from '@prisma/client';
 import { db } from '@/lib/db';
+import { BCRYPT_ROUNDS } from '@/lib/password';
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,8 +45,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     // Create user
     const user = await db.user.create({
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
         name,
         email: email.toLowerCase(),
         password: hashedPassword,
-        role: 'client',
+        role: Role.CLIENT,
         color: '#7c3aed',
       },
     });

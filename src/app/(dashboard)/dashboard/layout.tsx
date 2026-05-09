@@ -1,11 +1,23 @@
 'use client';
 
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { SidebarProvider } from '@/components/dashboard/SidebarContext';
 import AppSidebar from '@/components/dashboard/AppSidebar';
 import TopNav from '@/components/dashboard/TopNav';
 import CommandPalette from '@/components/dashboard/CommandPalette';
 import { AuthProvider } from '@/context/AuthContext';
+
+function AdminRouteForbiddenBanner() {
+  const searchParams = useSearchParams();
+  if (searchParams.get('forbidden') !== 'admin') return null;
+  return (
+    <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+      No tienes permisos de administrador para acceder a esa sección.
+    </div>
+  );
+}
 
 /**
  * Dashboard layout — AuthProvider is HERE, not in root layout.
@@ -37,6 +49,9 @@ export default function DashboardLayout({
               {/* Main content */}
               <main className="flex-1 overflow-y-auto custom-scrollbar">
                 <div className="p-4 md:p-6 lg:p-8">
+                  <Suspense fallback={null}>
+                    <AdminRouteForbiddenBanner />
+                  </Suspense>
                   {children}
                 </div>
               </main>

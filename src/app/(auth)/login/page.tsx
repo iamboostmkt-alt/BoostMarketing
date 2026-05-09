@@ -1,44 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
-import { Zap, Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
+import { Zap, Mail, Lock, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 
-/**
- * Login page — redirect ONLY on explicit user action (form submit).
- * NEVER redirect based on useSession() state in effects/renders.
- * Middleware (next-auth/middleware) handles route protection.
- * No callbackUrl — always redirect to /dashboard on success.
- */
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [magicEmail, setMagicEmail] = useState('');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
+  const [hasGoogle, setHasGoogle] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/auth/providers')
+      .then((r) => r.json())
+      .then((data: Record<string, unknown>) => {
+        if (!cancelled && data && typeof data === 'object') {
+          setHasGoogle('google' in data);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setInfo('');
     setLoading(true);
 
     try {
       const result = await signIn('credentials', {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         redirect: false,
       });
 
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+
       if (result?.ok) {
-        // Full page reload to /dashboard after successful login.
-        // This is the ONLY redirect — direct result of user action.
-        // window.location.href ensures the JWT cookie is available
-        // for middleware on the next request.
         window.location.href = '/dashboard';
       } else {
-        setError('Email o contraseña incorrectos');
+        setError('No se pudo iniciar sesión. Revisa tus datos e intenta de nuevo.');
         setLoading(false);
       }
     } catch {
@@ -47,10 +64,52 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogle = async () => {
+    setError('');
+    setInfo('');
+    setGoogleLoading(true);
+    try {
+      await signIn('google', { callbackUrl: '/dashboard' });
+    } catch {
+      setError('No se pudo iniciar sesión con Google.');
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setInfo('');
+    const normalized = magicEmail.trim().toLowerCase();
+    if (!normalized) {
+      setError('Introduce un email válido.');
+      return;
+    }
+    setMagicLoading(true);
+    try {
+      const result = await signIn('email', {
+        email: normalized,
+        callbackUrl: '/dashboard',
+        redirect: false,
+      });
+      if (result?.error) {
+        setError(result.error);
+        setMagicLoading(false);
+        return;
+      }
+      setInfo(
+        'Si el correo es válido, recibirás un enlace. En desarrollo, mira la terminal del servidor.'
+      );
+      setMagicLoading(false);
+    } catch {
+      setError('No se pudo enviar el enlace.');
+      setMagicLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0b0b0f] px-4">
       <div className="w-full max-w-md">
-        {/* Back link */}
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors mb-8"
@@ -59,7 +118,6 @@ export default function LoginPage() {
           Volver al inicio
         </Link>
 
-        {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand text-white">
             <Zap className="w-5 h-5" />
@@ -67,11 +125,10 @@ export default function LoginPage() {
           <span className="text-xl font-bold text-white">BoostMarketing</span>
         </div>
 
-        {/* Login card */}
         <div className="glass-card rounded-xl p-6 md:p-8">
-          <h1 className="text-2xl font-bold text-white mb-1">Iniciar Sesión</h1>
+          <h1 className="text-2xl font-bold text-white mb-1">Iniciar sesión</h1>
           <p className="text-sm text-white/40 mb-6">
-            Ingresa tus credenciales para acceder al dashboard
+            Credenciales, Google o enlace por email
           </p>
 
           {error && (
@@ -79,8 +136,78 @@ export default function LoginPage() {
               {error}
             </div>
           )}
+          {info && (
+            <div className="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm">
+              {info}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {hasGoogle && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={googleLoading || loading}
+                onClick={handleGoogle}
+                className="w-full h-10 border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08] mb-4"
+              >
+                {googleLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>Continuar con Google</>
+                )}
+              </Button>
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-[#12121a] px-2 text-white/35">o</span>
+                </div>
+              </div>
+            </>
+          )}
+
+          <form onSubmit={handleMagicLink} className="space-y-3 mb-6">
+            <div className="flex items-center gap-2 text-sm font-medium text-white/60">
+              <Sparkles className="w-4 h-4 text-brand-light" />
+              Enlace mágico (sin contraseña)
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                value={magicEmail}
+                onChange={(e) => setMagicEmail(e.target.value)}
+                placeholder="tu@email.com"
+                className="flex-1 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25"
+                autoComplete="email"
+                disabled={magicLoading}
+              />
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={magicLoading}
+                className="shrink-0"
+              >
+                {magicLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Enviar'
+                )}
+              </Button>
+            </div>
+          </form>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[#12121a] px-2 text-white/35">email y contraseña</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleCredentials} className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-white/60">Email</label>
               <div className="relative">
@@ -89,7 +216,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="demo@boostmarketing.com"
+                  placeholder="admin@test.com"
                   className="pl-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
                   required
                   autoComplete="email"
@@ -123,14 +250,16 @@ export default function LoginPage() {
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                'Iniciar Sesión'
+                'Iniciar sesión'
               )}
             </Button>
           </form>
 
           <div className="mt-6 pt-4 border-t border-white/[0.06]">
             <p className="text-xs text-white/30 text-center">
-              Demo: <span className="text-white/50">demo@boostmarketing.com</span> / <span className="text-white/50">demo1234</span>
+              Tras <code className="text-white/45">npm run db:seed</code>:{' '}
+              <span className="text-white/50">admin@test.com</span> /{' '}
+              <span className="text-white/50">123456</span> (rol ADMIN)
             </p>
           </div>
 

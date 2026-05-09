@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
+import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
   Users,
@@ -15,20 +16,30 @@ import {
   ChevronRight,
   Zap,
   LogOut,
+  Shield,
 } from 'lucide-react';
+import { isAdminRole } from '@/lib/roles';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 import { useSidebar } from './SidebarContext';
 
-const navItems = [
+type NavItem = {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  adminOnly?: boolean;
+};
+
+const navItemsBase: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'CRM', href: '/dashboard/crm', icon: Users },
   { label: 'Tareas', href: '/dashboard/tasks', icon: CheckSquare },
   { label: 'Calendario', href: '/dashboard/calendar', icon: Calendar },
   { label: 'Clientes', href: '/dashboard/clients', icon: UserCircle },
   { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { label: 'Admin', href: '/dashboard/admin', icon: Shield, adminOnly: true },
   { label: 'Ajustes', href: '/dashboard/settings', icon: Settings },
 ];
 
@@ -39,7 +50,8 @@ export default function AppSidebar() {
 
   // NON-BLOCKING: always render with defaults, update when session resolves
   const userName = session?.user?.name || 'Usuario';
-  const userRole = (session?.user as any)?.role || 'client';
+  const role = session?.user?.role;
+  const userRoleLabel = isAdminRole(role) ? 'Administrador' : 'Cliente';
   const userImage = session?.user?.image;
 
   const initials = userName
@@ -72,7 +84,9 @@ export default function AppSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
-        {navItems.map((item) => {
+        {navItemsBase
+          .filter((item) => !item.adminOnly || isAdminRole(role))
+          .map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;
 
@@ -129,7 +143,7 @@ export default function AppSidebar() {
           {!collapsed && (
             <div className="flex-1 min-w-0 overflow-hidden transition-all duration-200">
               <p className="text-sm font-medium text-white truncate">{userName}</p>
-              <p className="text-xs text-white/40 capitalize truncate">{userRole}</p>
+              <p className="text-xs text-white/40 truncate">{userRoleLabel}</p>
             </div>
           )}
           {!collapsed && (

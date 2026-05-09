@@ -55,19 +55,20 @@ export default function RegisterPage() {
 
       // Auto-login after successful registration
       const result = await signIn('credentials', {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         redirect: false,
       });
 
       if (result?.error) {
-        // Auto-login failed — go to login page (user action result, not session effect)
         window.location.href = '/login';
-      } else {
+      } else if (result?.ok) {
         // Full page reload after successful registration + auto-login.
         // This is the ONLY place redirect happens — as a direct
         // result of user action, not from session state effects.
         window.location.href = '/dashboard';
+      } else {
+        window.location.href = '/login';
       }
     } catch {
       setError('Ocurrió un error al crear la cuenta');
