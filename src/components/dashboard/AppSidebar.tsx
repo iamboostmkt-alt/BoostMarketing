@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   Users,
@@ -23,7 +22,6 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSidebar } from './SidebarContext';
-import { useMounted } from '@/hooks/use-mounted';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -39,7 +37,6 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { data: session, status } = useSession();
-  const mounted = useMounted();
 
   const isLoading = status === 'loading';
   const userName = session?.user?.name || 'Usuario';
@@ -66,19 +63,11 @@ export default function AppSidebar() {
           <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand text-white">
             <Zap className="w-5 h-5" />
           </div>
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.2 }}
-                className="font-semibold text-white whitespace-nowrap overflow-hidden"
-              >
-                BoostMarketing
-              </motion.span>
-            )}
-          </AnimatePresence>
+          {!collapsed && (
+            <span className="font-semibold text-white whitespace-nowrap overflow-hidden transition-all duration-200">
+              BoostMarketing
+            </span>
+          )}
         </div>
       </div>
 
@@ -103,26 +92,14 @@ export default function AppSidebar() {
               `}
             >
               {active && (
-                <motion.div
-                  layoutId="sidebar-active"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-brand rounded-r-full"
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-brand rounded-r-full transition-all duration-200" />
               )}
               <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-brand-light' : ''}`} />
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="whitespace-nowrap overflow-hidden"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              {!collapsed && (
+                <span className="whitespace-nowrap overflow-hidden transition-all duration-200">
+                  {item.label}
+                </span>
+              )}
             </Link>
           );
 
@@ -154,48 +131,31 @@ export default function AppSidebar() {
               </AvatarFallback>
             </Avatar>
           )}
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex-1 min-w-0 overflow-hidden"
-              >
-                {isLoading ? (
-                  <div className="space-y-1.5">
-                    <Skeleton className="h-3.5 w-20" />
-                    <Skeleton className="h-3 w-14" />
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-sm font-medium text-white truncate">{userName}</p>
-                    <p className="text-xs text-white/40 capitalize truncate">{userRole}</p>
-                  </>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <AnimatePresence>
-            {!collapsed && !isLoading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06]"
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {!collapsed && (
+            <div className="flex-1 min-w-0 overflow-hidden transition-all duration-200">
+              {isLoading ? (
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3.5 w-20" />
+                  <Skeleton className="h-3 w-14" />
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-white truncate">{userName}</p>
+                  <p className="text-xs text-white/40 capitalize truncate">{userRole}</p>
+                </>
+              )}
+            </div>
+          )}
+          {!collapsed && !isLoading && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06] transition-opacity duration-150"
+              onClick={() => signOut({ callbackUrl: '/' })}
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          )}
         </div>
 
         {/* Collapse toggle - desktop only */}
@@ -219,15 +179,13 @@ export default function AppSidebar() {
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ width: collapsed ? 72 : 256 }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="hidden md:flex flex-col bg-[#0e0e14] border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0"
+      {/* Desktop sidebar - pure CSS transition, no Framer Motion */}
+      <aside
+        style={{ width: collapsed ? 72 : 256 }}
+        className="hidden md:flex flex-col bg-[#0e0e14] border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
       >
         {sidebarContent}
-      </motion.aside>
+      </aside>
 
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
@@ -237,15 +195,13 @@ export default function AppSidebar() {
         />
       )}
 
-      {/* Mobile sidebar panel */}
-      <motion.aside
-        initial={false}
-        animate={{ x: mobileOpen ? 0 : -280 }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="fixed top-0 left-0 z-50 h-screen w-[256px] bg-[#0e0e14] border-r border-white/[0.06] md:hidden"
+      {/* Mobile sidebar panel - pure CSS transition */}
+      <aside
+        className="fixed top-0 left-0 z-50 h-screen w-[256px] bg-[#0e0e14] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out"
+        style={{ transform: mobileOpen ? 'translateX(0)' : 'translateX(-280px)' }}
       >
         {sidebarContent}
-      </motion.aside>
+      </aside>
     </>
   );
 }

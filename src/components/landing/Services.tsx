@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { Camera, Target, Zap, Users, BarChart3, Palette } from 'lucide-react'
 
 const services = [
@@ -36,34 +35,12 @@ const services = [
   },
 ]
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.1 },
-  },
-}
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
-  },
-}
-
 export default function Services() {
   return (
     <section id="services" className="relative py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto max-w-2xl text-center"
-        >
+        <div className="mx-auto max-w-2xl text-center animate-slide-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-medium text-brand-light">
             Servicios
           </span>
@@ -74,21 +51,15 @@ export default function Services() {
           <p className="mt-4 text-base text-muted-foreground sm:text-lg">
             Todo lo que necesitas para crecer digitalmente, integrado en una sola plataforma.
           </p>
-        </motion.div>
+        </div>
 
         {/* Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-60px' }}
-          className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {services.map((service) => (
-            <motion.div
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((service, i) => (
+            <div
               key={service.title}
-              variants={cardVariants}
-              className="glass-card group cursor-default rounded-2xl p-6 transition-all duration-300 hover:border-brand/20 hover:shadow-[0_0_30px_rgba(124,58,237,0.08)]"
+              className="glass-card group cursor-default rounded-2xl p-6 transition-all duration-300 hover:border-brand/20 hover:shadow-[0_0_30px_rgba(124,58,237,0.08)] animate-slide-up"
+              style={{ animationDelay: `${i * 80}ms` }}
             >
               <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand/15">
                 <service.icon className="h-5 w-5 text-brand-light" />
@@ -97,9 +68,9 @@ export default function Services() {
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {service.description}
               </p>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   )

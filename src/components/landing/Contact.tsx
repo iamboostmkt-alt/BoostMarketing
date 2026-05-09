@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { MessageCircle, Calendar, ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -12,15 +11,11 @@ export default function Contact() {
         {/* Two CTA cards */}
         <div className="grid gap-5 md:grid-cols-2">
           {/* WhatsApp card */}
-          <motion.a
+          <a
             href="https://wa.me/1234567890"
             target="_blank"
             rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="glass-card group flex flex-col gap-4 rounded-2xl p-6 transition-all duration-300 hover:border-green-500/20 hover:shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-8"
+            className="glass-card group flex flex-col gap-4 rounded-2xl p-6 transition-all duration-300 hover:border-green-500/20 hover:shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-8 animate-slide-up"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/15">
               <MessageCircle className="h-6 w-6 text-green-400" />
@@ -34,16 +29,13 @@ export default function Contact() {
             <span className="inline-flex items-center gap-2 text-sm font-medium text-green-400 transition-transform group-hover:translate-x-1">
               Chatear ahora <ArrowRight className="h-4 w-4" />
             </span>
-          </motion.a>
+          </a>
 
           {/* Calendly card */}
-          <motion.a
+          <a
             href="#"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ delay: 0.1, duration: 0.5, ease: 'easeOut' }}
-            className="glass-card group flex flex-col gap-4 rounded-2xl p-6 transition-all duration-300 hover:border-brand/20 hover:shadow-[0_0_30px_rgba(124,58,237,0.08)] sm:p-8"
+            className="glass-card group flex flex-col gap-4 rounded-2xl p-6 transition-all duration-300 hover:border-brand/20 hover:shadow-[0_0_30px_rgba(124,58,237,0.08)] sm:p-8 animate-slide-up"
+            style={{ animationDelay: '100ms' }}
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand/15">
               <Calendar className="h-6 w-6 text-brand-light" />
@@ -57,16 +49,13 @@ export default function Contact() {
             <span className="inline-flex items-center gap-2 text-sm font-medium text-brand-light transition-transform group-hover:translate-x-1">
               Agendar llamada <ArrowRight className="h-4 w-4" />
             </span>
-          </motion.a>
+          </a>
         </div>
 
         {/* Large CTA banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-60px' }}
-          transition={{ delay: 0.2, duration: 0.6, ease: 'easeOut' }}
-          className="relative mt-12 overflow-hidden rounded-3xl"
+        <div
+          className="relative mt-12 overflow-hidden rounded-3xl animate-slide-up"
+          style={{ animationDelay: '200ms' }}
         >
           {/* Gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-brand/20 via-brand-dark/10 to-cyan-500/5" />
@@ -97,7 +86,7 @@ export default function Contact() {
           {/* Decorative elements */}
           <div className="pointer-events-none absolute -top-20 -right-20 h-60 w-60 rounded-full bg-brand/5 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-cyan-500/5 blur-3xl" />
-        </motion.div>
+        </div>
       </div>
     </section>
   )

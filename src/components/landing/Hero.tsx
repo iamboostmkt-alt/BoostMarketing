@@ -1,23 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { ArrowRight, Play, TrendingUp, Users, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useMounted } from '@/hooks/use-mounted'
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.15, duration: 0.6, ease: 'easeOut' },
-  }),
-}
 
 export default function Hero() {
-  const mounted = useMounted()
-
   return (
     <section className="hero-gradient relative min-h-screen overflow-hidden pt-16">
       {/* Animated background elements */}
@@ -30,47 +17,33 @@ export default function Hero() {
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-center px-4 sm:px-6 lg:flex-row lg:items-center lg:gap-16 lg:px-8 lg:py-24" style={{ minHeight: 'calc(100vh - 4rem)' }}>
         {/* Left: Copy */}
         <div className="flex max-w-2xl flex-1 flex-col items-center text-center lg:items-start lg:text-left">
-          <motion.div
-            custom={0}
-            variants={fadeInUp}
-            initial={mounted ? 'hidden' : false}
-            animate="visible"
-          >
+          <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
             <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-4 py-1.5 text-xs font-medium text-brand-light">
               <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
               Agencia Creativa &amp; CRM Platform
             </span>
-          </motion.div>
+          </div>
 
-          <motion.h1
-            custom={1}
-            variants={fadeInUp}
-            initial={mounted ? 'hidden' : false}
-            animate="visible"
-            className="mt-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl"
+          <h1
+            className="mt-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl animate-slide-up"
+            style={{ animationDelay: '150ms' }}
           >
             Escala tu marca con{' '}
             <span className="text-gradient-brand">contenido</span> y{' '}
             <span className="text-gradient">automatización.</span>
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            custom={2}
-            variants={fadeInUp}
-            initial={mounted ? 'hidden' : false}
-            animate="visible"
-            className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg"
+          <p
+            className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg animate-slide-up"
+            style={{ animationDelay: '300ms' }}
           >
             Impulsamos tu presencia digital con estrategia, creatividad y tecnología.
             Desde producción de contenido hasta gestión de clientes, todo en una sola plataforma.
-          </motion.p>
+          </p>
 
-          <motion.div
-            custom={3}
-            variants={fadeInUp}
-            initial={mounted ? 'hidden' : false}
-            animate="visible"
-            className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4"
+          <div
+            className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4 animate-slide-up"
+            style={{ animationDelay: '450ms' }}
           >
             <Link href="/login">
               <Button size="lg" className="bg-brand text-white hover:bg-brand-dark glow-brand w-full sm:w-auto">
@@ -84,16 +57,13 @@ export default function Hero() {
                 Ver Servicios
               </Button>
             </a>
-          </motion.div>
+          </div>
         </div>
 
         {/* Right: Dashboard mockup */}
-        <motion.div
-          custom={4}
-          variants={fadeInUp}
-          initial={mounted ? 'hidden' : false}
-          animate="visible"
-          className="relative mt-12 flex-1 lg:mt-0"
+        <div
+          className="relative mt-12 flex-1 lg:mt-0 animate-slide-up"
+          style={{ animationDelay: '600ms' }}
         >
           {/* Main mockup card */}
           <div className="glass-card glow-brand relative overflow-hidden rounded-2xl p-1">
@@ -190,7 +160,7 @@ export default function Hero() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

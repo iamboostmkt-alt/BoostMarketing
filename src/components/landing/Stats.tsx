@@ -1,6 +1,5 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
 import { useRef, useEffect, useState } from 'react'
 
 const stats = [
@@ -13,27 +12,37 @@ const stats = [
 function AnimatedCounter({ target, suffix }: { target: number; suffix: string }) {
   const [count, setCount] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
-  const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const hasAnimated = useRef(false)
 
   useEffect(() => {
-    if (!isInView) return
+    const el = ref.current
+    if (!el || hasAnimated.current) return
 
-    const duration = 2000
-    const steps = 60
-    const increment = target / steps
-    let current = 0
-    const timer = setInterval(() => {
-      current += increment
-      if (current >= target) {
-        setCount(target)
-        clearInterval(timer)
-      } else {
-        setCount(Math.floor(current))
-      }
-    }, duration / steps)
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true
+          const duration = 2000
+          const steps = 60
+          const increment = target / steps
+          let current = 0
+          const timer = setInterval(() => {
+            current += increment
+            if (current >= target) {
+              setCount(target)
+              clearInterval(timer)
+            } else {
+              setCount(Math.floor(current))
+            }
+          }, duration / steps)
+        }
+      },
+      { threshold: 0.2 }
+    )
 
-    return () => clearInterval(timer)
-  }, [isInView, target])
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [target])
 
   return (
     <span ref={ref} className="text-4xl font-bold text-foreground sm:text-5xl">
@@ -48,13 +57,7 @@ export default function Stats() {
     <section className="relative py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto max-w-2xl text-center"
-        >
+        <div className="mx-auto max-w-2xl text-center animate-slide-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-medium text-brand-light">
             Resultados
           </span>
@@ -62,22 +65,19 @@ export default function Stats() {
             Resultados que{' '}
             <span className="text-gradient">Hablan</span>
           </h2>
-        </motion.div>
+        </div>
 
         {/* Stats grid */}
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
-            <motion.div
+            <div
               key={stat.label}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ delay: i * 0.1, duration: 0.5, ease: 'easeOut' }}
-              className="glass-card flex flex-col items-center rounded-2xl p-8 text-center"
+              className="glass-card flex flex-col items-center rounded-2xl p-8 text-center animate-slide-up"
+              style={{ animationDelay: `${i * 80}ms` }}
             >
               <AnimatedCounter target={stat.value} suffix={stat.suffix} />
               <p className="mt-2 text-sm text-muted-foreground">{stat.label}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

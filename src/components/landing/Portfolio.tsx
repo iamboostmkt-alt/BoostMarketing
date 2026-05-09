@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { Star, Quote } from 'lucide-react'
 
 const testimonials = [
@@ -32,13 +31,7 @@ export default function Portfolio() {
     <section id="portfolio" className="relative py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto max-w-2xl text-center"
-        >
+        <div className="mx-auto max-w-2xl text-center animate-slide-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-medium text-brand-light">
             Testimonios
           </span>
@@ -46,18 +39,15 @@ export default function Portfolio() {
             Lo que Dicen Nuestros{' '}
             <span className="text-gradient-brand">Clientes</span>
           </h2>
-        </motion.div>
+        </div>
 
         {/* Testimonial cards */}
         <div className="mt-14 grid gap-5 md:grid-cols-3">
           {testimonials.map((testimonial, i) => (
-            <motion.div
+            <div
               key={testimonial.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ delay: i * 0.12, duration: 0.5, ease: 'easeOut' }}
-              className="glass-card flex flex-col rounded-2xl p-6"
+              className="glass-card flex flex-col rounded-2xl p-6 animate-slide-up"
+              style={{ animationDelay: `${i * 100}ms` }}
             >
               {/* Quote icon */}
               <Quote className="mb-4 h-8 w-8 text-brand/30" />
@@ -84,7 +74,7 @@ export default function Portfolio() {
                   <p className="text-xs text-muted-foreground">{testimonial.company}</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

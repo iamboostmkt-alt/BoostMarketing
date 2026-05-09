@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { Search, Lightbulb, Rocket, RefreshCw } from 'lucide-react'
 
 const steps = [
@@ -40,13 +39,7 @@ export default function Workflow() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto max-w-2xl text-center"
-        >
+        <div className="mx-auto max-w-2xl text-center animate-slide-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-medium text-brand-light">
             Proceso
           </span>
@@ -56,18 +49,15 @@ export default function Workflow() {
           <p className="mt-4 text-base text-muted-foreground sm:text-lg">
             Un enfoque probado en 4 pasos para transformar tu presencia digital.
           </p>
-        </motion.div>
+        </div>
 
         {/* Steps */}
         <div className="mt-16 flex flex-col gap-0 lg:flex-row lg:gap-0">
           {steps.map((step, i) => (
-            <motion.div
+            <div
               key={step.number}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ delay: i * 0.15, duration: 0.5, ease: 'easeOut' }}
-              className="group relative flex flex-1 flex-col items-center text-center lg:items-start lg:text-left"
+              className="group relative flex flex-1 flex-col items-center text-center lg:items-start lg:text-left animate-slide-up"
+              style={{ animationDelay: `${i * 120}ms` }}
             >
               {/* Connector line (desktop) */}
               {i < steps.length - 1 && (
@@ -92,7 +82,7 @@ export default function Workflow() {
               <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
                 {step.description}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
