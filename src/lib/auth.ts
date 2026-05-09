@@ -3,6 +3,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
+const isDev = process.env.NODE_ENV === "development";
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -13,6 +15,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          if (isDev) console.log("[auth] authorize: missing credentials");
           return null;
         }
 
@@ -21,6 +24,7 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.password) {
+          if (isDev) console.log("[auth] authorize: user not found —", credentials.email);
           return null;
         }
 
@@ -30,9 +34,11 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!isPasswordValid) {
+          if (isDev) console.log("[auth] authorize: invalid password —", credentials.email);
           return null;
         }
 
+        console.log("[auth] authorize: success —", user.email, `(${user.role})`);
         return {
           id: user.id,
           email: user.email,
@@ -50,6 +56,7 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role;
         token.color = (user as any).color;
         token.id = user.id;
+        console.log("[auth] jwt: token created for", user.email);
       }
       return token;
     },
@@ -61,9 +68,6 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    // Simplified redirect callback — no custom URL parsing, no callbackUrl.
-    // Always send to /dashboard after sign-in.
-    // When signIn() is called with redirect:false, this callback is NOT invoked.
     async redirect({ baseUrl }) {
       return `${baseUrl}/dashboard`;
     },
@@ -76,9 +80,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
-  // REQUIRED for preview/proxied environments where the host header
-  // doesn't match NEXTAUTH_URL. Without this, NextAuth cannot detect
-  // the correct host and cookies fail to validate.
   trustHost: true,
-  debug: true,
+  // Only enable debug in development
+  debug: isDev,
 };
