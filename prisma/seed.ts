@@ -1,38 +1,78 @@
-import { Role } from '@prisma/client';
-import { db } from '../src/lib/db';
+import { Role, PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { BCRYPT_ROUNDS } from '../src/lib/password';
+
+// Use direct URL for seed to bypass connection-pooler prepared-statement limits
+const db = new PrismaClient({
+  datasources: {
+    db: { url: process.env.DIRECT_URL ?? process.env.DATABASE_URL },
+  },
+});
 
 async function seed() {
   console.log('🌱 Seeding database...');
 
-  const adminHash = await bcrypt.hash('123456', BCRYPT_ROUNDS);
+  // ── Admin users ────────────────────────────────────────────────────────────
+  const adminHash = await bcrypt.hash('Admin2024!', BCRYPT_ROUNDS);
+
+  await db.user.upsert({
+    where: { email: 'admin@boostmkt.com' },
+    update: { password: adminHash, name: 'Admin BoostMkt', role: Role.ADMIN },
+    create: {
+      email: 'admin@boostmkt.com',
+      name: 'Admin BoostMkt',
+      password: adminHash,
+      role: Role.ADMIN,
+      color: '#7c3aed',
+    },
+  });
+  console.log('✅ Admin user: admin@boostmkt.com / Admin2024!');
+
+  const legacyAdminHash = await bcrypt.hash('123456', BCRYPT_ROUNDS);
   await db.user.upsert({
     where: { email: 'admin@test.com' },
-    update: { password: adminHash, name: 'Admin', role: Role.ADMIN },
+    update: { password: legacyAdminHash, name: 'Admin', role: Role.ADMIN },
     create: {
       email: 'admin@test.com',
       name: 'Admin',
-      password: adminHash,
+      password: legacyAdminHash,
       role: Role.ADMIN,
       color: '#7c3aed',
     },
   });
   console.log('✅ Admin user: admin@test.com / 123456');
 
+  // ── Demo users with different roles ───────────────────────────────────────
   const hashedPassword = await bcrypt.hash('demo1234', BCRYPT_ROUNDS);
 
   const user = await db.user.upsert({
     where: { email: 'demo@boostmarketing.com' },
-    update: { password: hashedPassword, role: Role.CLIENT },
+    update: { password: hashedPassword, role: Role.PROJECT_MANAGER },
     create: {
       email: 'demo@boostmarketing.com',
       name: 'Carlos Mendoza',
       password: hashedPassword,
-      role: Role.CLIENT,
+      role: Role.PROJECT_MANAGER,
       color: '#7c3aed',
     },
   });
+  console.log(`✅ Demo user (PROJECT_MANAGER): ${user.email} / demo1234`);
+
+  // Additional role demo users
+  const roles: Array<{ email: string; name: string; role: Role; color: string }> = [
+    { email: 'designer@boostmkt.com', name: 'Ana Diseño', role: Role.DESIGNER, color: '#06b6d4' },
+    { email: 'marketing@boostmkt.com', name: 'Luis Marketing', role: Role.MARKETING, color: '#f59e0b' },
+    { email: 'client@boostmkt.com', name: 'Cliente Ejemplo', role: Role.CLIENT, color: '#10b981' },
+  ];
+  for (const r of roles) {
+    const h = await bcrypt.hash('demo1234', BCRYPT_ROUNDS);
+    await db.user.upsert({
+      where: { email: r.email },
+      update: { password: h, role: r.role },
+      create: { ...r, password: h },
+    });
+    console.log(`✅ ${r.role} user: ${r.email} / demo1234`);
+  }
 
   console.log(`✅ Demo user: ${user.email} / demo1234`);
 

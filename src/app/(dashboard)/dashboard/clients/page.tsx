@@ -141,12 +141,13 @@ export default function ClientsPage() {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full sm:w-[160px] focus-visible:ring-brand">
+          <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full sm:w-[180px] focus-visible:ring-brand">
             <SelectValue placeholder="Filtrar estado" />
           </SelectTrigger>
           <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
             <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="active">Activo</SelectItem>
+            <SelectItem value="prospect">Prospecto</SelectItem>
             <SelectItem value="inactive">Inactivo</SelectItem>
           </SelectContent>
         </Select>

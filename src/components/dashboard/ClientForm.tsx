@@ -173,6 +173,7 @@ export default function ClientForm({
               </SelectTrigger>
               <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
                 <SelectItem value="active">Activo</SelectItem>
+                <SelectItem value="prospect">Prospecto</SelectItem>
                 <SelectItem value="inactive">Inactivo</SelectItem>
               </SelectContent>
             </Select>

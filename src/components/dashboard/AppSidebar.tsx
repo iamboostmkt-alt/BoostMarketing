@@ -18,7 +18,7 @@ import {
   LogOut,
   Shield,
 } from 'lucide-react';
-import { isAdminRole } from '@/lib/roles';
+import { isAdminRole, canAccessRoute, getRoleLabel } from '@/lib/roles';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -51,7 +51,7 @@ export default function AppSidebar() {
   // NON-BLOCKING: always render with defaults, update when session resolves
   const userName = session?.user?.name || 'Usuario';
   const role = session?.user?.role;
-  const userRoleLabel = isAdminRole(role) ? 'Administrador' : 'Cliente';
+  const userRoleLabel = getRoleLabel(role);
   const userImage = session?.user?.image;
 
   const initials = userName
@@ -85,7 +85,7 @@ export default function AppSidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
         {navItemsBase
-          .filter((item) => !item.adminOnly || isAdminRole(role))
+          .filter((item) => canAccessRoute(item.href, role))
           .map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;
@@ -146,16 +146,15 @@ export default function AppSidebar() {
               <p className="text-xs text-white/40 truncate">{userRoleLabel}</p>
             </div>
           )}
-          {!collapsed && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06] transition-opacity duration-150"
-              onClick={() => signOut({ callbackUrl: '/' })}
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          )}
+          {/* Logout always visible — on desktop only shows when expanded; on mobile always shows */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06] transition-opacity duration-150 ${collapsed ? 'hidden md:flex' : 'flex'}`}
+            onClick={() => signOut({ callbackUrl: '/' })}
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Collapse toggle - desktop only */}

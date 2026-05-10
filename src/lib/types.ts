@@ -5,6 +5,7 @@ export interface UserProfile {
   image: string | null;
   role: string;
   color: string;
+  active: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,13 +33,17 @@ export interface ActivityLog {
 export interface Task {
   id: string;
   userId: string;
+  assignedUserId: string | null;
   title: string;
   description: string;
   status: string;
   priority: string;
+  startDate: string | null;
   dueDate: string | null;
   createdAt: string;
   updatedAt: string;
+  user?: { id: string; name: string | null; email: string; color: string } | null;
+  assignedUser?: { id: string; name: string | null; email: string; color: string } | null;
 }
 
 export interface Contact {
@@ -81,4 +86,89 @@ export interface NavItem {
   href: string;
   icon: string;
   badge?: number;
+}
+
+export interface SiteSettings {
+  id: string;
+  agencyName: string;
+  logoUrl: string;
+  faviconUrl: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  email: string;
+  phone: string;
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  linkedin: string;
+  whatsapp: string;
+}
+
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  tags: string;
+  projectUrl: string;
+  order: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  company: string;
+  text: string;
+  imageUrl: string;
+  rating: number;
+  active: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Appointment {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  date: string;
+  notes: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  imageUrl: string;
+  quote: string;
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Activity {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  startDate: string;
+  endDate: string | null;
+  assignedUserId: string | null;
+  createdByUserId: string;
+  clientId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  assignedUser?: { id: string; name: string | null; email: string; color: string } | null;
+  createdBy?: { id: string; name: string | null; email: string; color: string };
+  client?: { id: string; name: string; company: string } | null;
 }

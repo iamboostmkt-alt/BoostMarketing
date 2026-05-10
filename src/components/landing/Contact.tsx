@@ -1,10 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import { MessageCircle, Calendar, ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import AppointmentModal from './AppointmentModal'
 
 export default function Contact() {
+  const [apptOpen, setApptOpen] = useState(false)
+
   return (
     <section id="contact" className="relative py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -31,25 +35,26 @@ export default function Contact() {
             </span>
           </a>
 
-          {/* Calendly card */}
-          <a
-            href="#"
-            className="glass-card group flex flex-col gap-4 rounded-2xl p-6 transition-all duration-300 hover:border-brand/20 hover:shadow-[0_0_30px_rgba(124,58,237,0.08)] sm:p-8 animate-slide-up"
+          {/* Appointment card */}
+          <button
+            type="button"
+            onClick={() => setApptOpen(true)}
+            className="glass-card group flex flex-col gap-4 rounded-2xl p-6 text-left transition-all duration-300 hover:border-brand/20 hover:shadow-[0_0_30px_rgba(124,58,237,0.08)] sm:p-8 animate-slide-up w-full"
             style={{ animationDelay: '100ms' }}
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand/15">
               <Calendar className="h-6 w-6 text-brand-light" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-foreground">Agenda una llamada</h3>
+              <h3 className="text-xl font-semibold text-foreground">Agenda una videollamada</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 Reserva una sesión de descubrimiento gratuita de 30 minutos con nuestro equipo.
               </p>
             </div>
             <span className="inline-flex items-center gap-2 text-sm font-medium text-brand-light transition-transform group-hover:translate-x-1">
-              Agendar llamada <ArrowRight className="h-4 w-4" />
+              Agendar ahora <ArrowRight className="h-4 w-4" />
             </span>
-          </a>
+          </button>
         </div>
 
         {/* Large CTA banner */}
@@ -57,7 +62,6 @@ export default function Contact() {
           className="relative mt-12 overflow-hidden rounded-3xl animate-slide-up"
           style={{ animationDelay: '200ms' }}
         >
-          {/* Gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-brand/20 via-brand-dark/10 to-cyan-500/5" />
           <div className="absolute inset-0 bg-surface-card/80 backdrop-blur-sm" />
 
@@ -73,21 +77,31 @@ export default function Contact() {
             <p className="mt-4 max-w-lg text-base text-muted-foreground sm:text-lg">
               Únete a más de 150 empresas que ya escalaron su marca con BoostMarketing.
             </p>
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link href="/login">
                 <Button size="lg" className="bg-brand text-white hover:bg-brand-dark glow-brand">
                   Comenzar Ahora
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => setApptOpen(true)}
+                className="border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                Agendar Llamada
+              </Button>
             </div>
           </div>
 
-          {/* Decorative elements */}
           <div className="pointer-events-none absolute -top-20 -right-20 h-60 w-60 rounded-full bg-brand/5 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-cyan-500/5 blur-3xl" />
         </div>
       </div>
+
+      <AppointmentModal open={apptOpen} onOpenChange={setApptOpen} />
     </section>
   )
 }

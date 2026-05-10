@@ -3,13 +3,17 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
   ADMIN
   CLIENT
+  DESIGNER
+  MARKETING
+  PROJECT_MANAGER
 }
 
 model Account {
@@ -53,17 +57,21 @@ model User {
   image         String?
   role          Role      @default(CLIENT)
   color         String    @default("#7c3aed")
+  active        Boolean   @default(true)
 
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  accounts       Account[]
-  sessions       Session[]
-  notifications  Notification[]
-  activityLogs   ActivityLog[]
-  tasks          Task[]
-  contacts       Contact[]
-  clients        Client[]
+  accounts           Account[]
+  sessions           Session[]
+  notifications      Notification[]
+  activityLogs       ActivityLog[]
+  tasks              Task[]         @relation("OwnedTasks")
+  assignedTasks      Task[]         @relation("AssignedTasks")
+  contacts           Contact[]
+  clients            Client[]
+  assignedActivities Activity[] @relation("AssignedActivities")
+  createdActivities  Activity[] @relation("CreatedActivities")
 
   @@map("users")
 }
@@ -106,18 +114,21 @@ model ActivityLog {
 }
 
 model Task {
-  id          String    @id @default(cuid())
-  userId      String    @map("user_id")
-  title       String
-  description String    @default("")
-  status      String    @default("pending")
-  priority    String    @default("medium")
-  dueDate     DateTime? @map("due_date")
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  assignedUserId String?   @map("assigned_user_id")
+  title          String
+  description    String    @default("")
+  status         String    @default("pending")
+  priority       String    @default("medium")
+  startDate      DateTime? @map("start_date")
+  dueDate        DateTime? @map("due_date")
 
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User  @relation("OwnedTasks", fields: [userId], references: [id], onDelete: Cascade)
+  assignedUser User? @relation("AssignedTasks", fields: [assignedUserId], references: [id], onDelete: SetNull)
 
   @@map("tasks")
 }
@@ -153,7 +164,125 @@ model Client {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activities Activity[]
 
   @@map("clients")
+}
+
+model Activity {
+  id              String    @id @default(cuid())
+  title           String
+  description     String    @default("")
+  status          String    @default("pending")
+  priority        String    @default("medium")
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime? @map("end_date")
+
+  assignedUserId  String?   @map("assigned_user_id")
+  createdByUserId String    @map("created_by_user_id")
+  clientId        String?   @map("client_id")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  assignedUser    User?     @relation("AssignedActivities", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  createdBy       User      @relation("CreatedActivities", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  client          Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@map("activities")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_reset_tokens")
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String   @default("")
+  date      DateTime
+  notes     String   @default("")
+  status    String   @default("pending")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("appointments")
+}
+
+model SiteSettings {
+  id           String @id @default(cuid())
+  agencyName   String @default("BoostMarketing") @map("agency_name")
+  logoUrl      String @default("") @map("logo_url")
+  faviconUrl   String @default("") @map("favicon_url")
+  heroTitle    String @default("Escala tu marca con contenido y automatización") @map("hero_title")
+  heroSubtitle String @default("Impulsamos tu presencia digital con estrategia, creatividad y marketing digital. Creamos contenido, campañas y experiencias que hacen crecer tu marca.") @map("hero_subtitle")
+  email        String @default("")
+  phone        String @default("")
+  instagram    String @default("")
+  facebook     String @default("")
+  tiktok       String @default("")
+  linkedin     String @default("")
+  whatsapp     String @default("")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
+
+model PortfolioItem {
+  id          String  @id @default(cuid())
+  title       String
+  description String  @default("")
+  imageUrl    String  @default("") @map("image_url")
+  tags        String  @default("")
+  projectUrl  String  @default("") @map("project_url")
+  order       Int     @default(0)
+  active      Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("portfolio_items")
+}
+
+model Testimonial {
+  id       String  @id @default(cuid())
+  name     String
+  role     String  @default("")
+  company  String  @default("")
+  text     String
+  imageUrl String  @default("") @map("image_url")
+  rating   Int     @default(5)
+  active   Boolean @default(true)
+  order    Int     @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("testimonials")
+}
+
+model TeamMember {
+  id       String  @id @default(cuid())
+  name     String
+  role     String  @default("")
+  imageUrl String  @default("") @map("image_url")
+  quote    String  @default("")
+  order    Int     @default(0)
+  isActive Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("team_members")
 }

@@ -62,3 +62,21 @@ export const taskStatuses = [
   { id: 'review', label: 'Revisión', color: 'status-review' },
   { id: 'completed', label: 'Completado', color: 'status-completed' },
 ] as const;
+
+export const activityStatuses = [
+  { id: 'pending',     label: 'Pendiente',   color: 'status-pending'   },
+  { id: 'in_progress', label: 'En Progreso', color: 'status-editing'   },
+  { id: 'completed',   label: 'Completado',  color: 'status-completed' },
+] as const;
+
+export const activityStatusColors: Record<string, string> = {
+  pending:     'status-pending',
+  in_progress: 'status-editing',
+  completed:   'status-completed',
+};
+
+export const activityStatusLabels: Record<string, string> = {
+  pending:     'Pendiente',
+  in_progress: 'En Progreso',
+  completed:   'Completado',
+};

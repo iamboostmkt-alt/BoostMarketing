@@ -1,15 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { canAccessRoute } from '@/lib/roles';
 
 const isDev = process.env.NODE_ENV === 'development';
-
-function isAdminRoute(pathname: string): boolean {
-  return (
-    pathname === '/dashboard/admin' ||
-    pathname.startsWith('/dashboard/admin/')
-  );
-}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -19,6 +13,7 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
+  // Not authenticated → redirect to login
   if (!token) {
     if (isDev) {
       console.log(`[middleware] no token — redirecting ${pathname} → /login`);
@@ -28,21 +23,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isAdminRoute(pathname) && token.role !== 'ADMIN') {
+  const role = token.role as string | undefined;
+
+  // Role-based route access check
+  if (!canAccessRoute(pathname, role)) {
     if (isDev) {
       console.log(
-        `[middleware] forbidden admin route — ${pathname} (role=${token.role})`
+        `[middleware] forbidden — ${pathname} (role=${role ?? 'undefined'})`
       );
     }
     const dash = new URL('/dashboard', request.url);
-    dash.searchParams.set('forbidden', 'admin');
+    dash.searchParams.set('forbidden', '1');
     return NextResponse.redirect(dash);
   }
 
   if (isDev) {
-    console.log(
-      `[middleware] allow ${pathname} (${String(token.role ?? 'user')})`
-    );
+    console.log(`[middleware] allow ${pathname} (${String(role ?? 'user')})`);
   }
   return NextResponse.next();
 }

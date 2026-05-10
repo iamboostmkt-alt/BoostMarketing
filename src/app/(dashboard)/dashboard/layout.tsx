@@ -9,12 +9,12 @@ import TopNav from '@/components/dashboard/TopNav';
 import CommandPalette from '@/components/dashboard/CommandPalette';
 import { AuthProvider } from '@/context/AuthContext';
 
-function AdminRouteForbiddenBanner() {
+function ForbiddenBanner() {
   const searchParams = useSearchParams();
-  if (searchParams.get('forbidden') !== 'admin') return null;
+  if (!searchParams.get('forbidden')) return null;
   return (
     <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-      No tienes permisos de administrador para acceder a esa sección.
+      No tienes permisos para acceder a esa sección.
     </div>
   );
 }
@@ -50,7 +50,7 @@ export default function DashboardLayout({
               <main className="flex-1 overflow-y-auto custom-scrollbar">
                 <div className="p-4 md:p-6 lg:p-8">
                   <Suspense fallback={null}>
-                    <AdminRouteForbiddenBanner />
+                    <ForbiddenBanner />
                   </Suspense>
                   {children}
                 </div>

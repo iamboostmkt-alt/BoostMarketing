@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Bell, CheckSquare, Users, UserCircle, Info, Check, ExternalLink } from 'lucide-react';
+import { Bell, CheckSquare, Users, UserCircle, Info, Calendar, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -31,6 +31,8 @@ const typeIcons: Record<string, React.ElementType> = {
   task: CheckSquare,
   contact: Users,
   client: UserCircle,
+  appointment: Calendar,
+  welcome: Bell,
   info: Info,
 };
 
@@ -38,6 +40,8 @@ const typeColors: Record<string, string> = {
   task: 'text-cyan-400',
   contact: 'text-brand-light',
   client: 'text-green-400',
+  appointment: 'text-orange-400',
+  welcome: 'text-brand-light',
   info: 'text-amber-400',
 };
 
@@ -47,24 +51,26 @@ export function NotificationsDropdown() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchNotifications() {
-      try {
-        const res = await fetch('/api/notifications');
-        if (res.ok) {
-          const data = await res.json();
-          // API returns { notifications: [...], unreadCount: number, pagination: {...} }
-          setNotifications(data.notifications || data || []);
-          setUnreadCount(data.unreadCount || 0);
-        }
-      } catch {
-        // silent fail
-      } finally {
-        setLoading(false);
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch('/api/notifications');
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || data || []);
+        setUnreadCount(data.unreadCount || 0);
       }
+    } catch {
+      // silent fail
+    } finally {
+      setLoading(false);
     }
-    fetchNotifications();
   }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   const markAsRead = async (id: string) => {
     try {

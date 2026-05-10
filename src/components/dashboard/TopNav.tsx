@@ -1,8 +1,8 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { Menu, Search, Bell, Moon, User, LogOut, Settings } from 'lucide-react';
+import { Menu, Search, User, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -30,6 +30,7 @@ const pageTitles: Record<string, string> = {
 
 export default function TopNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { setMobileOpen, setCommandOpen } = useSidebar();
   const { data: session } = useSession();
 
@@ -130,17 +131,19 @@ export default function TopNav() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-white/[0.06]" />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer">
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer"
+                    onClick={() => router.push('/dashboard/settings')}
+                  >
                     <User className="mr-2 h-4 w-4" />
                     Perfil
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer">
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer"
+                    onClick={() => router.push('/dashboard/settings')}
+                  >
                     <Settings className="mr-2 h-4 w-4" />
-                    <a href="/dashboard/settings" className="flex-1">Ajustes</a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer">
-                    <Moon className="mr-2 h-4 w-4" />
-                    Tema Oscuro
+                    Ajustes
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-white/[0.06]" />

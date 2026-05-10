@@ -216,7 +216,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@test.com"
+                  placeholder="tu@email.com"
                   className="pl-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
                   required
                   autoComplete="email"
@@ -226,7 +226,15 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-white/60">Contraseña</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-white/60">Contraseña</label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-brand-light hover:text-brand transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                 <Input
@@ -255,15 +263,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-white/[0.06]">
-            <p className="text-xs text-white/30 text-center">
-              Tras <code className="text-white/45">npm run db:seed</code>:{' '}
-              <span className="text-white/50">admin@test.com</span> /{' '}
-              <span className="text-white/50">123456</span> (rol ADMIN)
-            </p>
-          </div>
-
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center">
             <p className="text-sm text-white/40">
               ¿No tienes cuenta?{' '}
               <Link

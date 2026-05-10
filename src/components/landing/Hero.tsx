@@ -1,10 +1,22 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Play, TrendingUp, Users, BarChart3 } from 'lucide-react'
+import { ArrowRight, Video, TrendingUp, Users, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import AppointmentModal from '@/components/landing/AppointmentModal'
 
-export default function Hero() {
+interface HeroProps {
+  title?: string
+  subtitle?: string
+}
+
+const DEFAULT_TITLE = 'Escala tu marca con contenido y automatización'
+const DEFAULT_SUBTITLE = 'Impulsamos tu presencia digital con estrategia, creatividad y marketing digital. Creamos contenido, campañas y experiencias que hacen crecer tu marca.'
+
+export default function Hero({ title = DEFAULT_TITLE, subtitle = DEFAULT_SUBTITLE }: HeroProps) {
+  const [apptOpen, setApptOpen] = useState(false)
+
   return (
     <section className="hero-gradient relative min-h-screen overflow-hidden pt-16">
       {/* Animated background elements */}
@@ -28,17 +40,14 @@ export default function Hero() {
             className="mt-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl animate-slide-up"
             style={{ animationDelay: '150ms' }}
           >
-            Escala tu marca con{' '}
-            <span className="text-gradient-brand">contenido</span> y{' '}
-            <span className="text-gradient">automatización.</span>
+            <span className="text-gradient-brand">{title}</span>
           </h1>
 
           <p
             className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg animate-slide-up"
             style={{ animationDelay: '300ms' }}
           >
-            Impulsamos tu presencia digital con estrategia, creatividad y tecnología.
-            Desde producción de contenido hasta gestión de clientes, todo en una sola plataforma.
+            {subtitle}
           </p>
 
           <div
@@ -51,13 +60,18 @@ export default function Hero() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <a href="#services">
-              <Button variant="outline" size="lg" className="w-full border-border bg-transparent text-foreground hover:bg-surface-elevated sm:w-auto">
-                <Play className="mr-2 h-4 w-4" />
-                Ver Servicios
-              </Button>
-            </a>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setApptOpen(true)}
+              className="w-full border-border bg-transparent text-foreground hover:bg-surface-elevated sm:w-auto"
+            >
+              <Video className="mr-2 h-4 w-4" />
+              Agendar Videollamada
+            </Button>
           </div>
+
+          <AppointmentModal open={apptOpen} onOpenChange={setApptOpen} />
         </div>
 
         {/* Right: Dashboard mockup */}
