@@ -1,0 +1,8 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "deploy": {
+    "installCommand": "npm ci",
+    "buildCommand": "npm run build",
+    "startCommand": "npm run start"
+  }
+}
