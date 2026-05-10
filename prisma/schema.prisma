@@ -76,6 +76,7 @@ model User {
   createdActivities  Activity[]     @relation("CreatedActivities")
   customRole         CustomRole?    @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
   chatMessages       ChatMessage[]
+  chatReactions      ChatReaction[]
   managedClients     Client[]           @relation("ClientManager")
   activityComments   ActivityComment[]
 
@@ -225,11 +226,27 @@ model ChatMessage {
   id        String   @id @default(cuid())
   userId    String   @map("user_id")
   message   String
+  room      String   @default("TEAM") // "TEAM" | clientId for per-client rooms
   createdAt DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reactions ChatReaction[]
 
   @@map("chat_messages")
+}
+
+model ChatReaction {
+  id        String   @id @default(cuid())
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  emoji     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@map("chat_reactions")
 }
 
 model ActivityComment {

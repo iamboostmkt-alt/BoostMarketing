@@ -181,12 +181,22 @@ export interface TeamMember {
   updatedAt: string;
 }
 
+export interface ChatReaction {
+  id: string;
+  messageId: string;
+  userId: string;
+  emoji: string;
+  user: { id: string; name: string | null; color: string };
+}
+
 export interface ChatMessage {
   id: string;
   userId: string;
   message: string;
+  room: string;
   createdAt: string;
   user: { id: string; name: string | null; email: string; color: string; image: string | null };
+  reactions?: ChatReaction[];
 }
 
 export interface Activity {

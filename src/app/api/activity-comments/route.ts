@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { dispatchEvent } from '@/lib/events';
 
 const MAX_LEN = 1000;
 
@@ -115,33 +116,27 @@ export async function POST(req: NextRequest) {
       include: userSelect,
     });
 
-    // Notify the other participant (non-blocking)
-    try {
-      const activity = await db.activity.findUnique({
-        where: { id: activityId },
-        include: { client: { select: { assignedManagerId: true, email: true } } },
-      });
-      if (activity) {
-        const notifyIds = new Set<string>();
-        if (activity.assignedUserId && activity.assignedUserId !== userId) notifyIds.add(activity.assignedUserId);
-        if (activity.createdByUserId && activity.createdByUserId !== userId) notifyIds.add(activity.createdByUserId);
-        if (activity.client?.assignedManagerId && activity.client.assignedManagerId !== userId) {
-          notifyIds.add(activity.client.assignedManagerId);
-        }
-        await Promise.all(
-          [...notifyIds].map((uid) =>
-            db.notification.create({
-              data: {
-                userId:  uid,
-                message: `Nuevo comentario en "${activity.title}"`,
-                type:    'activity_comment',
-                link:    '/dashboard/calendar',
-              },
-            })
-          )
-        );
+    // Notify participants via event system (non-blocking)
+    db.activity.findUnique({
+      where:   { id: activityId },
+      include: { client: { select: { assignedManagerId: true } } },
+    }).then((activity) => {
+      if (!activity) return;
+      const notifyIds = new Set<string>();
+      if (activity.assignedUserId  && activity.assignedUserId  !== userId) notifyIds.add(activity.assignedUserId);
+      if (activity.createdByUserId && activity.createdByUserId !== userId) notifyIds.add(activity.createdByUserId);
+      if (activity.client?.assignedManagerId && activity.client.assignedManagerId !== userId) {
+        notifyIds.add(activity.client.assignedManagerId);
       }
-    } catch { /* non-critical */ }
+      if (notifyIds.size === 0) return;
+      return dispatchEvent({
+        type:          'activity.commented',
+        actorId:       userId,
+        actorName:     email,
+        targetUserIds: [...notifyIds],
+        activityTitle: activity.title,
+      });
+    }).catch(() => undefined);
 
     return NextResponse.json({ comment }, { status: 201 });
   } catch (err) {
