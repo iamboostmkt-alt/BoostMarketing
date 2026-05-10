@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 import { BCRYPT_ROUNDS } from '@/lib/password';
+import { sendEmail, welcomeHtml } from '@/lib/resend';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -105,6 +106,16 @@ export async function POST(req: NextRequest) {
         },
       })
       .catch((err) => console.error('[register] notification error (non-fatal):', err));
+
+    // ── Welcome email (non-blocking) ──────────────────────────────────────────
+    sendEmail({
+      to:      user.email,
+      subject: '¡Bienvenido a BoostMarketing!',
+      html:    welcomeHtml({
+        userName: user.name ?? 'Usuario',
+        appUrl:   process.env.NEXTAUTH_URL ?? 'https://boostmarketing.vercel.app',
+      }),
+    }).catch(() => undefined);
 
     // ── Activity log (non-blocking) ───────────────────────────────────────────
     db.activityLog

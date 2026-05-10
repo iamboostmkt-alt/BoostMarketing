@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { Role } from '@prisma/client';
 import { BCRYPT_ROUNDS } from '@/lib/password';
+import { sendEmail, welcomeHtml } from '@/lib/resend';
 
 const VALID_ROLES: Role[] = ['ADMIN', 'CLIENT', 'DESIGNER', 'MARKETING', 'PROJECT_MANAGER'];
 
@@ -106,6 +107,16 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // Welcome email (non-blocking)
+  sendEmail({
+    to:      user.email,
+    subject: '¡Bienvenido a BoostMarketing!',
+    html:    welcomeHtml({
+      userName: user.name ?? 'Usuario',
+      appUrl:   process.env.NEXTAUTH_URL ?? 'https://boostmarketing.vercel.app',
+    }),
+  }).catch(() => undefined);
+
   await db.activityLog.create({
     data: {
       userId: (session.user as { id: string }).id,
@@ -125,7 +136,7 @@ export async function PATCH(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
 
   const body = await req.json();
-  const { userId, role, name, email, active, color, customRoleId } = body;
+  const { userId, role, name, email, active, color, customRoleId, image } = body;
 
   if (!userId) return NextResponse.json({ error: 'userId es requerido.' }, { status: 400 });
 
@@ -169,6 +180,10 @@ export async function PATCH(req: NextRequest) {
 
   if (customRoleId !== undefined) {
     updateData.customRoleId = customRoleId || null;
+  }
+
+  if (image !== undefined) {
+    updateData.image = image || null;
   }
 
   if (Object.keys(updateData).length === 0) {

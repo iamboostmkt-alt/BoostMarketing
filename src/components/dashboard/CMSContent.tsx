@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   Settings2, FolderOpen, MessageSquareQuote, Users,
   Plus, Pencil, Trash2, Eye, EyeOff, Loader2,
-  RefreshCw, AlertTriangle, ExternalLink,
+  RefreshCw, AlertTriangle, ExternalLink, Upload, X,
 } from 'lucide-react';
+import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,90 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputCls = 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand';
 const areaCls  = `${inputCls} resize-none`;
+
+// ── Image uploader component ───────────────────────────────────────────────────
+
+type ImageUploaderProps = {
+  value: string;
+  onChange: (url: string) => void;
+  folder?: string;
+  label?: string;
+};
+
+function ImageUploader({ value, onChange, folder = 'team', label = 'Foto' }: ImageUploaderProps) {
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFile(file: File) {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', folder);
+      const res = await fetch('/api/cms/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      onChange(data.url);
+      toast.success('Imagen subida correctamente.');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al subir la imagen.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-sm text-white/70">{label}</Label>
+      {value ? (
+        <div className="relative w-full h-36 rounded-lg overflow-hidden border border-white/[0.08] bg-white/[0.03] group">
+          <Image src={value} alt="preview" fill className="object-cover" unoptimized />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <Button type="button" size="sm" variant="outline" className="border-white/30 text-white bg-white/10 hover:bg-white/20 gap-1.5 text-xs h-7"
+              onClick={() => inputRef.current?.click()} disabled={uploading}>
+              {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              Cambiar
+            </Button>
+            <Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:bg-red-400/20"
+              onClick={() => onChange('')} disabled={uploading}>
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div
+          className="w-full h-28 rounded-lg border-2 border-dashed border-white/[0.10] bg-white/[0.02] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-brand/50 hover:bg-white/[0.04] transition-colors"
+          onClick={() => inputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+        >
+          {uploading
+            ? <Loader2 className="h-6 w-6 text-brand animate-spin" />
+            : <>
+                <Upload className="h-5 w-5 text-white/30" />
+                <p className="text-xs text-white/30">Arrastra o haz clic para subir</p>
+                <p className="text-[10px] text-white/20">JPG, PNG, WebP · máx 5 MB</p>
+              </>}
+        </div>
+      )}
+      {/* Also allow pasting a URL manually */}
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={inputCls + ' text-xs'}
+        placeholder="O pega una URL de imagen..."
+      />
+      <input ref={inputRef} type="file" accept="image/*" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
+    </div>
+  );
+}
 
 // ── Settings tab ───────────────────────────────────────────────────────────────
 
@@ -271,7 +356,12 @@ function PortfolioTab() {
             <Field label="Título *"><Input required value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} className={inputCls} placeholder="Nombre del proyecto" /></Field>
             <Field label="Descripción"><Textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} className={areaCls} rows={3} placeholder="Breve descripción del proyecto..." /></Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="URL imagen"><Input value={form.imageUrl} onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))} className={inputCls} placeholder="https://..." /></Field>
+              <ImageUploader
+                value={form.imageUrl}
+                onChange={(url) => setForm((p) => ({ ...p, imageUrl: url }))}
+                folder="portfolio"
+                label="Imagen del proyecto"
+              />
               <Field label="URL proyecto"><Input value={form.projectUrl} onChange={(e) => setForm((p) => ({ ...p, projectUrl: e.target.value }))} className={inputCls} placeholder="https://..." /></Field>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -625,7 +715,12 @@ function TeamTab() {
               <Field label="Nombre *"><Input required value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className={inputCls} placeholder="Ana Martínez" /></Field>
               <Field label="Cargo"><Input value={form.role} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))} className={inputCls} placeholder="CEO & Fundadora" /></Field>
             </div>
-            <Field label="URL foto"><Input value={form.imageUrl} onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))} className={inputCls} placeholder="https://..." /></Field>
+            <ImageUploader
+              value={form.imageUrl}
+              onChange={(url) => setForm((p) => ({ ...p, imageUrl: url }))}
+              folder="team"
+              label="Foto del miembro"
+            />
             <Field label="Frase / Cita"><Textarea value={form.quote} onChange={(e) => setForm((p) => ({ ...p, quote: e.target.value }))} className={areaCls} rows={2} placeholder="Una frase que los representa..." /></Field>
             <Field label="Orden"><Input type="number" value={form.order} onChange={(e) => setForm((p) => ({ ...p, order: Number(e.target.value) }))} className={inputCls} /></Field>
             <div className="flex items-center gap-2">

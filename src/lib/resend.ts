@@ -131,6 +131,44 @@ export function appointmentReminderHtml(opts: {
   `);
 }
 
+export function welcomeHtml(opts: { userName: string; appUrl: string }) {
+  return BASE(`
+    <p style="color:#a0a0b0;font-size:14px;margin-top:0">Hola, <strong style="color:#e5e5e5">${opts.userName}</strong></p>
+    <h2 style="color:#fff;font-size:18px;margin:8px 0 4px">🎉 Bienvenido a BoostMarketing</h2>
+    <p style="color:#a0a0b0;font-size:14px">Tu cuenta ha sido creada exitosamente. Ya puedes acceder a tu dashboard y comenzar a gestionar tus proyectos.</p>
+    <a href="${opts.appUrl}/dashboard" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+      Ir al dashboard
+    </a>
+  `);
+}
+
+export function taskAssignedHtml(opts: {
+  userName: string;
+  taskTitle: string;
+  taskDescription: string;
+  priority: string;
+  dueDate: string;
+  assignedBy: string;
+  appUrl: string;
+}) {
+  return BASE(`
+    <p style="color:#a0a0b0;font-size:14px;margin-top:0">Hola, <strong style="color:#e5e5e5">${opts.userName}</strong></p>
+    <h2 style="color:#fff;font-size:18px;margin:8px 0 4px">📋 Nueva tarea asignada</h2>
+    <p style="color:#a0a0b0;font-size:14px"><strong style="color:#e5e5e5">${opts.assignedBy}</strong> te asignó una nueva tarea:</p>
+    <div style="background:#15151c;border:1px solid #2a2a3a;border-radius:8px;padding:16px;margin:16px 0">
+      <p style="margin:0 0 8px;font-size:16px;font-weight:600;color:#fff">${opts.taskTitle}</p>
+      ${opts.taskDescription ? `<p style="margin:0 0 8px;font-size:13px;color:#888">${opts.taskDescription}</p>` : ''}
+      <p style="margin:0;font-size:13px;color:#888">
+        Prioridad: <strong style="color:#e5e5e5">${opts.priority}</strong>
+        ${opts.dueDate ? ` &nbsp;|&nbsp; Vence: <strong style="color:#e5e5e5">${opts.dueDate}</strong>` : ''}
+      </p>
+    </div>
+    <a href="${opts.appUrl}/dashboard/tasks" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+      Ver mis tareas
+    </a>
+  `);
+}
+
 export function statusChangeHtml(opts: {
   userName: string;
   itemTitle: string;

@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { Task } from '@/lib/types';
+import type { Task, Activity } from '@/lib/types';
 import {
   startOfMonth,
   endOfMonth,
@@ -16,44 +16,60 @@ import {
   addMonths,
   subMonths,
   isSameMonth,
+  isWithinInterval,
+  startOfDay,
+  endOfDay,
 } from 'date-fns';
 
 interface CalendarGridProps {
-  tasks: Task[];
+  tasks:      Task[];
+  activities?: Activity[];
   selectedDay: Date | null;
   onSelectDay: (day: Date) => void;
 }
 
-const DAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
+const DAY_NAMES   = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const MONTH_NAMES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  'Enero','Febrero','Marzo','Abril','Mayo','Junio',
+  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
 ];
 
 const priorityDotColors: Record<string, string> = {
-  low: 'bg-emerald-400',
+  low:    'bg-emerald-400',
   medium: 'bg-amber-400',
-  high: 'bg-red-400',
+  high:   'bg-red-400',
   urgent: 'bg-red-600',
 };
 
 function getTasksForDay(tasks: Task[], day: Date): Task[] {
-  return tasks.filter((t) => {
-    if (!t.dueDate) return false;
-    const taskDate = new Date(t.dueDate);
-    return isSameDay(taskDate, day);
+  return tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day));
+}
+
+function getActivitiesForDay(activities: Activity[], day: Date): Activity[] {
+  return activities.filter((a) => {
+    try {
+      const start = startOfDay(new Date(a.startDate));
+      const end   = a.endDate ? endOfDay(new Date(a.endDate)) : endOfDay(start);
+      return isWithinInterval(startOfDay(day), { start, end });
+    } catch {
+      return isSameDay(new Date(a.startDate), day);
+    }
   });
 }
 
-export default function CalendarGrid({ tasks, selectedDay, onSelectDay }: CalendarGridProps) {
+export default function CalendarGrid({
+  tasks,
+  activities = [],
+  selectedDay,
+  onSelectDay,
+}: CalendarGridProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(currentMonth);
-    const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
-    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    const monthEnd   = endOfMonth(currentMonth);
+    const calStart   = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const calEnd     = endOfWeek(monthEnd,   { weekStartsOn: 1 });
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
 
@@ -65,28 +81,19 @@ export default function CalendarGrid({ tasks, selectedDay, onSelectDay }: Calend
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">{monthLabel}</h2>
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
+          <Button variant="ghost" size="sm"
             className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
-            onClick={() => setCurrentMonth((m) => subMonths(m, 1))}
-          >
+            onClick={() => setCurrentMonth((m) => subMonths(m, 1))}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+          <Button variant="ghost" size="sm"
             className="h-8 px-2.5 text-xs text-white/50 hover:text-white hover:bg-white/[0.06]"
-            onClick={() => setCurrentMonth(new Date())}
-          >
+            onClick={() => setCurrentMonth(new Date())}>
             Hoy
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+          <Button variant="ghost" size="sm"
             className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
-            onClick={() => setCurrentMonth((m) => addMonths(m, 1))}
-          >
+            onClick={() => setCurrentMonth((m) => addMonths(m, 1))}>
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
@@ -95,10 +102,7 @@ export default function CalendarGrid({ tasks, selectedDay, onSelectDay }: Calend
       {/* Day names header */}
       <div className="grid grid-cols-7 gap-1">
         {DAY_NAMES.map((name) => (
-          <div
-            key={name}
-            className="text-center text-[11px] font-medium text-white/30 py-2"
-          >
+          <div key={name} className="text-center text-[11px] font-medium text-white/30 py-2">
             {name}
           </div>
         ))}
@@ -107,10 +111,12 @@ export default function CalendarGrid({ tasks, selectedDay, onSelectDay }: Calend
       {/* Calendar cells */}
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
-          const dayTasks = getTasksForDay(tasks, day);
+          const dayTasks      = getTasksForDay(tasks, day);
+          const dayActivities = getActivitiesForDay(activities, day);
           const isCurrentMonth = isSameMonth(day, currentMonth);
-          const isSelected = selectedDay && isSameDay(day, selectedDay);
-          const today = isToday(day);
+          const isSelected     = selectedDay && isSameDay(day, selectedDay);
+          const today          = isToday(day);
+          const hasItems       = dayTasks.length > 0 || dayActivities.length > 0;
 
           return (
             <button
@@ -129,23 +135,41 @@ export default function CalendarGrid({ tasks, selectedDay, onSelectDay }: Calend
                 {format(day, 'd')}
               </span>
 
-              {/* Task dots */}
-              {dayTasks.length > 0 && (
-                <div className="flex items-center gap-0.5 mt-1 flex-wrap justify-center max-w-[40px]">
-                  {dayTasks.slice(0, 4).map((task, i) => (
-                    <span
-                      key={i}
-                      className={`w-1.5 h-1.5 rounded-full ${priorityDotColors[task.priority] || 'bg-white/30'}`}
-                    />
+              {/* Indicator dots */}
+              {hasItems && (
+                <div className="flex items-center gap-0.5 mt-0.5 flex-wrap justify-center max-w-[40px]">
+                  {/* Task dots (priority colors) */}
+                  {dayTasks.slice(0, 3).map((task, i) => (
+                    <span key={`t${i}`}
+                      className={`w-1.5 h-1.5 rounded-full ${priorityDotColors[task.priority] || 'bg-white/30'}`} />
                   ))}
-                  {dayTasks.length > 4 && (
-                    <span className="text-[8px] text-white/30">+{dayTasks.length - 4}</span>
+                  {/* Activity dots (brand color) */}
+                  {dayActivities.slice(0, 2).map((_, i) => (
+                    <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-brand-light/70" />
+                  ))}
+                  {/* Overflow count */}
+                  {(dayTasks.length + dayActivities.length) > 5 && (
+                    <span className="text-[8px] text-white/30">
+                      +{dayTasks.length + dayActivities.length - 5}
+                    </span>
                   )}
                 </div>
               )}
             </button>
           );
         })}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-4 pt-1 border-t border-white/[0.04]">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+          <span className="text-[11px] text-white/30">Tareas</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-brand-light/70 inline-block" />
+          <span className="text-[11px] text-white/30">Actividades</span>
+        </div>
       </div>
     </div>
   );

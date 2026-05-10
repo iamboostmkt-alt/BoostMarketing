@@ -3,18 +3,13 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +31,7 @@ interface User {
   name: string | null;
   email: string;
   role: string;
+  color: string;
 }
 
 interface ActivityFormProps {
@@ -53,17 +49,17 @@ export default function ActivityForm({
   isManager = false,
   onSuccess,
 }: ActivityFormProps) {
-  const [title, setTitle]           = useState('');
-  const [description, setDesc]      = useState('');
-  const [status, setStatus]         = useState('pending');
-  const [priority, setPriority]     = useState('medium');
-  const [startDate, setStartDate]   = useState<Date>();
-  const [endDate, setEndDate]       = useState<Date | undefined>();
+  const [title, setTitle]             = useState('');
+  const [description, setDesc]        = useState('');
+  const [status, setStatus]           = useState('pending');
+  const [priority, setPriority]       = useState('medium');
+  const [startDate, setStartDate]     = useState<Date | undefined>();
+  const [endDate, setEndDate]         = useState<Date | undefined>();
   const [assignedUserId, setAssignee] = useState('');
-  const [users, setUsers]           = useState<User[]>([]);
-  const [startOpen, setStartOpen]   = useState(false);
-  const [endOpen, setEndOpen]       = useState(false);
-  const [loading, setLoading]       = useState(false);
+  const [users, setUsers]             = useState<User[]>([]);
+  const [startOpen, setStartOpen]     = useState(false);
+  const [endOpen, setEndOpen]         = useState(false);
+  const [loading, setLoading]         = useState(false);
 
   // Pre-fill when editing
   useEffect(() => {
@@ -84,15 +80,21 @@ export default function ActivityForm({
       setEndDate(undefined);
       setAssignee('');
     }
+    // Close calendars on dialog open/close
+    setStartOpen(false);
+    setEndOpen(false);
   }, [activity, open]);
 
+  // Fetch internal users (non-CLIENT) when manager opens dialog
   useEffect(() => {
-    if (isManager && open) {
-      fetch('/api/admin/users')
-        .then((r) => r.json())
-        .then((d) => setUsers(d.users ?? []))
-        .catch(() => {});
-    }
+    if (!isManager || !open) return;
+    fetch('/api/admin/users')
+      .then((r) => r.json())
+      .then((d) => {
+        const internal = (d.users ?? []).filter((u: User) => u.role !== 'CLIENT');
+        setUsers(internal);
+      })
+      .catch(() => {});
   }, [isManager, open]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -131,9 +133,19 @@ export default function ActivityForm({
     }
   }
 
+  function toggleStart() {
+    setStartOpen((p) => !p);
+    setEndOpen(false);
+  }
+
+  function toggleEnd() {
+    setEndOpen((p) => !p);
+    setStartOpen(false);
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg w-full">
+      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg w-full max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-white">
             {activity ? 'Editar Actividad' : 'Nueva Actividad'}
@@ -184,68 +196,74 @@ export default function ActivityForm({
             </div>
           </div>
 
-          {/* Start date + End date */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-sm text-white/70">Inicio *</Label>
-              <Popover open={startOpen} onOpenChange={setStartOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    disabled={loading}
-                    className={cn(
-                      'w-full justify-start text-left font-normal bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:text-white text-sm',
-                      !startDate && 'text-white/30'
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-white/40" />
-                    {startDate ? format(startDate, 'dd/MM/yy', { locale: es }) : 'Fecha'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-[#15151c] border-white/[0.08]" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={(d) => { setStartDate(d); setStartOpen(false); }}
-                    initialFocus
-                    className="text-white"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-white/70">Fin (opcional)</Label>
-              <Popover open={endOpen} onOpenChange={setEndOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    disabled={loading}
-                    className={cn(
-                      'w-full justify-start text-left font-normal bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:text-white text-sm',
-                      !endDate && 'text-white/30'
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-white/40" />
-                    {endDate ? format(endDate, 'dd/MM/yy', { locale: es }) : 'Fecha'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-[#15151c] border-white/[0.08]" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={(d) => { setEndDate(d); setEndOpen(false); }}
-                    disabled={(d) => startDate ? d < startDate : false}
-                    initialFocus
-                    className="text-white"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+          {/* Start date — inline calendar toggle (no Popover to avoid Dialog focus-trap conflict) */}
+          <div className="space-y-1.5">
+            <Label className="text-sm text-white/70">Inicio *</Label>
+            <Button
+              variant="outline"
+              type="button"
+              disabled={loading}
+              onClick={toggleStart}
+              className={cn(
+                'w-full justify-start text-left font-normal bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:text-white text-sm',
+                !startDate && 'text-white/30'
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4 text-white/40" />
+              {startDate ? format(startDate, "dd 'de' MMMM yyyy", { locale: es }) : 'Seleccionar fecha de inicio'}
+            </Button>
+            {startOpen && (
+              <div className="rounded-lg border border-white/[0.08] bg-[#0e0e14] shadow-2xl p-1">
+                <div className="flex justify-end p-1">
+                  <button type="button" onClick={() => setStartOpen(false)} className="text-white/30 hover:text-white/70 p-1 rounded">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={(d) => { setStartDate(d); setStartOpen(false); }}
+                  className="text-white"
+                />
+              </div>
+            )}
           </div>
 
-          {/* Assign to user (manager only) */}
+          {/* End date — inline calendar toggle */}
+          <div className="space-y-1.5">
+            <Label className="text-sm text-white/70">Fin (opcional)</Label>
+            <Button
+              variant="outline"
+              type="button"
+              disabled={loading}
+              onClick={toggleEnd}
+              className={cn(
+                'w-full justify-start text-left font-normal bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:text-white text-sm',
+                !endDate && 'text-white/30'
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4 text-white/40" />
+              {endDate ? format(endDate, "dd 'de' MMMM yyyy", { locale: es }) : 'Seleccionar fecha de fin'}
+            </Button>
+            {endOpen && (
+              <div className="rounded-lg border border-white/[0.08] bg-[#0e0e14] shadow-2xl p-1">
+                <div className="flex justify-end p-1">
+                  <button type="button" onClick={() => setEndOpen(false)} className="text-white/30 hover:text-white/70 p-1 rounded">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={(d) => { setEndDate(d); setEndOpen(false); }}
+                  disabled={(d) => (startDate ? d < startDate : false)}
+                  className="text-white"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Assign to internal user — manager only, CLIENTs excluded */}
           {isManager && (
             <div className="space-y-1.5">
               <Label className="text-sm text-white/70">Asignar a</Label>
@@ -254,9 +272,18 @@ export default function ActivityForm({
                   <SelectValue placeholder="Sin asignar" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#15151c] border-white/[0.08] text-white max-h-48">
+                  <SelectItem value="" className="text-white/50 focus:bg-white/[0.06]">
+                    Sin asignar
+                  </SelectItem>
                   {users.map((u) => (
                     <SelectItem key={u.id} value={u.id} className="focus:bg-white/[0.06]">
-                      {u.name || u.email}
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="inline-block w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: u.color || '#7c3aed' }}
+                        />
+                        {u.name || u.email}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -292,7 +319,9 @@ export default function ActivityForm({
               disabled={loading}
               className="flex-1 bg-brand hover:bg-brand-dark text-white"
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : activity ? 'Guardar' : 'Crear'}
+              {loading
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : activity ? 'Guardar' : 'Crear'}
             </Button>
           </div>
         </form>

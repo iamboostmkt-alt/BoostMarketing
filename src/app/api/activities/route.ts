@@ -27,9 +27,20 @@ export async function GET(req: NextRequest) {
     if (status)   base.status   = status;
     if (clientId) base.clientId = clientId;
 
-    const where = MANAGE_ROLES.includes(role)
-      ? base
-      : { ...base, OR: [{ assignedUserId: userId }, { createdByUserId: userId }] };
+    let where: Record<string, unknown>;
+
+    if (role === 'CLIENT') {
+      // CLIENT: only see activities linked to their client record (matched by email)
+      const clientRecord = await db.client.findFirst({
+        where: { email: { equals: session.user.email as string, mode: 'insensitive' } },
+        select: { id: true },
+      });
+      where = clientRecord ? { ...base, clientId: clientRecord.id } : { id: 'none' };
+    } else if (MANAGE_ROLES.includes(role)) {
+      where = base;
+    } else {
+      where = { ...base, OR: [{ assignedUserId: userId }, { createdByUserId: userId }] };
+    }
 
     const activities = await db.activity.findMany({
       where,

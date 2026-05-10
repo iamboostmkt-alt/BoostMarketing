@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Plus, LayoutList, Columns3, CheckSquare, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -35,8 +36,13 @@ const statusDotColors: Record<string, string> = {
   completed: 'bg-emerald-400',
 };
 
+const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
+
 function TasksContent() {
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
+  const isManager = MANAGER_ROLES.includes(session?.user?.role ?? '');
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
@@ -56,7 +62,9 @@ function TasksContent() {
 
   const fetchTasks = useCallback(async () => {
     try {
-      const res = await fetch('/api/tasks');
+      // Managers see all tasks across the team; others see only their own
+      const url = isManager ? '/api/tasks?scope=all' : '/api/tasks';
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setTasks(data.tasks || data || []);
@@ -66,7 +74,7 @@ function TasksContent() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isManager]);
 
   useEffect(() => {
     fetchTasks();
@@ -278,6 +286,7 @@ function TasksContent() {
         open={formOpen}
         onOpenChange={setFormOpen}
         task={editingTask}
+        isManager={isManager}
         onSuccess={fetchTasks}
       />
 

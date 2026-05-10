@@ -17,6 +17,8 @@ import {
   Zap,
   LogOut,
   Shield,
+  MessageSquare,
+  Briefcase,
 } from 'lucide-react';
 import { isAdminRole, canAccessRoute, getRoleLabel } from '@/lib/roles';
 import { Button } from '@/components/ui/button';
@@ -33,14 +35,16 @@ type NavItem = {
 };
 
 const navItemsBase: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'CRM', href: '/dashboard/crm', icon: Users },
-  { label: 'Tareas', href: '/dashboard/tasks', icon: CheckSquare },
-  { label: 'Calendario', href: '/dashboard/calendar', icon: Calendar },
-  { label: 'Clientes', href: '/dashboard/clients', icon: UserCircle },
-  { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-  { label: 'Admin', href: '/dashboard/admin', icon: Shield, adminOnly: true },
-  { label: 'Ajustes', href: '/dashboard/settings', icon: Settings },
+  { label: 'Dashboard',  href: '/dashboard',              icon: LayoutDashboard },
+  { label: 'Mi Portal',  href: '/dashboard/client-portal', icon: Briefcase },
+  { label: 'CRM',        href: '/dashboard/crm',           icon: Users },
+  { label: 'Tareas',     href: '/dashboard/tasks',         icon: CheckSquare },
+  { label: 'Calendario', href: '/dashboard/calendar',      icon: Calendar },
+  { label: 'Chat',       href: '/dashboard/chat',          icon: MessageSquare },
+  { label: 'Clientes',   href: '/dashboard/clients',       icon: UserCircle },
+  { label: 'Analytics',  href: '/dashboard/analytics',     icon: BarChart3 },
+  { label: 'Admin',      href: '/dashboard/admin',         icon: Shield, adminOnly: true },
+  { label: 'Ajustes',   href: '/dashboard/settings',      icon: Settings },
 ];
 
 export default function AppSidebar() {

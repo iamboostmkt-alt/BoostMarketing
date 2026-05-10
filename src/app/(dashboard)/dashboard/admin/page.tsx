@@ -23,7 +23,10 @@ import {
   ToggleRight,
   Tags,
   Lock,
+  Upload,
+  X,
 } from 'lucide-react';
+import { useRef } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -128,6 +131,9 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
   const [customRoleId, setCustomRoleId] = useState<string>('none');
   const [miniRoles,    setMiniRoles]    = useState<MiniRole[]>([]);
   const [saving,       setSaving]       = useState(false);
+  const [image,        setImage]        = useState<string | null>(null);
+  const [uploading,    setUploading]    = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -137,12 +143,34 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
       setRole(user?.role ?? 'CLIENT');
       setColor(user?.color ?? '#7c3aed');
       setCustomRoleId(user?.customRoleId ?? 'none');
+      setImage(user?.image ?? null);
       fetch('/api/admin/roles')
         .then((r) => r.json())
         .then((d) => setMiniRoles(d.roles ?? []))
         .catch(() => {});
     }
   }, [open, user]);
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'avatars');
+      const res = await fetch('/api/cms/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al subir imagen');
+      setImage(data.url);
+      toast.success('Foto subida');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al subir foto');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -154,7 +182,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
         res = await fetch('/api/admin/users', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user!.id, name, email, role, color, customRoleId: crId }),
+          body: JSON.stringify({ userId: user!.id, name, email, role, color, customRoleId: crId, image }),
         });
       } else {
         res = await fetch('/api/admin/users', {
@@ -185,6 +213,53 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSave} className="space-y-4 mt-2">
+          {/* Profile photo — edit mode only */}
+          {isEdit && (
+            <div className="space-y-2">
+              <Label className="text-white/70 text-xs">Foto de perfil</Label>
+              <div className="flex items-center gap-4">
+                <div className="relative shrink-0">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={image ?? undefined} />
+                    <AvatarFallback
+                      className="text-lg font-semibold"
+                      style={{ backgroundColor: (color || '#7c3aed') + '33', color: color || '#7c3aed' }}>
+                      {initials(name || null, email || 'U')}
+                    </AvatarFallback>
+                  </Avatar>
+                  {image && (
+                    <button
+                      type="button"
+                      onClick={() => setImage(null)}
+                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-colors">
+                      <X className="h-3 w-3 text-white" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={uploading}
+                    onClick={() => fileRef.current?.click()}
+                    className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-2 text-xs">
+                    <Upload className="h-3.5 w-3.5" />
+                    {uploading ? 'Subiendo…' : image ? 'Cambiar foto' : 'Subir foto'}
+                  </Button>
+                  <p className="text-[10px] text-white/25 mt-1">JPG, PNG o WebP · Máx 5 MB</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Nombre</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre completo"

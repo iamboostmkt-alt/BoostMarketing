@@ -41,6 +41,12 @@ export function getRoleLabel(role: string | Role | undefined | null): string {
 // Maps route prefixes to the roles that may access them.
 // ADMIN always has full access and is handled separately in middleware.
 
+export const INTERNAL_ROLES: Role[] = ["ADMIN", "DESIGNER", "MARKETING", "PROJECT_MANAGER"];
+
+export function isInternalRole(role: string | Role | undefined | null): boolean {
+  return INTERNAL_ROLES.includes(role as Role);
+}
+
 export const ROUTE_ACCESS: Array<{ pattern: RegExp; allowed: Role[] }> = [
   {
     pattern: /^\/dashboard\/admin(\/|$)/,
@@ -65,6 +71,14 @@ export const ROUTE_ACCESS: Array<{ pattern: RegExp; allowed: Role[] }> = [
   {
     pattern: /^\/dashboard\/calendar(\/|$)/,
     allowed: ["ADMIN", "DESIGNER", "PROJECT_MANAGER"],
+  },
+  {
+    pattern: /^\/dashboard\/chat(\/|$)/,
+    allowed: ["ADMIN", "DESIGNER", "MARKETING", "PROJECT_MANAGER"],
+  },
+  {
+    pattern: /^\/dashboard\/client-portal(\/|$)/,
+    allowed: ["CLIENT"],
   },
 ];
 

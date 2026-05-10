@@ -34,6 +34,7 @@ export interface Task {
   id: string;
   userId: string;
   assignedUserId: string | null;
+  clientId: string | null;
   title: string;
   description: string;
   status: string;
@@ -44,6 +45,29 @@ export interface Task {
   updatedAt: string;
   user?: { id: string; name: string | null; email: string; color: string } | null;
   assignedUser?: { id: string; name: string | null; email: string; color: string } | null;
+  client?: { id: string; name: string; company: string } | null;
+}
+
+export interface ActivityComment {
+  id: string;
+  activityId: string;
+  userId: string;
+  message: string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    color: string;
+    image: string | null;
+    role: string;
+  };
+}
+
+export interface ClientPortalData {
+  client: Client;
+  activities: Activity[];
+  tasks: Task[];
 }
 
 export interface Contact {
@@ -63,6 +87,7 @@ export interface Contact {
 export interface Client {
   id: string;
   userId: string;
+  assignedManagerId: string | null;
   name: string;
   email: string;
   company: string;
@@ -70,6 +95,7 @@ export interface Client {
   status: string;
   createdAt: string;
   updatedAt: string;
+  assignedManager?: { id: string; name: string | null; email: string; color: string } | null;
 }
 
 export interface DashboardStats {
@@ -153,6 +179,14 @@ export interface TeamMember {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  userId: string;
+  message: string;
+  createdAt: string;
+  user: { id: string; name: string | null; email: string; color: string; image: string | null };
 }
 
 export interface Activity {
