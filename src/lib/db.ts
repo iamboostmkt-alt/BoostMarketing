@@ -5,12 +5,18 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 // Supabase pgBouncer (port 6543) runs in transaction mode and does not support
-// prepared statements. Adding pgbouncer=true switches Prisma to the simple query
-// protocol, which is compatible with pgBouncer.
+// prepared statements. pgbouncer=true switches Prisma to the simple query protocol.
+// connection_limit=1 prevents serverless functions (Vercel) from exhausting the pool.
 function buildUrl(url: string | undefined): string | undefined {
   if (!url) return url
-  if (url.includes('pgbouncer=true')) return url
-  return url + (url.includes('?') ? '&' : '?') + 'pgbouncer=true'
+  let result = url
+  if (!result.includes('pgbouncer=true')) {
+    result += (result.includes('?') ? '&' : '?') + 'pgbouncer=true'
+  }
+  if (!result.includes('connection_limit=')) {
+    result += '&connection_limit=1'
+  }
+  return result
 }
 
 export const db =

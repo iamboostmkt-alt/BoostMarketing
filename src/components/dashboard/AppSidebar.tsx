@@ -146,11 +146,11 @@ export default function AppSidebar() {
               <p className="text-xs text-white/40 truncate">{userRoleLabel}</p>
             </div>
           )}
-          {/* Logout always visible — on desktop only shows when expanded; on mobile always shows */}
+          {/* Logout: always visible on mobile, always visible on desktop (collapsed or expanded) */}
           <Button
             variant="ghost"
             size="icon"
-            className={`h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06] transition-opacity duration-150 ${collapsed ? 'hidden md:flex' : 'flex'}`}
+            className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06] flex"
             onClick={() => signOut({ callbackUrl: '/' })}
           >
             <LogOut className="w-4 h-4" />

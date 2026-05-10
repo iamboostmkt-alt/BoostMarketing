@@ -115,6 +115,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error("La contraseña no es correcta.");
         }
 
+        if (!user.active) {
+          throw new Error(
+            "Tu cuenta está desactivada. Contacta al administrador."
+          );
+        }
+
         if (isDev) {
           console.log("[auth] authorize: success —", user.email, user.role);
         }

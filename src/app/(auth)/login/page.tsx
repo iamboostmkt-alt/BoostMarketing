@@ -33,6 +33,16 @@ export default function LoginPage() {
     };
   }, []);
 
+  const getCallbackUrl = () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const raw = params.get('callbackUrl') || '/dashboard';
+      return raw.startsWith('/') ? raw : '/dashboard';
+    } catch {
+      return '/dashboard';
+    }
+  };
+
   const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -47,19 +57,24 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError(result.error);
+        let msg = result.error;
+        try { msg = decodeURIComponent(msg); } catch { /* keep original */ }
+        if (msg === 'CredentialsSignin') {
+          msg = 'Email o contraseña incorrectos. Revisa tus datos e intenta de nuevo.';
+        }
+        setError(msg);
         setLoading(false);
         return;
       }
 
       if (result?.ok) {
-        window.location.href = '/dashboard';
+        window.location.href = getCallbackUrl();
       } else {
         setError('No se pudo iniciar sesión. Revisa tus datos e intenta de nuevo.');
         setLoading(false);
       }
     } catch {
-      setError('Error al iniciar sesión');
+      setError('Error al iniciar sesión. Intenta de nuevo.');
       setLoading(false);
     }
   };
