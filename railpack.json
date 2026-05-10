@@ -1,5 +1,5 @@
 {
-  "install": "npm ci",
+  "install": "npm ci --legacy-peer-deps",
   "build": "npm run build",
   "start": "npm run start"
 }
