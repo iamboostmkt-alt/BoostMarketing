@@ -3,12 +3,11 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { CalendarIcon, CheckCircle2, Video, X } from 'lucide-react'
+import { CalendarIcon, CheckCircle2, Video, X, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Dialog,
   DialogContent,
@@ -23,17 +22,17 @@ interface AppointmentModalProps {
 }
 
 export default function AppointmentModal({ open, onOpenChange }: AppointmentModalProps) {
-  const [step, setStep] = useState<'form' | 'success'>('form')
+  const [step,       setStep]       = useState<'form' | 'success'>('form')
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
+  const [error,      setError]      = useState('')
 
-  const [name, setName]   = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [time, setTime]   = useState('10:00')
-  const [notes, setNotes] = useState('')
-  const [date, setDate]   = useState<Date | undefined>(undefined)
-  const [calOpen, setCalOpen] = useState(false)
+  const [name,     setName]    = useState('')
+  const [email,    setEmail]   = useState('')
+  const [phone,    setPhone]   = useState('')
+  const [time,     setTime]    = useState('10:00')
+  const [notes,    setNotes]   = useState('')
+  const [date,     setDate]    = useState<Date | undefined>(undefined)
+  const [calOpen,  setCalOpen] = useState(false)
 
   function resetForm() {
     setStep('form')
@@ -44,6 +43,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
     setNotes('')
     setDate(undefined)
     setError('')
+    setCalOpen(false)
   }
 
   function handleClose(val: boolean) {
@@ -55,9 +55,9 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
     e.preventDefault()
     setError('')
 
-    if (!name.trim()) { setError('El nombre es requerido.'); return }
+    if (!name.trim())  { setError('El nombre es requerido.'); return }
     if (!email.trim()) { setError('El email es requerido.'); return }
-    if (!date) { setError('Selecciona una fecha.'); return }
+    if (!date)         { setError('Selecciona una fecha.'); return }
 
     const [h, m] = time.split(':').map(Number)
     const combined = new Date(date)
@@ -90,7 +90,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-md w-full">
+      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-md w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
             <Video className="h-5 w-5 text-brand-light" />
@@ -121,6 +121,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name + Email */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label className="text-white/70 text-xs">Nombre *</Label>
@@ -143,6 +144,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
               </div>
             </div>
 
+            {/* Phone */}
             <div className="space-y-1.5">
               <Label className="text-white/70 text-xs">Teléfono</Label>
               <Input
@@ -154,35 +156,26 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
               />
             </div>
 
+            {/* Date picker — inline toggle (avoids Popover-inside-Dialog z-index issue) */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label className="text-white/70 text-xs">Fecha *</Label>
-                <Popover open={calOpen} onOpenChange={setCalOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full justify-start bg-white/[0.04] border-white/[0.08] text-left font-normal hover:bg-white/[0.06] hover:text-white"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4 text-white/40" />
-                      {date ? (
-                        <span className="text-white">{format(date, 'd MMM yyyy', { locale: es })}</span>
-                      ) : (
-                        <span className="text-white/30">Seleccionar…</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-[#15151c] border-white/[0.08]" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={(d) => { setDate(d); setCalOpen(false) }}
-                      disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
-                      locale={es}
-                      className="text-white"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCalOpen((o) => !o)}
+                  className="w-full justify-between bg-white/[0.04] border-white/[0.08] text-left font-normal hover:bg-white/[0.06] hover:text-white"
+                >
+                  <span className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-white/40" />
+                    {date ? (
+                      <span className="text-white">{format(date, 'd MMM yyyy', { locale: es })}</span>
+                    ) : (
+                      <span className="text-white/30">Seleccionar…</span>
+                    )}
+                  </span>
+                  <ChevronDown className={`h-4 w-4 text-white/30 transition-transform duration-200 ${calOpen ? 'rotate-180' : ''}`} />
+                </Button>
               </div>
 
               <div className="space-y-1.5">
@@ -196,6 +189,21 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
               </div>
             </div>
 
+            {/* Inline calendar (opens below the trigger button, no portal/z-index issues) */}
+            {calOpen && (
+              <div className="rounded-xl border border-white/[0.08] bg-[#0e0e14] overflow-hidden">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(d) => { setDate(d); setCalOpen(false); }}
+                  disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                  locale={es}
+                  className="text-white"
+                />
+              </div>
+            )}
+
+            {/* Notes */}
             <div className="space-y-1.5">
               <Label className="text-white/70 text-xs">Notas adicionales</Label>
               <Textarea

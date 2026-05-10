@@ -21,6 +21,8 @@ import {
   UserPlus,
   ToggleLeft,
   ToggleRight,
+  Tags,
+  Lock,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -56,6 +58,7 @@ import {
 import { getRoleLabel } from '@/lib/roles';
 import ActivityForm from '@/components/dashboard/ActivityForm';
 import CMSContent from '@/components/dashboard/CMSContent';
+import CustomRoleDialog, { type CustomRole, ALL_PERMISSIONS } from '@/components/dashboard/CustomRoleDialog';
 import { activityStatusColors, activityStatusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
 import type { Appointment, Activity } from '@/lib/types';
 
@@ -263,6 +266,14 @@ export default function AdminDashboardPage() {
   const [deleteAct,    setDeleteAct]    = useState<Activity | null>(null);
   const [deletingAct,  setDeletingAct]  = useState(false);
 
+  // Custom roles state
+  const [customRoles,   setCustomRoles]  = useState<CustomRole[]>([]);
+  const [loadingRoles,  setLoadingRoles] = useState(true);
+  const [roleDialog,    setRoleDialog]   = useState(false);
+  const [editingRole,   setEditingRole]  = useState<CustomRole | null>(null);
+  const [deleteRole,    setDeleteRole]   = useState<CustomRole | null>(null);
+  const [deletingRole,  setDeletingRole] = useState(false);
+
   // ── Fetchers ───────────────────────────────────────────────────────────────
 
   const fetchUsers = useCallback(async (q = '') => {
@@ -300,7 +311,16 @@ export default function AdminDashboardPage() {
     finally { setLoadingActs(false); }
   }, []);
 
-  useEffect(() => { if (isAdmin) { fetchUsers(); fetchAppointments(); } }, [fetchUsers, fetchAppointments, isAdmin]);
+  const fetchRoles = useCallback(async () => {
+    setLoadingRoles(true);
+    try {
+      const res = await fetch('/api/admin/roles');
+      if (res.ok) { const data = await res.json(); setCustomRoles(data.roles ?? []); }
+    } catch { /* table may not exist yet — silently ignore */ }
+    finally { setLoadingRoles(false); }
+  }, []);
+
+  useEffect(() => { if (isAdmin) { fetchUsers(); fetchAppointments(); fetchRoles(); } }, [fetchUsers, fetchAppointments, fetchRoles, isAdmin]);
   useEffect(() => { fetchActivities(); }, [fetchActivities]);
 
   useEffect(() => {
@@ -391,6 +411,23 @@ export default function AdminDashboardPage() {
     finally { setDeletingAct(false); }
   }
 
+  // ── Custom role actions ────────────────────────────────────────────────────
+
+  async function handleDeleteRole() {
+    if (!deleteRole) return;
+    setDeletingRole(true);
+    try {
+      const res = await fetch(`/api/admin/roles?id=${deleteRole.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
+      setCustomRoles((prev) => prev.filter((r) => r.id !== deleteRole.id));
+      toast.success('Rol eliminado.');
+      setDeleteRole(null);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
+    } finally { setDeletingRole(false); }
+  }
+
   // ── Stats ──────────────────────────────────────────────────────────────────
 
   const roleCounts = ROLES.reduce<Record<string, number>>((acc, r) => {
@@ -470,9 +507,14 @@ export default function AdminDashboardPage() {
             )}
           </TabsTrigger>
           {isAdmin && (
-            <TabsTrigger value="cms" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
-              <LayoutTemplate className="h-4 w-4" />Contenido
-            </TabsTrigger>
+            <>
+              <TabsTrigger value="roles" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+                <Tags className="h-4 w-4" />Roles
+              </TabsTrigger>
+              <TabsTrigger value="cms" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+                <LayoutTemplate className="h-4 w-4" />Contenido
+              </TabsTrigger>
+            </>
           )}
         </TabsList>
 
@@ -819,6 +861,127 @@ export default function AdminDashboardPage() {
           </div>
         </TabsContent>
 
+        {/* ── Roles tab ─────────────────────────────────────────────────────── */}
+        {isAdmin && (
+          <TabsContent value="roles" className="mt-4 space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <p className="text-sm text-white/50">
+                Crea roles personalizados para tu equipo con permisos específicos por módulo.
+              </p>
+              <Button
+                size="sm"
+                onClick={() => { setEditingRole(null); setRoleDialog(true); }}
+                className="bg-brand hover:bg-brand-dark text-white gap-1.5"
+              >
+                <Plus className="h-4 w-4" />Nuevo Rol
+              </Button>
+            </div>
+
+            {loadingRoles ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="glass-card rounded-xl p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-white/[0.06] animate-pulse" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-4 w-24 rounded bg-white/[0.06] animate-pulse" />
+                        <div className="h-3 w-16 rounded bg-white/[0.06] animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : customRoles.length === 0 ? (
+              <div className="glass-card rounded-xl flex flex-col items-center justify-center py-16 text-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-brand/10 flex items-center justify-center">
+                  <Tags className="w-6 h-6 text-brand-light/60" />
+                </div>
+                <div>
+                  <p className="text-white/60 font-medium">Sin roles personalizados</p>
+                  <p className="text-white/30 text-sm mt-1">Crea roles como Fotógrafo, Editor Video, Community Manager…</p>
+                </div>
+                <Button
+                  onClick={() => { setEditingRole(null); setRoleDialog(true); }}
+                  className="bg-brand hover:bg-brand-dark text-white gap-2"
+                >
+                  <Plus className="w-4 h-4" />Crear primer rol
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {customRoles.map((cr) => {
+                  const activePerms = ALL_PERMISSIONS.filter(({ key }) => cr.permissions?.[key]);
+                  return (
+                    <div key={cr.id} className="glass-card rounded-xl p-4 hover:bg-white/[0.03] transition-colors group">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div
+                          className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: cr.color + '22' }}
+                        >
+                          <Tags className="h-4 w-4" style={{ color: cr.color }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="inline-block w-2 h-2 rounded-full shrink-0"
+                              style={{ backgroundColor: cr.color }}
+                            />
+                            <p className="font-semibold text-white text-sm truncate">{cr.label}</p>
+                          </div>
+                          <p className="text-xs text-white/35 font-mono mt-0.5">{cr.name}</p>
+                        </div>
+                      </div>
+
+                      {cr.description && (
+                        <p className="text-xs text-white/40 mb-3 line-clamp-2">{cr.description}</p>
+                      )}
+
+                      {/* Permission chips */}
+                      <div className="flex flex-wrap gap-1 mb-4">
+                        {activePerms.length === 0 ? (
+                          <span className="text-[10px] text-white/25 flex items-center gap-1">
+                            <Lock className="h-3 w-3" />Sin permisos asignados
+                          </span>
+                        ) : (
+                          activePerms.slice(0, 4).map(({ key, label }) => (
+                            <span
+                              key={key}
+                              className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                              style={{ backgroundColor: cr.color + '22', color: cr.color }}
+                            >
+                              {label}
+                            </span>
+                          ))
+                        )}
+                        {activePerms.length > 4 && (
+                          <span className="text-[10px] text-white/30">+{activePerms.length - 4} más</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost" size="icon"
+                          className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]"
+                          onClick={() => { setEditingRole(cr); setRoleDialog(true); }}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost" size="icon"
+                          className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10"
+                          onClick={() => setDeleteRole(cr)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        )}
+
         {/* ── CMS tab ───────────────────────────────────────────────────────── */}
         {isAdmin && (
           <TabsContent value="cms" className="mt-4">
@@ -871,6 +1034,14 @@ export default function AdminDashboardPage() {
         onSuccess={() => fetchActivities(actFilter)}
       />
 
+      {/* Custom role dialog */}
+      <CustomRoleDialog
+        open={roleDialog}
+        onOpenChange={setRoleDialog}
+        role={editingRole}
+        onSaved={fetchRoles}
+      />
+
       {/* Delete activity confirm */}
       <AlertDialog open={!!deleteAct} onOpenChange={(o) => !o && setDeleteAct(null)}>
         <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
@@ -892,6 +1063,32 @@ export default function AdminDashboardPage() {
             <AlertDialogAction onClick={handleDeleteActivity} disabled={deletingAct}
               className="bg-red-500 hover:bg-red-600 text-white">
               {deletingAct ? 'Eliminando…' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete custom role confirm */}
+      <AlertDialog open={!!deleteRole} onOpenChange={(o) => !o && setDeleteRole(null)}>
+        <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+              </div>
+              <AlertDialogTitle className="text-white">Eliminar Rol</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-white/50">
+              ¿Eliminar el rol &ldquo;{deleteRole?.label}&rdquo;? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.06]">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteRole} disabled={deletingRole}
+              className="bg-red-500 hover:bg-red-600 text-white">
+              {deletingRole ? 'Eliminando…' : 'Eliminar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

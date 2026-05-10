@@ -7,6 +7,7 @@ import { SidebarProvider } from '@/components/dashboard/SidebarContext';
 import AppSidebar from '@/components/dashboard/AppSidebar';
 import TopNav from '@/components/dashboard/TopNav';
 import CommandPalette from '@/components/dashboard/CommandPalette';
+import ErrorBoundary from '@/components/dashboard/ErrorBoundary';
 import { AuthProvider } from '@/context/AuthContext';
 
 function ForbiddenBanner() {
@@ -52,7 +53,9 @@ export default function DashboardLayout({
                   <Suspense fallback={null}>
                     <ForbiddenBanner />
                   </Suspense>
-                  {children}
+                  <ErrorBoundary>
+                    {children}
+                  </ErrorBoundary>
                 </div>
               </main>
             </div>

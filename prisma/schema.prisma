@@ -194,6 +194,20 @@ model Activity {
   @@map("activities")
 }
 
+model CustomRole {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  label       String
+  color       String   @default("#7c3aed")
+  description String   @default("")
+  permissions Json     @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("custom_roles")
+}
+
 model PasswordResetToken {
   id        String   @id @default(cuid())
   email     String

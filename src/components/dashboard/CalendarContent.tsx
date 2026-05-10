@@ -1,13 +1,17 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { CalendarDays, Plus, CheckSquare, Clock, CalendarRange } from 'lucide-react';
+import {
+  CalendarDays, Plus, CheckSquare, Clock, CalendarRange, Sparkles,
+} from 'lucide-react';
 import { format, isSameDay, isToday, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 import TaskForm from '@/components/dashboard/TaskForm';
+import ActivityForm from '@/components/dashboard/ActivityForm';
 import CalendarGrid from '@/components/dashboard/CalendarGrid';
 import type { Task, Activity } from '@/lib/types';
 import {
@@ -16,16 +20,18 @@ import {
 } from '@/lib/theme-maps';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
+const POLL_INTERVAL = 30_000; // 30 s
 
 export default function CalendarContent() {
   const { data: session } = useSession();
-  const [tasks, setTasks]           = useState<Task[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [selectedDay, setSelectedDay] = useState<Date>(new Date());
-  const [formOpen, setFormOpen]     = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const fetchAttempted = useRef(false);
+  const [tasks,        setTasks]      = useState<Task[]>([]);
+  const [activities,   setActivities] = useState<Activity[]>([]);
+  const [loading,      setLoading]    = useState(true);
+  const [selectedDay,  setSelectedDay] = useState<Date>(new Date());
+  const [taskFormOpen, setTaskFormOpen] = useState(false);
+  const [editingTask,  setEditingTask]  = useState<Task | null>(null);
+  const [actFormOpen,  setActFormOpen]  = useState(false);
+  const [editingAct,   setEditingAct]   = useState<Activity | null>(null);
 
   const isManager = MANAGER_ROLES.includes(session?.user?.role ?? '');
 
@@ -49,16 +55,18 @@ export default function CalendarContent() {
     }
   }, [isManager]);
 
+  // Initial fetch + 30 s polling
   useEffect(() => {
-    if (fetchAttempted.current) return;
-    fetchAttempted.current = true;
     fetchData();
+    const id = setInterval(fetchData, POLL_INTERVAL);
+    return () => clearInterval(id);
   }, [fetchData]);
 
+  // Safety timeout in case DB is slow
   useEffect(() => {
-    const timer = setTimeout(() => { if (loading) setLoading(false); }, 10000);
-    return () => clearTimeout(timer);
-  }, [loading]);
+    const t = setTimeout(() => setLoading(false), 12_000);
+    return () => clearTimeout(t);
+  }, []);
 
   const dayTasks = useMemo(
     () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDay)),
@@ -82,32 +90,32 @@ export default function CalendarContent() {
     [activities, selectedDay]
   );
 
-  let capitalizedLabel = '';
-  try {
-    const label = format(selectedDay, "EEEE, d 'de' MMMM yyyy", { locale: es });
-    capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
-  } catch {
-    capitalizedLabel = selectedDay.toLocaleDateString('es-MX', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    });
-  }
+  const capitalizedLabel = useMemo(() => {
+    try {
+      const label = format(selectedDay, "EEEE, d 'de' MMMM", { locale: es });
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    } catch {
+      return selectedDay.toLocaleDateString('es-MX', { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+  }, [selectedDay]);
+
+  const total = dayTasks.length + dayActivities.length;
 
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div className="h-8 w-36 rounded-lg bg-white/[0.06] animate-pulse" />
-          <div className="h-9 w-28 rounded-lg bg-white/[0.06] animate-pulse" />
+          <Skeleton className="h-9 w-44 rounded-lg bg-white/[0.06]" />
+          <Skeleton className="h-9 w-32 rounded-lg bg-white/[0.06]" />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            <div className="h-6 w-48 rounded bg-white/[0.06] animate-pulse" />
-            <div className="h-64 w-full rounded-xl bg-white/[0.06] animate-pulse" />
+          <div className="lg:col-span-2">
+            <Skeleton className="h-[360px] w-full rounded-xl bg-white/[0.06]" />
           </div>
           <div className="space-y-3">
-            <div className="h-6 w-32 rounded bg-white/[0.06] animate-pulse" />
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-20 w-full rounded-xl bg-white/[0.06] animate-pulse" />
+            <Skeleton className="h-12 w-full rounded-xl bg-white/[0.06]" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full rounded-xl bg-white/[0.06]" />
             ))}
           </div>
         </div>
@@ -117,21 +125,37 @@ export default function CalendarContent() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">Calendario</h1>
-          <p className="text-white/40 text-sm mt-1">Visualiza tareas y actividades por fecha</p>
+          <p className="text-white/40 text-sm mt-1">
+            Visualiza tareas y actividades · actualiza cada 30 s
+          </p>
         </div>
-        <Button
-          onClick={() => { setEditingTask(null); setFormOpen(true); }}
-          className="bg-brand hover:bg-brand-dark text-white gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Nueva Tarea
-        </Button>
+        <div className="flex items-center gap-2">
+          {isManager && (
+            <Button
+              variant="outline"
+              onClick={() => { setEditingAct(null); setActFormOpen(true); }}
+              className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-2 text-sm"
+            >
+              <CalendarRange className="w-4 h-4" />
+              Actividad
+            </Button>
+          )}
+          <Button
+            onClick={() => { setEditingTask(null); setTaskFormOpen(true); }}
+            className="bg-brand hover:bg-brand-dark text-white gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nueva Tarea
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ── Calendar grid ── */}
         <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6">
           <CalendarGrid
             tasks={tasks}
@@ -140,35 +164,51 @@ export default function CalendarContent() {
           />
         </div>
 
-        <div className="bg-[#15151c] border border-white/[0.06] rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between p-4 md:p-5 border-b border-white/[0.06]">
+        {/* ── Day detail panel ── */}
+        <div className="bg-[#15151c] border border-white/[0.06] rounded-xl overflow-hidden flex flex-col">
+          {/* Panel header */}
+          <div className="flex items-center justify-between p-4 md:p-5 border-b border-white/[0.06] shrink-0">
             <div className="flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-brand-light" />
-              <h3 className="text-sm font-semibold text-white">
-                {isToday(selectedDay) ? 'Hoy' : ''}
-              </h3>
+              <div>
+                <p className="text-sm font-semibold text-white leading-tight">
+                  {isToday(selectedDay) ? 'Hoy' : capitalizedLabel}
+                </p>
+                {isToday(selectedDay) && (
+                  <p className="text-[11px] text-white/35">{capitalizedLabel}</p>
+                )}
+              </div>
             </div>
-            <span className="text-[11px] text-white/40">{capitalizedLabel}</span>
+            {total > 0 && (
+              <span className="text-[11px] font-medium bg-brand/20 text-brand-light px-2 py-0.5 rounded-full">
+                {total} item{total !== 1 ? 's' : ''}
+              </span>
+            )}
           </div>
 
-          <div className="p-4 md:p-5 max-h-[520px] overflow-y-auto custom-scrollbar space-y-4">
-            {/* Activities section */}
+          {/* Panel body */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-5 space-y-4">
+            {/* Activities */}
             {dayActivities.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
                   <CalendarRange className="w-3 h-3" />
-                  Actividades
+                  Actividades ({dayActivities.length})
                 </div>
                 {dayActivities.map((act) => (
-                  <div
+                  <button
                     key={act.id}
-                    className="bg-brand/[0.07] border border-brand/20 rounded-lg p-3 hover:border-brand/30 transition-colors"
+                    type="button"
+                    onClick={() => { setEditingAct(act); setActFormOpen(true); }}
+                    className="w-full text-left bg-brand/[0.07] border border-brand/20 rounded-lg p-3 hover:border-brand/40 hover:bg-brand/[0.10] transition-colors group"
                   >
                     <div className="flex items-start gap-2">
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${activityStatusColors[act.status] || 'status-pending'}`}>
                         {activityStatusLabels[act.status] || act.status}
                       </span>
-                      <p className="text-sm font-medium text-white/90 leading-tight">{act.title}</p>
+                      <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
+                        {act.title}
+                      </p>
                     </div>
                     {act.description && (
                       <p className="text-xs text-white/35 mt-1.5 line-clamp-2 pl-1">{act.description}</p>
@@ -202,29 +242,32 @@ export default function CalendarContent() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
 
-            {/* Tasks section */}
+            {/* Tasks */}
             {dayTasks.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
                   <CheckSquare className="w-3 h-3" />
-                  Tareas
+                  Tareas ({dayTasks.length})
                 </div>
                 {dayTasks.map((task) => (
-                  <div
+                  <button
                     key={task.id}
-                    className="bg-white/[0.03] border border-white/[0.05] rounded-lg p-3.5 hover:border-white/[0.08] transition-colors cursor-pointer"
-                    onClick={() => { setEditingTask(task); setFormOpen(true); }}
+                    type="button"
+                    className="w-full text-left bg-white/[0.03] border border-white/[0.05] rounded-lg p-3.5 hover:border-white/[0.10] hover:bg-white/[0.05] transition-colors group"
+                    onClick={() => { setEditingTask(task); setTaskFormOpen(true); }}
                   >
                     <div className="flex items-start gap-2.5">
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${statusColors[task.status] || 'status-pending'}`}>
                         {statusLabels[task.status] || task.status}
                       </span>
-                      <p className="text-sm font-medium text-white/90 leading-tight">{task.title}</p>
+                      <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
+                        {task.title}
+                      </p>
                     </div>
                     {task.description && (
                       <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
@@ -259,35 +302,65 @@ export default function CalendarContent() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
 
             {/* Empty state */}
-            {dayTasks.length === 0 && dayActivities.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <CheckSquare className="w-8 h-8 text-white/15 mb-3" />
-                <p className="text-sm text-white/40">Sin elementos para este día</p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-3 text-white/40 hover:text-white hover:bg-white/[0.06] text-xs gap-1"
-                  onClick={() => { setEditingTask(null); setFormOpen(true); }}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Agregar tarea
-                </Button>
+            {total === 0 && (
+              <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-white/20" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white/40">Sin elementos este día</p>
+                  <p className="text-xs text-white/25 mt-0.5">
+                    {isToday(selectedDay) ? 'Todo en orden por hoy' : 'No hay nada programado'}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white/40 hover:text-white hover:bg-white/[0.06] text-xs gap-1"
+                    onClick={() => { setEditingTask(null); setTaskFormOpen(true); }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Tarea
+                  </Button>
+                  {isManager && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white/40 hover:text-white hover:bg-white/[0.06] text-xs gap-1"
+                      onClick={() => { setEditingAct(null); setActFormOpen(true); }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Actividad
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
 
+      {/* Task form dialog */}
       <TaskForm
-        open={formOpen}
-        onOpenChange={setFormOpen}
+        open={taskFormOpen}
+        onOpenChange={setTaskFormOpen}
         task={editingTask}
+        onSuccess={fetchData}
+      />
+
+      {/* Activity form dialog */}
+      <ActivityForm
+        open={actFormOpen}
+        onOpenChange={setActFormOpen}
+        activity={editingAct}
+        isManager={isManager}
         onSuccess={fetchData}
       />
     </div>
