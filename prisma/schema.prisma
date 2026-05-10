@@ -2,7 +2,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// PostgreSQL only (e.g. Supabase direct: db.<ref>.supabase.co:5432, ?sslmode=require on DATABASE_URL)
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -19,6 +18,7 @@ model Account {
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
+
   refresh_token     String?
   access_token      String?
   expires_at        Int?
@@ -34,9 +34,9 @@ model Account {
 }
 
 model Session {
-  id           String @id @default(cuid())
-  sessionToken String @unique @map("session_token")
-  userId       String @map("user_id")
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -53,6 +53,7 @@ model User {
   image         String?
   role          Role      @default(CLIENT)
   color         String    @default("#7c3aed")
+
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
@@ -112,6 +113,7 @@ model Task {
   status      String    @default("pending")
   priority    String    @default("medium")
   dueDate     DateTime? @map("due_date")
+
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
@@ -130,6 +132,7 @@ model Contact {
   status    String   @default("lead")
   value     Float    @default(0)
   notes     String   @default("")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -146,6 +149,7 @@ model Client {
   company   String   @default("")
   phone     String   @default("")
   status    String   @default("active")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
