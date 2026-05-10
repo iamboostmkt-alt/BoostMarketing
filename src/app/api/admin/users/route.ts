@@ -23,6 +23,8 @@ const userSelect = {
   color: true,
   active: true,
   createdAt: true,
+  customRoleId: true,
+  customRole: { select: { id: true, label: true, color: true } },
 } as const;
 
 // GET — list all users (admin only)
@@ -123,7 +125,7 @@ export async function PATCH(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
 
   const body = await req.json();
-  const { userId, role, name, email, active, color } = body;
+  const { userId, role, name, email, active, color, customRoleId } = body;
 
   if (!userId) return NextResponse.json({ error: 'userId es requerido.' }, { status: 400 });
 
@@ -163,6 +165,10 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'No puedes desactivar tu propia cuenta.' }, { status: 403 });
     }
     updateData.active = active;
+  }
+
+  if (customRoleId !== undefined) {
+    updateData.customRoleId = customRoleId || null;
   }
 
   if (Object.keys(updateData).length === 0) {

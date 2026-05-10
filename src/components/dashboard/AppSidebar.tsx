@@ -49,10 +49,12 @@ export default function AppSidebar() {
   const { data: session } = useSession();
 
   // NON-BLOCKING: always render with defaults, update when session resolves
-  const userName = session?.user?.name || 'Usuario';
-  const role = session?.user?.role;
-  const userRoleLabel = getRoleLabel(role);
-  const userImage = session?.user?.image;
+  const userName        = session?.user?.name || 'Usuario';
+  const role            = session?.user?.role;
+  const userRoleLabel   = getRoleLabel(role);
+  const userImage       = session?.user?.image;
+  const customRoleLabel = session?.user?.customRoleLabel ?? null;
+  const customRoleColor = session?.user?.customRoleColor ?? '#7c3aed';
 
   const initials = userName
     .split(' ')
@@ -144,6 +146,14 @@ export default function AppSidebar() {
             <div className="flex-1 min-w-0 overflow-hidden transition-all duration-200">
               <p className="text-sm font-medium text-white truncate">{userName}</p>
               <p className="text-xs text-white/40 truncate">{userRoleLabel}</p>
+              {customRoleLabel && (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium mt-0.5"
+                  style={{ backgroundColor: customRoleColor + '22', color: customRoleColor }}
+                >
+                  {customRoleLabel}
+                </span>
+              )}
             </div>
           )}
           {/* Logout: always visible on mobile, always visible on desktop (collapsed or expanded) */}

@@ -153,21 +153,44 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.sub = user.id;
-        token.id = user.id;
-        token.role = user.role;
+        token.sub   = user.id;
+        token.id    = user.id;
+        token.role  = user.role;
         token.color = (user as { color?: string }).color;
-        if (isDev) {
-          console.log("[auth] jwt: token created for", user.email);
+
+        // Load custom role once at login — stored in JWT cookie, no subsequent DB hits.
+        try {
+          const dbUser = await db.user.findUnique({
+            where:  { id: user.id },
+            select: {
+              customRoleId: true,
+              customRole:   { select: { label: true, color: true, permissions: true } },
+            },
+          });
+          token.customRoleId    = dbUser?.customRoleId ?? null;
+          token.customRoleLabel = dbUser?.customRole?.label ?? null;
+          token.customRoleColor = dbUser?.customRole?.color ?? null;
+          token.permissions     = (dbUser?.customRole?.permissions as Record<string, boolean>) ?? {};
+        } catch {
+          token.customRoleId    = null;
+          token.customRoleLabel = null;
+          token.customRoleColor = null;
+          token.permissions     = {};
         }
+
+        if (isDev) console.log("[auth] jwt: token created for", user.email);
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = (token.id as string) ?? token.sub ?? "";
-        session.user.role = token.role;
-        session.user.color = token.color as string | undefined;
+        session.user.id             = (token.id as string) ?? token.sub ?? "";
+        session.user.role           = token.role;
+        session.user.color          = token.color as string | undefined;
+        session.user.customRoleId   = token.customRoleId;
+        session.user.customRoleLabel = token.customRoleLabel;
+        session.user.customRoleColor = token.customRoleColor;
+        session.user.permissions    = token.permissions;
       }
       return session;
     },

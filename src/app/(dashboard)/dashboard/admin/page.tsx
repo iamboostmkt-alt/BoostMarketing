@@ -73,7 +73,11 @@ interface AdminUser {
   color: string;
   active: boolean;
   createdAt: string;
+  customRoleId: string | null;
+  customRole: { id: string; label: string; color: string } | null;
 }
+
+interface MiniRole { id: string; label: string; color: string; }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -116,12 +120,14 @@ interface UserDialogProps {
 
 function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
   const isEdit = !!user;
-  const [name,     setName]     = useState('');
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [role,     setRole]     = useState<string>('CLIENT');
-  const [color,    setColor]    = useState('#7c3aed');
-  const [saving,   setSaving]   = useState(false);
+  const [name,         setName]         = useState('');
+  const [email,        setEmail]        = useState('');
+  const [password,     setPassword]     = useState('');
+  const [role,         setRole]         = useState<string>('CLIENT');
+  const [color,        setColor]        = useState('#7c3aed');
+  const [customRoleId, setCustomRoleId] = useState<string>('none');
+  const [miniRoles,    setMiniRoles]    = useState<MiniRole[]>([]);
+  const [saving,       setSaving]       = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -130,6 +136,11 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
       setPassword('');
       setRole(user?.role ?? 'CLIENT');
       setColor(user?.color ?? '#7c3aed');
+      setCustomRoleId(user?.customRoleId ?? 'none');
+      fetch('/api/admin/roles')
+        .then((r) => r.json())
+        .then((d) => setMiniRoles(d.roles ?? []))
+        .catch(() => {});
     }
   }, [open, user]);
 
@@ -138,11 +149,12 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
     setSaving(true);
     try {
       let res: Response;
+      const crId = customRoleId === 'none' ? null : customRoleId;
       if (isEdit) {
         res = await fetch('/api/admin/users', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user!.id, name, email, role, color }),
+          body: JSON.stringify({ userId: user!.id, name, email, role, color, customRoleId: crId }),
         });
       } else {
         res = await fetch('/api/admin/users', {
@@ -219,6 +231,31 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
               </div>
             </div>
           </div>
+          {/* Custom role — only shown when editing and custom roles exist */}
+          {isEdit && miniRoles.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Rol Personalizado</Label>
+              <Select value={customRoleId} onValueChange={setCustomRoleId}>
+                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm focus:ring-brand">
+                  <SelectValue placeholder="Sin rol personalizado" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                  <SelectItem value="none" className="focus:bg-white/[0.06]">
+                    Sin rol personalizado
+                  </SelectItem>
+                  {miniRoles.map((cr) => (
+                    <SelectItem key={cr.id} value={cr.id} className="focus:bg-white/[0.06]">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: cr.color }} />
+                        {cr.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="flex gap-3 pt-1">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
               className="flex-1 border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06]">
@@ -604,9 +641,23 @@ export default function AdminDashboardPage() {
                               </div>
                             </td>
                             <td className="px-4 py-3">
-                              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${roleColorMap[user.role] || ''}`}>
-                                {getRoleLabel(user.role)}
-                              </span>
+                              <div className="flex flex-col gap-1">
+                                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit ${roleColorMap[user.role] || ''}`}>
+                                  {getRoleLabel(user.role)}
+                                </span>
+                                {user.customRole && (
+                                  <span
+                                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium w-fit"
+                                    style={{
+                                      backgroundColor: user.customRole.color + '22',
+                                      color: user.customRole.color,
+                                    }}
+                                  >
+                                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: user.customRole.color }} />
+                                    {user.customRole.label}
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="px-4 py-3 hidden md:table-cell">
                               <span className="text-xs text-white/40">{fmtDate(user.createdAt)}</span>

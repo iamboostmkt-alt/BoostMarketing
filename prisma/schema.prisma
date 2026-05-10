@@ -59,6 +59,7 @@ model User {
   role          Role      @default(CLIENT)
   color         String    @default("#7c3aed")
   active        Boolean   @default(true)
+  customRoleId  String?   @map("custom_role_id")
 
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
@@ -73,6 +74,7 @@ model User {
   clients            Client[]
   assignedActivities Activity[] @relation("AssignedActivities")
   createdActivities  Activity[] @relation("CreatedActivities")
+  customRole         CustomRole? @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
 
   @@map("users")
 }
@@ -204,6 +206,8 @@ model CustomRole {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  users User[]
 
   @@map("custom_roles")
 }
