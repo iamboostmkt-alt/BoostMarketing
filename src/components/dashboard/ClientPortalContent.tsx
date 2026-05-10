@@ -236,6 +236,7 @@ function PortalCalendar({ activities, tasks, onSelectDay }: CalendarProps) {
           return (
             <button
               key={day.toISOString()}
+              type="button"
               onClick={() => { if (isCurrentMonth) onSelectDay(day); }}
               className={`
                 relative flex flex-col items-center justify-center min-h-[52px] md:min-h-[64px] rounded-lg transition-all
@@ -444,6 +445,17 @@ export default function ClientPortalContent() {
 
   const { client, activities, tasks } = data;
 
+  // Collect unique assigned staff across all activities
+  const assignedManager = client.assignedManager;
+
+  const teamMembersMap = new Map<string, NonNullable<Activity['assignedUser']>>();
+  activities.forEach((a) => {
+    if (a.assignedUser && a.assignedUser.id !== assignedManager?.id) {
+      teamMembersMap.set(a.assignedUser.id, a.assignedUser);
+    }
+  });
+  const teamMembers = [...teamMembersMap.values()];
+
   const totalItems     = activities.length + tasks.length;
   const completedItems = activities.filter((a) => a.status === 'completed').length
                        + tasks.filter((t) => t.status === 'completed').length;
@@ -470,25 +482,22 @@ export default function ClientPortalContent() {
           </div>
 
           {/* Assigned manager */}
-          {(client as ClientPortalData['client'] & { assignedManager?: { id: string; name: string | null; email: string; color: string; image: string | null } | null }).assignedManager && (
+          {client.assignedManager && (
             <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl px-4 py-2.5 shrink-0">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={(client as { assignedManager?: { image?: string | null } }).assignedManager?.image ?? undefined} />
+                <AvatarImage src={client.assignedManager.image ?? undefined} />
                 <AvatarFallback className="text-[10px] font-medium"
                   style={{
-                    backgroundColor: ((client as { assignedManager?: { color?: string } }).assignedManager?.color || '#7c3aed') + '33',
-                    color:            (client as { assignedManager?: { color?: string } }).assignedManager?.color || '#7c3aed',
+                    backgroundColor: (client.assignedManager.color || '#7c3aed') + '33',
+                    color:            client.assignedManager.color || '#7c3aed',
                   }}>
-                  {initials(
-                    (client as { assignedManager?: { name?: string | null; email?: string } }).assignedManager?.name,
-                    (client as { assignedManager?: { email?: string } }).assignedManager?.email
-                  )}
+                  {initials(client.assignedManager.name, client.assignedManager.email)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-[10px] text-white/30 font-medium uppercase tracking-wider">Tu PM</p>
                 <p className="text-sm text-white/80 font-medium">
-                  {(client as { assignedManager?: { name?: string | null; email?: string } }).assignedManager?.name || (client as { assignedManager?: { email?: string } }).assignedManager?.email}
+                  {client.assignedManager.name || client.assignedManager.email}
                 </p>
               </div>
             </div>
@@ -513,6 +522,49 @@ export default function ClientPortalContent() {
             <p className="text-[11px] text-white/35">Completados</p>
           </div>
         </div>
+
+        {/* Personal Asignado */}
+        {(assignedManager || teamMembers.length > 0) && (
+          <div className="pt-1 border-t border-white/[0.04] space-y-3">
+            <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider">Personal Asignado</p>
+            <div className="flex flex-wrap gap-3">
+              {assignedManager && (
+                <div className="flex items-center gap-2.5 bg-white/[0.03] rounded-xl px-3 py-2">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={assignedManager.image ?? undefined} />
+                    <AvatarFallback className="text-[10px] font-medium"
+                      style={{ backgroundColor: (assignedManager.color || '#7c3aed') + '33', color: assignedManager.color || '#7c3aed' }}>
+                      {initials(assignedManager.name, assignedManager.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">PM</p>
+                    <p className="text-xs text-white/80 font-medium leading-tight">
+                      {assignedManager.name || assignedManager.email}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {teamMembers.map((member) => (
+                <div key={member.id} className="flex items-center gap-2.5 bg-white/[0.03] rounded-xl px-3 py-2">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={member.image ?? undefined} />
+                    <AvatarFallback className="text-[10px] font-medium"
+                      style={{ backgroundColor: (member.color || '#06b6d4') + '33', color: member.color || '#06b6d4' }}>
+                      {initials(member.name, member.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">Equipo</p>
+                    <p className="text-xs text-white/80 font-medium leading-tight">
+                      {member.name || member.email}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Calendar */}

@@ -4,8 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 
 const activityInclude = {
-  assignedUser: { select: { id: true, name: true, email: true, color: true } },
-  createdBy:    { select: { id: true, name: true, email: true, color: true } },
+  assignedUser: { select: { id: true, name: true, email: true, color: true, image: true } },
+  createdBy:    { select: { id: true, name: true, email: true, color: true, image: true } },
   client:       { select: { id: true, name: true, company: true } },
 } as const;
 

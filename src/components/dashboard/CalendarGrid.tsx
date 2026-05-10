@@ -121,6 +121,7 @@ export default function CalendarGrid({
           return (
             <button
               key={day.toISOString()}
+              type="button"
               onClick={() => onSelectDay(day)}
               className={`
                 relative flex flex-col items-center justify-center min-h-[56px] md:min-h-[68px] rounded-lg transition-all

@@ -95,7 +95,7 @@ export interface Client {
   status: string;
   createdAt: string;
   updatedAt: string;
-  assignedManager?: { id: string; name: string | null; email: string; color: string } | null;
+  assignedManager?: { id: string; name: string | null; email: string; color: string; image: string | null } | null;
 }
 
 export interface DashboardStats {
@@ -202,7 +202,7 @@ export interface Activity {
   clientId: string | null;
   createdAt: string;
   updatedAt: string;
-  assignedUser?: { id: string; name: string | null; email: string; color: string } | null;
-  createdBy?: { id: string; name: string | null; email: string; color: string };
+  assignedUser?: { id: string; name: string | null; email: string; color: string; image: string | null } | null;
+  createdBy?: { id: string; name: string | null; email: string; color: string; image: string | null };
   client?: { id: string; name: string; company: string } | null;
 }

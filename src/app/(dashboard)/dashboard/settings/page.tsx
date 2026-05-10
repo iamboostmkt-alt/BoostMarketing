@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
-import { Save, Moon, Bell, Globe, Palette } from 'lucide-react';
+import { Save, Moon, Bell, Globe, Palette, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +34,9 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // Profile form state
   const [name, setName] = useState('');
@@ -55,6 +58,7 @@ export default function SettingsPage() {
           setProfile(user);
           setName(user.name || '');
           setSelectedColor(user.color || '#7c3aed');
+          setImageUrl(user.image || null);
         }
       } catch {
         // silent
@@ -77,6 +81,26 @@ export default function SettingsPage() {
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/auth/avatar', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al subir');
+      setImageUrl(data.url);
+      toast.success('Avatar actualizado');
+    } catch (err: any) {
+      toast.error(err.message || 'Error al subir el avatar');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
 
   const handleSaveProfile = async () => {
     setSaving(true);
@@ -139,14 +163,50 @@ export default function SettingsPage() {
                   {loading ? (
                     <Skeleton className="w-24 h-24 rounded-full" />
                   ) : (
-                    <div
-                      className="flex items-center justify-center w-24 h-24 rounded-full text-2xl font-bold text-white shrink-0"
-                      style={{ backgroundColor: selectedColor + '33', color: selectedColor }}
-                    >
-                      {initials}
+                    <div className="relative group">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={userName}
+                          className="w-24 h-24 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className="flex items-center justify-center w-24 h-24 rounded-full text-2xl font-bold shrink-0"
+                          style={{ backgroundColor: selectedColor + '33', color: selectedColor }}
+                        >
+                          {initials}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => fileRef.current?.click()}
+                        disabled={uploading}
+                        className="absolute inset-0 rounded-full flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-wait"
+                      >
+                        {uploading ? (
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        ) : (
+                          <Camera className="w-5 h-5 text-white" />
+                        )}
+                      </button>
+                      <input
+                        ref={fileRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                      />
                     </div>
                   )}
-                  <p className="text-sm text-white/40">Avatar</p>
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading || loading}
+                    className="text-sm text-brand-light hover:text-white transition-colors disabled:opacity-50"
+                  >
+                    {uploading ? 'Subiendo...' : 'Cambiar foto'}
+                  </button>
                 </div>
 
                 {/* Form */}

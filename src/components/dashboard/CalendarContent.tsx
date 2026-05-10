@@ -44,7 +44,7 @@ function dayLabel(day: Date): string {
   }
 }
 
-function getAvatar(u: { name: string | null; email: string; color: string; image?: string } | undefined) {
+function getAvatar(u: { name: string | null; email: string; color: string; image?: string | null } | undefined) {
   if (!u) return null;
   return (
     <div className="flex items-center gap-1.5 ml-auto">
