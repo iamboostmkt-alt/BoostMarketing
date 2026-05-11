@@ -221,7 +221,6 @@ model ActivityAssignedUser {
   @@unique([activityId, userId])
   @@map("activity_assigned_users")
 }
-
 model CustomRole {
   id          String   @id @default(cuid())
   name        String   @unique
