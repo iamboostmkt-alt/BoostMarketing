@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { log } from '@/lib/logger';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -104,7 +105,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ client, activities, tasks });
   } catch (error) {
-    console.error('[client-portal GET]', error);
+    log.err('/api/client-portal GET', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 }

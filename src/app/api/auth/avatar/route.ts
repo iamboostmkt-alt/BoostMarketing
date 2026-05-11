@@ -3,11 +3,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getSupabaseAdmin, STORAGE_BUCKET, getPublicUrl } from '@/lib/supabase';
 import { db } from '@/lib/db';
+import { log } from '@/lib/logger';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
+  log.api('/api/auth/avatar', 'POST');
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
 
@@ -34,11 +36,12 @@ export async function POST(req: NextRequest) {
     .upload(filename, buffer, { contentType: file.type, upsert: true });
 
   if (error) {
-    console.error('[avatar upload]', error.message);
+    log.supabase(`storage.upload(${filename})`, error);
     return NextResponse.json({ error: 'Error al subir la imagen.' }, { status: 500 });
   }
 
   const url = getPublicUrl(filename);
+  log.info('/api/auth/avatar', 'upload ok', { userId, url });
 
   await db.user.update({ where: { id: userId }, data: { image: url } });
 

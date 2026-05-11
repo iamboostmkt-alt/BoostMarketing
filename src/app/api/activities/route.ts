@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { dispatchEvent } from '@/lib/events';
 import { broadcastRealtime } from '@/lib/realtime-server';
+import { log } from '@/lib/logger';
 
 const MANAGE_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ activities });
   } catch (err) {
-    console.error('[activities GET]', err);
+    log.err('/api/activities GET', err);
     return NextResponse.json({ error: 'Error interno.' }, { status: 500 });
   }
 }
@@ -125,7 +126,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ activity }, { status: 201 });
   } catch (err) {
-    console.error('[activities POST]', err);
+    log.err('/api/activities POST', err);
     return NextResponse.json({ error: 'Error interno.' }, { status: 500 });
   }
 }
@@ -197,7 +198,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ activity });
   } catch (err) {
-    console.error('[activities PUT]', err);
+    log.err('/api/activities PUT', err);
     return NextResponse.json({ error: 'Error interno.' }, { status: 500 });
   }
 }
@@ -238,7 +239,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ message: 'Actividad eliminada.' });
   } catch (err) {
-    console.error('[activities DELETE]', err);
+    log.err('/api/activities DELETE', err);
     return NextResponse.json({ error: 'Error interno.' }, { status: 500 });
   }
 }
