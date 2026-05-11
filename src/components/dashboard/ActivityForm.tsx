@@ -56,7 +56,9 @@ export default function ActivityForm({
   const [startDate, setStartDate]     = useState<Date | undefined>();
   const [endDate, setEndDate]         = useState<Date | undefined>();
   const [assignedUserId, setAssignee] = useState('');
+  const [clientId, setClientId]       = useState('');
   const [users, setUsers]             = useState<User[]>([]);
+  const [clients, setClients]         = useState<{ id: string; name: string; company: string }[]>([]);
   const [startOpen, setStartOpen]     = useState(false);
   const [endOpen, setEndOpen]         = useState(false);
   const [loading, setLoading]         = useState(false);
@@ -71,6 +73,7 @@ export default function ActivityForm({
       setStartDate(new Date(activity.startDate));
       setEndDate(activity.endDate ? new Date(activity.endDate) : undefined);
       setAssignee(activity.assignedUserId ?? '');
+      setClientId(activity.clientId ?? '');
     } else {
       setTitle('');
       setDesc('');
@@ -79,13 +82,14 @@ export default function ActivityForm({
       setStartDate(undefined);
       setEndDate(undefined);
       setAssignee('');
+      setClientId('');
     }
     // Close calendars on dialog open/close
     setStartOpen(false);
     setEndOpen(false);
   }, [activity, open]);
 
-  // Fetch internal users (non-CLIENT) when manager opens dialog
+  // Fetch internal users + clients when manager opens dialog
   useEffect(() => {
     if (!isManager || !open) return;
     fetch('/api/admin/users')
@@ -94,6 +98,10 @@ export default function ActivityForm({
         const internal = (d.users ?? []).filter((u: User) => u.role !== 'CLIENT');
         setUsers(internal);
       })
+      .catch(() => {});
+    fetch('/api/clients')
+      .then((r) => r.json())
+      .then((d) => setClients(d.clients ?? []))
       .catch(() => {});
   }, [isManager, open]);
 
@@ -112,6 +120,7 @@ export default function ActivityForm({
         startDate:      startDate.toISOString(),
         endDate:        endDate?.toISOString() ?? null,
         assignedUserId: assignedUserId || null,
+        clientId:       clientId || null,
       };
 
       const res = await fetch('/api/activities', {
@@ -267,12 +276,16 @@ export default function ActivityForm({
           {isManager && (
             <div className="space-y-1.5">
               <Label className="text-sm text-white/70">Asignar a</Label>
-              <Select value={assignedUserId} onValueChange={setAssignee} disabled={loading}>
+              <Select
+                value={assignedUserId || 'none'}
+                onValueChange={(v) => setAssignee(v === 'none' ? '' : v)}
+                disabled={loading}
+              >
                 <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white focus:ring-brand">
                   <SelectValue placeholder="Sin asignar" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#15151c] border-white/[0.08] text-white max-h-48">
-                  <SelectItem value="" className="text-white/50 focus:bg-white/[0.06]">
+                  <SelectItem value="none" className="text-white/50 focus:bg-white/[0.06]">
                     Sin asignar
                   </SelectItem>
                   {users.map((u) => (
@@ -284,6 +297,32 @@ export default function ActivityForm({
                         />
                         {u.name || u.email}
                       </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Client — manager only */}
+          {isManager && clients.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-sm text-white/70">Cuenta de cliente</Label>
+              <Select
+                value={clientId || 'none'}
+                onValueChange={(v) => setClientId(v === 'none' ? '' : v)}
+                disabled={loading}
+              >
+                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white focus:ring-brand">
+                  <SelectValue placeholder="Sin cuenta asignada" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white max-h-48">
+                  <SelectItem value="none" className="text-white/50 focus:bg-white/[0.06]">
+                    Sin cuenta asignada
+                  </SelectItem>
+                  {clients.map((c) => (
+                    <SelectItem key={c.id} value={c.id} className="focus:bg-white/[0.06]">
+                      {c.name}{c.company ? ` — ${c.company}` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>

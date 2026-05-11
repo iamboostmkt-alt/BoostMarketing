@@ -151,12 +151,14 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.sub   = user.id;
-        token.id    = user.id;
-        token.role  = user.role;
-        token.color = (user as { color?: string }).color;
+        token.sub     = user.id;
+        token.id      = user.id;
+        token.role    = user.role;
+        token.color   = (user as { color?: string }).color;
+        // Explicitly store image so it survives JWT round-trips
+        token.picture = (user as { image?: string | null }).image ?? token.picture ?? undefined;
 
         // Load custom role once at login — stored in JWT cookie, no subsequent DB hits.
         try {
@@ -180,17 +182,25 @@ export const authOptions: NextAuthOptions = {
 
         if (isDev) console.log("[auth] jwt: token created for", user.email);
       }
+
+      // Called when client invokes update({ image: newUrl }) — refreshes avatar in JWT cookie
+      if (trigger === 'update' && (session as { image?: string | null })?.image !== undefined) {
+        token.picture = (session as { image: string | null }).image ?? undefined;
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id             = (token.id as string) ?? token.sub ?? "";
-        session.user.role           = token.role;
-        session.user.color          = token.color as string | undefined;
-        session.user.customRoleId   = token.customRoleId;
+        session.user.id              = (token.id as string) ?? token.sub ?? "";
+        session.user.role            = token.role;
+        session.user.color           = token.color as string | undefined;
+        // Sync avatar from JWT — token.picture is the standard JWT claim for image
+        session.user.image           = (token.picture as string | null | undefined) ?? null;
+        session.user.customRoleId    = token.customRoleId;
         session.user.customRoleLabel = token.customRoleLabel;
         session.user.customRoleColor = token.customRoleColor;
-        session.user.permissions    = token.permissions;
+        session.user.permissions     = token.permissions;
       }
       return session;
     },

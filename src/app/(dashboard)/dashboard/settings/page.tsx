@@ -30,7 +30,7 @@ const PREDEFINED_COLORS = [
 ];
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -93,6 +93,8 @@ export default function SettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al subir');
       setImageUrl(data.url);
+      // Refresh JWT token so TopNav + AppSidebar show the new avatar immediately
+      await updateSession({ image: data.url });
       toast.success('Avatar actualizado');
     } catch (err: any) {
       toast.error(err.message || 'Error al subir el avatar');
