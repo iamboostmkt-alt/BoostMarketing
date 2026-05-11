@@ -7,9 +7,9 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { bus, RT_EVENTS } from '@/lib/event-bus';
 import type { ActivityComment } from '@/lib/types';
 
-const POLL_MS  = 5_000;
 const MAX_LEN  = 1000;
 
 interface ActivityCommentThreadProps {
@@ -78,11 +78,13 @@ export default function ActivityCommentThread({
     });
   }, [activityId, fetchComments]);
 
-  // 5s polling
+  // Real-time: re-fetch when a comment is posted to this activity
   useEffect(() => {
-    const id = setInterval(() => fetchComments(true), POLL_MS);
-    return () => clearInterval(id);
-  }, [fetchComments]);
+    return bus.on(RT_EVENTS.COMMENT_CREATED, (payload: unknown) => {
+      const p = payload as { activityId?: string };
+      if (p.activityId === activityId) fetchComments(true);
+    });
+  }, [activityId, fetchComments]);
 
   async function handleSend() {
     const text = message.trim();

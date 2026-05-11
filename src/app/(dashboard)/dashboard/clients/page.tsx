@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Plus, Search, Trash2, Pencil, Users, UserCheck,
+  UserCircle2, Briefcase, Star,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -17,26 +18,83 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
 import ClientForm from '@/components/dashboard/ClientForm';
-import { statusColors, statusLabels } from '@/lib/theme-maps';
 import type { Client } from '@/lib/types';
 
 function initials(name: string) {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+function segment(client: Client): 'prospect' | 'unassigned' | 'assigned' {
+  if (client.status === 'prospect') return 'prospect';
+  if (!client.assignedManagerId)   return 'unassigned';
+  return 'assigned';
+}
+
+const TABS = [
+  {
+    key:   'all',
+    label: 'Todos',
+    icon:  Users,
+    color: 'text-white',
+    dot:   'bg-white/30',
+    badge: 'bg-white/[0.08] text-white/60',
+    active:'bg-white/[0.06] text-white border-b-2 border-white/30',
+  },
+  {
+    key:   'prospect',
+    label: 'Prospectos',
+    icon:  Star,
+    color: 'text-amber-400',
+    dot:   'bg-amber-400',
+    badge: 'bg-amber-500/15 text-amber-300',
+    active:'bg-amber-500/10 text-amber-300 border-b-2 border-amber-400',
+  },
+  {
+    key:   'unassigned',
+    label: 'Sin Asignar',
+    icon:  UserCircle2,
+    color: 'text-white/50',
+    dot:   'bg-white/40',
+    badge: 'bg-white/[0.06] text-white/40',
+    active:'bg-white/[0.05] text-white/70 border-b-2 border-white/30',
+  },
+  {
+    key:   'assigned',
+    label: 'Asignados',
+    icon:  Briefcase,
+    color: 'text-cyan-400',
+    dot:   'bg-cyan-400',
+    badge: 'bg-cyan-500/15 text-cyan-300',
+    active:'bg-cyan-500/10 text-cyan-300 border-b-2 border-cyan-400',
+  },
+] as const;
+
+type TabKey = (typeof TABS)[number]['key'];
+
+const statusBadge: Record<string, string> = {
+  active:   'bg-green-500/15 text-green-300 border border-green-500/20',
+  prospect: 'bg-amber-500/15 text-amber-300 border border-amber-500/20',
+  inactive: 'bg-white/[0.06] text-white/40 border border-white/10',
+  lead:     'bg-purple-500/15 text-purple-300 border border-purple-500/20',
+};
+const statusLabel: Record<string, string> = {
+  active:   'Activo',
+  prospect: 'Prospecto',
+  inactive: 'Inactivo',
+  lead:     'Lead',
+};
+
 export default function ClientsPage() {
   const { data: session } = useSession();
-  const isAdmin = session?.user?.role === 'ADMIN';
+  const role      = session?.user?.role as string | undefined;
+  const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(role ?? '');
 
-  const [clients,      setClients]      = useState<Client[]>([]);
-  const [loading,      setLoading]      = useState(true);
-  const [search,       setSearch]       = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [formOpen,     setFormOpen]     = useState(false);
+  const [clients,       setClients]       = useState<Client[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [search,        setSearch]        = useState('');
+  const [activeTab,     setActiveTab]     = useState<TabKey>('all');
+  const [formOpen,      setFormOpen]      = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deleteTarget,  setDeleteTarget]  = useState<Client | null>(null);
   const [deleting,      setDeleting]      = useState(false);
@@ -44,8 +102,7 @@ export default function ClientsPage() {
   const fetchClients = useCallback(async () => {
     try {
       const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.set('status', statusFilter);
-      if (search.trim())           params.set('search', search.trim());
+      if (search.trim()) params.set('search', search.trim());
       const res = await fetch(`/api/clients?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
@@ -56,22 +113,32 @@ export default function ClientsPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, search]);
+  }, [search]);
 
   useEffect(() => {
     const t = setTimeout(() => fetchClients(), 300);
     return () => clearTimeout(t);
   }, [fetchClients]);
 
-  const handleEdit = (client: Client) => {
-    setEditingClient(client);
-    setFormOpen(true);
-  };
+  // Client-side segmentation
+  const segmented = useMemo(() => {
+    const base = clients;
+    if (activeTab === 'all')        return base;
+    if (activeTab === 'prospect')   return base.filter((c) => segment(c) === 'prospect');
+    if (activeTab === 'unassigned') return base.filter((c) => segment(c) === 'unassigned');
+    if (activeTab === 'assigned')   return base.filter((c) => segment(c) === 'assigned');
+    return base;
+  }, [clients, activeTab]);
 
-  const handleCreate = () => {
-    setEditingClient(null);
-    setFormOpen(true);
-  };
+  const counts = useMemo(() => ({
+    all:        clients.length,
+    prospect:   clients.filter((c) => segment(c) === 'prospect').length,
+    unassigned: clients.filter((c) => segment(c) === 'unassigned').length,
+    assigned:   clients.filter((c) => segment(c) === 'assigned').length,
+  }), [clients]);
+
+  const handleEdit = (client: Client) => { setEditingClient(client); setFormOpen(true); };
+  const handleCreate = () => { setEditingClient(null); setFormOpen(true); };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -105,39 +172,55 @@ export default function ClientsPage() {
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-          <Input
-            placeholder="Buscar por nombre, email o empresa…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full sm:w-[180px] focus-visible:ring-brand">
-            <SelectValue placeholder="Filtrar estado" />
-          </SelectTrigger>
-          <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Activo</SelectItem>
-            <SelectItem value="prospect">Prospecto</SelectItem>
-            <SelectItem value="inactive">Inactivo</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Search */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+        <Input
+          placeholder="Buscar por nombre, email o empresa…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand"
+        />
       </div>
 
-      {/* Table */}
+      {/* Tabs */}
       <div className="glass-card rounded-xl overflow-hidden">
+        {/* Tab bar */}
+        <div className="flex border-b border-white/[0.06] overflow-x-auto">
+          {TABS.map((tab) => {
+            const Icon   = tab.icon;
+            const count  = counts[tab.key];
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={`
+                  flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap transition-all
+                  ${isActive ? tab.active : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03]'}
+                `}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? tab.color : ''}`} />
+                {tab.label}
+                {!loading && (
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${isActive ? tab.badge : 'bg-white/[0.06] text-white/25'}`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Table */}
         <Table>
           <TableHeader>
             <TableRow className="border-white/[0.06] hover:bg-transparent">
               <TableHead className="text-white/50">Nombre</TableHead>
               <TableHead className="text-white/50 hidden sm:table-cell">Email</TableHead>
               <TableHead className="text-white/50 hidden md:table-cell">Empresa</TableHead>
-              <TableHead className="text-white/50 hidden lg:table-cell">Responsable</TableHead>
+              <TableHead className="text-white/50 hidden lg:table-cell">Project Manager</TableHead>
               <TableHead className="text-white/50">Estado</TableHead>
               <TableHead className="text-white/50 text-right">Acciones</TableHead>
             </TableRow>
@@ -154,15 +237,20 @@ export default function ClientsPage() {
                   <TableCell><Skeleton className="h-8 w-16 ml-auto" /></TableCell>
                 </TableRow>
               ))
-            ) : clients.length === 0 ? (
+            ) : segmented.length === 0 ? (
               <TableRow className="border-white/[0.04]">
                 <TableCell colSpan={6} className="text-center py-16">
                   <div className="flex flex-col items-center gap-3">
                     <Users className="w-12 h-12 text-white/15" />
                     <p className="text-white/40 text-sm">
-                      {search || statusFilter !== 'all' ? 'No se encontraron clientes' : 'No hay clientes registrados'}
+                      {search
+                        ? 'No se encontraron clientes con ese criterio'
+                        : activeTab === 'prospect'   ? 'No hay prospectos'
+                        : activeTab === 'unassigned' ? 'Todos los clientes tienen PM asignado'
+                        : activeTab === 'assigned'   ? 'No hay clientes con PM asignado'
+                        : 'No hay clientes registrados'}
                     </p>
-                    {!search && statusFilter === 'all' && (
+                    {activeTab === 'all' && !search && (
                       <Button size="sm" onClick={handleCreate} variant="outline"
                         className="mt-2 border-white/[0.1] text-white/50 hover:text-white hover:bg-white/[0.06] gap-2">
                         <Plus className="w-4 h-4" />Crear cliente
@@ -172,63 +260,74 @@ export default function ClientsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              clients.map((client) => (
-                <TableRow key={client.id}
-                  className="border-white/[0.04] hover:bg-white/[0.02] cursor-pointer transition-colors"
-                  onClick={() => handleEdit(client)}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-brand/10 text-brand-light text-xs font-medium shrink-0">
-                        {initials(client.name)}
+              segmented.map((client) => {
+                const seg = segment(client);
+                return (
+                  <TableRow key={client.id}
+                    className="border-white/[0.04] hover:bg-white/[0.02] cursor-pointer transition-colors"
+                    onClick={() => handleEdit(client)}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="relative shrink-0">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-brand/10 text-brand-light text-xs font-medium">
+                            {initials(client.name)}
+                          </div>
+                          {/* Segment indicator dot */}
+                          <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-[#15151c] ${
+                            seg === 'prospect'   ? 'bg-amber-400' :
+                            seg === 'assigned'   ? 'bg-cyan-400'  :
+                            'bg-white/30'
+                          }`} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-white/90">{client.name}</p>
+                          <p className="text-xs text-white/40 sm:hidden">{client.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-white/90">{client.name}</p>
-                        <p className="text-xs text-white/40 sm:hidden">{client.email}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-sm text-white/60">{client.email}</TableCell>
-                  <TableCell className="hidden md:table-cell text-sm text-white/60">{client.company || '—'}</TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {client.assignedManager ? (
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="text-[9px] font-medium"
-                            style={{ backgroundColor: (client.assignedManager.color || '#7c3aed') + '33', color: client.assignedManager.color || '#7c3aed' }}>
-                            {initials(client.assignedManager.name || client.assignedManager.email)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs text-white/60">
-                          {client.assignedManager.name || client.assignedManager.email}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-sm text-white/60">{client.email}</TableCell>
+                    <TableCell className="hidden md:table-cell text-sm text-white/60">{client.company || '—'}</TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {client.assignedManager ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="text-[9px] font-medium"
+                              style={{ backgroundColor: (client.assignedManager.color || '#7c3aed') + '33', color: client.assignedManager.color || '#7c3aed' }}>
+                              {initials(client.assignedManager.name || client.assignedManager.email)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs text-white/60">
+                            {client.assignedManager.name || client.assignedManager.email}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-white/25 flex items-center gap-1">
+                          <UserCheck className="w-3.5 h-3.5" />Sin asignar
                         </span>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-white/25 flex items-center gap-1">
-                        <UserCheck className="w-3.5 h-3.5" />Sin asignar
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadge[client.status] ?? statusBadge.inactive}`}>
+                        {statusLabel[client.status] ?? client.status}
                       </span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[client.status] || 'status-inactive'}`}>
-                      {statusLabels[client.status] || client.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon"
-                        className="h-8 w-8 text-white/30 hover:text-white hover:bg-white/[0.06]"
-                        onClick={() => handleEdit(client)}>
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon"
-                        className="h-8 w-8 text-white/30 hover:text-red-400 hover:bg-red-400/10"
-                        onClick={() => setDeleteTarget(client)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon"
+                          className="h-8 w-8 text-white/30 hover:text-white hover:bg-white/[0.06]"
+                          onClick={() => handleEdit(client)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon"
+                          className="h-8 w-8 text-white/30 hover:text-red-400 hover:bg-red-400/10"
+                          onClick={() => setDeleteTarget(client)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -238,7 +337,7 @@ export default function ClientsPage() {
         open={formOpen}
         onOpenChange={setFormOpen}
         client={editingClient}
-        isAdmin={isAdmin}
+        isAdmin={isManager}
         onSuccess={() => { setEditingClient(null); fetchClients(); }}
       />
 

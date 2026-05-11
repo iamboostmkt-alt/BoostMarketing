@@ -33,6 +33,7 @@ export const RT_EVENTS = {
   MESSAGE_SENT:       'message.sent',
   NOTIFICATION_NEW:   'notification.created',
   PRESENCE_UPDATED:   'presence.updated',
+  COMMENT_CREATED:    'comment.created',
 } as const;
 
 export type RTEventName = (typeof RT_EVENTS)[keyof typeof RT_EVENTS];

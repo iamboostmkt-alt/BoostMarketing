@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
     const role   = session.user.role as string;
     const { searchParams } = new URL(req.url);
     const status  = searchParams.get('status');
+    const segment = searchParams.get('segment'); // prospect | unassigned | assigned
     const search  = searchParams.get('search')?.trim() ?? '';
 
     // CLIENTs never access this list — they use /api/client-portal instead
@@ -45,7 +46,19 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    if (status && status !== 'all') where.status = status;
+    // Segment filter takes precedence over raw status filter
+    if (segment === 'prospect') {
+      where.status = 'prospect';
+    } else if (segment === 'unassigned') {
+      // Active clients (not prospects) without a PM
+      where.status           = { not: 'prospect' };
+      where.assignedManagerId = null;
+    } else if (segment === 'assigned') {
+      // Any client that has a PM assigned
+      where.assignedManagerId = { not: null };
+    } else if (status && status !== 'all') {
+      where.status = status;
+    }
 
     if (search) {
       const searchFilter = [

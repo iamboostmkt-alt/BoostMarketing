@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { dispatchEvent } from '@/lib/events';
+import { broadcastRealtime } from '@/lib/realtime-server';
 
 const MAX_LEN = 1000;
 
@@ -115,6 +116,9 @@ export async function POST(req: NextRequest) {
       },
       include: userSelect,
     });
+
+    // Broadcast to all open ActivityDetailModals watching this activity (non-blocking)
+    broadcastRealtime('comment.created', { activityId, commentId: comment.id }).catch(() => undefined);
 
     // Notify participants via event system (non-blocking)
     db.activity.findUnique({
