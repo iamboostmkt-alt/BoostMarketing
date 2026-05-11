@@ -16,8 +16,36 @@ const clientSelect = {
   status: true,
   createdAt: true,
   updatedAt: true,
-  assignedManager: { select: { id: true, name: true, email: true, color: true } },
+  assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
+  assignedUsers: {
+    include: {
+      user: { select: { id: true, name: true, email: true, color: true, image: true } },
+    },
+  },
 } as const;
+
+async function syncClientAssignees(clientId: string, userIds: string[]) {
+  await db.clientAssignedUser.deleteMany({ where: { clientId } });
+  if (userIds.length === 0) return;
+  await db.clientAssignedUser.createMany({
+    data: userIds.map((userId) => ({ clientId, userId })),
+    skipDuplicates: true,
+  });
+}
+
+function flatClientAssignees(raw: { user: { id: string; name: string | null; email: string; color: string; image: string | null } }[]) {
+  return raw.map((r) => r.user);
+}
+
+function formatClient(c: Record<string, unknown>) {
+  const { assignedUsers, ...rest } = c;
+  return {
+    ...rest,
+    assignedUsers: flatClientAssignees(
+      (assignedUsers as { user: { id: string; name: string | null; email: string; color: string; image: string | null } }[]) ?? []
+    ),
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -75,11 +103,13 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const clients = await db.client.findMany({
+    const raw = await db.client.findMany({
       where,
       select: clientSelect,
       orderBy: { createdAt: 'desc' },
     });
+
+    const clients = raw.map((c) => formatClient(c as unknown as Record<string, unknown>));
 
     return NextResponse.json({ clients });
   } catch (error) {
@@ -101,13 +131,12 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, email, company, phone, status, assignedManagerId } = body;
+    const { name, email, company, phone, status, assignedManagerId, assignedUserIds } = body;
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Nombre y email son requeridos' }, { status: 400 });
     }
 
-    // PMs are always the manager of clients they create (unless admin overrides)
     const resolvedManagerId = role === 'ADMIN'
       ? (assignedManagerId || null)
       : userId;
@@ -125,6 +154,10 @@ export async function POST(req: NextRequest) {
       select: clientSelect,
     });
 
+    if (Array.isArray(assignedUserIds) && assignedUserIds.length > 0) {
+      await syncClientAssignees(client.id, assignedUserIds);
+    }
+
     await db.activityLog.create({
       data: {
         userId,
@@ -135,7 +168,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ client }, { status: 201 });
+    const fresh = await db.client.findUnique({ where: { id: client.id }, select: clientSelect });
+    return NextResponse.json({ client: formatClient(fresh as unknown as Record<string, unknown>) }, { status: 201 });
   } catch (error) {
     console.error('[clients POST]', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
@@ -155,14 +189,13 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, name, email, company, phone, status, assignedManagerId } = body;
+    const { id, name, email, company, phone, status, assignedManagerId, assignedUserIds } = body;
 
     if (!id) return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
 
     const existing = await db.client.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
 
-    // PMs can only edit their own clients
     if (role === 'PROJECT_MANAGER' && existing.userId !== userId && existing.assignedManagerId !== userId) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
@@ -183,6 +216,10 @@ export async function PUT(req: NextRequest) {
       select: clientSelect,
     });
 
+    if (Array.isArray(assignedUserIds)) {
+      await syncClientAssignees(id, assignedUserIds);
+    }
+
     await db.activityLog.create({
       data: {
         userId,
@@ -193,7 +230,8 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ client });
+    const fresh = await db.client.findUnique({ where: { id: client.id }, select: clientSelect });
+    return NextResponse.json({ client: formatClient(fresh as unknown as Record<string, unknown>) });
   } catch (error) {
     console.error('[clients PUT]', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

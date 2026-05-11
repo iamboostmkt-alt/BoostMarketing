@@ -1,9 +1,10 @@
 import dynamic from 'next/dynamic';
 
-const ChatContent = dynamic(() => import('@/components/dashboard/ChatContent'), {
-  ssr: false,
-});
+const ChatWithChannels = dynamic(
+  () => import('@/components/dashboard/ChatWithChannels'),
+  { ssr: false }
+);
 
 export default function ChatPage() {
-  return <ChatContent />;
+  return <ChatWithChannels />;
 }

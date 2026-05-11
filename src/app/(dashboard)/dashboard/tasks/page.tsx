@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import TaskCard from '@/components/dashboard/TaskCard';
 import TaskForm from '@/components/dashboard/TaskForm';
+import TaskDetailModal from '@/components/dashboard/TaskDetailModal';
 import type { Task } from '@/lib/types';
 import { statusColors, taskStatuses } from '@/lib/theme-maps';
 
@@ -51,6 +52,7 @@ function TasksContent() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deleteTask, setDeleteTask] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
 
   // Open form if query param action=create
   useEffect(() => {
@@ -232,6 +234,7 @@ function TasksContent() {
                 task={task}
                 onEdit={handleEdit}
                 onDelete={(t) => setDeleteTask(t)}
+                onView={(t) => setViewingTask(t)}
               />
             </div>
           ))}
@@ -288,6 +291,14 @@ function TasksContent() {
         task={editingTask}
         isManager={isManager}
         onSuccess={fetchTasks}
+      />
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        task={viewingTask}
+        open={!!viewingTask}
+        onClose={() => setViewingTask(null)}
+        onEdit={handleEdit}
       />
 
       {/* Delete Confirmation Dialog */}

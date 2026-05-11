@@ -15,6 +15,25 @@ const clientInclude = {
   select: { id: true, name: true, company: true },
 } as const;
 
+const assignedUsersInclude = {
+  include: {
+    user: { select: { id: true, name: true, email: true, color: true, image: true } },
+  },
+} as const;
+
+async function syncTaskAssignees(taskId: string, userIds: string[]) {
+  await db.taskAssignedUser.deleteMany({ where: { taskId } });
+  if (userIds.length === 0) return;
+  await db.taskAssignedUser.createMany({
+    data: userIds.map((userId) => ({ taskId, userId })),
+    skipDuplicates: true,
+  });
+}
+
+function flatTaskAssignees(raw: { user: { id: string; name: string | null; email: string; color: string; image: string | null } }[]) {
+  return raw.map((r) => r.user);
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -52,11 +71,21 @@ export async function GET(req: NextRequest) {
 
     const tasks = await db.task.findMany({
       where,
-      include: { user: userInclude, assignedUser: userInclude, client: clientInclude },
+      include: {
+        user:          userInclude,
+        assignedUser:  userInclude,
+        client:        clientInclude,
+        assignedUsers: assignedUsersInclude,
+      },
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ tasks });
+    const result = tasks.map((t) => ({
+      ...t,
+      assignedUsers: flatTaskAssignees(t.assignedUsers),
+    }));
+
+    return NextResponse.json({ tasks: result });
   } catch (error) {
     console.error('[tasks GET]', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
@@ -73,9 +102,15 @@ export async function POST(req: NextRequest) {
     const isManager = MANAGER_ROLES.includes(userRole);
 
     const body = await req.json();
-    const { title, description, status, priority, dueDate, startDate, assignedUserId, clientId } = body;
+    const { title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId } = body;
 
     if (!title) return NextResponse.json({ error: 'El título es requerido' }, { status: 400 });
+
+    // Resolve primary assignee: prefer first of multi-select, fall back to single select
+    const multiIds: string[] = isManager && Array.isArray(assignedUserIds) ? assignedUserIds : [];
+    const primaryAssigneeId  = isManager
+      ? (multiIds[0] ?? (assignedUserId || null))
+      : null;
 
     const task = await db.task.create({
       data: {
@@ -86,15 +121,19 @@ export async function POST(req: NextRequest) {
         priority:       priority       || 'medium',
         dueDate:        dueDate        ? new Date(dueDate)   : null,
         startDate:      startDate      ? new Date(startDate) : null,
-        assignedUserId: isManager && assignedUserId ? assignedUserId : null,
-        clientId:       isManager && clientId       ? clientId       : null,
+        assignedUserId: primaryAssigneeId,
+        clientId:       isManager && clientId ? clientId : null,
       },
       include: { user: userInclude, assignedUser: userInclude, client: clientInclude },
     });
 
+    // Sync multi-assignee pivot
+    if (isManager && multiIds.length > 0) {
+      await syncTaskAssignees(task.id, multiIds);
+    }
+
     broadcastRealtime('task.created', { task }).catch(() => undefined);
 
-    // Notify assignee via event system (non-blocking)
     if (task.assignedUserId && task.assignedUserId !== userId) {
       dispatchEvent({
         type:            'task.assigned',
@@ -122,7 +161,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ task }, { status: 201 });
+    // Return with flat assignedUsers
+    const withAssignees = await db.task.findUnique({
+      where: { id: task.id },
+      include: {
+        user:          userInclude,
+        assignedUser:  userInclude,
+        client:        clientInclude,
+        assignedUsers: assignedUsersInclude,
+      },
+    });
+
+    return NextResponse.json({
+      task: { ...withAssignees, assignedUsers: flatTaskAssignees(withAssignees?.assignedUsers ?? []) },
+    }, { status: 201 });
   } catch (error) {
     console.error('[tasks POST]', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
@@ -139,7 +191,7 @@ export async function PUT(req: NextRequest) {
     const isManager = MANAGER_ROLES.includes(userRole);
 
     const body = await req.json();
-    const { id, title, description, status, priority, dueDate, startDate, assignedUserId, clientId } = body;
+    const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId } = body;
 
     if (!id) return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
 
@@ -150,6 +202,9 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Sin permiso para editar esta tarea' }, { status: 403 });
     }
 
+    const multiIds: string[] = isManager && Array.isArray(assignedUserIds) ? assignedUserIds : [];
+    const primaryAssigneeId  = multiIds.length > 0 ? multiIds[0] : (assignedUserId !== undefined ? (assignedUserId || null) : undefined);
+
     const updateData: Record<string, unknown> = {};
     if (title       !== undefined) updateData.title       = title;
     if (description !== undefined) updateData.description = description;
@@ -157,8 +212,8 @@ export async function PUT(req: NextRequest) {
     if (priority    !== undefined) updateData.priority    = priority;
     if (dueDate     !== undefined) updateData.dueDate     = dueDate   ? new Date(dueDate)   : null;
     if (startDate   !== undefined) updateData.startDate   = startDate ? new Date(startDate) : null;
-    if (isManager && assignedUserId !== undefined) updateData.assignedUserId = assignedUserId || null;
-    if (isManager && clientId       !== undefined) updateData.clientId       = clientId       || null;
+    if (isManager && primaryAssigneeId !== undefined) updateData.assignedUserId = primaryAssigneeId;
+    if (isManager && clientId !== undefined) updateData.clientId = clientId || null;
 
     const task = await db.task.update({
       where:   { id },
@@ -166,23 +221,27 @@ export async function PUT(req: NextRequest) {
       include: { user: userInclude, assignedUser: userInclude, client: clientInclude },
     });
 
+    // Sync multi-assignee pivot if provided
+    if (isManager && Array.isArray(assignedUserIds)) {
+      await syncTaskAssignees(id, multiIds);
+    }
+
     broadcastRealtime('task.updated', { task }).catch(() => undefined);
 
-    // Newly assigned → notify via event system
     if (
       updateData.assignedUserId &&
       updateData.assignedUserId !== existing.assignedUserId &&
       updateData.assignedUserId !== userId
     ) {
       dispatchEvent({
-        type:          'task.assigned',
-        actorId:       userId,
-        actorName:     session.user.name,
-        targetUserId:  updateData.assignedUserId as string,
-        taskTitle:     task.title,
+        type:            'task.assigned',
+        actorId:         userId,
+        actorName:       session.user.name,
+        targetUserId:    updateData.assignedUserId as string,
+        taskTitle:       task.title,
         taskDescription: task.description,
-        priority:      task.priority,
-        dueDate:       task.dueDate
+        priority:        task.priority,
+        dueDate:         task.dueDate
           ? new Date(task.dueDate).toLocaleDateString('es-MX')
           : undefined,
         assigneeEmail: task.assignedUser?.email,
@@ -190,7 +249,6 @@ export async function PUT(req: NextRequest) {
       }).catch(() => undefined);
     }
 
-    // Status changed → notify owner
     if (updateData.status && updateData.status !== existing.status && existing.userId !== userId) {
       dispatchEvent({
         type:         'task.status_changed',
@@ -212,7 +270,19 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ task });
+    const withAssignees = await db.task.findUnique({
+      where: { id: task.id },
+      include: {
+        user:          userInclude,
+        assignedUser:  userInclude,
+        client:        clientInclude,
+        assignedUsers: assignedUsersInclude,
+      },
+    });
+
+    return NextResponse.json({
+      task: { ...withAssignees, assignedUsers: flatTaskAssignees(withAssignees?.assignedUsers ?? []) },
+    });
   } catch (error) {
     console.error('[tasks PUT]', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

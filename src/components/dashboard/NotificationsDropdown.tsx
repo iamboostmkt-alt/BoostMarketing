@@ -166,7 +166,19 @@ export function NotificationsDropdown() {
         <DropdownMenuSeparator className="bg-white/[0.06]" />
         <ScrollArea className="max-h-72">
           <DropdownMenuGroup>
-            {notifications.length === 0 ? (
+            {loading ? (
+              <div className="space-y-2 px-1.5 py-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-start gap-3 p-2">
+                    <div className="w-4 h-4 rounded bg-white/[0.06] animate-pulse mt-0.5" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3 bg-white/[0.06] rounded animate-pulse w-4/5" />
+                      <div className="h-2.5 bg-white/[0.04] rounded animate-pulse w-1/3" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <Bell className="w-8 h-8 text-white/20 mb-2" />
                 <p className="text-sm text-white/40">No hay notificaciones</p>

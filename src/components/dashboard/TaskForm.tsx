@@ -54,19 +54,19 @@ export default function TaskForm({
 }: TaskFormProps) {
   const isEditing = !!task;
 
-  const [loading, setLoading]           = useState(false);
-  const [title, setTitle]               = useState('');
-  const [description, setDescription]   = useState('');
-  const [status, setStatus]             = useState('pending');
-  const [priority, setPriority]         = useState('medium');
-  const [startDate, setStartDate]       = useState<Date | undefined>();
-  const [dueDate, setDueDate]           = useState<Date | undefined>();
-  const [startOpen, setStartOpen]       = useState(false);
-  const [dueOpen, setDueOpen]           = useState(false);
-  const [assignedUserId, setAssignee]   = useState('');
-  const [clientId,       setClientId]   = useState('');
-  const [users,          setUsers]      = useState<InternalUser[]>([]);
-  const [clients,        setClients]    = useState<{ id: string; name: string; company: string }[]>([]);
+  const [loading, setLoading]               = useState(false);
+  const [title, setTitle]                   = useState('');
+  const [description, setDescription]       = useState('');
+  const [status, setStatus]                 = useState('pending');
+  const [priority, setPriority]             = useState('medium');
+  const [startDate, setStartDate]           = useState<Date | undefined>();
+  const [dueDate, setDueDate]               = useState<Date | undefined>();
+  const [startOpen, setStartOpen]           = useState(false);
+  const [dueOpen, setDueOpen]               = useState(false);
+  const [assignedUserIds, setAssigneeIds]   = useState<string[]>([]);
+  const [clientId,       setClientId]       = useState('');
+  const [users,          setUsers]          = useState<InternalUser[]>([]);
+  const [clients,        setClients]        = useState<{ id: string; name: string; company: string }[]>([]);
 
   // Pre-fill when editing
   useEffect(() => {
@@ -77,7 +77,10 @@ export default function TaskForm({
       setPriority(task.priority);
       setStartDate(task.startDate ? new Date(task.startDate) : undefined);
       setDueDate(task.dueDate ? new Date(task.dueDate) : undefined);
-      setAssignee(task.assignedUserId ?? '');
+      const ids = (task.assignedUsers && task.assignedUsers.length > 0)
+        ? task.assignedUsers.map((u) => u.id)
+        : (task.assignedUserId ? [task.assignedUserId] : []);
+      setAssigneeIds(ids);
       setClientId(task.clientId ?? '');
     } else {
       setTitle('');
@@ -86,12 +89,18 @@ export default function TaskForm({
       setPriority('medium');
       setStartDate(undefined);
       setDueDate(undefined);
-      setAssignee('');
+      setAssigneeIds([]);
       setClientId('');
     }
     setStartOpen(false);
     setDueOpen(false);
   }, [task, open]);
+
+  function toggleAssignee(id: string) {
+    setAssigneeIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
 
   // Fetch internal team members + clients when manager opens dialog
   useEffect(() => {
@@ -119,14 +128,14 @@ export default function TaskForm({
     setLoading(true);
     try {
       const body = {
-        title:          title.trim(),
-        description:    description.trim(),
+        title:           title.trim(),
+        description:     description.trim(),
         status,
         priority,
-        startDate:      startDate?.toISOString() ?? null,
-        dueDate:        dueDate?.toISOString()   ?? null,
-        assignedUserId: isManager && assignedUserId ? assignedUserId : undefined,
-        clientId:       isManager && clientId       ? clientId       : undefined,
+        startDate:       startDate?.toISOString() ?? null,
+        dueDate:         dueDate?.toISOString()   ?? null,
+        assignedUserIds: isManager ? assignedUserIds : undefined,
+        clientId:        isManager && clientId ? clientId : undefined,
         ...(isEditing ? { id: task!.id } : {}),
       };
 
@@ -295,29 +304,58 @@ export default function TaskForm({
             )}
           </div>
 
-          {/* Assign to internal user — manager only */}
+          {/* Assign to internal users — manager only (multi-select) */}
           {isManager && (
             <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Asignar a</Label>
-              <Select value={assignedUserId || 'none'} onValueChange={(v) => setAssignee(v === 'none' ? '' : v)}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full">
-                  <SelectValue placeholder="Sin asignar" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1c1c27] border-white/[0.08] max-h-48">
-                  <SelectItem value="none" className="text-white/50 focus:text-white focus:bg-white/[0.06]">
-                    Sin asignar
-                  </SelectItem>
-                  {users.map((u) => (
-                    <SelectItem key={u.id} value={u.id} className="text-white/80 focus:text-white focus:bg-white/[0.06]">
-                      <span className="flex items-center gap-2">
-                        <span className="inline-block w-2 h-2 rounded-full shrink-0"
-                          style={{ backgroundColor: u.color || '#7c3aed' }} />
-                        {u.name || u.email}
+              <Label className="text-white/70 text-sm flex items-center justify-between">
+                <span>Asignar a {assignedUserIds.length > 0 && <span className="text-brand-light text-xs">({assignedUserIds.length})</span>}</span>
+                {assignedUserIds.length > 0 && (
+                  <button type="button" onClick={() => setAssigneeIds([])}
+                    className="text-[11px] text-white/30 hover:text-white/60 transition-colors">
+                    Limpiar
+                  </button>
+                )}
+              </Label>
+              <div className="bg-white/[0.04] border border-white/[0.08] rounded-lg p-1 max-h-44 overflow-y-auto custom-scrollbar">
+                {users.length === 0 ? (
+                  <p className="text-xs text-white/30 text-center py-4">No hay usuarios disponibles</p>
+                ) : users.map((u) => {
+                  const checked = assignedUserIds.includes(u.id);
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => toggleAssignee(u.id)}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md transition-colors text-left text-sm ${
+                        checked
+                          ? 'bg-brand/25 text-white'
+                          : 'text-white/70 hover:bg-white/[0.04] hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                          checked
+                            ? 'border-brand bg-brand'
+                            : 'border-white/20 bg-white/[0.04]'
+                        }`}
+                      >
+                        {checked && (
+                          <svg viewBox="0 0 12 12" className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M2 6l3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
                       </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      <span className="inline-block w-2 h-2 rounded-full shrink-0"
+                        style={{ backgroundColor: u.color || '#7c3aed' }} />
+                      <span className="truncate flex-1">{u.name || u.email}</span>
+                      <span className="text-[10px] text-white/30">{u.role.toLowerCase()}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-white/30">
+                Selecciona uno o varios miembros del equipo.
+              </p>
             </div>
           )}
 

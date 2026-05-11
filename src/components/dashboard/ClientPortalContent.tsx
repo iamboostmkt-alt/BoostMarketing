@@ -23,6 +23,7 @@ import {
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ActivityDetailModal from '@/components/dashboard/ActivityDetailModal';
+import ChatContent from '@/components/dashboard/ChatContent';
 import type { ClientPortalData, Activity, Task } from '@/lib/types';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -729,6 +730,15 @@ export default function ClientPortalContent() {
         currentUserId={currentUserId}
         currentUserRole={currentUserRole}
       />
+
+      {/* Real-time chat with the agency */}
+      <div className="glass-card rounded-2xl p-5">
+        <ChatContent
+          room={client.id}
+          title="Chat con tu equipo"
+          subtitle="Habla en tiempo real con tu Project Manager y el equipo de la agencia"
+        />
+      </div>
     </div>
   );
 }

@@ -68,13 +68,15 @@ model User {
   sessions           Session[]
   notifications      Notification[]
   activityLogs       ActivityLog[]
-  tasks              Task[]         @relation("OwnedTasks")
-  assignedTasks      Task[]         @relation("AssignedTasks")
-  contacts           Contact[]
-  clients            Client[]
-  assignedActivities  Activity[]              @relation("AssignedActivities")
-  createdActivities   Activity[]              @relation("CreatedActivities")
+  tasks               Task[]                @relation("OwnedTasks")
+  assignedTasks       Task[]                @relation("AssignedTasks")
+  contacts            Contact[]
+  clients             Client[]
+  assignedActivities  Activity[]            @relation("AssignedActivities")
+  createdActivities   Activity[]            @relation("CreatedActivities")
   activityAssignments ActivityAssignedUser[]
+  taskAssignments     TaskAssignedUser[]
+  clientAssignments   ClientAssignedUser[]
   customRole         CustomRole?    @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
   chatMessages       ChatMessage[]
   chatReactions      ChatReaction[]
@@ -137,9 +139,10 @@ model Task {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  user         User    @relation("OwnedTasks", fields: [userId], references: [id], onDelete: Cascade)
-  assignedUser User?   @relation("AssignedTasks", fields: [assignedUserId], references: [id], onDelete: SetNull)
-  client       Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  user          User               @relation("OwnedTasks", fields: [userId], references: [id], onDelete: Cascade)
+  assignedUser  User?              @relation("AssignedTasks", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  client        Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  assignedUsers TaskAssignedUser[]
 
   @@map("tasks")
 }
@@ -176,10 +179,11 @@ model Client {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assignedManager User?      @relation("ClientManager", fields: [assignedManagerId], references: [id], onDelete: SetNull)
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedManager User?                @relation("ClientManager", fields: [assignedManagerId], references: [id], onDelete: SetNull)
   activities      Activity[]
   tasks           Task[]
+  assignedUsers   ClientAssignedUser[]
 
   @@map("clients")
 }
@@ -366,6 +370,32 @@ model Testimonial {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("testimonials")
+}
+
+model TaskAssignedUser {
+  id        String   @id @default(cuid())
+  taskId    String   @map("task_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@map("task_assigned_users")
+}
+
+model ClientAssignedUser {
+  id        String   @id @default(cuid())
+  clientId  String   @map("client_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, userId])
+  @@map("client_assigned_users")
 }
 
 model TeamMember {

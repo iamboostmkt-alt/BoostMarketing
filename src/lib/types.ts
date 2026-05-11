@@ -30,6 +30,14 @@ export interface ActivityLog {
   createdAt: string;
 }
 
+export interface TaskAssignee {
+  id: string;
+  name: string | null;
+  email: string;
+  color: string;
+  image: string | null;
+}
+
 export interface Task {
   id: string;
   userId: string;
@@ -45,6 +53,7 @@ export interface Task {
   updatedAt: string;
   user?: { id: string; name: string | null; email: string; color: string } | null;
   assignedUser?: { id: string; name: string | null; email: string; color: string } | null;
+  assignedUsers?: TaskAssignee[];
   client?: { id: string; name: string; company: string } | null;
 }
 
@@ -96,6 +105,7 @@ export interface Client {
   createdAt: string;
   updatedAt: string;
   assignedManager?: { id: string; name: string | null; email: string; color: string; image: string | null } | null;
+  assignedUsers?: ActivityAssignee[];
 }
 
 export interface DashboardStats {

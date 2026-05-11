@@ -6,6 +6,8 @@ import { dispatchEvent, resolveMentions } from '@/lib/events';
 import { broadcastRealtime } from '@/lib/realtime-server';
 
 const INTERNAL_ROLES = ['ADMIN', 'DESIGNER', 'MARKETING', 'PROJECT_MANAGER'];
+const INTERNAL_ROOMS = ['TEAM', 'SUPPORT', 'PROJECT'];
+const ADMIN_ONLY_ROOMS = ['PRIVATE'];
 
 const userSelect = { id: true, name: true, email: true, color: true, image: true } as const;
 const reactionUserSelect = { id: true, name: true, color: true } as const;
@@ -16,13 +18,14 @@ const messageInclude = {
 } as const;
 
 // Validate room access: returns the room string or null if denied.
-// room = "TEAM" | clientId string
+// room = "TEAM" | "SUPPORT" | "PROJECT" | "PRIVATE" | clientId
 async function checkRoomAccess(
   role: string,
   email: string,
   room: string,
 ): Promise<boolean> {
-  if (room === 'TEAM') return INTERNAL_ROLES.includes(role);
+  if (ADMIN_ONLY_ROOMS.includes(room)) return role === 'ADMIN';
+  if (INTERNAL_ROOMS.includes(room))   return INTERNAL_ROLES.includes(role);
 
   // Client room (clientId)
   if (role === 'CLIENT') {

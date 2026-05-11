@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight, Quote, UserCircle2 } from 'lucide-react'
+import { Quote, UserCircle2 } from 'lucide-react'
 import type { TeamMember } from '@/lib/types'
 import { isImageSrc } from '@/lib/safe-image'
 
@@ -11,29 +11,84 @@ interface TeamSectionProps {
 }
 
 const PLACEHOLDER_MEMBERS: TeamMember[] = [
-  { id: 't1', name: 'Ana Martínez', role: 'CEO & Fundadora', imageUrl: '', quote: 'La creatividad es el motor que impulsa cada campaña que creamos.', order: 0, isActive: true, createdAt: '', updatedAt: '' },
-  { id: 't2', name: 'Carlos Rojas', role: 'Director Creativo', imageUrl: '', quote: 'Cada marca tiene una historia única — nuestra misión es contarla bien.', order: 1, isActive: true, createdAt: '', updatedAt: '' },
-  { id: 't3', name: 'Laura Sánchez', role: 'Especialista SEO', imageUrl: '', quote: 'Los datos nos guían, pero la estrategia nos diferencia.', order: 2, isActive: true, createdAt: '', updatedAt: '' },
-  { id: 't4', name: 'Diego Torres', role: 'Social Media Manager', imageUrl: '', quote: 'Las redes sociales son el puente entre la marca y su comunidad.', order: 3, isActive: true, createdAt: '', updatedAt: '' },
-  { id: 't5', name: 'Valentina Cruz', role: 'Diseñadora Gráfica', imageUrl: '', quote: 'El diseño no es solo estética — es comunicación visual poderosa.', order: 4, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 't1', name: 'Ana Martínez',     role: 'CEO & Fundadora',      imageUrl: '', quote: 'La creatividad es el motor que impulsa cada campaña que creamos.',     order: 0, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 't2', name: 'Carlos Rojas',     role: 'Director Creativo',    imageUrl: '', quote: 'Cada marca tiene una historia única — nuestra misión es contarla bien.', order: 1, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 't3', name: 'Laura Sánchez',    role: 'Especialista SEO',     imageUrl: '', quote: 'Los datos nos guían, pero la estrategia nos diferencia.',                order: 2, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 't4', name: 'Diego Torres',     role: 'Social Media Manager', imageUrl: '', quote: 'Las redes sociales son el puente entre la marca y su comunidad.',        order: 3, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 't5', name: 'Valentina Cruz',   role: 'Diseñadora Gráfica',   imageUrl: '', quote: 'El diseño no es solo estética — es comunicación visual poderosa.',       order: 4, isActive: true, createdAt: '', updatedAt: '' },
 ]
+
+function MemberCard({
+  member,
+  isActive,
+  onHover,
+}: {
+  member:  TeamMember
+  isActive: boolean
+  onHover:  () => void
+}) {
+  return (
+    <div
+      onMouseEnter={onHover}
+      className={`group relative rounded-3xl overflow-hidden bg-surface-elevated border transition-all duration-500 cursor-pointer ${
+        isActive
+          ? 'border-brand/50 shadow-2xl shadow-brand/15 scale-[1.02]'
+          : 'border-white/[0.06] hover:border-white/[0.12] hover:scale-[1.01]'
+      }`}
+    >
+      {/* Image */}
+      <div className="aspect-[4/5] relative overflow-hidden">
+        {isImageSrc(member.imageUrl) ? (
+          <Image
+            src={member.imageUrl}
+            alt={member.name}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            sizes="(min-width: 1024px) 280px, (min-width: 640px) 50vw, 100vw"
+          />
+        ) : (
+          <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-brand/20 via-brand/10 to-transparent">
+            <UserCircle2 className="w-24 h-24 text-brand-light/40" />
+          </div>
+        )}
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0f] via-[#0b0b0f]/40 to-transparent" />
+
+        {/* Quote overlay on hover */}
+        {member.quote && (
+          <div className="absolute inset-0 bg-[#0b0b0f]/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6">
+            <div className="relative">
+              <Quote className="w-5 h-5 text-brand-light/40 absolute -top-2 -left-2" />
+              <p className="text-sm text-white/85 italic leading-relaxed text-center">
+                &ldquo;{member.quote}&rdquo;
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Info bar */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+        <p className="text-base sm:text-lg font-bold text-white leading-tight">
+          {member.name}
+        </p>
+        <p className="text-[11px] sm:text-xs font-medium text-brand-light mt-0.5">
+          {member.role}
+        </p>
+      </div>
+
+      {/* Active marker */}
+      {isActive && (
+        <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-brand-light shadow-lg shadow-brand-light/50 animate-pulse" />
+      )}
+    </div>
+  )
+}
 
 export default function TeamSection({ members }: TeamSectionProps) {
   const display = members.length > 0 ? members : PLACEHOLDER_MEMBERS
   const [active, setActive] = useState(0)
-  const [paused, setPaused] = useState(false)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const next = useCallback(() => setActive((i) => (i + 1) % display.length), [display.length])
-  const prev = useCallback(() => setActive((i) => (i - 1 + display.length) % display.length), [display.length])
-
-  useEffect(() => {
-    if (paused) return
-    timerRef.current = setInterval(next, 4000)
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [next, paused])
-
-  const member = display[active]
 
   return (
     <section id="team" className="py-20 sm:py-28">
@@ -52,102 +107,27 @@ export default function TeamSection({ members }: TeamSectionProps) {
           </p>
         </div>
 
-        {/* Carousel */}
-        <div
-          className="relative max-w-3xl mx-auto"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
-          <div className="glass-card rounded-3xl p-8 sm:p-12 animate-slide-up text-center" style={{ animationDelay: '100ms' }}>
-            {/* Avatar */}
-            <div className="flex justify-center mb-6">
-              <div className="relative w-24 h-24 rounded-full overflow-hidden ring-4 ring-brand/20 bg-surface-elevated">
-                {isImageSrc(member.imageUrl) ? (
-                  <Image
-                    src={member.imageUrl}
-                    alt={member.name}
-                    fill
-                    className="object-cover"
-                    sizes="96px"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center w-full h-full bg-brand/10">
-                    <UserCircle2 className="w-12 h-12 text-brand-light/60" />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Quote */}
-            {member.quote && (
-              <div className="mb-6 relative">
-                <Quote className="w-6 h-6 text-brand/30 absolute -top-1 -left-1 sm:left-4 rotate-180" />
-                <p className="text-lg sm:text-xl text-foreground/80 italic leading-relaxed px-4 sm:px-8">
-                  &ldquo;{member.quote}&rdquo;
-                </p>
-              </div>
-            )}
-
-            {/* Name & role */}
-            <p className="text-xl font-bold text-foreground">{member.name}</p>
-            <p className="mt-1 text-sm font-medium text-brand-light">{member.role}</p>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-center gap-6 mt-8">
-            <button
-              onClick={prev}
-              className="flex items-center justify-center w-10 h-10 rounded-full border border-white/10 bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] transition-all"
-              aria-label="Anterior"
+        {/* Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
+          {display.map((m, i) => (
+            <div
+              key={m.id}
+              className="animate-slide-up"
+              style={{ animationDelay: `${i * 80}ms` }}
             >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
-            {/* Dots */}
-            <div className="flex gap-2">
-              {display.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActive(i)}
-                  className={`rounded-full transition-all duration-300 ${i === active ? 'w-6 h-2 bg-brand' : 'w-2 h-2 bg-white/20 hover:bg-white/40'}`}
-                  aria-label={`Ir al miembro ${i + 1}`}
-                />
-              ))}
+              <MemberCard
+                member={m}
+                isActive={i === active}
+                onHover={() => setActive(i)}
+              />
             </div>
-
-            <button
-              onClick={next}
-              className="flex items-center justify-center w-10 h-10 rounded-full border border-white/10 bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] transition-all"
-              aria-label="Siguiente"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
+          ))}
         </div>
 
-        {/* Thumbnail strip */}
-        {display.length > 1 && (
-          <div className="flex justify-center gap-3 mt-8 flex-wrap">
-            {display.map((m, i) => (
-              <button
-                key={m.id}
-                onClick={() => setActive(i)}
-                className={`flex flex-col items-center gap-1.5 transition-opacity duration-200 ${i === active ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
-              >
-                <div className={`w-10 h-10 rounded-full overflow-hidden bg-surface-elevated ring-2 ring-offset-2 ring-offset-[#0b0b0f] transition-all duration-200 ${i === active ? 'ring-brand/60' : 'ring-transparent'}`}>
-                  {isImageSrc(m.imageUrl) ? (
-                    <Image src={m.imageUrl} alt={m.name} width={40} height={40} className="object-cover w-full h-full" />
-                  ) : (
-                    <div className="flex items-center justify-center w-full h-full bg-brand/10 text-[10px] font-bold text-brand-light">
-                      {m.name.slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <span className="text-[10px] text-white/40 hidden sm:block truncate max-w-[64px]">{m.name.split(' ')[0]}</span>
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Bottom hint */}
+        <p className="text-center text-xs text-muted-foreground/60 mt-10">
+          Pasa el cursor sobre cada miembro para conocer su filosofía.
+        </p>
       </div>
     </section>
   )
