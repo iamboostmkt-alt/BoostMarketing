@@ -284,7 +284,7 @@ export default function DashboardPage() {
                   <div key={task.id} className="flex items-center gap-3 p-4 md:px-6 hover:bg-white/[0.02] transition-colors">
                     {/* Owner avatar */}
                     <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={(owner as { image?: string } | null | undefined)?.image ?? undefined} />
+                      <AvatarImage src={(owner as { image?: string } | null | undefined)?.image || undefined} />
                       <AvatarFallback
                         className="text-xs font-medium"
                         style={{

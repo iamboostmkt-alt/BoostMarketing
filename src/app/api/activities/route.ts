@@ -8,11 +8,33 @@ import { log } from '@/lib/logger';
 
 const MANAGE_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
+const userSelect = { id: true, name: true, email: true, color: true, image: true };
+
 const includeRelations = {
-  assignedUser: { select: { id: true, name: true, email: true, color: true, image: true } },
-  createdBy:    { select: { id: true, name: true, email: true, color: true, image: true } },
-  client:       { select: { id: true, name: true, company: true } },
+  assignedUser:  { select: userSelect },
+  createdBy:     { select: userSelect },
+  client:        { select: { id: true, name: true, company: true } },
+  assignedUsers: {
+    select: {
+      user: { select: userSelect },
+    },
+  },
 };
+
+/** Flatten assignedUsers join-table rows to plain user array */
+function flatAssignees(raw: { user: { id: string; name: string | null; email: string; color: string; image: string | null } }[]) {
+  return raw.map((r) => r.user);
+}
+
+/** Sync ActivityAssignedUser junction records */
+async function syncAssignees(activityId: string, userIds: string[]) {
+  await db.activityAssignedUser.deleteMany({ where: { activityId } });
+  if (userIds.length === 0) return;
+  await db.activityAssignedUser.createMany({
+    data: userIds.map((userId) => ({ activityId, userId })),
+    skipDuplicates: true,
+  });
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -41,7 +63,14 @@ export async function GET(req: NextRequest) {
     } else if (MANAGE_ROLES.includes(role)) {
       where = base;
     } else {
-      where = { ...base, OR: [{ assignedUserId: userId }, { createdByUserId: userId }] };
+      where = {
+        ...base,
+        OR: [
+          { assignedUserId: userId },
+          { createdByUserId: userId },
+          { assignedUsers: { some: { userId } } },
+        ],
+      };
     }
 
     const activities = await db.activity.findMany({
@@ -50,7 +79,12 @@ export async function GET(req: NextRequest) {
       orderBy: { startDate: 'asc' },
     });
 
-    return NextResponse.json({ activities });
+    const shaped = activities.map((a) => ({
+      ...a,
+      assignedUsers: flatAssignees(a.assignedUsers),
+    }));
+
+    return NextResponse.json({ activities: shaped });
   } catch (err) {
     log.err('/api/activities GET', err);
     return NextResponse.json({ error: 'Error interno.' }, { status: 500 });
@@ -66,7 +100,12 @@ export async function POST(req: NextRequest) {
     const role   = session.user.role as string;
 
     const body = await req.json();
-    const { title, description, status, priority, startDate, endDate, assignedUserId, clientId } = body;
+    const {
+      title, description, status, priority,
+      startDate, endDate, clientId,
+      assignedUserId,
+      assignedUserIds,
+    } = body;
 
     if (!title || !startDate) {
       return NextResponse.json({ error: 'Título y fecha de inicio son requeridos.' }, { status: 400 });
@@ -82,8 +121,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Fecha de fin no válida.' }, { status: 400 });
     }
 
+    // Resolve primary assignee (legacy compat)
+    const ids: string[] = Array.isArray(assignedUserIds) ? assignedUserIds : (assignedUserId ? [assignedUserId] : []);
     const resolvedAssignee = MANAGE_ROLES.includes(role)
-      ? (assignedUserId ?? userId)
+      ? (ids[0] ?? userId)
       : userId;
 
     const activity = await db.activity.create({
@@ -101,17 +142,24 @@ export async function POST(req: NextRequest) {
       include: includeRelations,
     });
 
-    broadcastRealtime('activity.created', { activity }).catch(() => undefined);
+    const allIds = MANAGE_ROLES.includes(role) ? (ids.length > 0 ? ids : [userId]) : [userId];
+    await syncAssignees(activity.id, allIds);
 
-    // Notify assignee if different from creator
-    if (activity.assignedUserId && activity.assignedUserId !== userId) {
-      dispatchEvent({
-        type:          'activity.assigned',
-        actorId:       userId,
-        actorName:     session.user.name,
-        targetUserId:  activity.assignedUserId,
-        activityTitle: activity.title,
-      }).catch(() => undefined);
+    broadcastRealtime('activity.created', {
+      activity: { ...activity, assignedUsers: allIds.map((id) => ({ id, name: null, email: '', color: '#7c3aed', image: null })) },
+    }).catch(() => undefined);
+
+    // Notify each newly assigned user (except creator)
+    for (const uid of allIds) {
+      if (uid !== userId) {
+        dispatchEvent({
+          type:          'activity.assigned',
+          actorId:       userId,
+          actorName:     session.user.name,
+          targetUserId:  uid,
+          activityTitle: activity.title,
+        }).catch(() => undefined);
+      }
     }
 
     await db.activityLog.create({
@@ -124,7 +172,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ activity }, { status: 201 });
+    // Re-fetch with assignedUsers populated
+    const full = await db.activity.findUnique({ where: { id: activity.id }, include: includeRelations });
+    const shaped = { ...full, assignedUsers: flatAssignees(full!.assignedUsers) };
+
+    return NextResponse.json({ activity: shaped }, { status: 201 });
   } catch (err) {
     log.err('/api/activities POST', err);
     return NextResponse.json({ error: 'Error interno.' }, { status: 500 });
@@ -152,15 +204,25 @@ export async function PUT(req: NextRequest) {
     }
 
     const data: Record<string, unknown> = {};
-    if (fields.title       !== undefined) data.title          = fields.title.trim();
-    if (fields.description !== undefined) data.description    = fields.description.trim();
-    if (fields.status      !== undefined) data.status         = fields.status;
-    if (fields.priority    !== undefined) data.priority       = fields.priority;
-    if (fields.startDate   !== undefined) data.startDate      = new Date(fields.startDate);
-    if (fields.endDate     !== undefined) data.endDate        = fields.endDate ? new Date(fields.endDate) : null;
-    if (fields.clientId    !== undefined) data.clientId       = fields.clientId ?? null;
-    if (MANAGE_ROLES.includes(role) && fields.assignedUserId !== undefined) {
-      data.assignedUserId = fields.assignedUserId ?? null;
+    if (fields.title       !== undefined) data.title       = fields.title.trim();
+    if (fields.description !== undefined) data.description = fields.description.trim();
+    if (fields.status      !== undefined) data.status      = fields.status;
+    if (fields.priority    !== undefined) data.priority    = fields.priority;
+    if (fields.startDate   !== undefined) data.startDate   = new Date(fields.startDate);
+    if (fields.endDate     !== undefined) data.endDate     = fields.endDate ? new Date(fields.endDate) : null;
+    if (fields.clientId    !== undefined) data.clientId    = fields.clientId ?? null;
+
+    // Handle assignees (manager only)
+    let newAssigneeIds: string[] | null = null;
+    if (MANAGE_ROLES.includes(role)) {
+      if (Array.isArray(fields.assignedUserIds)) {
+        newAssigneeIds = fields.assignedUserIds as string[];
+      } else if (fields.assignedUserId !== undefined) {
+        newAssigneeIds = fields.assignedUserId ? [fields.assignedUserId as string] : [];
+      }
+      if (newAssigneeIds !== null) {
+        data.assignedUserId = newAssigneeIds[0] ?? null;
+      }
     }
 
     const activity = await db.activity.update({
@@ -169,22 +231,28 @@ export async function PUT(req: NextRequest) {
       include: includeRelations,
     });
 
-    broadcastRealtime('activity.updated', { activity }).catch(() => undefined);
+    if (newAssigneeIds !== null) {
+      await syncAssignees(id, newAssigneeIds);
 
-    // Newly assigned → notify
-    if (
-      data.assignedUserId &&
-      data.assignedUserId !== existing.assignedUserId &&
-      data.assignedUserId !== userId
-    ) {
-      dispatchEvent({
-        type:          'activity.assigned',
-        actorId:       userId,
-        actorName:     session.user.name,
-        targetUserId:  data.assignedUserId as string,
-        activityTitle: activity.title,
-      }).catch(() => undefined);
+      // Notify newly added assignees
+      const previousIds = activity.assignedUsers.map((r) => r.user.id);
+      for (const uid of newAssigneeIds) {
+        if (!previousIds.includes(uid) && uid !== userId) {
+          dispatchEvent({
+            type:          'activity.assigned',
+            actorId:       userId,
+            actorName:     session.user.name,
+            targetUserId:  uid,
+            activityTitle: activity.title,
+          }).catch(() => undefined);
+        }
+      }
     }
+
+    const full = await db.activity.findUnique({ where: { id: activity.id }, include: includeRelations });
+    const shaped = { ...full, assignedUsers: flatAssignees(full!.assignedUsers) };
+
+    broadcastRealtime('activity.updated', { activity: shaped }).catch(() => undefined);
 
     await db.activityLog.create({
       data: {
@@ -196,7 +264,7 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ activity });
+    return NextResponse.json({ activity: shaped });
   } catch (err) {
     log.err('/api/activities PUT', err);
     return NextResponse.json({ error: 'Error interno.' }, { status: 500 });

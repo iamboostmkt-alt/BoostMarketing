@@ -207,6 +207,14 @@ export interface ChatMessage {
   reactions?: ChatReaction[];
 }
 
+export interface ActivityAssignee {
+  id: string;
+  name: string | null;
+  email: string;
+  color: string;
+  image: string | null;
+}
+
 export interface Activity {
   id: string;
   title: string;
@@ -220,7 +228,8 @@ export interface Activity {
   clientId: string | null;
   createdAt: string;
   updatedAt: string;
-  assignedUser?: { id: string; name: string | null; email: string; color: string; image: string | null } | null;
-  createdBy?: { id: string; name: string | null; email: string; color: string; image: string | null };
+  assignedUser?: ActivityAssignee | null;
+  assignedUsers?: ActivityAssignee[];
+  createdBy?: ActivityAssignee;
   client?: { id: string; name: string; company: string } | null;
 }

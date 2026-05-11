@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarRange, Clock, User, Pencil, X } from 'lucide-react';
+import { CalendarRange, Clock, Users, Pencil, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -12,7 +12,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ActivityCommentThread from '@/components/dashboard/ActivityCommentThread';
-import type { Activity } from '@/lib/types';
+import UserAvatarStack from '@/components/dashboard/UserAvatarStack';
+import type { Activity, ActivityAssignee } from '@/lib/types';
 import {
   activityStatusColors, activityStatusLabels,
   priorityColors, priorityLabels,
@@ -24,7 +25,6 @@ interface ActivityDetailModalProps {
   onClose:         () => void;
   currentUserId:   string;
   currentUserRole: string;
-  /** If provided, an "Editar" button will appear for managers */
   onEdit?:         (a: Activity) => void;
 }
 
@@ -37,6 +37,12 @@ function initials(name: string | null | undefined, email: string) {
   return (name || email).split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+function resolveAssignees(activity: Activity): ActivityAssignee[] {
+  if (activity.assignedUsers && activity.assignedUsers.length > 0) return activity.assignedUsers;
+  if (activity.assignedUser) return [activity.assignedUser];
+  return [];
+}
+
 export default function ActivityDetailModal({
   activity,
   open,
@@ -47,8 +53,9 @@ export default function ActivityDetailModal({
 }: ActivityDetailModalProps) {
   if (!activity) return null;
 
-  const statusCls = activityStatusColors[activity.status] ?? 'status-pending';
-  const statusLbl = activityStatusLabels[activity.status] ?? activity.status;
+  const statusCls  = activityStatusColors[activity.status] ?? 'status-pending';
+  const statusLbl  = activityStatusLabels[activity.status] ?? activity.status;
+  const assignees  = resolveAssignees(activity);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -92,28 +99,39 @@ export default function ActivityDetailModal({
               </div>
             </div>
 
-            {activity.assignedUser && (
+            {assignees.length > 0 && (
               <div className="flex items-start gap-2">
-                <User className="w-3.5 h-3.5 shrink-0 mt-0.5 text-white/50" />
-                <div>
-                  <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Responsable</p>
-                  <div className="flex items-center gap-1.5">
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src={(activity.assignedUser as { image?: string | null }).image ?? undefined} />
-                      <AvatarFallback
-                        className="text-[8px] font-medium"
-                        style={{
-                          backgroundColor: (activity.assignedUser.color || '#7c3aed') + '33',
-                          color:            activity.assignedUser.color || '#7c3aed',
-                        }}
-                      >
-                        {initials(activity.assignedUser.name, activity.assignedUser.email)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs text-white/70">
-                      {activity.assignedUser.name || activity.assignedUser.email}
-                    </span>
-                  </div>
+                <Users className="w-3.5 h-3.5 shrink-0 mt-0.5 text-white/50" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">
+                    {assignees.length === 1 ? 'Responsable' : `Responsables (${assignees.length})`}
+                  </p>
+                  {assignees.length === 1 ? (
+                    <div className="flex items-center gap-1.5">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={assignees[0].image || undefined} />
+                        <AvatarFallback
+                          className="text-[8px] font-medium"
+                          style={{
+                            backgroundColor: (assignees[0].color || '#7c3aed') + '33',
+                            color:            assignees[0].color || '#7c3aed',
+                          }}
+                        >
+                          {initials(assignees[0].name, assignees[0].email)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-white/70">
+                        {assignees[0].name || assignees[0].email}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <UserAvatarStack users={assignees} max={6} size="sm" />
+                      <p className="text-[10px] text-white/40 mt-1">
+                        {assignees.map((u) => u.name || u.email).join(', ')}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -128,10 +146,8 @@ export default function ActivityDetailModal({
             </div>
           )}
 
-          {/* Divider */}
           <div className="border-t border-white/[0.05]" />
 
-          {/* Comment thread — takes remaining space */}
           <ActivityCommentThread
             activityId={activity.id}
             currentUserId={currentUserId}

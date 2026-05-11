@@ -46,7 +46,7 @@ export default function ContactForm({
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
   const [phone, setPhone] = useState('');
-  const [status, setStatus] = useState('lead');
+  const [status, setStatus] = useState('prospect');
   const [value, setValue] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,7 @@ export default function ContactForm({
       setEmail('');
       setCompany('');
       setPhone('');
-      setStatus(defaultStatus || 'lead');
+      setStatus(defaultStatus || 'prospect');
       setValue('');
       setNotes('');
     }

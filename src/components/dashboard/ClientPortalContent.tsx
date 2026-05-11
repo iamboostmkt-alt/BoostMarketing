@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Calendar, CheckSquare, Clock,
-  CheckCircle2, Loader2, AlertCircle, User, Building2, Eye,
+  CheckCircle2, Loader2, AlertCircle, User, Building2, Eye, MessageCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -386,6 +387,7 @@ interface ClientSummary { id: string; name: string; company: string; email: stri
 
 export default function ClientPortalContent() {
   const { data: session } = useSession();
+  const router = useRouter();
   const currentUserId   = (session?.user as { id?: string })?.id   ?? '';
   const currentUserRole = (session?.user as { role?: string })?.role ?? 'CLIENT';
 
@@ -530,6 +532,12 @@ export default function ClientPortalContent() {
 
   const { client, activities, tasks } = data;
 
+  // Redirect CLIENT users without assigned PM to waiting screen
+  if (!isManager && !client.assignedManagerId) {
+    router.replace('/dashboard/waiting-assignment');
+    return null;
+  }
+
   // Collect unique assigned staff across all activities
   const assignedManager = client.assignedManager;
 
@@ -568,11 +576,11 @@ export default function ClientPortalContent() {
             </div>
           </div>
 
-          {/* Assigned manager */}
+          {/* Assigned manager + WhatsApp */}
           {client.assignedManager && (
             <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl px-4 py-2.5 shrink-0">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={client.assignedManager.image ?? undefined} />
+                <AvatarImage src={client.assignedManager.image || undefined} />
                 <AvatarFallback className="text-[10px] font-medium"
                   style={{
                     backgroundColor: (client.assignedManager.color || '#7c3aed') + '33',
@@ -581,12 +589,22 @@ export default function ClientPortalContent() {
                   {initials(client.assignedManager.name, client.assignedManager.email)}
                 </AvatarFallback>
               </Avatar>
-              <div>
+              <div className="mr-2">
                 <p className="text-[10px] text-white/30 font-medium uppercase tracking-wider">Tu PM</p>
                 <p className="text-sm text-white/80 font-medium">
                   {client.assignedManager.name || client.assignedManager.email}
                 </p>
               </div>
+              <a
+                href={`https://wa.me/?text=Hola ${encodeURIComponent(client.assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="WhatsApp PM"
+                className="flex items-center gap-1.5 rounded-lg bg-green-500/15 hover:bg-green-500/25 border border-green-500/20 px-2.5 py-1.5 text-green-400 text-xs font-medium transition-colors"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                WhatsApp
+              </a>
             </div>
           )}
         </div>
@@ -618,7 +636,7 @@ export default function ClientPortalContent() {
               {assignedManager && (
                 <div className="flex items-center gap-2.5 bg-white/[0.03] rounded-xl px-3 py-2">
                   <Avatar className="h-7 w-7">
-                    <AvatarImage src={assignedManager.image ?? undefined} />
+                    <AvatarImage src={assignedManager.image || undefined} />
                     <AvatarFallback className="text-[10px] font-medium"
                       style={{ backgroundColor: (assignedManager.color || '#7c3aed') + '33', color: assignedManager.color || '#7c3aed' }}>
                       {initials(assignedManager.name, assignedManager.email)}
@@ -635,7 +653,7 @@ export default function ClientPortalContent() {
               {teamMembers.map((member) => (
                 <div key={member.id} className="flex items-center gap-2.5 bg-white/[0.03] rounded-xl px-3 py-2">
                   <Avatar className="h-7 w-7">
-                    <AvatarImage src={member.image ?? undefined} />
+                    <AvatarImage src={member.image || undefined} />
                     <AvatarFallback className="text-[10px] font-medium"
                       style={{ backgroundColor: (member.color || '#06b6d4') + '33', color: member.color || '#06b6d4' }}>
                       {initials(member.name, member.email)}

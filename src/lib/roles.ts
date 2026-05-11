@@ -85,6 +85,10 @@ export const ROUTE_ACCESS: Array<{ pattern: RegExp; allowed: Role[] }> = [
     pattern: /^\/dashboard\/client-portal(\/|$)/,
     allowed: ["CLIENT", "PROJECT_MANAGER"],
   },
+  {
+    pattern: /^\/dashboard\/waiting-assignment(\/|$)/,
+    allowed: ["CLIENT"],
+  },
 ];
 
 export function canAccessRoute(

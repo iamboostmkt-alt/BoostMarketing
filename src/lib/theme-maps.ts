@@ -10,6 +10,9 @@ export const statusColors: Record<string, string> = {
   lost: 'status-lost',
   active: 'status-active',
   inactive: 'status-inactive',
+  // New CRM pipeline stages
+  cliente: 'status-won',
+  activo: 'status-active',
 };
 
 export const statusLabels: Record<string, string> = {
@@ -24,6 +27,9 @@ export const statusLabels: Record<string, string> = {
   lost: 'Perdido',
   active: 'Activo',
   inactive: 'Inactivo',
+  // New CRM pipeline stages
+  cliente: 'Cliente',
+  activo: 'Activo',
 };
 
 export const dotColors: Record<string, string> = {
@@ -50,11 +56,18 @@ export const priorityLabels: Record<string, string> = {
 };
 
 export const crmStages = [
-  { id: 'lead', label: 'Leads', color: 'dot-purple' },
-  { id: 'prospect', label: 'Prospectos', color: 'dot-cyan' },
-  { id: 'negotiation', label: 'Negociación', color: 'dot-amber' },
-  { id: 'won', label: 'Ganados', color: 'dot-green' },
+  { id: 'prospect', label: 'Prospectos', color: 'dot-cyan',   description: 'Registro inicial' },
+  { id: 'lead',     label: 'Leads',      color: 'dot-purple', description: 'Videollamada agendada' },
+  { id: 'cliente',  label: 'Clientes',   color: 'dot-green',  description: 'Con PM asignado' },
+  { id: 'activo',   label: 'Activos',    color: 'dot-amber',  description: 'Onboarding completo' },
 ] as const;
+
+/** Map legacy stage IDs to the new pipeline */
+export const legacyStageMigration: Record<string, string> = {
+  negotiation: 'cliente',
+  won:         'activo',
+  lost:        'prospect',
+};
 
 export const taskStatuses = [
   { id: 'pending', label: 'Pendiente', color: 'status-pending' },

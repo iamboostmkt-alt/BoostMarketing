@@ -20,11 +20,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+
 import TaskForm from '@/components/dashboard/TaskForm';
 import ActivityForm from '@/components/dashboard/ActivityForm';
 import ActivityDetailModal from '@/components/dashboard/ActivityDetailModal';
 import CalendarGrid from '@/components/dashboard/CalendarGrid';
-import type { Task, Activity } from '@/lib/types';
+import UserAvatarStack from '@/components/dashboard/UserAvatarStack';
+import type { Task, Activity, ActivityAssignee } from '@/lib/types';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
 import {
   statusColors, statusLabels, priorityColors, priorityLabels,
@@ -44,12 +46,18 @@ function dayLabel(day: Date): string {
   }
 }
 
-function getAvatar(u: { name: string | null; email: string; color: string; image?: string | null } | undefined) {
+function getActivityAssignees(act: Activity): ActivityAssignee[] {
+  if (act.assignedUsers && act.assignedUsers.length > 0) return act.assignedUsers;
+  if (act.assignedUser) return [act.assignedUser];
+  return [];
+}
+
+function getTaskAvatar(u: { name: string | null; email: string; color: string; image?: string | null } | undefined) {
   if (!u) return null;
   return (
     <div className="flex items-center gap-1.5 ml-auto">
       <Avatar className="h-5 w-5">
-        <AvatarImage src={(u as { image?: string }).image ?? undefined} />
+        <AvatarImage src={u.image || undefined} />
         <AvatarFallback
           className="text-[9px] font-medium"
           style={{ backgroundColor: (u.color || '#7c3aed') + '33', color: u.color || '#7c3aed' }}
@@ -163,7 +171,7 @@ function DayModal({
                       {format(new Date(act.startDate), 'd MMM', { locale: es })}
                       {act.endDate && ` → ${format(new Date(act.endDate), 'd MMM', { locale: es })}`}
                     </div>
-                    {act.assignedUser && getAvatar(act.assignedUser)}
+                    <UserAvatarStack users={getActivityAssignees(act)} max={3} />
                   </div>
                 </button>
               ))}
@@ -205,7 +213,7 @@ function DayModal({
                         {format(new Date(task.dueDate), 'd MMM yyyy', { locale: es })}
                       </div>
                     )}
-                    {task.assignedUser && getAvatar(task.assignedUser)}
+                    {task.assignedUser && getTaskAvatar(task.assignedUser)}
                   </div>
                 </button>
               ))}
@@ -485,7 +493,7 @@ export default function CalendarContent() {
                           hasta {format(new Date(act.endDate), 'd MMM', { locale: es })}
                         </span>
                       )}
-                      {act.assignedUser && getAvatar(act.assignedUser)}
+                      <UserAvatarStack users={getActivityAssignees(act)} max={3} />
                     </div>
                   </button>
                 ))}
@@ -524,7 +532,7 @@ export default function CalendarContent() {
                           {format(new Date(task.dueDate), 'HH:mm')}
                         </div>
                       )}
-                      {task.assignedUser && getAvatar(task.assignedUser)}
+                      {task.assignedUser && getTaskAvatar(task.assignedUser)}
                     </div>
                   </button>
                 ))}

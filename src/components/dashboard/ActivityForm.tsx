@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarIcon, Loader2, X } from 'lucide-react';
+import { CalendarIcon, Loader2, X, Check } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -49,21 +49,20 @@ export default function ActivityForm({
   isManager = false,
   onSuccess,
 }: ActivityFormProps) {
-  const [title, setTitle]             = useState('');
-  const [description, setDesc]        = useState('');
-  const [status, setStatus]           = useState('pending');
-  const [priority, setPriority]       = useState('medium');
-  const [startDate, setStartDate]     = useState<Date | undefined>();
-  const [endDate, setEndDate]         = useState<Date | undefined>();
-  const [assignedUserId, setAssignee] = useState('');
-  const [clientId, setClientId]       = useState('');
-  const [users, setUsers]             = useState<User[]>([]);
-  const [clients, setClients]         = useState<{ id: string; name: string; company: string }[]>([]);
-  const [startOpen, setStartOpen]     = useState(false);
-  const [endOpen, setEndOpen]         = useState(false);
-  const [loading, setLoading]         = useState(false);
+  const [title, setTitle]               = useState('');
+  const [description, setDesc]          = useState('');
+  const [status, setStatus]             = useState('pending');
+  const [priority, setPriority]         = useState('medium');
+  const [startDate, setStartDate]       = useState<Date | undefined>();
+  const [endDate, setEndDate]           = useState<Date | undefined>();
+  const [assignedUserIds, setAssignees] = useState<string[]>([]);
+  const [clientId, setClientId]         = useState('');
+  const [users, setUsers]               = useState<User[]>([]);
+  const [clients, setClients]           = useState<{ id: string; name: string; company: string }[]>([]);
+  const [startOpen, setStartOpen]       = useState(false);
+  const [endOpen, setEndOpen]           = useState(false);
+  const [loading, setLoading]           = useState(false);
 
-  // Pre-fill when editing
   useEffect(() => {
     if (activity) {
       setTitle(activity.title);
@@ -72,7 +71,9 @@ export default function ActivityForm({
       setPriority(activity.priority);
       setStartDate(new Date(activity.startDate));
       setEndDate(activity.endDate ? new Date(activity.endDate) : undefined);
-      setAssignee(activity.assignedUserId ?? '');
+      const ids = activity.assignedUsers?.map((u) => u.id) ??
+        (activity.assignedUserId ? [activity.assignedUserId] : []);
+      setAssignees(ids);
       setClientId(activity.clientId ?? '');
     } else {
       setTitle('');
@@ -81,15 +82,13 @@ export default function ActivityForm({
       setPriority('medium');
       setStartDate(undefined);
       setEndDate(undefined);
-      setAssignee('');
+      setAssignees([]);
       setClientId('');
     }
-    // Close calendars on dialog open/close
     setStartOpen(false);
     setEndOpen(false);
   }, [activity, open]);
 
-  // Fetch internal users + clients when manager opens dialog
   useEffect(() => {
     if (!isManager || !open) return;
     fetch('/api/admin/users')
@@ -105,6 +104,12 @@ export default function ActivityForm({
       .catch(() => {});
   }, [isManager, open]);
 
+  function toggleAssignee(id: string) {
+    setAssignees((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!startDate) { toast.error('Selecciona una fecha de inicio.'); return; }
@@ -112,15 +117,15 @@ export default function ActivityForm({
     setLoading(true);
     try {
       const payload = {
-        id:             activity?.id,
-        title:          title.trim(),
-        description:    description.trim(),
+        id:              activity?.id,
+        title:           title.trim(),
+        description:     description.trim(),
         status,
         priority,
-        startDate:      startDate.toISOString(),
-        endDate:        endDate?.toISOString() ?? null,
-        assignedUserId: assignedUserId || null,
-        clientId:       clientId || null,
+        startDate:       startDate.toISOString(),
+        endDate:         endDate?.toISOString() ?? null,
+        assignedUserIds: assignedUserIds.length > 0 ? assignedUserIds : null,
+        clientId:        clientId || null,
       };
 
       const res = await fetch('/api/activities', {
@@ -140,16 +145,6 @@ export default function ActivityForm({
     } finally {
       setLoading(false);
     }
-  }
-
-  function toggleStart() {
-    setStartOpen((p) => !p);
-    setEndOpen(false);
-  }
-
-  function toggleEnd() {
-    setEndOpen((p) => !p);
-    setStartOpen(false);
   }
 
   return (
@@ -205,14 +200,14 @@ export default function ActivityForm({
             </div>
           </div>
 
-          {/* Start date — inline calendar toggle (no Popover to avoid Dialog focus-trap conflict) */}
+          {/* Start date */}
           <div className="space-y-1.5">
             <Label className="text-sm text-white/70">Inicio *</Label>
             <Button
               variant="outline"
               type="button"
               disabled={loading}
-              onClick={toggleStart}
+              onClick={() => { setStartOpen((p) => !p); setEndOpen(false); }}
               className={cn(
                 'w-full justify-start text-left font-normal bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:text-white text-sm',
                 !startDate && 'text-white/30'
@@ -238,14 +233,14 @@ export default function ActivityForm({
             )}
           </div>
 
-          {/* End date — inline calendar toggle */}
+          {/* End date */}
           <div className="space-y-1.5">
             <Label className="text-sm text-white/70">Fin (opcional)</Label>
             <Button
               variant="outline"
               type="button"
               disabled={loading}
-              onClick={toggleEnd}
+              onClick={() => { setEndOpen((p) => !p); setStartOpen(false); }}
               className={cn(
                 'w-full justify-start text-left font-normal bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:text-white text-sm',
                 !endDate && 'text-white/30'
@@ -272,35 +267,48 @@ export default function ActivityForm({
             )}
           </div>
 
-          {/* Assign to internal user — manager only, CLIENTs excluded */}
-          {isManager && (
+          {/* Multi-assignee — manager only */}
+          {isManager && users.length > 0 && (
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/70">Asignar a</Label>
-              <Select
-                value={assignedUserId || 'none'}
-                onValueChange={(v) => setAssignee(v === 'none' ? '' : v)}
-                disabled={loading}
-              >
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white focus:ring-brand">
-                  <SelectValue placeholder="Sin asignar" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white max-h-48">
-                  <SelectItem value="none" className="text-white/50 focus:bg-white/[0.06]">
-                    Sin asignar
-                  </SelectItem>
-                  {users.map((u) => (
-                    <SelectItem key={u.id} value={u.id} className="focus:bg-white/[0.06]">
-                      <span className="flex items-center gap-2">
-                        <span
-                          className="inline-block w-2 h-2 rounded-full shrink-0"
-                          style={{ backgroundColor: u.color || '#7c3aed' }}
-                        />
-                        {u.name || u.email}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-sm text-white/70">
+                Asignar a
+                {assignedUserIds.length > 0 && (
+                  <span className="ml-1.5 text-brand-light">({assignedUserIds.length})</span>
+                )}
+              </Label>
+              <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] max-h-40 overflow-y-auto">
+                {users.map((u) => {
+                  const selected = assignedUserIds.includes(u.id);
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      disabled={loading}
+                      onClick={() => toggleAssignee(u.id)}
+                      className={cn(
+                        'w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-white/[0.04] transition-colors',
+                        selected && 'bg-brand/[0.08]'
+                      )}
+                    >
+                      <span
+                        className="inline-block w-2 h-2 rounded-full shrink-0"
+                        style={{ backgroundColor: u.color || '#7c3aed' }}
+                      />
+                      <span className="flex-1 text-left text-white/80">{u.name || u.email}</span>
+                      {selected && <Check className="w-3.5 h-3.5 text-brand-light shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+              {assignedUserIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setAssignees([])}
+                  className="text-xs text-white/30 hover:text-white/60 transition-colors"
+                >
+                  Limpiar selección
+                </button>
+              )}
             </div>
           )}
 

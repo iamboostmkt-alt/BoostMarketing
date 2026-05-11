@@ -72,8 +72,9 @@ model User {
   assignedTasks      Task[]         @relation("AssignedTasks")
   contacts           Contact[]
   clients            Client[]
-  assignedActivities Activity[]     @relation("AssignedActivities")
-  createdActivities  Activity[]     @relation("CreatedActivities")
+  assignedActivities  Activity[]              @relation("AssignedActivities")
+  createdActivities   Activity[]              @relation("CreatedActivities")
+  activityAssignments ActivityAssignedUser[]
   customRole         CustomRole?    @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
   chatMessages       ChatMessage[]
   chatReactions      ChatReaction[]
@@ -199,12 +200,26 @@ model Activity {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  assignedUser    User?     @relation("AssignedActivities", fields: [assignedUserId], references: [id], onDelete: SetNull)
-  createdBy       User      @relation("CreatedActivities", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  client          Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  assignedUser    User?                  @relation("AssignedActivities", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  createdBy       User                   @relation("CreatedActivities", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  client          Client?                @relation(fields: [clientId], references: [id], onDelete: SetNull)
   comments        ActivityComment[]
+  assignedUsers   ActivityAssignedUser[]
 
   @@map("activities")
+}
+
+model ActivityAssignedUser {
+  id         String   @id @default(cuid())
+  activityId String   @map("activity_id")
+  userId     String   @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, userId])
+  @@map("activity_assigned_users")
 }
 
 model CustomRole {

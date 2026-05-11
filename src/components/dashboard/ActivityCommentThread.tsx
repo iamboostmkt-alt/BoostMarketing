@@ -172,7 +172,7 @@ export default function ActivityCommentThread({
               <div key={c.id} className={`flex gap-2.5 group ${isOwn ? 'flex-row-reverse' : ''}`}>
                 {/* Avatar */}
                 <Avatar className="h-7 w-7 shrink-0 mt-0.5">
-                  <AvatarImage src={c.user.image ?? undefined} />
+                  <AvatarImage src={c.user.image || undefined} />
                   <AvatarFallback
                     className="text-[9px] font-semibold"
                     style={{

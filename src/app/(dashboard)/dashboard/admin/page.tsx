@@ -220,7 +220,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
               <div className="flex items-center gap-4">
                 <div className="relative shrink-0">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={image ?? undefined} />
+                    <AvatarImage src={image || undefined} />
                     <AvatarFallback
                       className="text-lg font-semibold"
                       style={{ backgroundColor: (color || '#7c3aed') + '33', color: color || '#7c3aed' }}>
@@ -699,7 +699,7 @@ export default function AdminDashboardPage() {
                               <div className="flex items-center gap-3">
                                 <div className="relative shrink-0">
                                   <Avatar className="h-9 w-9">
-                                    <AvatarImage src={user.image ?? undefined} />
+                                    <AvatarImage src={user.image || undefined} />
                                     <AvatarFallback className="text-xs font-medium"
                                       style={{ backgroundColor: user.color + '33', color: user.color }}>
                                       {initials(user.name, user.email)}
