@@ -181,6 +181,14 @@ export interface TeamMember {
   updatedAt: string;
 }
 
+export interface UserPresence {
+  id:       string;
+  userId:   string;
+  status:   'online' | 'away' | 'offline';
+  lastSeen: string;
+  user?: { id: string; name: string | null; email: string; color: string; image: string | null };
+}
+
 export interface ChatReaction {
   id: string;
   messageId: string;

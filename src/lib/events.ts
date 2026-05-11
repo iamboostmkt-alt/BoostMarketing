@@ -5,6 +5,7 @@
 
 import { db } from './db';
 import { sendEmail, taskAssignedHtml } from './resend';
+import { broadcastRealtime } from './realtime-server';
 
 // ── Event types ────────────────────────────────────────────────────────────────
 
@@ -79,6 +80,8 @@ export async function dispatchEvent(event: AppEvent): Promise<void> {
         },
       });
 
+      broadcastRealtime('notification.created', { userId: event.targetUserId }).catch(() => undefined);
+
       if (event.assigneeEmail) {
         sendEmail({
           to:      event.assigneeEmail,
@@ -106,6 +109,7 @@ export async function dispatchEvent(event: AppEvent): Promise<void> {
           link:    '/dashboard/tasks',
         },
       });
+      broadcastRealtime('notification.created', { userId: event.targetUserId }).catch(() => undefined);
       break;
     }
 
@@ -118,6 +122,7 @@ export async function dispatchEvent(event: AppEvent): Promise<void> {
           link:    '/dashboard/calendar',
         },
       });
+      broadcastRealtime('notification.created', { userId: event.targetUserId }).catch(() => undefined);
       break;
     }
 
@@ -131,6 +136,9 @@ export async function dispatchEvent(event: AppEvent): Promise<void> {
           link:    '/dashboard/calendar',
         })),
         skipDuplicates: true,
+      });
+      event.targetUserIds.forEach((uid) => {
+        broadcastRealtime('notification.created', { userId: uid }).catch(() => undefined);
       });
       break;
     }
@@ -148,6 +156,9 @@ export async function dispatchEvent(event: AppEvent): Promise<void> {
           link:    event.link,
         })),
         skipDuplicates: true,
+      });
+      event.targetUserIds.forEach((uid) => {
+        broadcastRealtime('notification.created', { userId: uid }).catch(() => undefined);
       });
       break;
     }

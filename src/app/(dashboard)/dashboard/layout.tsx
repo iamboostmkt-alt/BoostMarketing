@@ -9,6 +9,7 @@ import TopNav from '@/components/dashboard/TopNav';
 import CommandPalette from '@/components/dashboard/CommandPalette';
 import ErrorBoundary from '@/components/dashboard/ErrorBoundary';
 import { AuthProvider } from '@/context/AuthContext';
+import { RealtimeProvider } from '@/providers/RealtimeProvider';
 
 function ForbiddenBanner() {
   const searchParams = useSearchParams();
@@ -36,6 +37,7 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthProvider>
+      <RealtimeProvider>
       <TooltipProvider delayDuration={0}>
         <SidebarProvider>
           <div className="flex h-screen overflow-hidden bg-[#0b0b0f]">
@@ -65,6 +67,7 @@ export default function DashboardLayout({
           </div>
         </SidebarProvider>
       </TooltipProvider>
+      </RealtimeProvider>
     </AuthProvider>
   );
 }

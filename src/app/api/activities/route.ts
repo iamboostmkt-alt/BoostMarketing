@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { dispatchEvent } from '@/lib/events';
+import { broadcastRealtime } from '@/lib/realtime-server';
 
 const MANAGE_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -99,6 +100,8 @@ export async function POST(req: NextRequest) {
       include: includeRelations,
     });
 
+    broadcastRealtime('activity.created', { activity }).catch(() => undefined);
+
     // Notify assignee if different from creator
     if (activity.assignedUserId && activity.assignedUserId !== userId) {
       dispatchEvent({
@@ -165,6 +168,8 @@ export async function PUT(req: NextRequest) {
       include: includeRelations,
     });
 
+    broadcastRealtime('activity.updated', { activity }).catch(() => undefined);
+
     // Newly assigned → notify
     if (
       data.assignedUserId &&
@@ -218,6 +223,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     await db.activity.delete({ where: { id } });
+
+    broadcastRealtime('activity.deleted', { id }).catch(() => undefined);
 
     await db.activityLog.create({
       data: {

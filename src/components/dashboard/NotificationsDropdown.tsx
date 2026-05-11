@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { bus, RT_EVENTS } from '@/lib/event-bus';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -68,8 +69,14 @@ export function NotificationsDropdown() {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  // Live updates — re-fetch when a notification is created for any user
+  // (the API already filters by session, so this is safe)
+  useEffect(() => {
+    return bus.on(RT_EVENTS.NOTIFICATION_NEW, () => {
+      fetchNotifications();
+    });
   }, [fetchNotifications]);
 
   const markAsRead = async (id: string) => {

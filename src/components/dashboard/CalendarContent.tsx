@@ -25,13 +25,13 @@ import ActivityForm from '@/components/dashboard/ActivityForm';
 import ActivityDetailModal from '@/components/dashboard/ActivityDetailModal';
 import CalendarGrid from '@/components/dashboard/CalendarGrid';
 import type { Task, Activity } from '@/lib/types';
+import { bus, RT_EVENTS } from '@/lib/event-bus';
 import {
   statusColors, statusLabels, priorityColors, priorityLabels,
   activityStatusColors, activityStatusLabels,
 } from '@/lib/theme-maps';
 
-const MANAGER_ROLES  = ['ADMIN', 'PROJECT_MANAGER'];
-const POLL_INTERVAL  = 30_000;
+const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -302,12 +302,40 @@ export default function CalendarContent() {
     }
   }, [isManager]);
 
-  // Initial fetch + 30 s polling
+  // Initial fetch — live updates come via the event bus
   useEffect(() => {
     fetchData();
-    const id = setInterval(fetchData, POLL_INTERVAL);
-    return () => clearInterval(id);
   }, [fetchData]);
+
+  // Subscribe to real-time task and activity mutations
+  useEffect(() => {
+    const unsubs = [
+      bus.on<{ task: Task }>(RT_EVENTS.TASK_CREATED, ({ task }) => {
+        setTasks((prev) => prev.some((t) => t.id === task.id) ? prev : [task, ...prev]);
+      }),
+      bus.on<{ task: Task }>(RT_EVENTS.TASK_UPDATED, ({ task }) => {
+        setTasks((prev) => prev.map((t) => t.id === task.id ? task : t));
+      }),
+      bus.on<{ id: string }>(RT_EVENTS.TASK_DELETED, ({ id }) => {
+        setTasks((prev) => prev.filter((t) => t.id !== id));
+      }),
+      bus.on<{ activity: Activity }>(RT_EVENTS.ACTIVITY_CREATED, ({ activity }) => {
+        setActivities((prev) => {
+          if (prev.some((a) => a.id === activity.id)) return prev;
+          return [...prev, activity].sort(
+            (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          );
+        });
+      }),
+      bus.on<{ activity: Activity }>(RT_EVENTS.ACTIVITY_UPDATED, ({ activity }) => {
+        setActivities((prev) => prev.map((a) => a.id === activity.id ? activity : a));
+      }),
+      bus.on<{ id: string }>(RT_EVENTS.ACTIVITY_DELETED, ({ id }) => {
+        setActivities((prev) => prev.filter((a) => a.id !== id));
+      }),
+    ];
+    return () => unsubs.forEach((u) => u());
+  }, []);
 
   // Safety timeout
   useEffect(() => {
@@ -372,7 +400,7 @@ export default function CalendarContent() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">Calendario</h1>
           <p className="text-white/40 text-sm mt-1">
-            Haz clic en un día para ver su detalle · actualiza cada 30 s
+            Haz clic en un día para ver su detalle · actualización en tiempo real
           </p>
         </div>
         <div className="flex items-center gap-2">

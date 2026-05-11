@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { ChatMessage, ChatReaction } from '@/lib/types';
+import { bus, RT_EVENTS } from '@/lib/event-bus';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -112,7 +113,7 @@ interface ChatContentProps {
 export default function ChatContent({
   room = 'TEAM',
   title = 'Chat del Equipo',
-  subtitle = 'Solo para el equipo interno · actualiza cada 5s',
+  subtitle = 'Solo para el equipo interno · tiempo real',
 }: ChatContentProps) {
   const { data: session } = useSession();
   const myId    = (session?.user as { id?: string })?.id ?? '';
@@ -139,11 +140,24 @@ export default function ChatContent({
     }
   }, [room]);
 
+  // Initial load only — live updates come via the event bus
   useEffect(() => {
     fetchMessages();
-    const id = setInterval(fetchMessages, 5_000);
-    return () => clearInterval(id);
   }, [fetchMessages]);
+
+  // Subscribe to real-time messages
+  useEffect(() => {
+    return bus.on<{ message: ChatMessage; room: string }>(
+      RT_EVENTS.MESSAGE_SENT,
+      (payload) => {
+        if (payload.room !== room) return;
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === payload.message.id)) return prev;
+          return [...prev, payload.message];
+        });
+      },
+    );
+  }, [room]);
 
   useEffect(() => {
     if (messages.length > prevLengthRef.current) {
@@ -177,8 +191,13 @@ export default function ChatContent({
         body:    JSON.stringify({ message: text, room }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
+      const { message: newMsg } = await res.json();
       setInput('');
-      await fetchMessages();
+      // Add immediately; the realtime event will dedup if it arrives too
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === newMsg.id)) return prev;
+        return [...prev, newMsg];
+      });
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error al enviar.');

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { dispatchEvent } from '@/lib/events';
+import { broadcastRealtime } from '@/lib/realtime-server';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -91,6 +92,8 @@ export async function POST(req: NextRequest) {
       include: { user: userInclude, assignedUser: userInclude, client: clientInclude },
     });
 
+    broadcastRealtime('task.created', { task }).catch(() => undefined);
+
     // Notify assignee via event system (non-blocking)
     if (task.assignedUserId && task.assignedUserId !== userId) {
       dispatchEvent({
@@ -162,6 +165,8 @@ export async function PUT(req: NextRequest) {
       data:    updateData,
       include: { user: userInclude, assignedUser: userInclude, client: clientInclude },
     });
+
+    broadcastRealtime('task.updated', { task }).catch(() => undefined);
 
     // Newly assigned → notify via event system
     if (
@@ -235,6 +240,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     await db.task.delete({ where: { id } });
+
+    broadcastRealtime('task.deleted', { id }).catch(() => undefined);
 
     await db.activityLog.create({
       data: {

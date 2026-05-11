@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { dispatchEvent, resolveMentions } from '@/lib/events';
+import { broadcastRealtime } from '@/lib/realtime-server';
 
 const INTERNAL_ROLES = ['ADMIN', 'DESIGNER', 'MARKETING', 'PROJECT_MANAGER'];
 
@@ -87,6 +88,8 @@ export async function POST(req: NextRequest) {
     data:    { userId, message: text, room },
     include: messageInclude,
   });
+
+  broadcastRealtime('message.sent', { message: chatMessage, room }).catch(() => undefined);
 
   // Parse @mentions → notify (non-blocking)
   resolveMentions(text, userId)

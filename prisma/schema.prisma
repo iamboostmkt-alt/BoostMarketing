@@ -79,6 +79,7 @@ model User {
   chatReactions      ChatReaction[]
   managedClients     Client[]           @relation("ClientManager")
   activityComments   ActivityComment[]
+  presence           UserPresence?
 
   @@map("users")
 }
@@ -260,6 +261,18 @@ model ActivityComment {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("activity_comments")
+}
+
+model UserPresence {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  status    String   @default("online") // online | away | offline
+  lastSeen  DateTime @default(now()) @map("last_seen")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_presence")
 }
 
 model PasswordResetToken {
