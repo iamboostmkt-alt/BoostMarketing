@@ -579,14 +579,13 @@ export default function CalendarContent() {
         onNewAct={()  => { setEditingAct(null);     setActFormOpen(true); }}
       />
 
-      {/* Activity detail + comment thread */}
+      {/* Activity detail + comment thread — read-only preview */}
       <ActivityDetailModal
         activity={detailActivity}
         open={actDetailOpen}
         onClose={() => setActDetailOpen(false)}
         currentUserId={userId}
         currentUserRole={userRole}
-        onEdit={isManager ? (a) => { setEditingAct(a); setActFormOpen(true); } : undefined}
       />
 
       {/* Task form dialog */}
