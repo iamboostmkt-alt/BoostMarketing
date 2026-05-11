@@ -5,7 +5,7 @@ import { bus, RT_EVENTS } from '@/lib/event-bus';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Bell, CheckSquare, Users, UserCircle, Info, Calendar, Check, ExternalLink } from 'lucide-react';
+import { Bell, CheckSquare, Users, UserCircle, Info, Calendar, Check, ExternalLink, Activity, MessageSquare, AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -35,6 +35,9 @@ const typeIcons: Record<string, React.ElementType> = {
   appointment: Calendar,
   welcome: Bell,
   info: Info,
+  activity: Activity,
+  activity_comment: MessageSquare,
+  mention: AtSign,
 };
 
 const typeColors: Record<string, string> = {
@@ -44,6 +47,9 @@ const typeColors: Record<string, string> = {
   appointment: 'text-orange-400',
   welcome: 'text-brand-light',
   info: 'text-amber-400',
+  activity: 'text-purple-400',
+  activity_comment: 'text-sky-400',
+  mention: 'text-pink-400',
 };
 
 export function NotificationsDropdown() {

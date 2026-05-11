@@ -4,13 +4,16 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   ChevronLeft, ChevronRight, Calendar, CheckSquare, Clock,
-  CheckCircle2, Loader2, AlertCircle, User, Building2,
+  CheckCircle2, Loader2, AlertCircle, User, Building2, Eye,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, format, isSameDay, isToday,
@@ -377,10 +380,20 @@ function ProgressBar({ total, completed }: { total: number; completed: number })
 
 // ── Main component ────────────────────────────────────────────────────────────
 
+const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
+
+interface ClientSummary { id: string; name: string; company: string; email: string; }
+
 export default function ClientPortalContent() {
   const { data: session } = useSession();
   const currentUserId   = (session?.user as { id?: string })?.id   ?? '';
   const currentUserRole = (session?.user as { role?: string })?.role ?? 'CLIENT';
+
+  const isManager = MANAGER_ROLES.includes(currentUserRole);
+
+  // Admin preview: list of clients + selected clientId
+  const [clients,          setClients]          = useState<ClientSummary[]>([]);
+  const [previewClientId,  setPreviewClientId]  = useState<string>('');
 
   const [data,     setData]     = useState<ClientPortalData | null>(null);
   const [loading,  setLoading]  = useState(true);
@@ -396,37 +409,106 @@ export default function ClientPortalContent() {
     setActDetailOpen(true);
   }
 
+  // Load client list for admin/PM selector
   useEffect(() => {
-    fetch('/api/client-portal')
+    if (!isManager) return;
+    fetch('/api/clients')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        if (d?.clients) setClients(d.clients);
+      })
+      .catch(() => {});
+  }, [isManager]);
+
+  useEffect(() => {
+    // Managers need a clientId selected before fetching
+    if (isManager && !previewClientId) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setNoClient(false);
+    setData(null);
+
+    const url = isManager
+      ? `/api/client-portal?clientId=${previewClientId}`
+      : '/api/client-portal';
+
+    fetch(url)
       .then((r) => r.json())
       .then((d) => {
         if (d.client === null) { setNoClient(true); return; }
         if (d.error)           { setError(d.error); return; }
         setData(d);
       })
-      .catch(() => setError('Error al cargar tu portal. Intenta nuevamente.'))
+      .catch(() => setError('Error al cargar el portal. Intenta nuevamente.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [isManager, previewClientId]);
+
+  // Admin selector header (always visible for managers)
+  const AdminSelectorBar = isManager ? (
+    <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4">
+      <Eye className="w-4 h-4 text-amber-400 shrink-0" />
+      <span className="text-sm text-amber-300 font-medium shrink-0">Vista previa:</span>
+      <Select value={previewClientId || 'none'} onValueChange={(v) => setPreviewClientId(v === 'none' ? '' : v)}>
+        <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm h-8 flex-1 max-w-xs focus:ring-amber-500">
+          <SelectValue placeholder="Selecciona un cliente..." />
+        </SelectTrigger>
+        <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+          <SelectItem value="none" className="text-white/40 focus:bg-white/[0.06]">
+            — Selecciona un cliente —
+          </SelectItem>
+          {clients.map((c) => (
+            <SelectItem key={c.id} value={c.id} className="focus:bg-white/[0.06]">
+              {c.name}{c.company ? ` — ${c.company}` : ''}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  ) : null;
+
+  if (isManager && !previewClientId) {
+    return (
+      <div className="space-y-4">
+        {AdminSelectorBar}
+        <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+          <Eye className="w-10 h-10 text-white/15" />
+          <p className="text-white/40 text-sm">Selecciona un cliente para previsualizar su portal.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-8 h-8 text-brand-light animate-spin" />
+      <div className="space-y-4">
+        {AdminSelectorBar}
+        <div className="flex items-center justify-center py-32">
+          <Loader2 className="w-8 h-8 text-brand-light animate-spin" />
+        </div>
       </div>
     );
   }
 
   if (noClient) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-4 text-center">
-        <div className="w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center">
-          <AlertCircle className="w-7 h-7 text-brand-light/60" />
-        </div>
-        <div>
-          <p className="text-white font-semibold">Cuenta no configurada</p>
-          <p className="text-white/40 text-sm mt-1 max-w-sm">
-            Tu cuenta de cliente aún no ha sido vinculada al sistema. Contacta a tu Project Manager.
-          </p>
+      <div className="space-y-4">
+        {AdminSelectorBar}
+        <div className="flex flex-col items-center justify-center py-32 gap-4 text-center">
+          <div className="w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center">
+            <AlertCircle className="w-7 h-7 text-brand-light/60" />
+          </div>
+          <div>
+            <p className="text-white font-semibold">Cuenta no configurada</p>
+            <p className="text-white/40 text-sm mt-1 max-w-sm">
+              {isManager
+                ? 'Este cliente no tiene un registro en el sistema.'
+                : 'Tu cuenta de cliente aún no ha sido vinculada al sistema. Contacta a tu Project Manager.'}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -434,9 +516,12 @@ export default function ClientPortalContent() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-4 text-center">
-        <AlertCircle className="w-10 h-10 text-red-400/60" />
-        <p className="text-white/50">{error}</p>
+      <div className="space-y-4">
+        {AdminSelectorBar}
+        <div className="flex flex-col items-center justify-center py-32 gap-4 text-center">
+          <AlertCircle className="w-10 h-10 text-red-400/60" />
+          <p className="text-white/50">{error}</p>
+        </div>
       </div>
     );
   }
@@ -465,6 +550,8 @@ export default function ClientPortalContent() {
 
   return (
     <div className="space-y-6">
+      {AdminSelectorBar}
+
       {/* Header */}
       <div className="glass-card rounded-2xl p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">

@@ -46,6 +46,30 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Auto-create Client record if a user account exists for this email (non-blocking)
+    db.user.findUnique({
+      where:  { email: appointment.email },
+      select: { id: true },
+    }).then((existingUser) => {
+      if (!existingUser) return;
+      return db.client.findFirst({
+        where:  { userId: existingUser.id },
+        select: { id: true },
+      }).then((existingClient) => {
+        if (existingClient) return;
+        return db.client.create({
+          data: {
+            userId:  existingUser.id,
+            name:    appointment.name,
+            email:   appointment.email,
+            phone:   appointment.phone,
+            status:  'lead',
+            company: '',
+          },
+        });
+      });
+    }).catch((err) => console.error('[appointments] client upsert error (non-fatal):', err));
+
     // Notify all admins and project managers
     const managers = await db.user.findMany({
       where: { role: { in: ['ADMIN', 'PROJECT_MANAGER'] } },

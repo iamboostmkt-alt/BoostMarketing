@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import {
   Users,
   CheckSquare,
@@ -50,7 +51,8 @@ function userInitials(name: string | null, email: string) {
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [stats, setStats]           = useState<DashboardStats | null>(null);
   const [tasks, setTasks]           = useState<Task[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -68,6 +70,13 @@ export default function DashboardPage() {
   const userName  = session?.user?.name || 'Usuario';
   const userRole  = session?.user?.role as string | undefined;
   const isManager = MANAGER_ROLES.includes(userRole ?? '');
+
+  // Redirect CLIENT users to their portal
+  useEffect(() => {
+    if (status === 'authenticated' && userRole === 'CLIENT') {
+      router.replace('/dashboard/client-portal');
+    }
+  }, [status, userRole, router]);
 
   // ── Fetch personal data ──────────────────────────────────────────────────
   useEffect(() => {

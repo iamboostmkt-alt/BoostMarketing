@@ -95,6 +95,20 @@ export async function POST(req: NextRequest) {
 
     if (isDev) console.log('[register] user created:', user.id);
 
+    // ── Auto-create Client record (non-blocking) ──────────────────────────────
+    db.client
+      .create({
+        data: {
+          userId:  user.id,
+          name:    name.trim(),
+          email:   normalizedEmail,
+          status:  'active',
+          company: '',
+          phone:   '',
+        },
+      })
+      .catch((err) => console.error('[register] client create error (non-fatal):', err));
+
     // ── Welcome notification (non-blocking — failure is acceptable) ───────────
     db.notification
       .create({

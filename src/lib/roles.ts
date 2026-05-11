@@ -49,6 +49,11 @@ export function isInternalRole(role: string | Role | undefined | null): boolean 
 
 export const ROUTE_ACCESS: Array<{ pattern: RegExp; allowed: Role[] }> = [
   {
+    // Dashboard root — CLIENT users are redirected to their portal
+    pattern: /^\/dashboard$/,
+    allowed: ["ADMIN", "DESIGNER", "MARKETING", "PROJECT_MANAGER"],
+  },
+  {
     pattern: /^\/dashboard\/admin(\/|$)/,
     allowed: ["ADMIN", "PROJECT_MANAGER"],
   },
@@ -78,7 +83,7 @@ export const ROUTE_ACCESS: Array<{ pattern: RegExp; allowed: Role[] }> = [
   },
   {
     pattern: /^\/dashboard\/client-portal(\/|$)/,
-    allowed: ["CLIENT"],
+    allowed: ["CLIENT", "PROJECT_MANAGER"],
   },
 ];
 

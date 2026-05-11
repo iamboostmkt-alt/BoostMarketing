@@ -32,9 +32,9 @@ export async function middleware(request: NextRequest) {
         `[middleware] forbidden — ${pathname} (role=${role ?? 'undefined'})`
       );
     }
-    const dash = new URL('/dashboard', request.url);
-    dash.searchParams.set('forbidden', '1');
-    return NextResponse.redirect(dash);
+    // CLIENT users go to their portal; all other roles go to the main dashboard
+    const fallback = role === 'CLIENT' ? '/dashboard/client-portal' : '/dashboard';
+    return NextResponse.redirect(new URL(fallback, request.url));
   }
 
   if (isDev) {
