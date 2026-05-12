@@ -55,20 +55,22 @@ function getTransporter(): Transporter | null {
   if (cached && cachedKey === key) return cached;
 
   cached = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: {
-      user,
-      pass,
-    },
-    pool: true,
-    maxConnections: 3,
-    maxMessages: 50,
-    tls: {
-      rejectUnauthorized: process.env.EMAIL_TLS_REJECT_UNAUTHORIZED !== "false",
-    },
-  });
+  host,
+  port,
+  secure,
+  auth: { user, pass },
+
+  pool: true,
+  maxConnections: 3,
+  maxMessages: 50,
+
+  // 🔥 FIX GMAIL / SMTP STABILITY
+  requireTLS: true,
+
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 
   cachedKey = key;
   return cached;
