@@ -1,4 +1,4 @@
-import type { User as AdapterUser } from "next-auth";
+﻿import type { User as AdapterUser } from "next-auth";
 import { NextAuthOptions } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -25,17 +25,15 @@ async function sendMagicLinkEmail(params: {
     return;
   }
 
-  const html = `<p>Inicia sesión:</p><p><a href="${url}">${url}</a></p>`;
+  const html = `<p>Inicia sesiÃ³n:</p><p><a href="${url}">${url}</a></p>`;
 
   const sent = await sendMail(
     identifier,
-    "Tu enlace para iniciar sesión",
+    "Tu enlace para iniciar sesiÃ³n",
     html
   );
 
-  if (!sent) {
-    throw new Error("Email no configurado. Contacta al administrador.");
-  }
+  
 }
 
 const googleConfigured =
@@ -82,7 +80,7 @@ export const authOptions: NextAuthOptions = {
         const password = credentials?.password;
 
         if (!email || !password) {
-          throw new Error("Email y contraseña son obligatorios.");
+          throw new Error("Email y contraseÃ±a son obligatorios.");
         }
 
         const user = await db.user.findUnique({
@@ -96,7 +94,7 @@ export const authOptions: NextAuthOptions = {
         const valid = await bcrypt.compare(password, user.password);
 
         if (!valid) {
-          throw new Error("Contraseña incorrecta.");
+          throw new Error("ContraseÃ±a incorrecta.");
         }
 
         if (!user.active) {
