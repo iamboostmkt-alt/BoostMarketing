@@ -4,7 +4,9 @@ import nodemailer, { type Transporter } from "nodemailer";
 const isDev = process.env.NODE_ENV === "development";
 
 /**
- * ENV (SOLO estas variables deben existir en Vercel):
+ * =========================
+ * ENV VARIABLES REQUIRED
+ * =========================
  * EMAIL_SERVER_HOST
  * EMAIL_SERVER_PORT
  * EMAIL_SERVER_USER
@@ -12,18 +14,31 @@ const isDev = process.env.NODE_ENV === "development";
  * EMAIL_FROM
  */
 
+function logSmtpCheck() {
+  console.log("SMTP CHECK:", {
+    host: process.env.EMAIL_SERVER_HOST,
+    port: process.env.EMAIL_SERVER_PORT,
+    user: process.env.EMAIL_SERVER_USER,
+    pass: process.env.EMAIL_SERVER_PASSWORD ? "OK" : "MISSING",
+    from: process.env.EMAIL_FROM,
+  });
+}
+
+logSmtpCheck();
+
 function resolveHost(): string {
   return process.env.EMAIL_SERVER_HOST?.trim() || "smtp.gmail.com";
 }
 
 function resolvePort(): number {
   const p = Number(process.env.EMAIL_SERVER_PORT);
-  return Number.isFinite(p) && p > 0 ? p : 587;
+  return Number.isFinite(p) ? p : 587;
 }
 
 function resolveSecure(port: number): boolean {
-  if (process.env.EMAIL_SERVER_SECURE === "true") return true;
-  if (process.env.EMAIL_SERVER_SECURE === "false") return false;
+  const env = process.env.EMAIL_SERVER_SECURE;
+  if (env === "true") return true;
+  if (env === "false") return false;
   return port === 465;
 }
 
@@ -31,94 +46,106 @@ function resolveUser(): string | undefined {
   return process.env.EMAIL_SERVER_USER?.trim();
 }
 
-function resolvePassword(): string | undefined {
+function resolvePass(): string | undefined {
   return process.env.EMAIL_SERVER_PASSWORD?.trim();
 }
 
-let cached: Transporter | null = null;
-let cachedKey = "";
+function resolveFrom(): string | undefined {
+  return process.env.EMAIL_FROM?.trim();
+}
 
-/**
- * TRANSPORTER SINGLETON
- */
+let transporter: Transporter | null = null;
+let cacheKey = "";
+
 function getTransporter(): Transporter | null {
   const host = resolveHost();
   const port = resolvePort();
   const secure = resolveSecure(port);
   const user = resolveUser();
-  const pass = resolvePassword();
+  const pass = resolvePass();
 
-  if (!user || !pass) return null;
+  if (!host || !user || !pass) {
+    console.error("❌ SMTP missing config");
+    return null;
+  }
 
   const key = `${host}:${port}:${secure}:${user}`;
 
-  if (cached && cachedKey === key) return cached;
+  if (transporter && cacheKey === key) return transporter;
 
-  cached = nodemailer.createTransport({
-  host,
-  port,
-  secure,
-  auth: { user, pass },
+  transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user,
+      pass,
+    },
 
-  pool: true,
-  maxConnections: 3,
-  maxMessages: 50,
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 50,
 
-  // 🔥 FIX GMAIL / SMTP STABILITY
-  requireTLS: true,
+    requireTLS: true,
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
 
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+  cacheKey = key;
 
-  cachedKey = key;
-  return cached;
+  return transporter;
 }
 
 /**
- * MAIN EMAIL FUNCTION
+ * SEND EMAIL
  */
 export async function sendMail(
   to: string,
   subject: string,
   html: string
 ): Promise<boolean> {
-  const from = process.env.EMAIL_FROM?.trim();
+  const from = resolveFrom();
 
   if (!from) {
-    if (isDev) console.warn("[sendMail] EMAIL_FROM missing");
+    console.error("❌ EMAIL_FROM missing");
     return false;
   }
 
-  const transport = getTransporter();
+  const transporter = getTransporter();
 
-  if (!transport) {
-    if (isDev) {
-      console.warn("[sendMail] SMTP not configured");
-    }
+  if (!transporter) {
+    console.error("❌ Transporter not created");
     return false;
   }
 
   try {
-    await transport.sendMail({
+    console.log("📨 Sending email to:", to);
+
+    const result = await transporter.sendMail({
       from,
       to,
       subject,
       html,
     });
 
-    if (isDev) console.log("[sendMail] sent →", to);
+    console.log("✅ Email sent:", result.messageId);
+
     return true;
-  } catch (err) {
-    console.error("[sendMail] error:", err);
+  } catch (err: any) {
+    console.error("🔥 SMTP ERROR FULL:");
+    console.error(err);
+
+    if (err?.code) console.error("CODE:", err.code);
+    if (err?.response) console.error("RESPONSE:", err.response);
+
     return false;
   }
 }
 
 /**
- * DEBUG HELP
+ * CHECK CONFIG
  */
 export function isSmtpConfigured(): boolean {
-  return !!(resolveUser() && resolvePassword() && process.env.EMAIL_FROM);
+  return Boolean(resolveUser() && resolvePass() && resolveFrom());
 }
