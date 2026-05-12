@@ -37,6 +37,21 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ tasks });
 }
 
+// ─── helper: recopilar emails de todos los asignados ──────────
+async function getAssignedEmails(taskId: string): Promise<Set<string>> {
+  const t = await db.task.findUnique({
+    where: { id: taskId },
+    include: {
+      assignedUser:  { select: { email: true } },
+      assignedUsers: { include: { user: { select: { email: true } } } },
+    },
+  });
+  const emails = new Set<string>();
+  if (t?.assignedUser?.email) emails.add(t.assignedUser.email);
+  t?.assignedUsers?.forEach((au: any) => { if (au.user?.email) emails.add(au.user.email); });
+  return emails;
+}
+
 // ─── POST ─────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -63,12 +78,15 @@ export async function POST(req: NextRequest) {
     include: { assignedUser: userInclude, client: clientInclude },
   });
 
-  if (task.assignedUser?.email) {
-    const dueDateStr = task.dueDate
-      ? new Date(task.dueDate).toLocaleDateString("es-MX")
-      : undefined;
+  // Notificar a TODOS los asignados
+  const dueDateStr = task.dueDate
+    ? new Date(task.dueDate).toLocaleDateString("es-MX")
+    : undefined;
+
+  const emails = await getAssignedEmails(task.id);
+  for (const email of emails) {
     await sendMail(
-      task.assignedUser.email,
+      email,
       "Nueva tarea asignada",
       templateNuevaTarea(task.title, task.description ?? "", dueDateStr)
     );
@@ -120,7 +138,6 @@ export async function PUT(req: NextRequest) {
     const notifyIds = new Set<string>();
     if (task.assignedUser?.id) notifyIds.add(task.assignedUser.id);
     existing.assignedUsers?.forEach((au: any) => notifyIds.add(au.user.id));
-    // No notificar al que hizo el cambio
     notifyIds.delete(userId);
 
     for (const uid of notifyIds) {
@@ -134,9 +151,11 @@ export async function PUT(req: NextRequest) {
       });
     }
 
-    if (task.assignedUser?.email) {
+    // Email a TODOS los asignados
+    const emails = await getAssignedEmails(task.id);
+    for (const email of emails) {
       await sendMail(
-        task.assignedUser.email,
+        email,
         "Estado de tarea actualizado",
         templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending")
       );
@@ -190,7 +209,6 @@ export async function PUT(req: NextRequest) {
   }
 
   if (cambios.length > 0) {
-    // Notificacion en app a asignados
     const notifyIds = new Set<string>();
     if (task.assignedUser?.id && task.assignedUser.id !== userId) notifyIds.add(task.assignedUser.id);
     existing.assignedUsers?.forEach((au: any) => { if (au.user.id !== userId) notifyIds.add(au.user.id); });
@@ -206,9 +224,11 @@ export async function PUT(req: NextRequest) {
       });
     }
 
-    if (task.assignedUser?.email) {
+    // Email a TODOS los asignados
+    const emails = await getAssignedEmails(task.id);
+    for (const email of emails) {
       sendMail(
-        task.assignedUser.email,
+        email,
         "Tu tarea fue editada",
         templateTareaEditada(task.title, cambios)
       ).catch(console.error);
@@ -231,11 +251,6 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
   await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
-    await db.task.delete({ where: { id } });
+  await db.task.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
-
-
-
-
-
