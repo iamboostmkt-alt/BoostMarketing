@@ -45,7 +45,8 @@ export async function POST(req: NextRequest) {
   const userId    = (session.user as any).id;
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const body      = await req.json();
-  const { title, description, priority, dueDate, assignedUserId, clientId } = body;
+  const { title, description, priority, dueDate, assignedUserId: _assignedUserId, assignedUserIds, clientId } = body;
+  const assignedUserId = _assignedUserId || (Array.isArray(assignedUserIds) && assignedUserIds[0]) || null;
 
   if (!title) return NextResponse.json({ error: "Título requerido" }, { status: 400 });
 
@@ -168,3 +169,4 @@ export async function DELETE(req: NextRequest) {
   await db.task.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
+
