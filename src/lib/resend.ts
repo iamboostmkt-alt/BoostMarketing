@@ -1,3 +1,5 @@
+import { sendMail as sendMailSmtp } from '@/lib/mailer';
+
 const isDev = process.env.NODE_ENV === 'development';
 
 interface SendEmailOptions {
@@ -6,16 +8,18 @@ interface SendEmailOptions {
   html: string;
 }
 
-// Sends email via Resend REST API. Never throws — logs errors and returns.
+/** Prefer Gmail SMTP (EMAIL_SERVER_* + EMAIL_FROM); optional Resend fallback if RESEND_API_KEY. */
 export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<boolean> {
+  const ok = await sendMailSmtp(to, subject, html);
+  if (ok) return true;
+
   const apiKey = process.env.RESEND_API_KEY;
-  const from   = process.env.EMAIL_FROM ?? 'BoostMarketing <onboarding@resend.dev>';
+  const from = process.env.EMAIL_FROM ?? 'BoostMarketing <onboarding@resend.dev>';
 
   if (!apiKey) {
     if (isDev) {
-      console.log('\n[email] Resend not configured. Would have sent:');
-      console.log('  To:', to);
-      console.log('  Subject:', subject);
+      console.log('\n[email] SMTP failed or not configured; Resend also missing. Would have sent:');
+      console.log('  To:', to, 'Subject:', subject);
     }
     return false;
   }
@@ -36,7 +40,7 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions): Promis
       return false;
     }
 
-    if (isDev) console.log('[email] Sent to', to, '—', subject);
+    if (isDev) console.log('[email] Resend sent to', to, '—', subject);
     return true;
   } catch (e) {
     console.error('[email] fetch error:', e);

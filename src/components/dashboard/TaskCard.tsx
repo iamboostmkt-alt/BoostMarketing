@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Pencil, Trash2 } from 'lucide-react';
+import { Calendar, CheckCircle2, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Task, TaskAssignee } from '@/lib/types';
 import { statusColors, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
@@ -11,6 +11,10 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
   onView?: (task: Task) => void;
+  /** Si se define, muestra acción rápida para marcar completada (no aplica si ya está completada). */
+  onMarkComplete?: (task: Task) => void | Promise<void>;
+  /** Marcar como pendiente (solo si la tarea está completada). */
+  onMarkPending?: (task: Task) => void | Promise<void>;
 }
 
 const priorityDotColors: Record<string, string> = {
@@ -53,7 +57,7 @@ function resolveAssignees(task: Task): TaskAssignee[] {
   return [];
 }
 
-export default function TaskCard({ task, onEdit, onDelete, onView }: TaskCardProps) {
+export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplete, onMarkPending }: TaskCardProps) {
   const overdue = isOverdue(task.dueDate) && task.status !== 'completed';
   const assignees = resolveAssignees(task);
 
@@ -114,6 +118,36 @@ export default function TaskCard({ task, onEdit, onDelete, onView }: TaskCardPro
 
           {/* Footer: status + date + assignees */}
           <div className="flex items-center gap-3 mt-3 flex-wrap">
+            {task.status !== 'completed' && onMarkComplete && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1 px-2 text-[11px] border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onMarkComplete(task);
+                }}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Marcar como completada
+              </Button>
+            )}
+            {task.status === 'completed' && onMarkPending && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1 px-2 text-[11px] border-slate-500/30 text-slate-300 hover:bg-slate-500/10 hover:text-white"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void onMarkPending(task);
+                }}
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Marcar como pendiente
+              </Button>
+            )}
             <span
               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${statusColors[task.status] || 'status-pending'}`}
             >

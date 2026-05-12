@@ -4,9 +4,9 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
-import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { sendMail, isSmtpConfigured } from "@/lib/mailer";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -17,7 +17,7 @@ async function sendMagicLinkEmail(params: {
 }) {
   const { identifier, url, provider } = params;
 
-  if (isDev) {
+  if (isDev && !isSmtpConfigured()) {
     console.log("\n========== Magic link (dev) ==========");
     console.log("To:", identifier);
     console.log("URL:", url);
@@ -25,24 +25,18 @@ async function sendMagicLinkEmail(params: {
     return;
   }
 
-  const server = process.env.EMAIL_SERVER;
-  const from = process.env.EMAIL_FROM ?? provider.from ?? "noreply@localhost";
-
-  if (!server) {
+  const html = `<p>Inicia sesión:</p><p><a href="${url}">${url}</a></p>`;
+  const sent = await sendMail(
+    identifier,
+    "Tu enlace para iniciar sesión",
+    html
+  );
+  if (!sent) {
     console.error(
-      "[auth] Magic link: set EMAIL_SERVER and EMAIL_FROM for production"
+      "[auth] Magic link: configure EMAIL_SERVER_HOST, EMAIL_SERVER_PORT, EMAIL_SERVER_USER, EMAIL_SERVER_PASSWORD, EMAIL_FROM"
     );
     throw new Error("Email no configurado. Contacta al administrador.");
   }
-
-  const transport = nodemailer.createTransport(server);
-  await transport.sendMail({
-    to: identifier,
-    from,
-    subject: "Tu enlace para iniciar sesión",
-    text: `Inicia sesión con este enlace (válido por tiempo limitado):\n${url}`,
-    html: `<p>Inicia sesión:</p><p><a href="${url}">${url}</a></p>`,
-  });
 }
 
 const googleConfigured =
@@ -132,6 +126,7 @@ export const authOptions: NextAuthOptions = {
           image: user.image,
           role: user.role,
           color: user.color,
+          lifecycleStatus: user.lifecycleStatus,
         };
       },
     }),
@@ -165,10 +160,12 @@ export const authOptions: NextAuthOptions = {
           const dbUser = await db.user.findUnique({
             where:  { id: user.id },
             select: {
+              lifecycleStatus: true,
               customRoleId: true,
               customRole:   { select: { label: true, color: true, permissions: true } },
             },
           });
+          token.lifecycleStatus = dbUser?.lifecycleStatus ?? (user as { lifecycleStatus?: string | null }).lifecycleStatus ?? null;
           token.customRoleId    = dbUser?.customRoleId ?? null;
           token.customRoleLabel = dbUser?.customRole?.label ?? null;
           token.customRoleColor = dbUser?.customRole?.color ?? null;
@@ -178,9 +175,12 @@ export const authOptions: NextAuthOptions = {
           token.customRoleLabel = null;
           token.customRoleColor = null;
           token.permissions     = {};
+          token.lifecycleStatus = (user as { lifecycleStatus?: string | null }).lifecycleStatus ?? null;
         }
 
-        if (isDev) console.log("[auth] jwt: token created for", user.email);
+        if (token.lifecycleStatus === undefined) {
+          token.lifecycleStatus = (user as { lifecycleStatus?: string | null }).lifecycleStatus ?? null;
+        }
       }
 
       // Called when client invokes update({ image: newUrl }) — refreshes avatar in JWT cookie
@@ -201,6 +201,7 @@ export const authOptions: NextAuthOptions = {
         session.user.customRoleLabel = token.customRoleLabel;
         session.user.customRoleColor = token.customRoleColor;
         session.user.permissions     = token.permissions;
+        session.user.lifecycleStatus = (token.lifecycleStatus as string | null | undefined) ?? null;
       }
       return session;
     },

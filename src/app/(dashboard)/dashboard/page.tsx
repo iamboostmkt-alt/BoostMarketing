@@ -12,7 +12,6 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
-  CalendarRange,
   User,
   Briefcase,
   Filter,
@@ -31,10 +30,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
-import type { DashboardStats, Task, Activity } from '@/lib/types';
+import type { DashboardStats, Task } from '@/lib/types';
 import {
   statusLabels, statusColors, priorityLabels, priorityColors,
-  activityStatusColors, activityStatusLabels,
 } from '@/lib/theme-maps';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
@@ -55,10 +53,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const [stats, setStats]           = useState<DashboardStats | null>(null);
   const [tasks, setTasks]           = useState<Task[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(true);
-  const [loadingActs,  setLoadingActs]  = useState(true);
 
   // Team tasks state (admin/PM only)
   const [teamTasks,        setTeamTasks]        = useState<Task[]>([]);
@@ -91,26 +87,23 @@ export default function DashboardPage() {
     }).finally(() => setLoadingTasks(false));
   }, []);
 
-  useEffect(() => {
-    fetch('/api/activities').then((r) => r.ok ? r.json() : null).then((d) => {
-      if (d) setActivities((d.activities || []).slice(0, 5));
-    }).finally(() => setLoadingActs(false));
-  }, []);
-
   // ── Fetch team data (admin/PM only) ──────────────────────────────────────
   useEffect(() => {
     if (!isManager) { setLoadingTeam(false); return; }
     fetch('/api/tasks?scope=all&limit=50').then((r) => r.ok ? r.json() : null).then((d) => {
       const all: Task[] = d?.tasks || [];
       setTeamTasks(all);
-      // Collect unique users
       const seen = new Set<string>();
       const users: AdminUser[] = [];
+      const pushUser = (u: { id: string; name: string | null; email: string; color: string } | null | undefined) => {
+        if (!u || seen.has(u.id)) return;
+        seen.add(u.id);
+        users.push(u as AdminUser);
+      };
       for (const t of all) {
-        if (t.user && !seen.has(t.user.id)) {
-          seen.add(t.user.id);
-          users.push(t.user as AdminUser);
-        }
+        pushUser(t.user);
+        pushUser(t.assignedUser);
+        for (const u of t.assignedUsers ?? []) pushUser(u);
       }
       setTeamUsers(users);
     }).finally(() => setLoadingTeam(false));
@@ -118,7 +111,11 @@ export default function DashboardPage() {
 
   const filteredTeamTasks = teamTasks.filter((t) => {
     if (teamStatusFilter !== 'all' && t.status !== teamStatusFilter) return false;
-    if (teamUserFilter   !== 'all' && t.userId !== teamUserFilter)   return false;
+    if (teamUserFilter !== 'all') {
+      const uid = teamUserFilter;
+      const inPivot = (t.assignedUsers ?? []).some((u) => u.id === uid);
+      if (t.userId !== uid && t.assignedUserId !== uid && !inPivot) return false;
+    }
     return true;
   });
 
@@ -235,10 +232,9 @@ export default function DashboardPage() {
                 </SelectTrigger>
                 <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
                   <SelectItem value="all" className="text-xs focus:bg-white/[0.06]">Todos estados</SelectItem>
-                  <SelectItem value="pending"    className="text-xs focus:bg-white/[0.06]">Pendiente</SelectItem>
-                  <SelectItem value="editing"    className="text-xs focus:bg-white/[0.06]">En Edición</SelectItem>
-                  <SelectItem value="review"     className="text-xs focus:bg-white/[0.06]">En Revisión</SelectItem>
-                  <SelectItem value="completed"  className="text-xs focus:bg-white/[0.06]">Completado</SelectItem>
+                  <SelectItem value="pending"     className="text-xs focus:bg-white/[0.06]">Pendiente</SelectItem>
+                  <SelectItem value="in_progress" className="text-xs focus:bg-white/[0.06]">En progreso</SelectItem>
+                  <SelectItem value="completed"   className="text-xs focus:bg-white/[0.06]">Completado</SelectItem>
                 </SelectContent>
               </Select>
               {/* User filter */}
@@ -352,70 +348,6 @@ export default function DashboardPage() {
           )}
         </div>
       )}
-
-      {/* My Activities */}
-      <div className="glass-card rounded-xl">
-        <div className="flex items-center justify-between p-4 md:p-6 border-b border-white/[0.06]">
-          <div className="flex items-center gap-2">
-            <CalendarRange className="w-5 h-5 text-brand-light" />
-            <h3 className="text-base font-semibold text-white">Mis Actividades</h3>
-          </div>
-          <span className="text-xs text-white/30">{activities.length} asignada{activities.length !== 1 ? 's' : ''}</span>
-        </div>
-        <div className="divide-y divide-white/[0.04]">
-          {loadingActs ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 md:px-6">
-                <Skeleton className="h-4 w-4 rounded shrink-0" />
-                <div className="flex-1 space-y-2"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-3 w-1/2" /></div>
-                <Skeleton className="h-6 w-20 rounded-full" />
-              </div>
-            ))
-          ) : activities.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <CalendarRange className="w-10 h-10 text-white/20 mb-3" />
-              <p className="text-sm text-white/40">No tienes actividades asignadas</p>
-            </div>
-          ) : (
-            activities.map((act) => {
-              const dateStr = (() => {
-                try {
-                  const start = format(new Date(act.startDate), 'd MMM', { locale: es });
-                  const end   = act.endDate ? format(new Date(act.endDate), 'd MMM', { locale: es }) : null;
-                  return end ? `${start} → ${end}` : start;
-                } catch { return ''; }
-              })();
-              return (
-                <div key={act.id} className="flex items-center gap-4 p-4 md:px-6 hover:bg-white/[0.02] transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white/90 truncate">{act.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {dateStr && (
-                        <span className="flex items-center gap-1 text-xs text-white/35">
-                          <Clock className="w-3 h-3" />{dateStr}
-                        </span>
-                      )}
-                      {act.assignedUser && (
-                        <span className="flex items-center gap-1 text-xs text-white/30">
-                          <User className="w-3 h-3" />{act.assignedUser.name || act.assignedUser.email}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${activityStatusColors[act.status] || 'status-pending'}`}>
-                      {activityStatusLabels[act.status] || act.status}
-                    </span>
-                    <span className={`text-xs font-medium hidden sm:inline ${priorityColors[act.priority] || 'text-white/40'}`}>
-                      {priorityLabels[act.priority] || act.priority}
-                    </span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
 
       {/* Two column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

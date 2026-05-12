@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
-  CalendarRange,
+  CheckSquare,
   Plus,
   Pencil,
   Trash2,
@@ -26,6 +26,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useRef } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -59,11 +60,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { getRoleLabel } from '@/lib/roles';
-import ActivityForm from '@/components/dashboard/ActivityForm';
 import CMSContent from '@/components/dashboard/CMSContent';
 import CustomRoleDialog, { type CustomRole, ALL_PERMISSIONS } from '@/components/dashboard/CustomRoleDialog';
-import { activityStatusColors, activityStatusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
-import type { Appointment, Activity } from '@/lib/types';
+import { statusColors, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
+import type { Appointment, Task } from '@/lib/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -73,6 +73,7 @@ interface AdminUser {
   email: string;
   image: string | null;
   role: string;
+  lifecycleStatus: string | null;
   color: string;
   active: boolean;
   createdAt: string;
@@ -84,11 +85,19 @@ interface MiniRole { id: string; label: string; color: string; }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const ROLES = ['ADMIN', 'CLIENT', 'DESIGNER', 'MARKETING', 'PROJECT_MANAGER'] as const;
+const ROLES = [
+  'UNASSIGNED',
+  'ADMIN',
+  'CLIENT',
+  'PROJECT_MANAGER',
+  'TEAM_MEMBER',
+] as const;
 
 const roleColorMap: Record<string, string> = {
+  UNASSIGNED:      'bg-slate-500/15 text-slate-300 border-slate-500/20',
   ADMIN:           'bg-amber-500/15 text-amber-300 border-amber-500/20',
   CLIENT:          'bg-green-500/15 text-green-300 border-green-500/20',
+  TEAM_MEMBER:     'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
   DESIGNER:        'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
   MARKETING:       'bg-purple-500/15 text-purple-300 border-purple-500/20',
   PROJECT_MANAGER: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
@@ -98,6 +107,12 @@ const apptStatusMap: Record<string, { label: string; color: string; icon: React.
   pending:   { label: 'Pendiente',  color: 'bg-amber-500/15 text-amber-300',  icon: <Clock        className="h-3 w-3" /> },
   confirmed: { label: 'Confirmada', color: 'bg-green-500/15 text-green-300',  icon: <CheckCircle2 className="h-3 w-3" /> },
   cancelled: { label: 'Cancelada',  color: 'bg-red-500/15 text-red-300',      icon: <XCircle      className="h-3 w-3" /> },
+};
+
+const lifecycleBadgeMap: Record<string, { label: string; className: string }> = {
+  PROSPECT: { label: 'Prospecto', className: 'bg-amber-500/15 text-amber-300 border border-amber-500/25' },
+  ACTIVE:   { label: 'Activo',    className: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25' },
+  INACTIVE: { label: 'Inactivo',  className: 'bg-slate-500/15 text-slate-400 border border-slate-500/20' },
 };
 
 const USER_COLORS = [
@@ -126,7 +141,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
   const [name,         setName]         = useState('');
   const [email,        setEmail]        = useState('');
   const [password,     setPassword]     = useState('');
-  const [role,         setRole]         = useState<string>('CLIENT');
+  const [role,         setRole]         = useState<string>('UNASSIGNED');
   const [color,        setColor]        = useState('#7c3aed');
   const [customRoleId, setCustomRoleId] = useState<string>('none');
   const [miniRoles,    setMiniRoles]    = useState<MiniRole[]>([]);
@@ -140,7 +155,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
       setName(user?.name ?? '');
       setEmail(user?.email ?? '');
       setPassword('');
-      setRole(user?.role ?? 'CLIENT');
+      setRole(user?.role ?? 'UNASSIGNED');
       setColor(user?.color ?? '#7c3aed');
       setCustomRoleId(user?.customRoleId ?? 'none');
       setImage(user?.image ?? null);
@@ -362,6 +377,8 @@ export default function AdminDashboardPage() {
   const [deleteUser,   setDeleteUser]   = useState<AdminUser | null>(null);
   const [deletingUser, setDeletingUser] = useState(false);
   const [togglingUser, setTogglingUser] = useState<string | null>(null);
+  const [userListView, setUserListView] = useState<'all' | 'prospects'>('all');
+  const [activatingUser, setActivatingUser] = useState<string | null>(null);
 
   // Appointments state
   const [appointments,  setAppointments]  = useState<Appointment[]>([]);
@@ -369,14 +386,11 @@ export default function AdminDashboardPage() {
   const [apptFilter,    setApptFilter]    = useState<string>('all');
   const [updatingAppt,  setUpdatingAppt]  = useState<string | null>(null);
 
-  // Activities state
-  const [activities,   setActivities]  = useState<Activity[]>([]);
-  const [loadingActs,  setLoadingActs]  = useState(true);
-  const [actFilter,    setActFilter]    = useState<string>('all');
-  const [actFormOpen,  setActFormOpen]  = useState(false);
-  const [editingAct,   setEditingAct]   = useState<Activity | null>(null);
-  const [deleteAct,    setDeleteAct]    = useState<Activity | null>(null);
-  const [deletingAct,  setDeletingAct]  = useState(false);
+  // Tasks (reemplaza el antiguo módulo de actividades)
+  const [tasks,       setTasks]       = useState<Task[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [taskFilter,   setTaskFilter]   = useState<string>('all');
+  const [updatingTask, setUpdatingTask] = useState<string | null>(null);
 
   // Custom roles state
   const [customRoles,   setCustomRoles]  = useState<CustomRole[]>([]);
@@ -388,16 +402,20 @@ export default function AdminDashboardPage() {
 
   // ── Fetchers ───────────────────────────────────────────────────────────────
 
-  const fetchUsers = useCallback(async (q = '') => {
+  const fetchUsers = useCallback(async (q = '', view: 'all' | 'prospects' = userListView) => {
     setLoadingUsers(true);
     try {
-      const res = await fetch(`/api/admin/users${q ? `?search=${encodeURIComponent(q)}` : ''}`);
+      const params = new URLSearchParams();
+      if (q) params.set('search', q);
+      if (view === 'prospects') params.set('lifecycle', 'PROSPECT');
+      const qs = params.toString();
+      const res = await fetch(`/api/admin/users${qs ? `?${qs}` : ''}`);
       if (!res.ok) throw new Error('Error');
       const data = await res.json();
       setUsers(data.users ?? []);
     } catch { toast.error('No se pudieron cargar los usuarios.'); }
     finally { setLoadingUsers(false); }
-  }, []);
+  }, [userListView]);
 
   const fetchAppointments = useCallback(async (status = 'all') => {
     setLoadingAppts(true);
@@ -411,16 +429,17 @@ export default function AdminDashboardPage() {
     finally { setLoadingAppts(false); }
   }, []);
 
-  const fetchActivities = useCallback(async (status = 'all') => {
-    setLoadingActs(true);
+  const fetchTasks = useCallback(async (status = 'all') => {
+    setLoadingTasks(true);
     try {
-      const q = status !== 'all' ? `?status=${status}` : '';
-      const res = await fetch(`/api/activities${q}`);
+      const q = new URLSearchParams({ scope: 'all' });
+      if (status !== 'all') q.set('status', status);
+      const res = await fetch(`/api/tasks?${q.toString()}`);
       if (!res.ok) throw new Error('Error');
       const data = await res.json();
-      setActivities(data.activities ?? []);
-    } catch { toast.error('No se pudieron cargar las actividades.'); }
-    finally { setLoadingActs(false); }
+      setTasks(data.tasks ?? []);
+    } catch { toast.error('No se pudieron cargar las tareas.'); }
+    finally { setLoadingTasks(false); }
   }, []);
 
   const fetchRoles = useCallback(async () => {
@@ -432,15 +451,14 @@ export default function AdminDashboardPage() {
     finally { setLoadingRoles(false); }
   }, []);
 
-  useEffect(() => { if (isAdmin) { fetchUsers(); fetchAppointments(); fetchRoles(); } }, [fetchUsers, fetchAppointments, fetchRoles, isAdmin]);
-  useEffect(() => { fetchActivities(); }, [fetchActivities]);
+  useEffect(() => { if (isAdmin) { fetchAppointments(); fetchRoles(); } }, [fetchAppointments, fetchRoles, isAdmin]);
+  useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   useEffect(() => {
-    const t = setTimeout(() => { if (isAdmin) fetchUsers(search); }, 350);
+    if (!isAdmin) return;
+    const t = setTimeout(() => { fetchUsers(search, userListView); }, 350);
     return () => clearTimeout(t);
-  }, [search, fetchUsers, isAdmin]);
-
-  // ── User actions ───────────────────────────────────────────────────────────
+  }, [search, fetchUsers, isAdmin, userListView]);
 
   async function handleToggleActive(user: AdminUser) {
     setTogglingUser(user.id);
@@ -457,6 +475,28 @@ export default function AdminDashboardPage() {
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error');
     } finally { setTogglingUser(null); }
+  }
+
+  async function handleActivateClient(user: AdminUser) {
+    setActivatingUser(user.id);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, lifecycleStatus: 'ACTIVE' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
+      setUsers((prev) => {
+        if (userListView === 'prospects') return prev.filter((u) => u.id !== user.id);
+        return prev.map((u) => (u.id === user.id ? { ...u, lifecycleStatus: 'ACTIVE' } : u));
+      });
+      toast.success('Cliente marcado como activo.');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
+    } finally {
+      setActivatingUser(null);
+    }
   }
 
   async function handleDeleteUser() {
@@ -493,34 +533,22 @@ export default function AdminDashboardPage() {
     } finally { setUpdatingAppt(null); }
   }
 
-  // ── Activity actions ───────────────────────────────────────────────────────
+  // ── Task actions ───────────────────────────────────────────────────────────
 
-  async function handleActStatusChange(id: string, status: string) {
+  async function handleTaskStatusChange(id: string, status: string) {
+    setUpdatingTask(id);
     try {
-      const res = await fetch('/api/activities', {
+      const res = await fetch('/api/tasks', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
-      setActivities((prev) => prev.map((a) => (a.id === id ? { ...a, status: data.activity.status } : a)));
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: data.task.status } : t)));
       toast.success('Estado actualizado.');
     } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Error'); }
-  }
-
-  async function handleDeleteActivity() {
-    if (!deleteAct) return;
-    setDeletingAct(true);
-    try {
-      const res = await fetch(`/api/activities?id=${deleteAct.id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error');
-      setActivities((prev) => prev.filter((a) => a.id !== deleteAct.id));
-      toast.success('Actividad eliminada.');
-      setDeleteAct(null);
-    } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Error'); }
-    finally { setDeletingAct(false); }
+    finally { setUpdatingTask(null); }
   }
 
   // ── Custom role actions ────────────────────────────────────────────────────
@@ -542,12 +570,14 @@ export default function AdminDashboardPage() {
 
   // ── Stats ──────────────────────────────────────────────────────────────────
 
-  const roleCounts = ROLES.reduce<Record<string, number>>((acc, r) => {
-    acc[r] = users.filter((u) => u.role === r).length;
-    return acc;
-  }, {});
+  const roleCounts = userListView === 'all'
+    ? ROLES.reduce<Record<string, number>>((acc, r) => {
+        acc[r] = users.filter((u) => u.role === r).length;
+        return acc;
+      }, {})
+    : {};
   const pendingAppts = appointments.filter((a) => a.status === 'pending').length;
-  const pendingActs  = activities.filter((a) => a.status === 'pending').length;
+  const openTasks    = tasks.filter((t) => t.status !== 'completed').length;
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -573,7 +603,9 @@ export default function AdminDashboardPage() {
         {isAdmin && (
           <>
             <div className="glass-card rounded-xl p-4">
-              <p className="text-xs text-white/40 mb-1">Total usuarios</p>
+              <p className="text-xs text-white/40 mb-1">
+                {userListView === 'prospects' ? 'Prospectos (videollamada)' : 'Total usuarios'}
+              </p>
               <p className="text-2xl font-bold text-white">{loadingUsers ? '—' : users.length}</p>
             </div>
             <div className="glass-card rounded-xl p-4">
@@ -583,17 +615,17 @@ export default function AdminDashboardPage() {
           </>
         )}
         <div className="glass-card rounded-xl p-4">
-          <p className="text-xs text-white/40 mb-1">Actividades</p>
-          <p className="text-2xl font-bold text-white">{loadingActs ? '—' : activities.length}</p>
+          <p className="text-xs text-white/40 mb-1">Tareas</p>
+          <p className="text-2xl font-bold text-white">{loadingTasks ? '—' : tasks.length}</p>
         </div>
         <div className="glass-card rounded-xl p-4">
-          <p className="text-xs text-white/40 mb-1">Pendientes</p>
-          <p className="text-2xl font-bold text-brand-light">{loadingActs ? '—' : pendingActs}</p>
+          <p className="text-xs text-white/40 mb-1">Abiertas</p>
+          <p className="text-2xl font-bold text-brand-light">{loadingTasks ? '—' : openTasks}</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue={isAdmin ? 'users' : 'activities'}>
+      <Tabs defaultValue={isAdmin ? 'users' : 'tasks'}>
         <TabsList className="bg-white/[0.04] border border-white/[0.06] flex-wrap h-auto gap-1 p-1">
           {isAdmin && (
             <>
@@ -610,11 +642,11 @@ export default function AdminDashboardPage() {
               </TabsTrigger>
             </>
           )}
-          <TabsTrigger value="activities" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
-            <CalendarRange className="h-4 w-4" />Actividades
-            {pendingActs > 0 && (
+          <TabsTrigger value="tasks" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+            <CheckSquare className="h-4 w-4" />Tareas
+            {openTasks > 0 && (
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand/80 text-[10px] font-bold text-white">
-                {pendingActs}
+                {openTasks}
               </span>
             )}
           </TabsTrigger>
@@ -633,36 +665,62 @@ export default function AdminDashboardPage() {
         {/* ── Users tab ──────────────────────────────────────────────────────── */}
         {isAdmin && (
           <TabsContent value="users" className="mt-4 space-y-4">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar por nombre o email…"
-                  className="pl-9 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25"
-                />
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+              <div className="flex gap-2 flex-1">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar por nombre o email…"
+                    className="pl-9 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25"
+                  />
+                </div>
+                <Button variant="outline" size="icon" onClick={() => void fetchUsers(search, userListView)}
+                  className="border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06] shrink-0">
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+                <Button onClick={() => { setEditingUser(null); setUserDialog(true); }}
+                  className="bg-brand hover:bg-brand-dark text-white gap-1.5 shrink-0">
+                  <UserPlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Crear</span>
+                </Button>
               </div>
-              <Button variant="outline" size="icon" onClick={() => fetchUsers(search)}
-                className="border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06]">
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-              <Button onClick={() => { setEditingUser(null); setUserDialog(true); }}
-                className="bg-brand hover:bg-brand-dark text-white gap-1.5">
-                <UserPlus className="h-4 w-4" />
-                <span className="hidden sm:inline">Crear</span>
-              </Button>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-white/35 hidden sm:inline">Vista</span>
+                <div className="flex rounded-lg border border-white/[0.08] p-0.5 bg-white/[0.02]">
+                  <button
+                    type="button"
+                    onClick={() => setUserListView('all')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      userListView === 'all' ? 'bg-brand text-white' : 'text-white/50 hover:text-white/80'
+                    }`}
+                  >
+                    Todos
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUserListView('prospects')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      userListView === 'prospects' ? 'bg-amber-600 text-white' : 'text-white/50 hover:text-white/80'
+                    }`}
+                  >
+                    Prospectos
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* Role chips */}
-            <div className="flex flex-wrap gap-2">
-              {ROLES.map((r) => (
-                <span key={r} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${roleColorMap[r]}`}>
-                  {getRoleLabel(r)} <span className="opacity-70">({roleCounts[r] ?? 0})</span>
-                </span>
-              ))}
-            </div>
-
+            {/* Role chips (solo vista “Todos”: los conteos reflejan la página actual) */}
+            {userListView === 'all' && (
+              <div className="flex flex-wrap gap-2">
+                {ROLES.map((r) => (
+                  <span key={r} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${roleColorMap[r]}`}>
+                    {getRoleLabel(r)} <span className="opacity-70">({roleCounts[r] ?? 0})</span>
+                  </span>
+                ))}
+              </div>
+            )}
             {/* Users table */}
             <div className="glass-card rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
@@ -671,6 +729,7 @@ export default function AdminDashboardPage() {
                     <tr className="border-b border-white/[0.06]">
                       <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Usuario</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Rol</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Cliente</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden md:table-cell">Registrado</th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">Acciones</th>
                     </tr>
@@ -681,6 +740,7 @@ export default function AdminDashboardPage() {
                           <tr key={i}>
                             <td className="px-4 py-3"><div className="flex items-center gap-3"><Skeleton className="h-9 w-9 rounded-full shrink-0" /><div className="space-y-1.5"><Skeleton className="h-3.5 w-28" /><Skeleton className="h-3 w-36" /></div></div></td>
                             <td className="px-4 py-3"><Skeleton className="h-8 w-40" /></td>
+                            <td className="px-4 py-3"><Skeleton className="h-6 w-24" /></td>
                             <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-24" /></td>
                             <td className="px-4 py-3"><Skeleton className="h-8 w-20 ml-auto" /></td>
                           </tr>
@@ -688,7 +748,7 @@ export default function AdminDashboardPage() {
                       : users.length === 0
                       ? (
                           <tr>
-                            <td colSpan={4} className="px-4 py-12 text-center text-sm text-white/30">
+                            <td colSpan={5} className="px-4 py-12 text-center text-sm text-white/30">
                               No se encontraron usuarios
                             </td>
                           </tr>
@@ -734,11 +794,37 @@ export default function AdminDashboardPage() {
                                 )}
                               </div>
                             </td>
+                            <td className="px-4 py-3 align-top">
+                              {user.role === 'CLIENT' && user.lifecycleStatus ? (
+                                <span
+                                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                                    lifecycleBadgeMap[user.lifecycleStatus]?.className
+                                    ?? 'bg-white/[0.06] text-white/50 border border-white/[0.08]'
+                                  }`}
+                                >
+                                  {lifecycleBadgeMap[user.lifecycleStatus]?.label ?? user.lifecycleStatus}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-white/25">—</span>
+                              )}
+                            </td>
                             <td className="px-4 py-3 hidden md:table-cell">
                               <span className="text-xs text-white/40">{fmtDate(user.createdAt)}</span>
                             </td>
                             <td className="px-4 py-3">
-                              <div className="flex items-center justify-end gap-1">
+                              <div className="flex items-center justify-end gap-1 flex-wrap">
+                                {user.role === 'CLIENT' && user.lifecycleStatus === 'PROSPECT' && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2 text-[10px] border-emerald-500/35 text-emerald-400 hover:bg-emerald-500/10 shrink-0"
+                                    disabled={activatingUser === user.id}
+                                    onClick={() => void handleActivateClient(user)}
+                                  >
+                                    {activatingUser === user.id ? '…' : 'Activar'}
+                                  </Button>
+                                )}
                                 <Button variant="ghost" size="icon"
                                   className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]"
                                   title={user.active ? 'Desactivar' : 'Activar'}
@@ -862,26 +948,28 @@ export default function AdminDashboardPage() {
           </TabsContent>
         )}
 
-        {/* ── Activities tab ────────────────────────────────────────────────── */}
-        <TabsContent value="activities" className="mt-4 space-y-4">
+        {/* ── Tasks tab (sustituye actividades) ───────────────────────────────── */}
+        <TabsContent value="tasks" className="mt-4 space-y-4">
           <div className="flex items-center gap-2 flex-wrap">
             {(['all', 'pending', 'in_progress', 'completed'] as const).map((f) => (
               <button key={f}
-                onClick={() => { setActFilter(f); fetchActivities(f); }}
+                type="button"
+                onClick={() => { setTaskFilter(f); fetchTasks(f); }}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  actFilter === f ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]'
+                  taskFilter === f ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]'
                 }`}>
-                {f === 'all' ? 'Todas' : (activityStatusLabels[f] ?? f)}
+                {f === 'all' ? 'Todas' : (statusLabels[f] ?? f)}
               </button>
             ))}
             <div className="ml-auto flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={() => fetchActivities(actFilter)}
+              <Button variant="outline" size="icon" onClick={() => fetchTasks(taskFilter)}
                 className="border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06] h-7 w-7">
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
-              <Button size="sm" onClick={() => { setEditingAct(null); setActFormOpen(true); }}
-                className="bg-brand hover:bg-brand-dark text-white gap-1.5 h-7 text-xs px-3">
-                <Plus className="h-3.5 w-3.5" />Nueva
+              <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white gap-1.5 h-7 text-xs px-3">
+                <Link href="/dashboard/tasks?action=create">
+                  <Plus className="h-3.5 w-3.5" />Nueva tarea
+                </Link>
               </Button>
             </div>
           </div>
@@ -891,58 +979,58 @@ export default function AdminDashboardPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/[0.06]">
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Actividad</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden sm:table-cell">Fechas</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Tarea</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden sm:table-cell">Vence</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden md:table-cell">Asignado</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Estado</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.04]">
-                  {loadingActs
+                  {loadingTasks
                     ? Array.from({ length: 4 }).map((_, i) => (
                         <tr key={i}>
                           <td className="px-4 py-3"><div className="space-y-1.5"><Skeleton className="h-4 w-36" /><Skeleton className="h-3 w-24" /></div></td>
                           <td className="px-4 py-3 hidden sm:table-cell"><Skeleton className="h-3 w-28" /></td>
                           <td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-3 w-24" /></td>
                           <td className="px-4 py-3"><Skeleton className="h-8 w-36" /></td>
-                          <td className="px-4 py-3"><Skeleton className="h-8 w-16 ml-auto" /></td>
                         </tr>
                       ))
-                    : activities.length === 0
+                    : tasks.length === 0
                     ? (
                         <tr>
-                          <td colSpan={5} className="px-4 py-12 text-center text-sm text-white/30">
-                            No hay actividades {actFilter !== 'all' ? `con estado "${activityStatusLabels[actFilter]}"` : ''}
+                          <td colSpan={4} className="px-4 py-12 text-center text-sm text-white/30">
+                            No hay tareas {taskFilter !== 'all' ? `con estado "${statusLabels[taskFilter] ?? taskFilter}"` : ''}
                           </td>
                         </tr>
                       )
-                    : activities.map((act) => (
-                        <tr key={act.id} className="hover:bg-white/[0.02] transition-colors">
+                    : tasks.map((tk) => (
+                        <tr key={tk.id} className="hover:bg-white/[0.02] transition-colors">
                           <td className="px-4 py-3">
-                            <p className="font-medium text-white truncate max-w-[200px]">{act.title}</p>
-                            {act.description && (
-                              <p className="text-xs text-white/35 truncate max-w-[200px]">{act.description}</p>
+                            <p className="font-medium text-white truncate max-w-[200px]">{tk.title}</p>
+                            {tk.description && (
+                              <p className="text-xs text-white/35 truncate max-w-[200px]">{tk.description}</p>
                             )}
-                            <span className={`mt-1 inline-flex text-[10px] font-medium ${priorityColors[act.priority] || 'text-white/40'}`}>
-                              {priorityLabels[act.priority] || act.priority}
+                            <span className={`mt-1 inline-flex text-[10px] font-medium ${priorityColors[tk.priority] || 'text-white/40'}`}>
+                              {priorityLabels[tk.priority] || tk.priority}
                             </span>
                           </td>
                           <td className="px-4 py-3 hidden sm:table-cell">
-                            <span className="text-xs text-white/50">{fmtDate(act.startDate)}</span>
-                            {act.endDate && <span className="text-xs text-white/30"> → {fmtDate(act.endDate)}</span>}
+                            <span className="text-xs text-white/50">
+                              {tk.dueDate ? fmtDate(tk.dueDate) : '—'}
+                            </span>
                           </td>
                           <td className="px-4 py-3 hidden md:table-cell">
-                            {act.assignedUser ? (
+                            {tk.assignedUser ? (
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-6 w-6">
+                                  <AvatarImage src={tk.assignedUser.image || undefined} />
                                   <AvatarFallback className="text-[9px] font-medium"
-                                    style={{ backgroundColor: (act.assignedUser.color || '#7c3aed') + '33', color: act.assignedUser.color || '#7c3aed' }}>
-                                    {initials(act.assignedUser.name, act.assignedUser.email)}
+                                    style={{ backgroundColor: (tk.assignedUser.color || '#7c3aed') + '33', color: tk.assignedUser.color || '#7c3aed' }}>
+                                    {initials(tk.assignedUser.name, tk.assignedUser.email)}
                                   </AvatarFallback>
                                 </Avatar>
                                 <p className="text-xs text-white/60 truncate max-w-[120px]">
-                                  {act.assignedUser.name || act.assignedUser.email}
+                                  {tk.assignedUser.name || tk.assignedUser.email}
                                 </p>
                               </div>
                             ) : (
@@ -950,34 +1038,24 @@ export default function AdminDashboardPage() {
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            <Select value={act.status} onValueChange={(val) => handleActStatusChange(act.id, val)}>
-                              <SelectTrigger className="w-36 h-8 bg-white/[0.04] border-white/[0.08] text-white text-xs focus:ring-brand">
-                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${activityStatusColors[act.status] || 'status-pending'}`}>
-                                  {activityStatusLabels[act.status] || act.status}
+                            <Select
+                              value={tk.status}
+                              onValueChange={(val) => handleTaskStatusChange(tk.id, val)}
+                              disabled={updatingTask === tk.id}
+                            >
+                              <SelectTrigger className="w-40 h-8 bg-white/[0.04] border-white/[0.08] text-white text-xs focus:ring-brand">
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColors[tk.status] || 'status-pending'}`}>
+                                  {statusLabels[tk.status] || tk.status}
                                 </span>
                               </SelectTrigger>
                               <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
                                 {(['pending', 'in_progress', 'completed'] as const).map((s) => (
                                   <SelectItem key={s} value={s} className="text-sm focus:bg-white/[0.06]">
-                                    {activityStatusLabels[s]}
+                                    {statusLabels[s]}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="icon"
-                                className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]"
-                                onClick={() => { setEditingAct(act); setActFormOpen(true); }}>
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button variant="ghost" size="icon"
-                                className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10"
-                                onClick={() => setDeleteAct(act)}>
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
                           </td>
                         </tr>
                       ))}
@@ -985,6 +1063,10 @@ export default function AdminDashboardPage() {
               </table>
             </div>
           </div>
+          <p className="text-xs text-white/35">
+            Gestión detallada (multi-asignación, cliente, eliminar): ir a{' '}
+            <Link href="/dashboard/tasks" className="text-brand-light hover:underline">Tareas</Link>.
+          </p>
         </TabsContent>
 
         {/* ── Roles tab ─────────────────────────────────────────────────────── */}
@@ -1121,7 +1203,7 @@ export default function AdminDashboardPage() {
         open={userDialog}
         onOpenChange={setUserDialog}
         user={editingUser}
-        onSaved={() => fetchUsers(search)}
+        onSaved={() => void fetchUsers(search, userListView)}
       />
 
       {/* Delete user confirm */}
@@ -1151,15 +1233,6 @@ export default function AdminDashboardPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Activity form */}
-      <ActivityForm
-        open={actFormOpen}
-        onOpenChange={setActFormOpen}
-        activity={editingAct}
-        isManager
-        onSuccess={() => fetchActivities(actFilter)}
-      />
-
       {/* Custom role dialog */}
       <CustomRoleDialog
         open={roleDialog}
@@ -1167,32 +1240,6 @@ export default function AdminDashboardPage() {
         role={editingRole}
         onSaved={fetchRoles}
       />
-
-      {/* Delete activity confirm */}
-      <AlertDialog open={!!deleteAct} onOpenChange={(o) => !o && setDeleteAct(null)}>
-        <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
-          <AlertDialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
-              </div>
-              <AlertDialogTitle className="text-white">Eliminar Actividad</AlertDialogTitle>
-            </div>
-            <AlertDialogDescription className="text-white/50">
-              ¿Eliminar &ldquo;{deleteAct?.title}&rdquo;? Esta acción no se puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.06]">
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteActivity} disabled={deletingAct}
-              className="bg-red-500 hover:bg-red-600 text-white">
-              {deletingAct ? 'Eliminando…' : 'Eliminar'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Delete custom role confirm */}
       <AlertDialog open={!!deleteRole} onOpenChange={(o) => !o && setDeleteRole(null)}>

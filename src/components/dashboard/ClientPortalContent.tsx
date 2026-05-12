@@ -18,13 +18,11 @@ import {
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, format, isSameDay, isToday,
-  addMonths, subMonths, isSameMonth, isWithinInterval,
-  startOfDay, endOfDay,
+  addMonths, subMonths, isSameMonth,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
-import ActivityDetailModal from '@/components/dashboard/ActivityDetailModal';
 import ChatContent from '@/components/dashboard/ChatContent';
-import type { ClientPortalData, Activity, Task } from '@/lib/types';
+import type { ClientPortalData, Task, TaskAssignee } from '@/lib/types';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -35,16 +33,11 @@ const MONTH_NAMES = [
 ];
 
 const taskStatusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pending:   { label: 'Pendiente',   color: 'bg-amber-500/15 text-amber-300 border-amber-500/20',   icon: <Clock        className="h-3 w-3" /> },
-  editing:   { label: 'En Progreso', color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',      icon: <Clock        className="h-3 w-3" /> },
-  review:    { label: 'Revisión',    color: 'bg-purple-500/15 text-purple-300 border-purple-500/20', icon: <Clock        className="h-3 w-3" /> },
-  completed: { label: 'Completado',  color: 'bg-green-500/15 text-green-300 border-green-500/20',   icon: <CheckCircle2 className="h-3 w-3" /> },
-};
-
-const activityStatusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pending:     { label: 'Pendiente',   color: 'bg-amber-500/15 text-amber-300 border-amber-500/20',  icon: <Clock        className="h-3 w-3" /> },
-  in_progress: { label: 'En Progreso', color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
-  completed:   { label: 'Completado',  color: 'bg-green-500/15 text-green-300 border-green-500/20',  icon: <CheckCircle2 className="h-3 w-3" /> },
+  pending:     { label: 'Pendiente',    color: 'bg-amber-500/15 text-amber-300 border-amber-500/20',   icon: <Clock        className="h-3 w-3" /> },
+  in_progress: { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
+  editing:     { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
+  review:      { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',      icon: <Clock        className="h-3 w-3" /> },
+  completed:   { label: 'Completado',   color: 'bg-green-500/15 text-green-300 border-green-500/20',  icon: <CheckCircle2 className="h-3 w-3" /> },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -58,16 +51,6 @@ function fmtDate(iso: string | null | undefined) {
   try { return format(new Date(iso), "d 'de' MMM yyyy", { locale: es }); } catch { return iso; }
 }
 
-function getActivitiesForDay(activities: Activity[], day: Date): Activity[] {
-  return activities.filter((a) => {
-    try {
-      const start = startOfDay(new Date(a.startDate));
-      const end   = a.endDate ? endOfDay(new Date(a.endDate)) : endOfDay(start);
-      return isWithinInterval(startOfDay(day), { start, end });
-    } catch { return isSameDay(new Date(a.startDate), day); }
-  });
-}
-
 function getTasksForDay(tasks: Task[], day: Date): Task[] {
   return tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day));
 }
@@ -76,18 +59,15 @@ function getTasksForDay(tasks: Task[], day: Date): Task[] {
 
 interface DayModalProps {
   day: Date | null;
-  activities: Activity[];
   tasks: Task[];
   onClose: () => void;
-  onViewAct: (a: Activity) => void;
 }
 
-function DayModal({ day, activities, tasks, onClose, onViewAct }: DayModalProps) {
+function DayModal({ day, tasks, onClose }: DayModalProps) {
   if (!day) return null;
 
-  const dayActivities = getActivitiesForDay(activities, day);
   const dayTasks      = getTasksForDay(tasks, day);
-  const hasItems      = dayActivities.length > 0 || dayTasks.length > 0;
+  const hasItems      = dayTasks.length > 0;
 
   const label = format(day, "EEEE d 'de' MMMM", { locale: es });
 
@@ -101,45 +81,10 @@ function DayModal({ day, activities, tasks, onClose, onViewAct }: DayModalProps)
         {!hasItems ? (
           <div className="py-12 flex flex-col items-center gap-3 text-center">
             <Calendar className="w-10 h-10 text-white/15" />
-            <p className="text-white/40 text-sm">No hay actividades ni tareas para este día.</p>
+            <p className="text-white/40 text-sm">No hay tareas con vencimiento este día.</p>
           </div>
         ) : (
           <div className="space-y-4 mt-1">
-            {dayActivities.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Actividades</p>
-                {dayActivities.map((act) => {
-                  const cfg = activityStatusConfig[act.status] ?? activityStatusConfig.pending;
-                  return (
-                    <button
-                      key={act.id}
-                      onClick={() => { onClose(); onViewAct(act); }}
-                      className="w-full text-left rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 space-y-2 hover:bg-white/[0.05] hover:border-brand/30 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium text-white">{act.title}</p>
-                        <span className={`flex-shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
-                          {cfg.icon}{cfg.label}
-                        </span>
-                      </div>
-                      {act.description && (
-                        <p className="text-xs text-white/40 line-clamp-2">{act.description}</p>
-                      )}
-                      <div className="flex items-center gap-3 text-[11px] text-white/35">
-                        <span>{fmtDate(act.startDate)}{act.endDate && act.endDate !== act.startDate ? ` → ${fmtDate(act.endDate)}` : ''}</span>
-                        {act.assignedUser && (
-                          <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {act.assignedUser.name || act.assignedUser.email}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
             {dayTasks.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Tareas</p>
@@ -180,12 +125,11 @@ function DayModal({ day, activities, tasks, onClose, onViewAct }: DayModalProps)
 // ── Calendar grid ─────────────────────────────────────────────────────────────
 
 interface CalendarProps {
-  activities: Activity[];
   tasks: Task[];
   onSelectDay: (day: Date) => void;
 }
 
-function PortalCalendar({ activities, tasks, onSelectDay }: CalendarProps) {
+function PortalCalendar({ tasks, onSelectDay }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const days = useMemo(() => {
@@ -232,11 +176,10 @@ function PortalCalendar({ activities, tasks, onSelectDay }: CalendarProps) {
       {/* Cells */}
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
-          const dayActivities  = getActivitiesForDay(activities, day);
           const dayTasks       = getTasksForDay(tasks, day);
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const today          = isToday(day);
-          const hasItems       = dayActivities.length > 0 || dayTasks.length > 0;
+          const hasItems       = dayTasks.length > 0;
 
           return (
             <button
@@ -257,17 +200,14 @@ function PortalCalendar({ activities, tasks, onSelectDay }: CalendarProps) {
 
               {hasItems && isCurrentMonth && (
                 <div className="flex items-center gap-0.5 mt-0.5 flex-wrap justify-center max-w-[40px]">
-                  {dayActivities.slice(0, 2).map((_, i) => (
-                    <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-brand-light/70" />
-                  ))}
-                  {dayTasks.slice(0, 2).map((t, i) => (
+                  {dayTasks.slice(0, 4).map((t, i) => (
                     <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${
                       t.status === 'completed' ? 'bg-green-400' : 'bg-amber-400'
                     }`} />
                   ))}
-                  {(dayActivities.length + dayTasks.length) > 4 && (
+                  {dayTasks.length > 4 && (
                     <span className="text-[8px] text-white/30">
-                      +{dayActivities.length + dayTasks.length - 4}
+                      +{dayTasks.length - 4}
                     </span>
                   )}
                 </div>
@@ -279,10 +219,6 @@ function PortalCalendar({ activities, tasks, onSelectDay }: CalendarProps) {
 
       {/* Legend */}
       <div className="flex items-center gap-4 pt-1 border-t border-white/[0.04]">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-brand-light/70 inline-block" />
-          <span className="text-[11px] text-white/30">Actividades</span>
-        </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
           <span className="text-[11px] text-white/30">Tareas pendientes</span>
@@ -296,39 +232,7 @@ function PortalCalendar({ activities, tasks, onSelectDay }: CalendarProps) {
   );
 }
 
-// ── Activity / Task cards ──────────────────────────────────────────────────────
-
-function ActivityCard({ act, onViewAct }: { act: Activity; onViewAct: (a: Activity) => void }) {
-  const cfg = activityStatusConfig[act.status] ?? activityStatusConfig.pending;
-  return (
-    <button
-      onClick={() => onViewAct(act)}
-      className="w-full text-left glass-card rounded-xl p-4 space-y-2 hover:bg-white/[0.05] hover:border-brand/20 transition-colors"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <Calendar className="h-4 w-4 text-brand-light shrink-0" />
-          <p className="text-sm font-semibold text-white truncate">{act.title}</p>
-        </div>
-        <span className={`flex-shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
-          {cfg.icon}{cfg.label}
-        </span>
-      </div>
-      {act.description && (
-        <p className="text-xs text-white/45 line-clamp-2 pl-6">{act.description}</p>
-      )}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pl-6 text-[11px] text-white/35">
-        <span>{fmtDate(act.startDate)}{act.endDate && act.endDate !== act.startDate ? ` → ${fmtDate(act.endDate)}` : ''}</span>
-        {act.assignedUser && (
-          <span className="flex items-center gap-1">
-            <User className="h-3 w-3" />
-            {act.assignedUser.name || act.assignedUser.email}
-          </span>
-        )}
-      </div>
-    </button>
-  );
-}
+// ── Task cards ────────────────────────────────────────────────────────────────
 
 function TaskCard({ task }: { task: Task }) {
   const cfg = taskStatusConfig[task.status] ?? taskStatusConfig.pending;
@@ -389,7 +293,6 @@ interface ClientSummary { id: string; name: string; company: string; email: stri
 export default function ClientPortalContent() {
   const { data: session } = useSession();
   const router = useRouter();
-  const currentUserId   = (session?.user as { id?: string })?.id   ?? '';
   const currentUserRole = (session?.user as { role?: string })?.role ?? 'CLIENT';
 
   const isManager = MANAGER_ROLES.includes(currentUserRole);
@@ -403,14 +306,7 @@ export default function ClientPortalContent() {
   const [error,    setError]    = useState<string | null>(null);
   const [noClient, setNoClient] = useState(false);
   const [selectedDay,      setSelectedDay]      = useState<Date | null>(null);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [actDetailOpen,    setActDetailOpen]    = useState(false);
-  const [activeTab,        setActiveTab]        = useState<'all' | 'activities' | 'tasks'>('all');
-
-  function openActivityDetail(act: Activity) {
-    setSelectedActivity(act);
-    setActDetailOpen(true);
-  }
+  const [activeTab,        setActiveTab]        = useState<'all' | 'tasks'>('all');
 
   // Load client list for admin/PM selector
   useEffect(() => {
@@ -531,7 +427,7 @@ export default function ClientPortalContent() {
 
   if (!data) return null;
 
-  const { client, activities, tasks } = data;
+  const { client, tasks } = data;
 
   // Redirect CLIENT users without assigned PM to waiting screen
   if (!isManager && !client.assignedManagerId) {
@@ -539,23 +435,29 @@ export default function ClientPortalContent() {
     return null;
   }
 
-  // Collect unique assigned staff across all activities
   const assignedManager = client.assignedManager;
 
-  const teamMembersMap = new Map<string, NonNullable<Activity['assignedUser']>>();
-  activities.forEach((a) => {
-    if (a.assignedUser && a.assignedUser.id !== assignedManager?.id) {
-      teamMembersMap.set(a.assignedUser.id, a.assignedUser);
+  const teamMembersMap = new Map<string, TaskAssignee>();
+  tasks.forEach((t) => {
+    if (t.assignedUser && t.assignedUser.id !== assignedManager?.id) {
+      const u = t.assignedUser;
+      teamMembersMap.set(u.id, {
+        id: u.id, name: u.name, email: u.email, color: u.color, image: u.image ?? null,
+      });
+    }
+    for (const u of t.assignedUsers ?? []) {
+      if (u.id !== assignedManager?.id) teamMembersMap.set(u.id, u);
     }
   });
   const teamMembers = [...teamMembersMap.values()];
 
-  const totalItems     = activities.length + tasks.length;
-  const completedItems = activities.filter((a) => a.status === 'completed').length
-                       + tasks.filter((t) => t.status === 'completed').length;
+  const totalItems     = tasks.length;
+  const completedItems = tasks.filter((t) => t.status === 'completed').length;
 
-  const displayedActivities = activeTab === 'tasks'      ? [] : activities;
-  const displayedTasks      = activeTab === 'activities' ? [] : tasks;
+  const displayedTasks =
+    activeTab === 'tasks'
+      ? tasks.filter((t) => t.status !== 'completed')
+      : tasks;
 
   return (
     <div className="space-y-6">
@@ -614,18 +516,14 @@ export default function ClientPortalContent() {
         {totalItems > 0 && <ProgressBar total={totalItems} completed={completedItems} />}
 
         {/* Quick stats */}
-        <div className="grid grid-cols-3 gap-3 pt-1">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-white">{activities.length}</p>
-            <p className="text-[11px] text-white/35">Actividades</p>
-          </div>
+        <div className="grid grid-cols-2 gap-3 pt-1">
           <div className="text-center">
             <p className="text-2xl font-bold text-white">{tasks.length}</p>
             <p className="text-[11px] text-white/35">Tareas</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-green-400">{completedItems}</p>
-            <p className="text-[11px] text-white/35">Completados</p>
+            <p className="text-[11px] text-white/35">Completadas</p>
           </div>
         </div>
 
@@ -676,7 +574,6 @@ export default function ClientPortalContent() {
       {/* Calendar */}
       <div className="glass-card rounded-2xl p-5">
         <PortalCalendar
-          activities={activities}
           tasks={tasks}
           onSelectDay={setSelectedDay}
         />
@@ -685,9 +582,10 @@ export default function ClientPortalContent() {
       {/* List — tabs */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
-          {(['all', 'activities', 'tasks'] as const).map((tab) => (
+          {(['all', 'tasks'] as const).map((tab) => (
             <button
               key={tab}
+              type="button"
               onClick={() => setActiveTab(tab)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 activeTab === tab
@@ -695,20 +593,19 @@ export default function ClientPortalContent() {
                   : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]'
               }`}
             >
-              {tab === 'all' ? 'Todo' : tab === 'activities' ? 'Actividades' : 'Tareas'}
+              {tab === 'all' ? 'Todas' : 'Abiertas'}
             </button>
           ))}
         </div>
 
-        {displayedActivities.length === 0 && displayedTasks.length === 0 ? (
+        {displayedTasks.length === 0 ? (
           <div className="glass-card rounded-xl py-16 flex flex-col items-center gap-3 text-center">
             <Calendar className="w-10 h-10 text-white/15" />
             <p className="text-white/35 text-sm">No hay ítems para mostrar.</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {displayedActivities.map((act) => <ActivityCard key={act.id} act={act} onViewAct={openActivityDetail} />)}
-            {displayedTasks.map((task)      => <TaskCard    key={task.id} task={task} />)}
+            {displayedTasks.map((task) => <TaskCard key={task.id} task={task} />)}
           </div>
         )}
       </div>
@@ -716,19 +613,8 @@ export default function ClientPortalContent() {
       {/* Day modal */}
       <DayModal
         day={selectedDay}
-        activities={activities}
         tasks={tasks}
         onClose={() => setSelectedDay(null)}
-        onViewAct={openActivityDetail}
-      />
-
-      {/* Activity detail + comments modal */}
-      <ActivityDetailModal
-        activity={selectedActivity}
-        open={actDetailOpen}
-        onClose={() => setActDetailOpen(false)}
-        currentUserId={currentUserId}
-        currentUserRole={currentUserRole}
       />
 
       {/* Real-time chat with the agency */}

@@ -32,6 +32,7 @@ const filterTabs = [
 
 const statusDotColors: Record<string, string> = {
   pending: 'bg-slate-400',
+  in_progress: 'bg-cyan-400',
   editing: 'bg-cyan-400',
   review: 'bg-amber-400',
   completed: 'bg-emerald-400',
@@ -114,6 +115,38 @@ function TasksContent() {
   function handleCreate() {
     setEditingTask(null);
     setFormOpen(true);
+  }
+
+  async function handleMarkComplete(task: Task) {
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: task.id, status: 'completed' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error || 'No se pudo actualizar');
+      toast.success('Tarea marcada como completada');
+      await fetchTasks();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al completar la tarea');
+    }
+  }
+
+  async function handleMarkPending(task: Task) {
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: task.id, status: 'pending' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error || 'No se pudo actualizar');
+      toast.success('Tarea marcada como pendiente');
+      await fetchTasks();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al actualizar la tarea');
+    }
   }
 
   // Skeleton loading
@@ -235,6 +268,8 @@ function TasksContent() {
                 onEdit={handleEdit}
                 onDelete={(t) => setDeleteTask(t)}
                 onView={(t) => setViewingTask(t)}
+                onMarkComplete={handleMarkComplete}
+                onMarkPending={handleMarkPending}
               />
             </div>
           ))}
@@ -269,6 +304,8 @@ function TasksContent() {
                         task={task}
                         onEdit={handleEdit}
                         onDelete={(t) => setDeleteTask(t)}
+                        onMarkComplete={handleMarkComplete}
+                        onMarkPending={handleMarkPending}
                       />
                     </div>
                   ))}

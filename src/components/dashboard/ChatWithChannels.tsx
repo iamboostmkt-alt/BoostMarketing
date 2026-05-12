@@ -27,19 +27,19 @@ const BASE_CHANNELS: Channel[] = [
   { id: 'TEAM',    type: 'TEAM',    label: 'general',  hint: 'Equipo interno',         icon: Hash,      iconBg: 'bg-cyan-400/15',   iconText: 'text-cyan-300' },
   { id: 'SUPPORT', type: 'SUPPORT', label: 'soporte',  hint: 'Atención a clientes',    icon: LifeBuoy,  iconBg: 'bg-amber-400/15',  iconText: 'text-amber-300' },
   { id: 'PROJECT', type: 'PROJECT', label: 'proyectos', hint: 'Discusión de proyectos', icon: Briefcase, iconBg: 'bg-purple-400/15', iconText: 'text-purple-300' },
-  { id: 'PRIVATE', type: 'PRIVATE', label: 'privado',  hint: 'Solo administración',    icon: Lock,      iconBg: 'bg-red-400/15',    iconText: 'text-red-300' },
+  { id: 'PRIVATE', type: 'PRIVATE', label: 'privado',  hint: 'Admin y Project Managers', icon: Lock,      iconBg: 'bg-red-400/15',    iconText: 'text-red-300' },
 ];
 
 export default function ChatWithChannels() {
   const { data: session } = useSession();
-  const isAdmin = session?.user?.role === 'ADMIN';
+  const role = session?.user?.role;
+  const canPrivateChat = role === 'ADMIN' || role === 'PROJECT_MANAGER';
 
   const [activeId,    setActiveId]    = useState<string>('TEAM');
   const [clients,     setClients]     = useState<ClientOption[]>([]);
   const [showClients, setShowClients] = useState(true);
 
-  // Hide PRIVATE channel for non-admins
-  const channels = BASE_CHANNELS.filter((c) => c.type !== 'PRIVATE' || isAdmin);
+  const channels = BASE_CHANNELS.filter((c) => c.type !== 'PRIVATE' || canPrivateChat);
 
   useEffect(() => {
     fetch('/api/clients')

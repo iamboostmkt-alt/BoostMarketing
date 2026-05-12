@@ -3,14 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { log } from '@/lib/logger';
+import { normalizeTaskStatus } from '@/lib/task-status';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
-
-const activityInclude = {
-  assignedUser: { select: { id: true, name: true, email: true, color: true, image: true } },
-  createdBy:    { select: { id: true, name: true, email: true, color: true, image: true } },
-  client:       { select: { id: true, name: true, company: true } },
-} as const;
 
 const taskUserInclude = {
   select: { id: true, name: true, email: true, color: true, image: true },
@@ -27,6 +22,13 @@ export async function GET(req: NextRequest) {
     const role      = session.user.role as string;
 
     const isManager = MANAGER_ROLES.includes(role);
+
+    if (role === 'UNASSIGNED') {
+      return NextResponse.json(
+        { error: 'Tu cuenta aún no tiene rol asignado. Espera a que un administrador te asigne acceso.' },
+        { status: 403 }
+      );
+    }
 
     if (role !== 'CLIENT' && !isManager) {
       return NextResponse.json({ error: 'Solo disponible para clientes' }, { status: 403 });
@@ -73,22 +75,18 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const [activities, tasks] = await Promise.all([
-      db.activity.findMany({
-        where:   { clientId: client.id },
-        include: activityInclude,
-        orderBy: { startDate: 'asc' },
-      }),
-      db.task.findMany({
-        where: { clientId: client.id },
-        include: {
-          user:         taskUserInclude,
-          assignedUser: taskUserInclude,
-          client:       { select: { id: true, name: true, company: true } },
+    const tasks = await db.task.findMany({
+      where: { clientId: client.id, deletedAt: null },
+      include: {
+        user:         taskUserInclude,
+        assignedUser: taskUserInclude,
+        assignedUsers: {
+          include: { user: taskUserInclude },
         },
-        orderBy: { createdAt: 'desc' },
-      }),
-    ]);
+        client: { select: { id: true, name: true, company: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
     // Log portal access (non-blocking, only for CLIENT self-views)
     if (role === 'CLIENT') {
@@ -103,7 +101,13 @@ export async function GET(req: NextRequest) {
       }).catch(() => undefined);
     }
 
-    return NextResponse.json({ client, activities, tasks });
+    const shapedTasks = tasks.map((t) => ({
+      ...t,
+      status: normalizeTaskStatus(t.status),
+      assignedUsers: t.assignedUsers.map((r) => r.user),
+    }));
+
+    return NextResponse.json({ client, activities: [], tasks: shapedTasks });
   } catch (error) {
     log.err('/api/client-portal GET', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });

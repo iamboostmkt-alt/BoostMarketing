@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { dispatchEvent } from '@/lib/events';
 import { broadcastRealtime } from '@/lib/realtime-server';
+import { normalizeTaskStatus } from '@/lib/task-status';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -48,10 +49,14 @@ export async function GET(req: NextRequest) {
     const scope    = searchParams.get('scope');
     const assignee = searchParams.get('assignee');
     const owner    = searchParams.get('owner');
+    const limitRaw = searchParams.get('limit');
+    const take     = limitRaw ? Math.min(100, Math.max(1, parseInt(limitRaw, 10) || 0)) : undefined;
 
     const isManager = MANAGER_ROLES.includes(userRole);
     const isClient  = userRole === 'CLIENT';
     const showAll   = isManager && scope === 'all';
+
+    const notDeleted = { deletedAt: null as Date | null };
 
     let where: Record<string, unknown>;
 
@@ -60,13 +65,26 @@ export async function GET(req: NextRequest) {
         where: { email: { equals: session.user.email as string, mode: 'insensitive' } },
         select: { id: true },
       });
-      where = clientRecord ? { clientId: clientRecord.id } : { id: 'none' };
+      where = clientRecord
+        ? { ...notDeleted, clientId: clientRecord.id }
+        : { ...notDeleted, id: 'none' };
+    } else if (showAll) {
+      where = { ...notDeleted };
+      if (status) where.status = status;
+      if (priority) where.priority = priority;
+      if (assignee) where.assignedUserId = assignee;
+      if (owner) where.userId = owner;
     } else {
-      where = showAll ? {} : { userId };
-      if (status)              where.status         = status;
-      if (priority)            where.priority       = priority;
-      if (showAll && assignee) where.assignedUserId = assignee;
-      if (showAll && owner)    where.userId         = owner;
+      where = {
+        ...notDeleted,
+        OR: [
+          { userId },
+          { assignedUserId: userId },
+          { assignedUsers: { some: { userId } } },
+        ],
+      };
+      if (status) where.status = status;
+      if (priority) where.priority = priority;
     }
 
     const tasks = await db.task.findMany({
@@ -78,10 +96,12 @@ export async function GET(req: NextRequest) {
         assignedUsers: assignedUsersInclude,
       },
       orderBy: { createdAt: 'desc' },
+      ...(take ? { take } : {}),
     });
 
     const result = tasks.map((t) => ({
       ...t,
+      status: normalizeTaskStatus(t.status),
       assignedUsers: flatTaskAssignees(t.assignedUsers),
     }));
 
@@ -117,7 +137,7 @@ export async function POST(req: NextRequest) {
         userId,
         title,
         description:    description    || '',
-        status:         status         || 'pending',
+        status:         normalizeTaskStatus(status),
         priority:       priority       || 'medium',
         dueDate:        dueDate        ? new Date(dueDate)   : null,
         startDate:      startDate      ? new Date(startDate) : null,
@@ -173,7 +193,11 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
-      task: { ...withAssignees, assignedUsers: flatTaskAssignees(withAssignees?.assignedUsers ?? []) },
+      task: {
+        ...withAssignees,
+        status:        normalizeTaskStatus(withAssignees?.status),
+        assignedUsers: flatTaskAssignees(withAssignees?.assignedUsers ?? []),
+      },
     }, { status: 201 });
   } catch (error) {
     console.error('[tasks POST]', error);
@@ -195,25 +219,53 @@ export async function PUT(req: NextRequest) {
 
     if (!id) return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
 
-    const existing = await db.task.findUnique({ where: { id } });
+    const existing = await db.task.findFirst({ where: { id, deletedAt: null } });
     if (!existing) return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
 
-    if (!isManager && existing.userId !== userId) {
+    const assigneeLink = await db.taskAssignedUser.findFirst({
+      where: { taskId: id, userId },
+    });
+    const isParticipant =
+      existing.userId === userId ||
+      existing.assignedUserId === userId ||
+      !!assigneeLink;
+
+    if (!isManager && !isParticipant) {
       return NextResponse.json({ error: 'Sin permiso para editar esta tarea' }, { status: 403 });
+    }
+
+    const assigneeOnly = !isManager && isParticipant && existing.userId !== userId;
+    if (assigneeOnly) {
+      const forbidden = Object.keys(body).filter(
+        (k) =>
+          body[k] !== undefined &&
+          !['id', 'status'].includes(k)
+      );
+      if (forbidden.length > 0) {
+        return NextResponse.json(
+          { error: 'Solo puedes actualizar el estado de esta tarea.' },
+          { status: 403 }
+        );
+      }
     }
 
     const multiIds: string[] = isManager && Array.isArray(assignedUserIds) ? assignedUserIds : [];
     const primaryAssigneeId  = multiIds.length > 0 ? multiIds[0] : (assignedUserId !== undefined ? (assignedUserId || null) : undefined);
 
     const updateData: Record<string, unknown> = {};
-    if (title       !== undefined) updateData.title       = title;
-    if (description !== undefined) updateData.description = description;
-    if (status      !== undefined) updateData.status      = status;
-    if (priority    !== undefined) updateData.priority    = priority;
-    if (dueDate     !== undefined) updateData.dueDate     = dueDate   ? new Date(dueDate)   : null;
-    if (startDate   !== undefined) updateData.startDate   = startDate ? new Date(startDate) : null;
+    if (!assigneeOnly && title       !== undefined) updateData.title       = title;
+    if (!assigneeOnly && description !== undefined) updateData.description = description;
+    if (status      !== undefined) updateData.status      = normalizeTaskStatus(status as string);
+    if (!assigneeOnly && priority    !== undefined) updateData.priority    = priority;
+    if (!assigneeOnly && dueDate     !== undefined) updateData.dueDate     = dueDate   ? new Date(dueDate)   : null;
+    if (!assigneeOnly && startDate   !== undefined) updateData.startDate   = startDate ? new Date(startDate) : null;
+
     if (isManager && primaryAssigneeId !== undefined) updateData.assignedUserId = primaryAssigneeId;
     if (isManager && clientId !== undefined) updateData.clientId = clientId || null;
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No hay cambios para aplicar' }, { status: 400 });
+    }
 
     const task = await db.task.update({
       where:   { id },
@@ -281,7 +333,11 @@ export async function PUT(req: NextRequest) {
     });
 
     return NextResponse.json({
-      task: { ...withAssignees, assignedUsers: flatTaskAssignees(withAssignees?.assignedUsers ?? []) },
+      task: {
+        ...withAssignees,
+        status:        normalizeTaskStatus(withAssignees?.status),
+        assignedUsers: flatTaskAssignees(withAssignees?.assignedUsers ?? []),
+      },
     });
   } catch (error) {
     console.error('[tasks PUT]', error);
@@ -302,14 +358,17 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
 
-    const existing = await db.task.findUnique({ where: { id } });
+    const existing = await db.task.findFirst({ where: { id, deletedAt: null } });
     if (!existing) return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
 
     if (!isManager && existing.userId !== userId) {
       return NextResponse.json({ error: 'Sin permiso para eliminar esta tarea' }, { status: 403 });
     }
 
-    await db.task.delete({ where: { id } });
+    await db.task.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
 
     broadcastRealtime('task.deleted', { id }).catch(() => undefined);
 

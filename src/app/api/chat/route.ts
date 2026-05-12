@@ -5,9 +5,9 @@ import { db } from '@/lib/db';
 import { dispatchEvent, resolveMentions } from '@/lib/events';
 import { broadcastRealtime } from '@/lib/realtime-server';
 
-const INTERNAL_ROLES = ['ADMIN', 'DESIGNER', 'MARKETING', 'PROJECT_MANAGER'];
+const INTERNAL_ROLES = ['ADMIN', 'DESIGNER', 'MARKETING', 'PROJECT_MANAGER', 'TEAM_MEMBER'];
 const INTERNAL_ROOMS = ['TEAM', 'SUPPORT', 'PROJECT'];
-const ADMIN_ONLY_ROOMS = ['PRIVATE'];
+const PRIVATE_CHAT_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
 const userSelect = { id: true, name: true, email: true, color: true, image: true } as const;
 const reactionUserSelect = { id: true, name: true, color: true } as const;
@@ -17,17 +17,22 @@ const messageInclude = {
   reactions: { include: { user: { select: reactionUserSelect } } },
 } as const;
 
-// Validate room access: returns the room string or null if denied.
+// Validate room access: returns true if allowed.
 // room = "TEAM" | "SUPPORT" | "PROJECT" | "PRIVATE" | clientId
 async function checkRoomAccess(
+  userId: string,
   role: string,
   email: string,
   room: string,
 ): Promise<boolean> {
-  if (ADMIN_ONLY_ROOMS.includes(room)) return role === 'ADMIN';
-  if (INTERNAL_ROOMS.includes(room))   return INTERNAL_ROLES.includes(role);
+  if (room === 'PRIVATE') return PRIVATE_CHAT_ROLES.includes(role);
 
-  // Client room (clientId)
+  if (INTERNAL_ROOMS.includes(room)) {
+    if (!INTERNAL_ROLES.includes(role)) return false;
+    if (['TEAM_MEMBER', 'DESIGNER', 'MARKETING'].includes(role) && room !== 'TEAM') return false;
+    return true;
+  }
+
   if (role === 'CLIENT') {
     const record = await db.client.findFirst({
       where: { email: { equals: email, mode: 'insensitive' } },
@@ -36,7 +41,27 @@ async function checkRoomAccess(
     return record?.id === room;
   }
 
-  return INTERNAL_ROLES.includes(role);
+  const client = await db.client.findUnique({
+    where: { id: room },
+    select: {
+      id: true,
+      assignedManagerId: true,
+      assignedUsers: { where: { userId }, select: { userId: true } },
+    },
+  });
+  if (!client) return false;
+
+  if (role === 'ADMIN') return true;
+
+  if (role === 'PROJECT_MANAGER') {
+    return client.assignedManagerId === userId || client.assignedUsers.length > 0;
+  }
+
+  if (['TEAM_MEMBER', 'DESIGNER', 'MARKETING'].includes(role)) {
+    return client.assignedUsers.length > 0;
+  }
+
+  return false;
 }
 
 // ── GET ────────────────────────────────────────────────────────────────────────
@@ -45,13 +70,14 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
 
+  const userId = (session.user as { id: string }).id;
   const role  = session.user.role  as string;
   const email = session.user.email as string;
 
   const { searchParams } = new URL(req.url);
   const room = searchParams.get('room') ?? 'TEAM';
 
-  if (!(await checkRoomAccess(role, email, room))) {
+  if (!(await checkRoomAccess(userId, role, email, room))) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
   }
 
@@ -80,7 +106,7 @@ export async function POST(req: NextRequest) {
   const text      = body.message?.toString().trim() ?? '';
   const room: string = body.room ?? 'TEAM';
 
-  if (!(await checkRoomAccess(role, email, room))) {
+  if (!(await checkRoomAccess(userId, role, email, room))) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
   }
 

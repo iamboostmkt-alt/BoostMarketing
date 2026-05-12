@@ -1,5 +1,6 @@
 export const statusColors: Record<string, string> = {
   pending: 'status-pending',
+  in_progress: 'status-editing',
   editing: 'status-editing',
   review: 'status-review',
   completed: 'status-completed',
@@ -17,8 +18,9 @@ export const statusColors: Record<string, string> = {
 
 export const statusLabels: Record<string, string> = {
   pending: 'Pendiente',
-  editing: 'Editando',
-  review: 'Revisión',
+  in_progress: 'En progreso',
+  editing: 'En progreso',
+  review: 'En progreso',
   completed: 'Completado',
   lead: 'Lead',
   prospect: 'Prospecto',
@@ -71,8 +73,7 @@ export const legacyStageMigration: Record<string, string> = {
 
 export const taskStatuses = [
   { id: 'pending', label: 'Pendiente', color: 'status-pending' },
-  { id: 'editing', label: 'En Progreso', color: 'status-editing' },
-  { id: 'review', label: 'Revisión', color: 'status-review' },
+  { id: 'in_progress', label: 'En progreso', color: 'status-editing' },
   { id: 'completed', label: 'Completado', color: 'status-completed' },
 ] as const;
 

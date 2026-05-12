@@ -4,6 +4,8 @@ export interface UserProfile {
   email: string;
   image: string | null;
   role: string;
+  /** Solo aplica a clientes (videollamada / CRM). */
+  lifecycleStatus?: string | null;
   color: string;
   active: boolean;
   createdAt: string;
@@ -51,8 +53,8 @@ export interface Task {
   dueDate: string | null;
   createdAt: string;
   updatedAt: string;
-  user?: { id: string; name: string | null; email: string; color: string } | null;
-  assignedUser?: { id: string; name: string | null; email: string; color: string } | null;
+  user?: { id: string; name: string | null; email: string; color: string; image?: string | null } | null;
+  assignedUser?: { id: string; name: string | null; email: string; color: string; image?: string | null } | null;
   assignedUsers?: TaskAssignee[];
   client?: { id: string; name: string; company: string } | null;
 }

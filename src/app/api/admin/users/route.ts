@@ -3,11 +3,19 @@ import { getServerSession } from 'next-auth';
 import bcrypt from 'bcryptjs';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { Role } from '@prisma/client';
+import { Role, UserLifecycleStatus } from '@prisma/client';
 import { BCRYPT_ROUNDS } from '@/lib/password';
 import { sendEmail, welcomeHtml } from '@/lib/resend';
 
-const VALID_ROLES: Role[] = ['ADMIN', 'CLIENT', 'DESIGNER', 'MARKETING', 'PROJECT_MANAGER'];
+const VALID_ROLES: Role[] = [
+  'UNASSIGNED',
+  'ADMIN',
+  'CLIENT',
+  'PROJECT_MANAGER',
+  'TEAM_MEMBER',
+  'DESIGNER',
+  'MARKETING',
+];
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -21,6 +29,7 @@ const userSelect = {
   email: true,
   image: true,
   role: true,
+  lifecycleStatus: true,
   color: true,
   active: true,
   createdAt: true,
@@ -36,6 +45,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search')?.trim() ?? '';
   const roleFilter = searchParams.get('role') ?? '';
+  const lifecycleFilter = searchParams.get('lifecycle') ?? '';
 
   const where: Record<string, unknown> = {};
   if (search) {
@@ -44,7 +54,10 @@ export async function GET(req: NextRequest) {
       { email: { contains: search, mode: 'insensitive' } },
     ];
   }
-  if (roleFilter && VALID_ROLES.includes(roleFilter as Role)) {
+  if (lifecycleFilter === 'PROSPECT') {
+    where.role = 'CLIENT';
+    where.lifecycleStatus = 'PROSPECT';
+  } else if (roleFilter && VALID_ROLES.includes(roleFilter as Role)) {
     where.role = roleFilter as Role;
   }
 
@@ -78,7 +91,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres.' }, { status: 400 });
   }
 
-  const assignedRole: Role = VALID_ROLES.includes(role as Role) ? (role as Role) : 'CLIENT';
+  const assignedRole: Role = VALID_ROLES.includes(role as Role) ? (role as Role) : 'UNASSIGNED';
 
   const existing = await db.user.findUnique({ where: { email: email.toLowerCase() } });
   if (existing) {
@@ -136,13 +149,25 @@ export async function PATCH(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
 
   const body = await req.json();
-  const { userId, role, name, email, active, color, customRoleId, image } = body;
+  const { userId, role, name, email, active, color, customRoleId, image, lifecycleStatus } = body;
 
   if (!userId) return NextResponse.json({ error: 'userId es requerido.' }, { status: 400 });
 
   const adminId = (session.user as { id: string }).id;
 
   const updateData: Record<string, unknown> = {};
+
+  if (lifecycleStatus !== undefined) {
+    const allowed: UserLifecycleStatus[] = ['PROSPECT', 'ACTIVE', 'INACTIVE'];
+    if (!allowed.includes(lifecycleStatus as UserLifecycleStatus)) {
+      return NextResponse.json({ error: 'Estado de ciclo de vida no válido.' }, { status: 400 });
+    }
+    const target = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
+    if (target?.role !== 'CLIENT') {
+      return NextResponse.json({ error: 'Solo usuarios CLIENT pueden tener lifecycleStatus.' }, { status: 400 });
+    }
+    updateData.lifecycleStatus = lifecycleStatus as UserLifecycleStatus;
+  }
 
   if (role !== undefined) {
     if (!VALID_ROLES.includes(role as Role)) {

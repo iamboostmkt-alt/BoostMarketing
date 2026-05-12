@@ -28,6 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/types';
 import { taskStatuses, priorityLabels } from '@/lib/theme-maps';
+import { normalizeTaskStatus } from '@/lib/task-status';
 
 interface InternalUser {
   id: string;
@@ -73,7 +74,7 @@ export default function TaskForm({
     if (task) {
       setTitle(task.title);
       setDescription(task.description || '');
-      setStatus(task.status);
+      setStatus(normalizeTaskStatus(task.status));
       setPriority(task.priority);
       setStartDate(task.startDate ? new Date(task.startDate) : undefined);
       setDueDate(task.dueDate ? new Date(task.dueDate) : undefined);

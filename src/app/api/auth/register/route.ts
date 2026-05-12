@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
         name:     name.trim(),
         email:    normalizedEmail,
         password: hashedPassword,
-        role:     'CLIENT',
+        role:     'UNASSIGNED',
         color:    '#7c3aed',
         active:   true,
       },
@@ -95,28 +95,14 @@ export async function POST(req: NextRequest) {
 
     if (isDev) console.log('[register] user created:', user.id);
 
-    // ── Auto-create Client record (non-blocking) ──────────────────────────────
-    db.client
-      .create({
-        data: {
-          userId:  user.id,
-          name:    name.trim(),
-          email:   normalizedEmail,
-          status:  'active',
-          company: '',
-          phone:   '',
-        },
-      })
-      .catch((err) => console.error('[register] client create error (non-fatal):', err));
-
     // ── Welcome notification (non-blocking — failure is acceptable) ───────────
     db.notification
       .create({
         data: {
           userId:  user.id,
-          message: '¡Bienvenido a BoostMarketing! Empieza explorando tu dashboard.',
+          message: '¡Bienvenido! Un administrador asignará tu rol en breve.',
           type:    'welcome',
-          link:    '/dashboard',
+          link:    '/dashboard/waiting-assignment',
         },
       })
       .catch((err) => console.error('[register] notification error (non-fatal):', err));

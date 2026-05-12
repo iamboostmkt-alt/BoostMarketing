@@ -4,11 +4,10 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   CalendarDays, Plus, CheckSquare, Clock,
-  CalendarRange, Sparkles, X,
+  Sparkles,
 } from 'lucide-react';
 import {
-  format, isSameDay, isToday, isWithinInterval,
-  startOfDay, endOfDay,
+  format, isSameDay, isToday,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -22,15 +21,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import TaskForm from '@/components/dashboard/TaskForm';
-import ActivityForm from '@/components/dashboard/ActivityForm';
-import ActivityDetailModal from '@/components/dashboard/ActivityDetailModal';
 import CalendarGrid from '@/components/dashboard/CalendarGrid';
-import UserAvatarStack from '@/components/dashboard/UserAvatarStack';
-import type { Task, Activity, ActivityAssignee } from '@/lib/types';
+import type { Task } from '@/lib/types';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
 import {
   statusColors, statusLabels, priorityColors, priorityLabels,
-  activityStatusColors, activityStatusLabels,
 } from '@/lib/theme-maps';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
@@ -44,12 +39,6 @@ function dayLabel(day: Date): string {
   } catch {
     return day.toLocaleDateString('es-MX', { weekday: 'long', month: 'long', day: 'numeric' });
   }
-}
-
-function getActivityAssignees(act: Activity): ActivityAssignee[] {
-  if (act.assignedUsers && act.assignedUsers.length > 0) return act.assignedUsers;
-  if (act.assignedUser) return [act.assignedUser];
-  return [];
 }
 
 function getTaskAvatar(u: { name: string | null; email: string; color: string; image?: string | null } | undefined) {
@@ -79,38 +68,20 @@ interface DayModalProps {
   onClose:      () => void;
   day:          Date;
   tasks:        Task[];
-  activities:   Activity[];
-  isManager:    boolean;
   onEditTask:   (t: Task) => void;
-  onViewAct:    (a: Activity) => void;
   onNewTask:    () => void;
-  onNewAct:     () => void;
 }
 
 function DayModal({
-  open, onClose, day, tasks, activities, isManager,
-  onEditTask, onViewAct, onNewTask, onNewAct,
+  open, onClose, day, tasks,
+  onEditTask, onNewTask,
 }: DayModalProps) {
   const dayTasks = useMemo(
     () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day)),
     [tasks, day]
   );
 
-  const dayActivities = useMemo(
-    () => activities.filter((a) => {
-      try {
-        return isWithinInterval(startOfDay(day), {
-          start: startOfDay(new Date(a.startDate)),
-          end:   endOfDay(a.endDate ? new Date(a.endDate) : new Date(a.startDate)),
-        });
-      } catch {
-        return isSameDay(new Date(a.startDate), day);
-      }
-    }),
-    [activities, day]
-  );
-
-  const total = dayTasks.length + dayActivities.length;
+  const total = dayTasks.length;
   const label = dayLabel(day);
 
   return (
@@ -137,47 +108,6 @@ function DayModal({
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
-          {/* Activities */}
-          {dayActivities.length > 0 && (
-            <section className="space-y-2">
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
-                <CalendarRange className="w-3 h-3" />
-                Actividades ({dayActivities.length})
-              </div>
-              {dayActivities.map((act) => (
-                <button
-                  key={act.id}
-                  type="button"
-                  onClick={() => { onViewAct(act); onClose(); }}
-                  className="w-full text-left bg-brand/[0.07] border border-brand/20 rounded-lg p-3.5 hover:border-brand/40 hover:bg-brand/[0.10] transition-colors group"
-                >
-                  <div className="flex items-start gap-2">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${activityStatusColors[act.status] || 'status-pending'}`}>
-                      {activityStatusLabels[act.status] || act.status}
-                    </span>
-                    <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
-                      {act.title}
-                    </p>
-                  </div>
-                  {act.description && (
-                    <p className="text-xs text-white/35 mt-1.5 line-clamp-2 pl-1">{act.description}</p>
-                  )}
-                  <div className="flex items-center gap-3 mt-2 pl-1 flex-wrap">
-                    <span className={`text-[10px] font-medium ${priorityColors[act.priority] || 'text-white/40'}`}>
-                      {priorityLabels[act.priority] || act.priority}
-                    </span>
-                    <div className="flex items-center gap-1 text-[10px] text-white/25">
-                      <Clock className="w-2.5 h-2.5 shrink-0" />
-                      {format(new Date(act.startDate), 'd MMM', { locale: es })}
-                      {act.endDate && ` → ${format(new Date(act.endDate), 'd MMM', { locale: es })}`}
-                    </div>
-                    <UserAvatarStack users={getActivityAssignees(act)} max={3} />
-                  </div>
-                </button>
-              ))}
-            </section>
-          )}
-
           {/* Tasks */}
           {dayTasks.length > 0 && (
             <section className="space-y-2">
@@ -244,17 +174,6 @@ function DayModal({
             <Plus className="w-3.5 h-3.5" />
             Tarea
           </Button>
-          {isManager && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-1.5 text-xs h-8"
-              onClick={() => { onNewAct(); onClose(); }}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Actividad
-            </Button>
-          )}
           <Button
             size="sm"
             variant="ghost"
@@ -274,36 +193,21 @@ function DayModal({
 export default function CalendarContent() {
   const { data: session } = useSession();
   const [tasks,           setTasks]          = useState<Task[]>([]);
-  const [activities,      setActivities]     = useState<Activity[]>([]);
   const [loading,         setLoading]        = useState(true);
   const [selectedDay,     setSelectedDay]    = useState<Date>(new Date());
   const [dayModalOpen,    setDayModalOpen]   = useState(false);
   const [taskFormOpen,    setTaskFormOpen]   = useState(false);
   const [editingTask,     setEditingTask]    = useState<Task | null>(null);
-  const [actFormOpen,     setActFormOpen]    = useState(false);
-  const [editingAct,      setEditingAct]     = useState<Activity | null>(null);
-  const [actDetailOpen,   setActDetailOpen]  = useState(false);
-  const [detailActivity,  setDetailActivity] = useState<Activity | null>(null);
-
-  const userId   = (session?.user as { id?: string })?.id ?? '';
-  const userRole = session?.user?.role ?? '';
 
   const isManager = MANAGER_ROLES.includes(session?.user?.role ?? '');
 
   const fetchData = useCallback(async () => {
     const tasksUrl = isManager ? '/api/tasks?scope=all' : '/api/tasks';
     try {
-      const [tasksRes, actsRes] = await Promise.all([
-        fetch(tasksUrl),
-        fetch('/api/activities'),
-      ]);
+      const tasksRes = await fetch(tasksUrl);
       if (tasksRes.ok) {
         const data = await tasksRes.json();
         setTasks(data.tasks || data || []);
-      }
-      if (actsRes.ok) {
-        const data = await actsRes.json();
-        setActivities(data.activities || []);
       }
     } finally {
       setLoading(false);
@@ -327,20 +231,6 @@ export default function CalendarContent() {
       bus.on<{ id: string }>(RT_EVENTS.TASK_DELETED, ({ id }) => {
         setTasks((prev) => prev.filter((t) => t.id !== id));
       }),
-      bus.on<{ activity: Activity }>(RT_EVENTS.ACTIVITY_CREATED, ({ activity }) => {
-        setActivities((prev) => {
-          if (prev.some((a) => a.id === activity.id)) return prev;
-          return [...prev, activity].sort(
-            (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-          );
-        });
-      }),
-      bus.on<{ activity: Activity }>(RT_EVENTS.ACTIVITY_UPDATED, ({ activity }) => {
-        setActivities((prev) => prev.map((a) => a.id === activity.id ? activity : a));
-      }),
-      bus.on<{ id: string }>(RT_EVENTS.ACTIVITY_DELETED, ({ id }) => {
-        setActivities((prev) => prev.filter((a) => a.id !== id));
-      }),
     ];
     return () => unsubs.forEach((u) => u());
   }, []);
@@ -363,21 +253,7 @@ export default function CalendarContent() {
     [tasks, selectedDay]
   );
 
-  const dayActivities = useMemo(
-    () => activities.filter((a) => {
-      try {
-        return isWithinInterval(startOfDay(selectedDay), {
-          start: startOfDay(new Date(a.startDate)),
-          end:   endOfDay(a.endDate ? new Date(a.endDate) : new Date(a.startDate)),
-        });
-      } catch {
-        return isSameDay(new Date(a.startDate), selectedDay);
-      }
-    }),
-    [activities, selectedDay]
-  );
-
-  const total          = dayTasks.length + dayActivities.length;
+  const total          = dayTasks.length;
   const capitalizedLabel = dayLabel(selectedDay);
 
   if (loading) {
@@ -412,14 +288,6 @@ export default function CalendarContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {isManager && (
-            <Button variant="outline"
-              onClick={() => { setEditingAct(null); setActFormOpen(true); }}
-              className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-2 text-sm">
-              <CalendarRange className="w-4 h-4" />
-              Actividad
-            </Button>
-          )}
           <Button
             onClick={() => { setEditingTask(null); setTaskFormOpen(true); }}
             className="bg-brand hover:bg-brand-dark text-white gap-2">
@@ -434,7 +302,7 @@ export default function CalendarContent() {
         <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6">
           <CalendarGrid
             tasks={tasks}
-            activities={activities}
+            activities={[]}
             selectedDay={selectedDay}
             onSelectDay={handleSelectDay}
           />
@@ -462,44 +330,6 @@ export default function CalendarContent() {
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-5 space-y-4">
-            {/* Activities */}
-            {dayActivities.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
-                  <CalendarRange className="w-3 h-3" />
-                  Actividades ({dayActivities.length})
-                </div>
-                {dayActivities.map((act) => (
-                  <button key={act.id} type="button"
-                    onClick={() => { setDetailActivity(act); setActDetailOpen(true); }}
-                    className="w-full text-left bg-brand/[0.07] border border-brand/20 rounded-lg p-3 hover:border-brand/40 hover:bg-brand/[0.10] transition-colors group">
-                    <div className="flex items-start gap-2">
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${activityStatusColors[act.status] || 'status-pending'}`}>
-                        {activityStatusLabels[act.status] || act.status}
-                      </span>
-                      <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
-                        {act.title}
-                      </p>
-                    </div>
-                    {act.description && (
-                      <p className="text-xs text-white/35 mt-1.5 line-clamp-2 pl-1">{act.description}</p>
-                    )}
-                    <div className="flex items-center gap-3 mt-2 pl-1">
-                      <span className={`text-[10px] font-medium ${priorityColors[act.priority] || 'text-white/40'}`}>
-                        {priorityLabels[act.priority] || act.priority}
-                      </span>
-                      {act.endDate && (
-                        <span className="text-[10px] text-white/25">
-                          hasta {format(new Date(act.endDate), 'd MMM', { locale: es })}
-                        </span>
-                      )}
-                      <UserAvatarStack users={getActivityAssignees(act)} max={3} />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
             {/* Tasks */}
             {dayTasks.length > 0 && (
               <div className="space-y-2">
@@ -558,14 +388,6 @@ export default function CalendarContent() {
                     <Plus className="w-3.5 h-3.5" />
                     Tarea
                   </Button>
-                  {isManager && (
-                    <Button variant="ghost" size="sm"
-                      className="text-white/40 hover:text-white hover:bg-white/[0.06] text-xs gap-1"
-                      onClick={() => { setEditingAct(null); setActFormOpen(true); }}>
-                      <Plus className="w-3.5 h-3.5" />
-                      Actividad
-                    </Button>
-                  )}
                 </div>
               </div>
             )}
@@ -579,21 +401,8 @@ export default function CalendarContent() {
         onClose={() => setDayModalOpen(false)}
         day={selectedDay}
         tasks={tasks}
-        activities={activities}
-        isManager={isManager}
-        onEditTask={(t) => { setEditingTask(t);    setTaskFormOpen(true); }}
-        onViewAct={(a)  => { setDetailActivity(a); setActDetailOpen(true); }}
-        onNewTask={() => { setEditingTask(null);    setTaskFormOpen(true); }}
-        onNewAct={()  => { setEditingAct(null);     setActFormOpen(true); }}
-      />
-
-      {/* Activity detail + comment thread — read-only preview */}
-      <ActivityDetailModal
-        activity={detailActivity}
-        open={actDetailOpen}
-        onClose={() => setActDetailOpen(false)}
-        currentUserId={userId}
-        currentUserRole={userRole}
+        onEditTask={(t) => { setEditingTask(t); setTaskFormOpen(true); }}
+        onNewTask={() => { setEditingTask(null); setTaskFormOpen(true); }}
       />
 
       {/* Task form dialog */}
@@ -601,15 +410,6 @@ export default function CalendarContent() {
         open={taskFormOpen}
         onOpenChange={setTaskFormOpen}
         task={editingTask}
-        isManager={isManager}
-        onSuccess={fetchData}
-      />
-
-      {/* Activity form dialog */}
-      <ActivityForm
-        open={actFormOpen}
-        onOpenChange={setActFormOpen}
-        activity={editingAct}
         isManager={isManager}
         onSuccess={fetchData}
       />

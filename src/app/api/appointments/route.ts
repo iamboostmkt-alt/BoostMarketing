@@ -46,29 +46,29 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Auto-create Client record if a user account exists for this email (non-blocking)
-    db.user.findUnique({
-      where:  { email: appointment.email },
-      select: { id: true },
-    }).then((existingUser) => {
-      if (!existingUser) return;
-      return db.client.findFirst({
-        where:  { userId: existingUser.id },
-        select: { id: true },
-      }).then((existingClient) => {
-        if (existingClient) return;
-        return db.client.create({
-          data: {
-            userId:  existingUser.id,
-            name:    appointment.name,
-            email:   appointment.email,
-            phone:   appointment.phone,
-            status:  'lead',
-            company: '',
-          },
-        });
+    const emailNorm = appointment.email;
+    const existingUser = await db.user.findUnique({ where: { email: emailNorm } });
+    if (!existingUser) {
+      const newUser = await db.user.create({
+        data: {
+          name:              appointment.name,
+          email:             emailNorm,
+          role:              'CLIENT',
+          lifecycleStatus:   'PROSPECT',
+          password:          null,
+        },
       });
-    }).catch((err) => console.error('[appointments] client upsert error (non-fatal):', err));
+      await db.client.create({
+        data: {
+          userId:  newUser.id,
+          name:    appointment.name,
+          email:   emailNorm,
+          phone:   appointment.phone || '',
+          status:  'lead',
+          company: '',
+        },
+      });
+    }
 
     // Notify all admins and project managers
     const managers = await db.user.findMany({
