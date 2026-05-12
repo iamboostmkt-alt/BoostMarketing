@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
@@ -75,6 +75,14 @@ export function NotificationsDropdown() {
 
   useEffect(() => {
     fetchNotifications();
+  }, [fetchNotifications]);
+
+  // Polling cada 30s como fallback
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+    return () => clearInterval(interval);
   }, [fetchNotifications]);
 
   // Live updates — re-fetch when a notification is created for any user
@@ -238,3 +246,4 @@ export function NotificationsDropdown() {
     </DropdownMenu>
   );
 }
+

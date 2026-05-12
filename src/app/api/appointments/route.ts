@@ -9,7 +9,7 @@ import {
   templateCitaCancelada,
 } from '@/lib/mailer';
 
-const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
+const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'];
 
 async function requireManager() {
   const session = await getServerSession(authOptions);
@@ -17,7 +17,6 @@ async function requireManager() {
   return session;
 }
 
-// POST — public: anyone from the landing page can book
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -29,12 +28,12 @@ export async function POST(req: NextRequest) {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: 'Email no válido.' }, { status: 400 });
+      return NextResponse.json({ error: 'Email no valido.' }, { status: 400 });
     }
 
     const parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) {
-      return NextResponse.json({ error: 'Fecha no válida.' }, { status: 400 });
+      return NextResponse.json({ error: 'Fecha no valida.' }, { status: 400 });
     }
     if (parsedDate < new Date()) {
       return NextResponse.json({ error: 'La fecha debe ser en el futuro.' }, { status: 400 });
@@ -57,9 +56,11 @@ export async function POST(req: NextRequest) {
     });
 
     const emailNorm = appointment.email;
-    const existingUser = await db.user.findUnique({ where: { email: emailNorm } });
-    if (!existingUser) {
-      const newUser = await db.user.create({
+
+    // Buscar o crear usuario
+    let targetUser = await db.user.findUnique({ where: { email: emailNorm } });
+    if (!targetUser) {
+      targetUser = await db.user.create({
         data: {
           name:            appointment.name,
           email:           emailNorm,
@@ -68,9 +69,23 @@ export async function POST(req: NextRequest) {
           password:        null,
         },
       });
+    } else if (!targetUser.lifecycleStatus) {
+      // Si existe pero no tiene lifecycleStatus, actualizarlo
+      await db.user.update({
+        where: { id: targetUser.id },
+        data: { lifecycleStatus: 'PROSPECT' },
+      });
+    }
+
+    // Crear cliente en CRM si no existe
+    const existingClient = await db.client.findFirst({
+      where: { email: emailNorm },
+    });
+
+    if (!existingClient) {
       await db.client.create({
         data: {
-          userId:  newUser.id,
+          userId:  targetUser.id,
           name:    appointment.name,
           email:   emailNorm,
           phone:   appointment.phone || '',
@@ -80,13 +95,29 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Notificar managers
+    // Obtener managers y admins
     const managers = await db.user.findMany({
       where: { role: { in: ['ADMIN', 'PROJECT_MANAGER'] } },
       select: { id: true, email: true },
     });
 
+    // Crear actividad en calendario para managers
     if (managers.length > 0) {
+      const firstManager = managers[0];
+      await db.activity.create({
+        data: {
+          title:          `Videollamada con ${name}`,
+          description:    notes || '',
+          status:         'pending',
+          priority:       'high',
+          startDate:      parsedDate,
+          endDate:        new Date(parsedDate.getTime() + 60 * 60 * 1000),
+          createdByUserId: firstManager.id,
+          assignedUserId:  firstManager.id,
+        },
+      });
+
+      // Notificaciones
       await db.notification.createMany({
         data: managers.map((m) => ({
           userId:  m.id,
@@ -96,22 +127,22 @@ export async function POST(req: NextRequest) {
         })),
       });
 
-      // Email a cada manager
+      // Emails a managers
       for (const manager of managers) {
         if (manager.email) {
           sendMail(
             manager.email,
-            `📆 Nueva cita: ${name}`,
+            `Nueva cita: ${name}`,
             templateNuevaCita(name, email, dateStr, notes)
           ).catch(console.error);
         }
       }
     }
 
-    // Email de confirmacion al cliente
+    // Email confirmacion al cliente
     sendMail(
       appointment.email,
-      '🎥 Tu videollamada fue agendada - BoostMarketing',
+      'Tu videollamada fue agendada - BoostMarketing',
       templateVideollamadaConfirmada(name, dateStr)
     ).catch(console.error);
 
@@ -122,7 +153,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET — admin/PM only
 export async function GET(req: NextRequest) {
   try {
     const session = await requireManager();
@@ -143,7 +173,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// PATCH — admin/PM only: update status + email automatico
 export async function PATCH(req: NextRequest) {
   try {
     const session = await requireManager();
@@ -169,11 +198,10 @@ export async function PATCH(req: NextRequest) {
       day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
 
-    // Email segun nuevo estado
     if (status === 'confirmed') {
       sendMail(
         existing.email,
-        '✅ Tu videollamada fue confirmada - BoostMarketing',
+        'Tu videollamada fue confirmada - BoostMarketing',
         templateVideollamadaConfirmada(existing.name, dateStr, meetUrl)
       ).catch(console.error);
     }
@@ -181,7 +209,7 @@ export async function PATCH(req: NextRequest) {
     if (status === 'cancelled') {
       sendMail(
         existing.email,
-        '❌ Tu cita fue cancelada - BoostMarketing',
+        'Tu cita fue cancelada - BoostMarketing',
         templateCitaCancelada(existing.name, dateStr)
       ).catch(console.error);
     }

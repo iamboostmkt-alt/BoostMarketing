@@ -1,4 +1,4 @@
-generator client {
+﻿generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
 }
@@ -17,6 +17,7 @@ enum Role {
   TEAM_MEMBER
   DESIGNER
   MARKETING
+  SALES_REP
 }
 
 /// Ciclo de vida SaaS del usuario (típico en role CLIENT; null en otros)
@@ -424,3 +425,4 @@ model TeamMember {
 
   @@map("team_members")
 }
+

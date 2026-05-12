@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import bcrypt from 'bcryptjs';
 import { authOptions } from '@/lib/auth';
@@ -15,6 +15,7 @@ const VALID_ROLES: Role[] = [
   'TEAM_MEMBER',
   'DESIGNER',
   'MARKETING',
+  'SALES_REP',
 ];
 
 async function requireAdmin() {
@@ -273,3 +274,4 @@ export async function DELETE(req: NextRequest) {
 
   return NextResponse.json({ message: 'Usuario eliminado.' });
 }
+

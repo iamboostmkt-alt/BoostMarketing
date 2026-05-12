@@ -141,3 +141,36 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    const userId = (session.user as any).id;
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (id) {
+      // Eliminar una notificacion
+      const notification = await db.notification.findUnique({ where: { id } });
+      if (!notification || notification.userId !== userId) {
+        return NextResponse.json({ error: 'No encontrada' }, { status: 404 });
+      }
+      await db.notification.delete({ where: { id } });
+      return NextResponse.json({ success: true });
+    }
+
+    // Eliminar todas las leidas
+    await db.notification.deleteMany({
+      where: { userId, read: true },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Notifications DELETE error:', error);
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+  }
+}
