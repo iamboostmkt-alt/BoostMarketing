@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
@@ -500,7 +500,7 @@ export default function ClientPortalContent() {
                 </p>
               </div>
               <a
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5215555555555'}?text=Hola ${encodeURIComponent(client.assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
+                href={`https://wa.me/?text=Hola ${encodeURIComponent(client.assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
                 target="_blank"
                 rel="noopener noreferrer"
                 title="WhatsApp PM"
