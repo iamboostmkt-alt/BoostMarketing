@@ -1,5 +1,8 @@
 import { sendMail, isSmtpConfigured } from "@/lib/mailer";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     if (!isSmtpConfigured()) {
@@ -17,9 +20,13 @@ export async function GET() {
 
     return Response.json({
       ok: result,
-      message: result ? "Email enviado correctamente" : "Error enviando email",
+      message: result
+        ? "Email enviado correctamente"
+        : "Error enviando email",
     });
   } catch (error) {
+    console.error("🔥 TEST EMAIL ERROR:", error);
+
     return Response.json(
       {
         ok: false,
