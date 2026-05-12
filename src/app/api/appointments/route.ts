@@ -1,7 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
+import {
+  sendMail,
+  templateNuevaCita,
+  templateVideollamadaConfirmada,
+  templateCitaCancelada,
+} from '@/lib/mailer';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -30,7 +36,6 @@ export async function POST(req: NextRequest) {
     if (isNaN(parsedDate.getTime())) {
       return NextResponse.json({ error: 'Fecha no válida.' }, { status: 400 });
     }
-
     if (parsedDate < new Date()) {
       return NextResponse.json({ error: 'La fecha debe ser en el futuro.' }, { status: 400 });
     }
@@ -46,16 +51,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const dateStr = parsedDate.toLocaleDateString('es-MX', {
+      weekday: 'long', year: 'numeric', month: 'long',
+      day: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+
     const emailNorm = appointment.email;
     const existingUser = await db.user.findUnique({ where: { email: emailNorm } });
     if (!existingUser) {
       const newUser = await db.user.create({
         data: {
-          name:              appointment.name,
-          email:             emailNorm,
-          role:              'CLIENT',
-          lifecycleStatus:   'PROSPECT',
-          password:          null,
+          name:            appointment.name,
+          email:           emailNorm,
+          role:            'CLIENT',
+          lifecycleStatus: 'PROSPECT',
+          password:        null,
         },
       });
       await db.client.create({
@@ -70,21 +80,40 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Notify all admins and project managers
+    // Notificar managers
     const managers = await db.user.findMany({
       where: { role: { in: ['ADMIN', 'PROJECT_MANAGER'] } },
-      select: { id: true },
+      select: { id: true, email: true },
     });
+
     if (managers.length > 0) {
       await db.notification.createMany({
         data: managers.map((m) => ({
           userId:  m.id,
-          message: `Nueva videollamada agendada por ${name} para el ${parsedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+          message: `Nueva videollamada agendada por ${name} para el ${dateStr}`,
           type:    'appointment',
           link:    '/dashboard/admin',
         })),
       });
+
+      // Email a cada manager
+      for (const manager of managers) {
+        if (manager.email) {
+          sendMail(
+            manager.email,
+            `📆 Nueva cita: ${name}`,
+            templateNuevaCita(name, email, dateStr, notes)
+          ).catch(console.error);
+        }
+      }
     }
+
+    // Email de confirmacion al cliente
+    sendMail(
+      appointment.email,
+      '🎥 Tu videollamada fue agendada - BoostMarketing',
+      templateVideollamadaConfirmada(name, dateStr)
+    ).catch(console.error);
 
     return NextResponse.json({ appointment }, { status: 201 });
   } catch (error) {
@@ -93,7 +122,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET — admin/PM only: list all appointments
+// GET — admin/PM only
 export async function GET(req: NextRequest) {
   try {
     const session = await requireManager();
@@ -114,20 +143,49 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// PATCH — admin/PM only: update appointment status
+// PATCH — admin/PM only: update status + email automatico
 export async function PATCH(req: NextRequest) {
   try {
     const session = await requireManager();
     if (!session) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
 
     const body = await req.json();
-    const { id, status } = body;
+    const { id, status, meetUrl } = body;
 
     if (!id || !status) {
       return NextResponse.json({ error: 'id y status son requeridos.' }, { status: 400 });
     }
 
-    const appointment = await db.appointment.update({ where: { id }, data: { status } });
+    const existing = await db.appointment.findUnique({ where: { id } });
+    if (!existing) return NextResponse.json({ error: 'Cita no encontrada.' }, { status: 404 });
+
+    const appointment = await db.appointment.update({
+      where: { id },
+      data: { status, ...(meetUrl && { meetUrl }) },
+    });
+
+    const dateStr = existing.date.toLocaleDateString('es-MX', {
+      weekday: 'long', year: 'numeric', month: 'long',
+      day: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+
+    // Email segun nuevo estado
+    if (status === 'confirmed') {
+      sendMail(
+        existing.email,
+        '✅ Tu videollamada fue confirmada - BoostMarketing',
+        templateVideollamadaConfirmada(existing.name, dateStr, meetUrl)
+      ).catch(console.error);
+    }
+
+    if (status === 'cancelled') {
+      sendMail(
+        existing.email,
+        '❌ Tu cita fue cancelada - BoostMarketing',
+        templateCitaCancelada(existing.name, dateStr)
+      ).catch(console.error);
+    }
+
     return NextResponse.json({ appointment });
   } catch (error) {
     console.error('[appointments PATCH]', error);

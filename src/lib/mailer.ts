@@ -265,3 +265,159 @@ export function templateResumenSemanal(
     </div>
   </div>`;
 }
+
+// ─── RESET DE CONTRASEÑA ─────────────────────────────────────
+export function templateResetPassword(name: string, resetUrl: string) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:#7c3aed;padding:28px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">🔐 Restablecer Contraseña</h1>
+    </div>
+    <div style="padding:28px">
+      <p style="color:#374151">Hola <strong>${name}</strong>,</p>
+      <p style="color:#6b7280;line-height:1.6">
+        Recibimos una solicitud para restablecer la contraseña de tu cuenta.
+        Haz clic en el botón para crear una nueva contraseña.
+      </p>
+      <div style="text-align:center;margin:28px 0">
+        <a href="${resetUrl}"
+           style="display:inline-block;background:#7c3aed;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">
+          Restablecer Contraseña
+        </a>
+      </div>
+      <div style="background:#fef9ff;border:1px solid #e9d5ff;border-radius:8px;padding:14px;margin-top:16px">
+        <p style="margin:0;color:#6b7280;font-size:13px">
+          ⏰ Este enlace expira en <strong>1 hora</strong>.<br/>
+          Si no solicitaste esto, ignora este mensaje — tu contraseña no cambiará.
+        </p>
+      </div>
+    </div>
+    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
+      BoostMarketing · Por seguridad nunca compartimos tu contraseña
+    </div>
+  </div>`;
+}
+
+// ─── VIDEOLLAMADA CONFIRMADA (AL CLIENTE) ────────────────────
+export function templateVideollamadaConfirmada(
+  clientName: string,
+  date: string,
+  meetUrl?: string
+) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7);padding:28px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">🎥 Videollamada Confirmada</h1>
+    </div>
+    <div style="padding:28px">
+      <p style="color:#374151">Hola <strong>${clientName}</strong>,</p>
+      <p style="color:#6b7280">Tu videollamada con el equipo de BoostMarketing ha sido confirmada.</p>
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:20px;margin:20px 0">
+        <p style="margin:0 0 8px;color:#0369a1;font-weight:700;font-size:15px">📅 Detalles de la reunión</p>
+        <p style="margin:0;color:#374151"><strong>Fecha:</strong> ${date}</p>
+        ${meetUrl ? `<p style="margin:8px 0 0;color:#374151"><strong>Enlace:</strong> <a href="${meetUrl}" style="color:#0ea5e9">${meetUrl}</a></p>` : ''}
+      </div>
+      ${meetUrl ? `
+      <div style="text-align:center;margin:20px 0">
+        <a href="${meetUrl}"
+           style="display:inline-block;background:#0ea5e9;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">
+          Unirse a la Videollamada
+        </a>
+      </div>` : ''}
+      <p style="color:#6b7280;font-size:13px">
+        Si necesitas reagendar, contáctanos respondiendo este correo.
+      </p>
+    </div>
+    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
+      BoostMarketing © ${new Date().getFullYear()}
+    </div>
+  </div>`;
+}
+
+// ─── NUEVA CITA (A LOS MANAGERS) ─────────────────────────────
+export function templateNuevaCita(
+  clientName: string,
+  clientEmail: string,
+  date: string,
+  notes?: string
+) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:#f59e0b;padding:24px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">📆 Nueva Cita Agendada</h1>
+    </div>
+    <div style="padding:24px">
+      <p style="color:#6b7280;margin-top:0">Un prospecto agendó una videollamada:</p>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0">
+        <p style="margin:0 0 6px;color:#374151"><strong>👤 Nombre:</strong> ${clientName}</p>
+        <p style="margin:0 0 6px;color:#374151"><strong>📧 Email:</strong> ${clientEmail}</p>
+        <p style="margin:0 0 6px;color:#374151"><strong>📅 Fecha:</strong> ${date}</p>
+        ${notes ? `<p style="margin:8px 0 0;color:#6b7280"><strong>📝 Notas:</strong> ${notes}</p>` : ''}
+      </div>
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/admin"
+         style="display:inline-block;background:#f59e0b;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
+        Ver en Dashboard
+      </a>
+    </div>
+  </div>`;
+}
+
+// ─── CITA CANCELADA ──────────────────────────────────────────
+export function templateCitaCancelada(clientName: string, date: string) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:#ef4444;padding:24px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">❌ Cita Cancelada</h1>
+    </div>
+    <div style="padding:24px">
+      <p style="color:#374151">Hola <strong>${clientName}</strong>,</p>
+      <p style="color:#6b7280">
+        Lamentamos informarte que tu cita del <strong>${date}</strong> ha sido cancelada.
+      </p>
+      <p style="color:#6b7280">Por favor contáctanos para reagendar.</p>
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}"
+         style="display:inline-block;background:#ef4444;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
+        Reagendar
+      </a>
+    </div>
+  </div>`;
+}
+
+// ─── TAREA EDITADA ───────────────────────────────────────────
+export function templateTareaEditada(
+  taskTitle: string,
+  cambios: Array<{campo: string, antes: string, despues: string}>
+) {
+  const filas = cambios.map(c => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;font-weight:600">${c.campo}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#ef4444;font-size:13px;text-decoration:line-through">${c.antes}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#10b981;font-size:13px;font-weight:600">${c.despues}</td>
+    </tr>
+  `).join('');
+
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:#6366f1;padding:24px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">✏️ Tarea Actualizada</h1>
+    </div>
+    <div style="padding:24px">
+      <h2 style="color:#111827;margin-top:0">${taskTitle}</h2>
+      <p style="color:#6b7280">Se realizaron los siguientes cambios:</p>
+      <table style="width:100%;border-collapse:collapse;margin-top:12px">
+        <thead>
+          <tr style="background:#f9fafb">
+            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280">Campo</th>
+            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280">Antes</th>
+            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280">Ahora</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
+         style="display:inline-block;background:#6366f1;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:20px">
+        Ver Tarea
+      </a>
+    </div>
+  </div>`;
+}
