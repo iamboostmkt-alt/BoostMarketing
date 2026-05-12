@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getSupabaseAdmin, STORAGE_BUCKET, getPublicUrl } from '@/lib/supabase';
@@ -31,7 +31,16 @@ export async function POST(req: NextRequest) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const supabase = getSupabaseAdmin();
+  let supabase: ReturnType<typeof getSupabaseAdmin>;
+  try {
+    supabase = getSupabaseAdmin();
+  } catch (configErr) {
+    log.warn("/api/auth/avatar", "Supabase not configured");
+    return NextResponse.json(
+      { error: "El almacenamiento de imagenes no esta configurado. Contacta al administrador." },
+      { status: 503 }
+    );
+  }
 
   // Verify the bucket exists and is accessible before uploading
   const { data: buckets, error: bucketsErr } = await supabase.storage.listBuckets();
@@ -72,3 +81,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ url }, { status: 201 });
 }
+

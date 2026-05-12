@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 
-const MANAGE_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
+const MANAGE_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'];
 
 const clientSelect = {
   id: true,
@@ -279,3 +279,4 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
+
