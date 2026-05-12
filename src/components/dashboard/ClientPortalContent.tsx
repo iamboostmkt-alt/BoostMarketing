@@ -22,7 +22,7 @@ import {
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ChatContent from '@/components/dashboard/ChatContent';
-import ReportButton from '@/components/dashboard/ReportButton';
+import { ReportButton } from '@/components/dashboard/ReportButton';
 import type { ClientPortalData, Task, TaskAssignee } from '@/lib/types';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
