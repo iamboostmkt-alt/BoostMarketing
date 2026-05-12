@@ -97,3 +97,7 @@ export function templateRecordatorio(title: string, dueDate: string, horasRestan
     </div>
   </div>`;
 }
+
+export function isSmtpConfigured(): boolean {
+  return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+}
