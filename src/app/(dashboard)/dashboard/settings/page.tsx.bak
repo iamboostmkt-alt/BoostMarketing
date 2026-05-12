@@ -201,36 +201,14 @@ export default function SettingsPage() {
                       />
                     </div>
                   )}
-                  <div className="flex gap-3">
-                    <button type="button" onClick={() => fileRef.current?.click()}
-                      disabled={uploading || loading}
-                      className="text-sm text-brand-light hover:text-white transition-colors disabled:opacity-50">
-                      {uploading ? 'Subiendo...' : 'Cambiar foto'}
-                    </button>
-                    {imageUrl && (
-                      <button type="button" disabled={uploading || loading}
-                        onClick={async () => {
-                          if (!confirm('Eliminar foto de perfil?')) return;
-                          setUploading(true);
-                          try {
-                            const res = await fetch('/api/auth/profile', {
-                              method: 'PATCH',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ name, color: selectedColor, removeImage: true }),
-                            });
-                            if (res.ok) {
-                              setImageUrl(null);
-                              await updateSession({ image: null });
-                              toast.success('Foto eliminada');
-                            }
-                          } catch { toast.error('Error al eliminar'); }
-                          finally { setUploading(false); }
-                        }}
-                        className="text-sm text-red-400 hover:text-red-300 transition-colors disabled:opacity-50">
-                        Eliminar foto
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading || loading}
+                    className="text-sm text-brand-light hover:text-white transition-colors disabled:opacity-50"
+                  >
+                    {uploading ? 'Subiendo...' : 'Cambiar foto'}
+                  </button>
                 </div>
 
                 {/* Form */}
