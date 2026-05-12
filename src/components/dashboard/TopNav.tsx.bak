@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
@@ -19,22 +19,23 @@ import { useSidebar } from './SidebarContext';
 import { NotificationsDropdown } from './NotificationsDropdown';
 
 const pageTitles: Record<string, string> = {
-  '/dashboard':           'Dashboard',
-  '/dashboard/crm':       'CRM',
-  '/dashboard/tasks':     'Tareas',
-  '/dashboard/calendar':  'Calendario',
-  '/dashboard/clients':   'Clientes',
+  '/dashboard': 'Dashboard',
+  '/dashboard/crm': 'CRM',
+  '/dashboard/tasks': 'Tareas',
+  '/dashboard/calendar': 'Calendario',
+  '/dashboard/clients': 'Clientes',
   '/dashboard/analytics': 'Analytics',
-  '/dashboard/settings':  'Ajustes',
+  '/dashboard/settings': 'Ajustes',
 };
 
 export default function TopNav() {
   const pathname = usePathname();
-  const router   = useRouter();
+  const router = useRouter();
   const { setMobileOpen, setCommandOpen } = useSidebar();
   const { data: session } = useSession();
 
-  const userName  = session?.user?.name  || 'Usuario';
+  // NON-BLOCKING: always render with defaults, update when session resolves
+  const userName = session?.user?.name || 'Usuario';
   const userImage = session?.user?.image;
 
   const initials = userName
@@ -46,7 +47,9 @@ export default function TopNav() {
 
   const getPageTitle = () => {
     for (const [path, title] of Object.entries(pageTitles)) {
-      if (pathname === path || pathname.startsWith(path + '/')) return title;
+      if (pathname === path || pathname.startsWith(path + '/')) {
+        return title;
+      }
     }
     return 'Dashboard';
   };
@@ -54,7 +57,7 @@ export default function TopNav() {
   return (
     <header className="h-16 border-b border-white/[0.06] bg-[#0b0b0f]/80 backdrop-blur-xl sticky top-0 z-30">
       <div className="flex items-center h-full px-4 md:px-6 gap-4">
-
+        {/* Mobile menu button */}
         <Button
           variant="ghost"
           size="icon"
@@ -64,10 +67,12 @@ export default function TopNav() {
           <Menu className="w-5 h-5" />
         </Button>
 
+        {/* Page title */}
         <div className="flex items-center gap-2 min-w-0">
           <h1 className="text-lg font-semibold text-white truncate">{getPageTitle()}</h1>
         </div>
 
+        {/* Search bar */}
         <div className="flex-1 max-w-md mx-auto hidden sm:block">
           <button
             onClick={() => setCommandOpen(true)}
@@ -81,7 +86,9 @@ export default function TopNav() {
           </button>
         </div>
 
+        {/* Right side */}
         <div className="flex items-center gap-2 ml-auto">
+          {/* Mobile search button */}
           <Button
             variant="ghost"
             size="icon"
@@ -91,11 +98,16 @@ export default function TopNav() {
             <Search className="w-5 h-5" />
           </Button>
 
+          {/* Notifications */}
           <NotificationsDropdown />
 
+          {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <Button
+                variant="ghost"
+                className="relative h-9 w-9 rounded-full"
+              >
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={userImage || undefined} alt={userName} />
                   <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
@@ -109,43 +121,42 @@ export default function TopNav() {
               align="end"
               forceMount
             >
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{userName}</p>
-                  <p className="text-xs leading-none text-white/40">
-                    {session?.user?.email || ''}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/[0.06]" />
-              <DropdownMenuGroup>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{userName}</p>
+                    <p className="text-xs leading-none text-white/40">
+                      {session?.user?.email || ''}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/[0.06]" />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer"
+                    onClick={() => router.push('/dashboard/settings')}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer"
+                    onClick={() => router.push('/dashboard/settings')}
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Ajustes
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator className="bg-white/[0.06]" />
                 <DropdownMenuItem
-                  className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer"
-                  onClick={() => router.push('/dashboard/settings')}
+                  className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
+                  onClick={() => signOut({ callbackUrl: '/' })}
                 >
-                  <User className="mr-2 h-4 w-4" />
-                  Perfil
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Cerrar Sesión
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer"
-                  onClick={() => router.push('/dashboard/settings')}
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  Ajustes
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-white/[0.06]" />
-              <DropdownMenuItem
-                className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
-                onClick={() => signOut({ callbackUrl: '/' })}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Cerrar Sesion
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
         </div>
-
       </div>
     </header>
   );
