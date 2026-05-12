@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface ReportButtonProps {
+  clientEmail?: string;
   clientId: string;
   clientName?: string;
   month?: number;
