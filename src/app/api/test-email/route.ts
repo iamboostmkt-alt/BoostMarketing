@@ -1,37 +1,29 @@
-import { transporter } from "@/lib/mailer";
+import { sendMail, isSmtpConfigured } from "@/lib/mailer";
 
-/**
- * GET /api/test-email — verifies SMTP (Gmail) credentials.
- * Runs verify() per request (not at module scope). Protect in production if exposed.
- */
 export async function GET() {
-  if (
-    !process.env.EMAIL_SERVER_USER?.trim() ||
-    !process.env.EMAIL_SERVER_PASSWORD?.trim()
-  ) {
-    return Response.json(
-      {
-        ok: false,
-        error:
-          "Faltan EMAIL_SERVER_USER y/o EMAIL_SERVER_PASSWORD (usa contraseña de aplicación de Gmail).",
-      },
-      { status: 400 }
-    );
-  }
-
   try {
-    await transporter.verify();
+    if (!isSmtpConfigured()) {
+      return Response.json(
+        { ok: false, error: "SMTP no configurado" },
+        { status: 500 }
+      );
+    }
+
+    const result = await sendMail(
+      "test@example.com",
+      "Test Email SMTP",
+      "<h1>SMTP OK desde Vercel</h1>"
+    );
 
     return Response.json({
-      ok: true,
-      message: "SMTP funcionando correctamente",
+      ok: result,
+      message: result ? "Email enviado correctamente" : "Error enviando email",
     });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error desconocido";
+  } catch (error) {
     return Response.json(
       {
         ok: false,
-        error: message,
+        error: "Error interno SMTP",
       },
       { status: 500 }
     );

@@ -3,6 +3,15 @@ import nodemailer, { type Transporter } from "nodemailer";
 
 const isDev = process.env.NODE_ENV === "development";
 
+/**
+ * ENV (SOLO estas variables deben existir en Vercel):
+ * EMAIL_SERVER_HOST
+ * EMAIL_SERVER_PORT
+ * EMAIL_SERVER_USER
+ * EMAIL_SERVER_PASSWORD
+ * EMAIL_FROM
+ */
+
 function resolveHost(): string {
   return process.env.EMAIL_SERVER_HOST?.trim() || "smtp.gmail.com";
 }
@@ -19,32 +28,40 @@ function resolveSecure(port: number): boolean {
 }
 
 function resolveUser(): string | undefined {
-  return process.env.EMAIL_SERVER_USER?.trim() || undefined;
+  return process.env.EMAIL_SERVER_USER?.trim();
 }
 
 function resolvePassword(): string | undefined {
-  return process.env.EMAIL_SERVER_PASSWORD?.trim() || undefined;
+  return process.env.EMAIL_SERVER_PASSWORD?.trim();
 }
 
 let cached: Transporter | null = null;
 let cachedKey = "";
 
+/**
+ * TRANSPORTER SINGLETON
+ */
 function getTransporter(): Transporter | null {
   const host = resolveHost();
   const port = resolvePort();
   const secure = resolveSecure(port);
   const user = resolveUser();
   const pass = resolvePassword();
-  const key = `${host}:${port}:${secure}:${user ?? ""}`;
-  if (!user || !pass) {
-    return null;
-  }
+
+  if (!user || !pass) return null;
+
+  const key = `${host}:${port}:${secure}:${user}`;
+
   if (cached && cachedKey === key) return cached;
+
   cached = nodemailer.createTransport({
     host,
     port,
     secure,
-    auth: { user, pass },
+    auth: {
+      user,
+      pass,
+    },
     pool: true,
     maxConnections: 3,
     maxMessages: 50,
@@ -52,41 +69,54 @@ function getTransporter(): Transporter | null {
       rejectUnauthorized: process.env.EMAIL_TLS_REJECT_UNAUTHORIZED !== "false",
     },
   });
+
   cachedKey = key;
   return cached;
 }
 
 /**
- * Production mail entrypoint. Uses ONLY:
- * EMAIL_SERVER_HOST, EMAIL_SERVER_PORT, EMAIL_SERVER_SECURE (optional),
- * EMAIL_SERVER_USER, EMAIL_SERVER_PASSWORD, EMAIL_FROM
+ * MAIN EMAIL FUNCTION
  */
-export async function sendMail(to: string, subject: string, html: string): Promise<boolean> {
+export async function sendMail(
+  to: string,
+  subject: string,
+  html: string
+): Promise<boolean> {
   const from = process.env.EMAIL_FROM?.trim();
+
   if (!from) {
-    if (isDev) console.warn("[sendMail] EMAIL_FROM no configurado.");
+    if (isDev) console.warn("[sendMail] EMAIL_FROM missing");
     return false;
   }
 
   const transport = getTransporter();
+
   if (!transport) {
     if (isDev) {
-      console.warn("[sendMail] SMTP no configurado (EMAIL_SERVER_USER / EMAIL_SERVER_PASSWORD).");
-      console.log("  To:", to, "Subject:", subject);
+      console.warn("[sendMail] SMTP not configured");
     }
     return false;
   }
 
   try {
-    await transport.sendMail({ from, to, subject, html });
+    await transport.sendMail({
+      from,
+      to,
+      subject,
+      html,
+    });
+
     if (isDev) console.log("[sendMail] sent →", to);
     return true;
-  } catch (e) {
-    console.error("[sendMail]", e);
+  } catch (err) {
+    console.error("[sendMail] error:", err);
     return false;
   }
 }
 
+/**
+ * DEBUG HELP
+ */
 export function isSmtpConfigured(): boolean {
-  return !!(resolveUser() && resolvePassword() && process.env.EMAIL_FROM?.trim());
+  return !!(resolveUser() && resolvePassword() && process.env.EMAIL_FROM);
 }
