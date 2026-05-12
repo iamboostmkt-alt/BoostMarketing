@@ -1,149 +1,99 @@
-import "server-only";
-import nodemailer, { type Transporter } from "nodemailer";
+﻿import nodemailer from "nodemailer";
 
-const isDev = process.env.NODE_ENV === "development";
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-/**
- * =========================
- * ENV VARIABLES REQUIRED
- * =========================
- * EMAIL_SERVER_HOST
- * EMAIL_SERVER_PORT
- * EMAIL_SERVER_USER
- * EMAIL_SERVER_PASSWORD
- * EMAIL_FROM
- */
-
-function logSmtpCheck() {
-  console.log("SMTP CHECK:", {
-    host: process.env.EMAIL_SERVER_HOST,
-    port: process.env.EMAIL_SERVER_PORT,
-    user: process.env.EMAIL_SERVER_USER,
-    pass: process.env.EMAIL_SERVER_PASSWORD ? "OK" : "MISSING",
-    from: process.env.EMAIL_FROM,
-  });
-}
-
-logSmtpCheck();
-
-function resolveHost(): string {
-  return process.env.EMAIL_SERVER_HOST?.trim() || "smtp.gmail.com";
-}
-
-function resolvePort(): number {
-  const p = Number(process.env.EMAIL_SERVER_PORT);
-  return Number.isFinite(p) ? p : 587;
-}
-
-function resolveSecure(port: number): boolean {
-  const env = process.env.EMAIL_SERVER_SECURE;
-  if (env === "true") return true;
-  if (env === "false") return false;
-  return port === 465;
-}
-
-function resolveUser(): string | undefined {
-  return process.env.EMAIL_SERVER_USER?.trim();
-}
-
-function resolvePass(): string | undefined {
-  return process.env.EMAIL_SERVER_PASSWORD?.trim();
-}
-
-function resolveFrom(): string | undefined {
-  return process.env.EMAIL_FROM?.trim();
-}
-
-let transporter: Transporter | null = null;
-let cacheKey = "";
-
-function getTransporter(): Transporter | null {
-  const host = resolveHost();
-  const port = resolvePort();
-  const secure = resolveSecure(port);
-  const user = resolveUser();
-  const pass = resolvePass();
-
-  if (!host || !user || !pass) {
-    console.error("❌ SMTP missing config:", { host, user, pass: !!pass });
-    return null;
-  }
-
-  const key = `${host}:${port}:${secure}:${user}`;
-
-  if (transporter && cacheKey === key) return transporter;
-
-  transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: { user, pass },
-
-    pool: true,
-    maxConnections: 3,
-    maxMessages: 50,
-
-    requireTLS: true,
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
-
-  cacheKey = key;
-
-  return transporter;
-}
-
-/**
- * SEND EMAIL
- */
 export async function sendMail(
   to: string,
   subject: string,
   html: string
-): Promise<boolean> {
-  const from = resolveFrom();
-
-  if (!from) {
-    console.error("❌ EMAIL_FROM missing");
-    return false;
-  }
-
-  const transporter = getTransporter();
-
-  if (!transporter) {
-    console.error("❌ Transporter not created");
-    return false;
-  }
-
+): Promise<void> {
   try {
-    console.log("📨 Sending email to:", to);
-
-    const result = await transporter.sendMail({
-      from,
+    await transporter.sendMail({
+      from: `"Sistema de Tareas" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,
     });
-
-    console.log("✅ Email sent:", result.messageId);
-
-    return true;
-  } catch (err: any) {
-    console.error("🔥 SMTP ERROR FULL (DEBUG MODE):");
-    console.error(JSON.stringify(err, null, 2));
-
-    if (err?.code) console.error("CODE:", err.code);
-    if (err?.response) console.error("RESPONSE:", err.response);
-
-    // 🔥 IMPORTANTE: ahora sí vemos el error real arriba en API
-    throw err;
+    console.log(`[MAIL] Enviado a ${to}: ${subject}`);
+  } catch (err) {
+    console.error("[MAIL ERROR]", err);
   }
 }
 
-/**
- * CHECK CONFIG
- */
-export function isSmtpConfigured(): boolean {
-  return Boolean(resolveUser() && resolvePass() && resolveFrom());
+// ─── PLANTILLAS HTML ────────────────────────────────────────
+
+export function templateNuevaTarea(title: string, description: string, dueDate?: string) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:#4f46e5;padding:24px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">📌 Nueva Tarea Asignada</h1>
+    </div>
+    <div style="padding:24px">
+      <h2 style="color:#111827;margin-top:0">${title}</h2>
+      <p style="color:#6b7280">${description || "Sin descripción"}</p>
+      ${dueDate ? `<p style="color:#ef4444"><strong>⏰ Vence:</strong> ${dueDate}</p>` : ""}
+      <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/tasks"
+         style="display:inline-block;background:#4f46e5;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:16px">
+        Ver Tarea
+      </a>
+    </div>
+    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
+      Sistema de Gestión de Tareas
+    </div>
+  </div>`;
+}
+
+export function templateCambioEstado(title: string, oldStatus: string, newStatus: string) {
+  const colors: Record<string, string> = {
+    pending:     "#f59e0b",
+    in_progress: "#3b82f6",
+    completed:   "#10b981",
+    cancelled:   "#ef4444",
+  };
+  const color = colors[newStatus] || "#6b7280";
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:${color};padding:24px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">🔄 Estado Actualizado</h1>
+    </div>
+    <div style="padding:24px">
+      <h2 style="color:#111827;margin-top:0">${title}</h2>
+      <p style="color:#6b7280">
+        <strong>Antes:</strong> ${oldStatus} &nbsp;→&nbsp; <strong>Ahora:</strong>
+        <span style="color:${color};font-weight:bold">${newStatus}</span>
+      </p>
+      <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/tasks"
+         style="display:inline-block;background:${color};color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:16px">
+        Ver Tarea
+      </a>
+    </div>
+  </div>`;
+}
+
+export function templateRecordatorio(title: string, dueDate: string, horasRestantes: number) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:#f59e0b;padding:24px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">⏰ Recordatorio de Tarea</h1>
+    </div>
+    <div style="padding:24px">
+      <h2 style="color:#111827;margin-top:0">${title}</h2>
+      <p style="color:#ef4444;font-size:18px;font-weight:bold">
+        Vence en ${horasRestantes} hora${horasRestantes !== 1 ? "s" : ""}
+      </p>
+      <p style="color:#6b7280">Fecha límite: ${dueDate}</p>
+      <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/tasks"
+         style="display:inline-block;background:#f59e0b;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:16px">
+        Completar Tarea
+      </a>
+    </div>
+  </div>`;
 }
