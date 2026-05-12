@@ -1,7 +1,6 @@
 import { sendMail, isSmtpConfigured } from "@/lib/mailer";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -19,18 +18,21 @@ export async function GET() {
     );
 
     return Response.json({
-      ok: result,
-      message: result
-        ? "Email enviado correctamente"
-        : "Error enviando email",
+      ok: true,
+      message: "Email enviado correctamente",
+      result,
     });
-  } catch (error) {
-    console.error("🔥 TEST EMAIL ERROR:", error);
+
+  } catch (error: any) {
+    console.error("🔥 TEST EMAIL REAL ERROR:");
+    console.error(error); // 👈 CLAVE
 
     return Response.json(
       {
         ok: false,
-        error: "Error interno SMTP",
+        error: error?.message || "Error SMTP desconocido",
+        code: error?.code,
+        response: error?.response,
       },
       { status: 500 }
     );
