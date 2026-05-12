@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+﻿import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
@@ -40,7 +40,7 @@ export function templateNuevaTarea(title: string, description: string, dueDate?:
       <h2 style="color:#111827;margin-top:0">${title}</h2>
       <p style="color:#6b7280">${description || "Sin descripción"}</p>
       ${dueDate ? `<p style="color:#ef4444"><strong>⏰ Vence:</strong> ${dueDate}</p>` : ""}
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://boostmarketingboost.com"}/tasks"
+      <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/tasks"
          style="display:inline-block;background:#4f46e5;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:16px">
         Ver Tarea
       </a>
@@ -70,7 +70,7 @@ export function templateCambioEstado(title: string, oldStatus: string, newStatus
         <strong>Antes:</strong> ${oldStatus} &nbsp;→&nbsp; <strong>Ahora:</strong>
         <span style="color:${color};font-weight:bold">${newStatus}</span>
       </p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://boostmarketingboost.com"}/tasks"
+      <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/tasks"
          style="display:inline-block;background:${color};color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:16px">
         Ver Tarea
       </a>
@@ -90,7 +90,7 @@ export function templateRecordatorio(title: string, dueDate: string, horasRestan
         Vence en ${horasRestantes} hora${horasRestantes !== 1 ? "s" : ""}
       </p>
       <p style="color:#6b7280">Fecha límite: ${dueDate}</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://boostmarketingboost.com"}/tasks"
+      <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/tasks"
          style="display:inline-block;background:#f59e0b;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:16px">
         Completar Tarea
       </a>
@@ -123,7 +123,7 @@ export function templateBienvenida(name: string) {
           <li>Colaborar con tu equipo</li>
         </ul>
       </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/dashboard"
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard"
          style="display:inline-block;background:#4f46e5;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;margin-top:8px">
         Ir al Dashboard
       </a>
@@ -147,7 +147,7 @@ export function templateNuevoComentario(taskTitle: string, authorName: string, c
         <p style="margin:0 0 8px;color:#0369a1;font-weight:600;font-size:14px">${authorName} comentó:</p>
         <p style="margin:0;color:#374151">${comment}</p>
       </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/tasks"
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
          style="display:inline-block;background:#0ea5e9;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
         Ver Comentario
       </a>
@@ -171,7 +171,7 @@ export function templateTareaCompletada(taskTitle: string, completedBy: string) 
         <span style="font-size:48px">✅</span>
         <p style="color:#065f46;font-weight:600;margin:8px 0 0">¡Excelente trabajo!</p>
       </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/tasks"
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
          style="display:inline-block;background:#10b981;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
         Ver Tareas
       </a>
@@ -192,7 +192,7 @@ export function templateTareaVencida(taskTitle: string, dueDate: string) {
         <p style="color:#dc2626;margin:0;font-weight:600">⚠️ Esta tarea venció el ${dueDate}</p>
         <p style="color:#6b7280;margin:8px 0 0;font-size:14px">Por favor actualiza el estado o contacta a tu manager.</p>
       </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/tasks"
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
          style="display:inline-block;background:#ef4444;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
         Ver Tarea
       </a>
@@ -255,7 +255,7 @@ export function templateResumenSemanal(
         </thead>
         <tbody>${filas}</tbody>
       </table>` : ''}
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/tasks"
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
          style="display:inline-block;background:#4f46e5;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;margin-top:20px">
         Ver todas mis tareas
       </a>
@@ -354,7 +354,7 @@ export function templateNuevaCita(
         <p style="margin:0 0 6px;color:#374151"><strong>📅 Fecha:</strong> ${date}</p>
         ${notes ? `<p style="margin:8px 0 0;color:#6b7280"><strong>📝 Notas:</strong> ${notes}</p>` : ''}
       </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/dashboard/admin"
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/admin"
          style="display:inline-block;background:#f59e0b;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
         Ver en Dashboard
       </a>
@@ -375,7 +375,7 @@ export function templateCitaCancelada(clientName: string, date: string) {
         Lamentamos informarte que tu cita del <strong>${date}</strong> ha sido cancelada.
       </p>
       <p style="color:#6b7280">Por favor contáctanos para reagendar.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}"
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}"
          style="display:inline-block;background:#ef4444;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
         Reagendar
       </a>
@@ -414,7 +414,7 @@ export function templateTareaEditada(
         </thead>
         <tbody>${filas}</tbody>
       </table>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/tasks"
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
          style="display:inline-block;background:#6366f1;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:20px">
         Ver Tarea
       </a>

@@ -55,17 +55,13 @@ export async function PATCH(req: NextRequest) {
 
     const userId = (session.user as any).id;
     const body = await req.json();
-    const { name, image, color, removeImage } = body;
+    const { name, image, color } = body;
 
     // Build update data with only provided fields
     const updateData: Record<string, unknown> = {};
     if (name !== undefined) updateData.name = name;
+    if (image !== undefined) updateData.image = image;
     if (color !== undefined) updateData.color = color;
-    if (removeImage === true) {
-      updateData.image = null;
-    } else if (image !== undefined) {
-      updateData.image = image;
-    }
 
     const user = await db.user.update({
       where: { id: userId },

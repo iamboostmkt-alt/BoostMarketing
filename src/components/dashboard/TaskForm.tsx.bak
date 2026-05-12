@@ -259,7 +259,7 @@ export default function TaskForm({
           {/* Start date — inline calendar */}
           <div className="space-y-2">
             <Label className="text-white/70 text-sm">
-              Fecha inicio <span className="text-white/30 text-[10px]">(opcional)</span>
+              Fecha inicio <span className="text-red-400">*</span>
             </Label>
             {dateBtn('Seleccionar fecha de inicio', startDate, toggleStart)}
             {startOpen && (
