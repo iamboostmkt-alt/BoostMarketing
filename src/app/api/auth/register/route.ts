@@ -1,3 +1,4 @@
+﻿import { sendMail, templateBienvenida } from "@/lib/mailer";
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
@@ -8,13 +9,13 @@ const isDev = process.env.NODE_ENV === 'development';
 
 export async function POST(req: NextRequest) {
   try {
-    // ── Parse body ────────────────────────────────────────────────────────────
+    // â”€â”€ Parse body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let body: unknown;
     try {
       body = await req.json();
     } catch {
       return NextResponse.json(
-        { success: false, error: 'El cuerpo de la solicitud no es JSON válido' },
+        { success: false, error: 'El cuerpo de la solicitud no es JSON vÃ¡lido' },
         { status: 400 }
       );
     }
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
       password?: unknown;
     };
 
-    // ── Validate fields ───────────────────────────────────────────────────────
+    // â”€â”€ Validate fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (!name || typeof name !== 'string' || !name.trim()) {
       return NextResponse.json(
         { success: false, error: 'El nombre es requerido' },
@@ -42,14 +43,14 @@ export async function POST(req: NextRequest) {
 
     if (!password || typeof password !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'La contraseña es requerida' },
+        { success: false, error: 'La contraseÃ±a es requerida' },
         { status: 400 }
       );
     }
 
     if (password.length < 6) {
       return NextResponse.json(
-        { success: false, error: 'La contraseña debe tener al menos 6 caracteres' },
+        { success: false, error: 'La contraseÃ±a debe tener al menos 6 caracteres' },
         { status: 400 }
       );
     }
@@ -58,12 +59,12 @@ export async function POST(req: NextRequest) {
     const normalizedEmail = email.trim().toLowerCase();
     if (!emailRegex.test(normalizedEmail)) {
       return NextResponse.json(
-        { success: false, error: 'Email no válido' },
+        { success: false, error: 'Email no vÃ¡lido' },
         { status: 400 }
       );
     }
 
-    // ── Check for existing account ────────────────────────────────────────────
+    // â”€â”€ Check for existing account â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const existingUser = await db.user.findUnique({
       where: { email: normalizedEmail },
       select: { id: true },
@@ -76,10 +77,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Hash password ─────────────────────────────────────────────────────────
+    // â”€â”€ Hash password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-    // ── Create user ───────────────────────────────────────────────────────────
+    // â”€â”€ Create user â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (isDev) console.log('[register] creating user:', normalizedEmail);
 
     const user = await db.user.create({
@@ -95,29 +96,29 @@ export async function POST(req: NextRequest) {
 
     if (isDev) console.log('[register] user created:', user.id);
 
-    // ── Welcome notification (non-blocking — failure is acceptable) ───────────
+    // â”€â”€ Welcome notification (non-blocking â€” failure is acceptable) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     db.notification
       .create({
         data: {
           userId:  user.id,
-          message: '¡Bienvenido! Un administrador asignará tu rol en breve.',
+          message: 'Â¡Bienvenido! Un administrador asignarÃ¡ tu rol en breve.',
           type:    'welcome',
           link:    '/dashboard/waiting-assignment',
         },
       })
       .catch((err) => console.error('[register] notification error (non-fatal):', err));
 
-    // ── Welcome email (non-blocking) ──────────────────────────────────────────
+    // â”€â”€ Welcome email (non-blocking) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     sendEmail({
       to:      user.email,
-      subject: '¡Bienvenido a BoostMarketing!',
+      subject: 'Â¡Bienvenido a BoostMarketing!',
       html:    welcomeHtml({
         userName: user.name ?? 'Usuario',
         appUrl:   process.env.NEXTAUTH_URL ?? 'https://boostmarketing.vercel.app',
       }),
     }).catch(() => undefined);
 
-    // ── Activity log (non-blocking) ───────────────────────────────────────────
+    // â”€â”€ Activity log (non-blocking) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     db.activityLog
       .create({
         data: {
@@ -143,7 +144,7 @@ export async function POST(req: NextRequest) {
     );
 
   } catch (error) {
-    // ── Structured error logging ──────────────────────────────────────────────
+    // â”€â”€ Structured error logging â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const err = error as { code?: string; message?: string; meta?: unknown };
 
     console.error('[register] FATAL ERROR', {
@@ -152,7 +153,7 @@ export async function POST(req: NextRequest) {
       meta:    err.meta,
     });
 
-    // Prisma unique constraint (race condition — two requests with same email)
+    // Prisma unique constraint (race condition â€” two requests with same email)
     if (err.code === 'P2002') {
       return NextResponse.json(
         { success: false, error: 'Ya existe una cuenta con este email' },
@@ -179,3 +180,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

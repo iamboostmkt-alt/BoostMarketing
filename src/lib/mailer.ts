@@ -101,3 +101,167 @@ export function templateRecordatorio(title: string, dueDate: string, horasRestan
 export function isSmtpConfigured(): boolean {
   return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
 }
+
+// ─── BIENVENIDA ──────────────────────────────────────────────
+export function templateBienvenida(name: string) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:32px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:24px">👋 Bienvenido a BoostMarketing</h1>
+    </div>
+    <div style="padding:32px">
+      <h2 style="color:#111827">Hola, ${name}!</h2>
+      <p style="color:#6b7280;line-height:1.6">
+        Tu cuenta ha sido creada exitosamente. Ya puedes acceder a todas las herramientas
+        de gestión de tareas, clientes y proyectos.
+      </p>
+      <div style="background:#f9fafb;border-radius:8px;padding:16px;margin:20px 0">
+        <p style="margin:0;color:#374151;font-weight:600">¿Qué puedes hacer?</p>
+        <ul style="color:#6b7280;margin:8px 0;padding-left:20px">
+          <li>Gestionar tus tareas asignadas</li>
+          <li>Ver el estado de proyectos</li>
+          <li>Colaborar con tu equipo</li>
+        </ul>
+      </div>
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard"
+         style="display:inline-block;background:#4f46e5;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;margin-top:8px">
+        Ir al Dashboard
+      </a>
+    </div>
+    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
+      BoostMarketing © ${new Date().getFullYear()}
+    </div>
+  </div>`;
+}
+
+// ─── NUEVO COMENTARIO ────────────────────────────────────────
+export function templateNuevoComentario(taskTitle: string, authorName: string, comment: string) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:#0ea5e9;padding:24px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">💬 Nuevo comentario en tu tarea</h1>
+    </div>
+    <div style="padding:24px">
+      <p style="color:#6b7280;margin-top:0">Tarea: <strong style="color:#111827">${taskTitle}</strong></p>
+      <div style="background:#f0f9ff;border-left:4px solid #0ea5e9;padding:16px;border-radius:0 8px 8px 0;margin:16px 0">
+        <p style="margin:0 0 8px;color:#0369a1;font-weight:600;font-size:14px">${authorName} comentó:</p>
+        <p style="margin:0;color:#374151">${comment}</p>
+      </div>
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
+         style="display:inline-block;background:#0ea5e9;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
+        Ver Comentario
+      </a>
+    </div>
+  </div>`;
+}
+
+// ─── TAREA COMPLETADA ────────────────────────────────────────
+export function templateTareaCompletada(taskTitle: string, completedBy: string) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:#10b981;padding:24px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">🎉 Tarea Completada</h1>
+    </div>
+    <div style="padding:24px">
+      <h2 style="color:#111827;margin-top:0">${taskTitle}</h2>
+      <p style="color:#6b7280">
+        <strong>${completedBy}</strong> marcó esta tarea como completada.
+      </p>
+      <div style="background:#ecfdf5;border-radius:8px;padding:16px;text-align:center;margin:16px 0">
+        <span style="font-size:48px">✅</span>
+        <p style="color:#065f46;font-weight:600;margin:8px 0 0">¡Excelente trabajo!</p>
+      </div>
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
+         style="display:inline-block;background:#10b981;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
+        Ver Tareas
+      </a>
+    </div>
+  </div>`;
+}
+
+// ─── TAREA VENCIDA ───────────────────────────────────────────
+export function templateTareaVencida(taskTitle: string, dueDate: string) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:#ef4444;padding:24px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">🚨 Tarea Vencida</h1>
+    </div>
+    <div style="padding:24px">
+      <h2 style="color:#111827;margin-top:0">${taskTitle}</h2>
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:16px;margin:16px 0">
+        <p style="color:#dc2626;margin:0;font-weight:600">⚠️ Esta tarea venció el ${dueDate}</p>
+        <p style="color:#6b7280;margin:8px 0 0;font-size:14px">Por favor actualiza el estado o contacta a tu manager.</p>
+      </div>
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
+         style="display:inline-block;background:#ef4444;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
+        Ver Tarea
+      </a>
+    </div>
+  </div>`;
+}
+
+// ─── RESUMEN SEMANAL ─────────────────────────────────────────
+export function templateResumenSemanal(
+  name: string,
+  pendientes: number,
+  enProgreso: number,
+  completadas: number,
+  tareas: Array<{title: string, dueDate?: string, status: string}>
+) {
+  const filas = tareas.map(t => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#374151">${t.title}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px">${t.dueDate || "Sin fecha"}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6">
+        <span style="background:${t.status === 'completed' ? '#ecfdf5' : t.status === 'in_progress' ? '#eff6ff' : '#fefce8'};
+                     color:${t.status === 'completed' ? '#065f46' : t.status === 'in_progress' ? '#1d4ed8' : '#854d0e'};
+                     padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600">
+          ${t.status === 'completed' ? 'Completada' : t.status === 'in_progress' ? 'En progreso' : 'Pendiente'}
+        </span>
+      </td>
+    </tr>
+  `).join('');
+
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:32px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:22px">📊 Tu Resumen Semanal</h1>
+      <p style="color:#c7d2fe;margin:8px 0 0">Semana del ${new Date().toLocaleDateString('es-MX', {day:'numeric',month:'long'})}</p>
+    </div>
+    <div style="padding:24px">
+      <p style="color:#374151">Hola <strong>${name}</strong>, aquí está tu resumen de esta semana:</p>
+      <div style="display:flex;gap:12px;margin:20px 0">
+        <div style="flex:1;background:#fefce8;border-radius:8px;padding:16px;text-align:center">
+          <p style="font-size:28px;font-weight:700;color:#854d0e;margin:0">${pendientes}</p>
+          <p style="color:#92400e;margin:4px 0 0;font-size:13px">Pendientes</p>
+        </div>
+        <div style="flex:1;background:#eff6ff;border-radius:8px;padding:16px;text-align:center">
+          <p style="font-size:28px;font-weight:700;color:#1d4ed8;margin:0">${enProgreso}</p>
+          <p style="color:#1e40af;margin:4px 0 0;font-size:13px">En Progreso</p>
+        </div>
+        <div style="flex:1;background:#ecfdf5;border-radius:8px;padding:16px;text-align:center">
+          <p style="font-size:28px;font-weight:700;color:#065f46;margin:0">${completadas}</p>
+          <p style="color:#047857;margin:4px 0 0;font-size:13px">Completadas</p>
+        </div>
+      </div>
+      ${tareas.length > 0 ? `
+      <table style="width:100%;border-collapse:collapse;margin-top:16px">
+        <thead>
+          <tr style="background:#f9fafb">
+            <th style="padding:10px 12px;text-align:left;font-size:13px;color:#6b7280;font-weight:600">Tarea</th>
+            <th style="padding:10px 12px;text-align:left;font-size:13px;color:#6b7280;font-weight:600">Vence</th>
+            <th style="padding:10px 12px;text-align:left;font-size:13px;color:#6b7280;font-weight:600">Estado</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>` : ''}
+      <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/tasks"
+         style="display:inline-block;background:#4f46e5;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;margin-top:20px">
+        Ver todas mis tareas
+      </a>
+    </div>
+    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
+      BoostMarketing © ${new Date().getFullYear()} · Recibes esto porque tienes tareas asignadas
+    </div>
+  </div>`;
+}

@@ -1,3 +1,4 @@
+﻿import { sendMail, templateNuevoComentario } from "@/lib/mailer";
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -13,7 +14,7 @@ const userSelect = {
   },
 } as const;
 
-// ── Access check ───────────────────────────────────────────────────────────────
+// â”€â”€ Access check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Returns the activity if the caller is allowed to read/write its comments.
 // Throws a { status, error } object if not allowed.
 
@@ -54,7 +55,7 @@ async function resolveAccess(activityId: string, userId: string, role: string, e
   return { error: 'No autorizado.', status: 403, activity: null };
 }
 
-// ── GET ────────────────────────────────────────────────────────────────────────
+// â”€â”€ GET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function GET(req: NextRequest) {
   try {
@@ -85,7 +86,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// ── POST ───────────────────────────────────────────────────────────────────────
+// â”€â”€ POST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function POST(req: NextRequest) {
   try {
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
     const { activityId, message } = body;
 
     if (!activityId) return NextResponse.json({ error: 'activityId es requerido.' }, { status: 400 });
-    if (!message?.trim()) return NextResponse.json({ error: 'El mensaje no puede estar vacío.' }, { status: 400 });
+    if (!message?.trim()) return NextResponse.json({ error: 'El mensaje no puede estar vacÃ­o.' }, { status: 400 });
     if (message.trim().length > MAX_LEN) {
       return NextResponse.json({ error: `El mensaje no puede superar ${MAX_LEN} caracteres.` }, { status: 400 });
     }
@@ -149,7 +150,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── DELETE ─────────────────────────────────────────────────────────────────────
+// â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -177,3 +178,4 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Error interno.' }, { status: 500 });
   }
 }
+
