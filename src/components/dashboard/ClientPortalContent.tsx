@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
@@ -22,6 +22,7 @@ import {
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ChatContent from '@/components/dashboard/ChatContent';
+import ReportButton from '@/components/dashboard/ReportButton';
 import type { ClientPortalData, Task, TaskAssignee } from '@/lib/types';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -571,6 +572,18 @@ export default function ClientPortalContent() {
         )}
       </div>
 
+      {/* Report Button */}
+      {isManager && client && (
+        <div className="flex items-center justify-between flex-wrap gap-3 px-1">
+          <p className="text-sm font-medium text-white/50">Reporte mensual</p>
+          <ReportButton
+            clientId={client.id}
+            clientName={client.name}
+            clientEmail={client.email}
+          />
+        </div>
+      )}
+
       {/* Calendar */}
       <div className="glass-card rounded-2xl p-5">
         <PortalCalendar
@@ -628,3 +641,4 @@ export default function ClientPortalContent() {
     </div>
   );
 }
+
