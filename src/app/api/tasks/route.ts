@@ -67,11 +67,11 @@ export async function POST(req: NextRequest) {
     const dueDateStr = task.dueDate
       ? new Date(task.dueDate).toLocaleDateString("es-MX")
       : undefined;
-    sendMail(
+    await sendMail(
       task.assignedUser.email,
-      "📌 Nueva tarea asignada",
+      "Nueva tarea asignada",
       templateNuevaTarea(task.title, task.description ?? "", dueDateStr)
-    ).catch(console.error);
+    );
   }
 
   return NextResponse.json({ task }, { status: 201 });
@@ -169,4 +169,6 @@ export async function DELETE(req: NextRequest) {
   await db.task.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
+
+
 
