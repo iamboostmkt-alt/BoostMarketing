@@ -27,7 +27,7 @@ async function sendMagicLinkEmail(params: {
 
   const html = `<p>Inicia sesiÃ³n:</p><p><a href="${url}">${url}</a></p>`;
 
-  const sent = await sendMail(
+  await sendMail(
     identifier,
     "Tu enlace para iniciar sesiÃ³n",
     html
@@ -202,3 +202,4 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   debug: isDev,
 };
+
