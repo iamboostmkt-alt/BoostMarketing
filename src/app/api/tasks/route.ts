@@ -82,15 +82,20 @@ export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
+  const userId    = (session.user as any).id;
+  const userName  = (session.user as any).name || "Un usuario";
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const body      = await req.json();
-  const { id, title, description, status, priority, dueDate, assignedUserId, clientId } = body;
+  const { id, title, description, status, priority, dueDate, assignedUserId, assignedUserIds, clientId } = body;
 
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
   const existing = await db.task.findUnique({
     where:   { id },
-    include: { assignedUser: userInclude },
+    include: {
+      assignedUser:  userInclude,
+      assignedUsers: { include: { user: userInclude } },
+    },
   });
   if (!existing) return NextResponse.json({ error: "Tarea no encontrada" }, { status: 404 });
 
@@ -108,47 +113,106 @@ export async function PUT(req: NextRequest) {
     include: { assignedUser: userInclude, client: clientInclude },
   });
 
-  const email = task.assignedUser?.email;
-  if (!email) return NextResponse.json({ task });
+  // ── Notificaciones ───────────────────────────────────────────
 
-  // Email cambio de estado
+  // 1. Cambio de estado
   if (status && existing.status !== task.status) {
-    sendMail(
-      email,
-      "🔄 Estado de tarea actualizado",
-      templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending")
-    ).catch(console.error);
+    const notifyIds = new Set<string>();
+    if (task.assignedUser?.id) notifyIds.add(task.assignedUser.id);
+    existing.assignedUsers?.forEach((au: any) => notifyIds.add(au.user.id));
+    // No notificar al que hizo el cambio
+    notifyIds.delete(userId);
+
+    for (const uid of notifyIds) {
+      await db.notification.create({
+        data: {
+          userId:  uid,
+          message: `"${task.title}" cambio a estado: ${task.status}`,
+          type:    "task",
+          link:    "/dashboard/tasks",
+        },
+      });
+    }
+
+    if (task.assignedUser?.email) {
+      await sendMail(
+        task.assignedUser.email,
+        "Estado de tarea actualizado",
+        templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending")
+      );
+    }
     return NextResponse.json({ task });
   }
 
-  // Email edicion de campos
-  const cambios: Array<{campo: string, antes: string, despues: string}> = [];
+  // 2. Nuevo usuario asignado
+  if (isManager && assignedUserId && assignedUserId !== existing.assignedUserId) {
+    const newAssignee = await db.user.findUnique({
+      where: { id: assignedUserId },
+      select: { id: true, email: true, name: true },
+    });
+    if (newAssignee && newAssignee.id !== userId) {
+      await db.notification.create({
+        data: {
+          userId:  newAssignee.id,
+          message: `${userName} te asigno la tarea: "${task.title}"`,
+          type:    "task",
+          link:    "/dashboard/tasks",
+        },
+      });
+      if (newAssignee.email) {
+        sendMail(
+          newAssignee.email,
+          "Nueva tarea asignada",
+          templateNuevaTarea(task.title, task.description ?? "", task.dueDate
+            ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined)
+        ).catch(console.error);
+      }
+    }
+  }
 
+  // 3. Edicion de campos — notificar a asignados
+  const cambios: Array<{campo: string, antes: string, despues: string}> = [];
   if (title && title !== existing.title) {
-    cambios.push({ campo: "Título", antes: existing.title, despues: title });
+    cambios.push({ campo: "Titulo", antes: existing.title, despues: title });
   }
   if (priority && priority !== existing.priority) {
     cambios.push({ campo: "Prioridad", antes: existing.priority ?? "", despues: priority });
   }
   if (dueDate !== undefined) {
-    const antesStr = existing.dueDate
-      ? new Date(existing.dueDate).toLocaleDateString("es-MX") : "Sin fecha";
-    const despuesStr = dueDate
-      ? new Date(dueDate).toLocaleDateString("es-MX") : "Sin fecha";
+    const antesStr   = existing.dueDate ? new Date(existing.dueDate).toLocaleDateString("es-MX") : "Sin fecha";
+    const despuesStr = dueDate          ? new Date(dueDate).toLocaleDateString("es-MX")          : "Sin fecha";
     if (antesStr !== despuesStr) {
-      cambios.push({ campo: "Fecha límite", antes: antesStr, despues: despuesStr });
+      cambios.push({ campo: "Fecha limite", antes: antesStr, despues: despuesStr });
     }
   }
   if (description && description !== existing.description) {
-    cambios.push({ campo: "Descripción", antes: existing.description ?? "", despues: description });
+    cambios.push({ campo: "Descripcion", antes: existing.description ?? "", despues: description });
   }
 
   if (cambios.length > 0) {
-    sendMail(
-      email,
-      "✏️ Tu tarea fue editada",
-      templateTareaEditada(task.title, cambios)
-    ).catch(console.error);
+    // Notificacion en app a asignados
+    const notifyIds = new Set<string>();
+    if (task.assignedUser?.id && task.assignedUser.id !== userId) notifyIds.add(task.assignedUser.id);
+    existing.assignedUsers?.forEach((au: any) => { if (au.user.id !== userId) notifyIds.add(au.user.id); });
+
+    for (const uid of notifyIds) {
+      await db.notification.create({
+        data: {
+          userId:  uid,
+          message: `"${task.title}" fue editada por ${userName}`,
+          type:    "task",
+          link:    "/dashboard/tasks",
+        },
+      });
+    }
+
+    if (task.assignedUser?.email) {
+      sendMail(
+        task.assignedUser.email,
+        "Tu tarea fue editada",
+        templateTareaEditada(task.title, cambios)
+      ).catch(console.error);
+    }
   }
 
   return NextResponse.json({ task });
@@ -166,9 +230,12 @@ export async function DELETE(req: NextRequest) {
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
-  await db.task.delete({ where: { id } });
+  await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
+    await db.task.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
+
+
 
 
 
