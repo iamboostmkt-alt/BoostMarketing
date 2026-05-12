@@ -65,7 +65,7 @@ function getTransporter(): Transporter | null {
   const pass = resolvePass();
 
   if (!host || !user || !pass) {
-    console.error("❌ SMTP missing config");
+    console.error("❌ SMTP missing config:", { host, user, pass: !!pass });
     return null;
   }
 
@@ -77,10 +77,7 @@ function getTransporter(): Transporter | null {
     host,
     port,
     secure,
-    auth: {
-      user,
-      pass,
-    },
+    auth: { user, pass },
 
     pool: true,
     maxConnections: 3,
@@ -133,13 +130,14 @@ export async function sendMail(
 
     return true;
   } catch (err: any) {
-    console.error("🔥 SMTP ERROR FULL:");
-    console.error(err);
+    console.error("🔥 SMTP ERROR FULL (DEBUG MODE):");
+    console.error(JSON.stringify(err, null, 2));
 
     if (err?.code) console.error("CODE:", err.code);
     if (err?.response) console.error("RESPONSE:", err.response);
 
-    return false;
+    // 🔥 IMPORTANTE: ahora sí vemos el error real arriba en API
+    throw err;
   }
 }
 
