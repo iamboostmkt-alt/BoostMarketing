@@ -96,13 +96,13 @@ export async function POST(req: NextRequest) {
 
     // Obtener Admin y Ventas para notificar
     const notifyUsers = await db.user.findMany({
-      where: { role: { in: ['ADMIN', 'SALES_REP'] } },
+      where: { role: { in: ['ADMIN', 'SALES_REP', 'PROJECT_MANAGER'] } },
       select: { id: true, email: true },
     });
 
-    // Obtener primer Admin para crear la actividad en calendario
+    // Obtener primer Admin o PM para crear la actividad en calendario
     const firstAdmin = await db.user.findFirst({
-      where: { role: 'ADMIN' },
+      where: { role: { in: ['ADMIN', 'PROJECT_MANAGER'] } },
       select: { id: true },
     });
 
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
           userId:  u.id,
           message: `Nuevo prospecto: ${nameTrim} agendo videollamada para el ${dateStr}`,
           type:    'appointment',
-          link:    '/dashboard/crm',
+          link:    '/dashboard/calendar',
         })),
       });
 
