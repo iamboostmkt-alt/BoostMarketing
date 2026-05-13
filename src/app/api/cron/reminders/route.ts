@@ -1,22 +1,19 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sendMail, templateRecordatorio } from "@/lib/mailer";
+import { sendEmail, taskReminderHtml } from "@/lib/resend";
 
-// Llama a este endpoint con un cron externo (Vercel Cron, crontab, etc.)
-// Ejemplo Vercel: vercel.json -> { "crons": [{ "path": "/api/cron/reminders", "schedule": "0 * * * *" }] }
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  // Seguridad: solo llamadas con el secret correcto
   const secret = req.headers.get("x-cron-secret");
   if (secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const ahora  = new Date();
-  const en24h  = new Date(ahora.getTime() + 24 * 60 * 60 * 1000);
-  const en48h  = new Date(ahora.getTime() + 48 * 60 * 60 * 1000);
+  const ahora = new Date();
+  const en48h = new Date(ahora.getTime() + 48 * 60 * 60 * 1000);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? "https://boostmarketingboost.com";
 
-  // Tareas que vencen en las próximas 24h y no están completadas/canceladas
   const tareas = await db.task.findMany({
     where: {
       dueDate:  { gte: ahora, lte: en48h },
@@ -24,26 +21,44 @@ export async function GET(req: NextRequest) {
       assignedUser: { isNot: null },
     },
     include: {
-      assignedUser: { select: { email: true, name: true } },
+      assignedUser: { select: { id: true, email: true, name: true } },
     },
   });
 
+  // Agrupar por usuario - 1 email por usuario con todas sus tareas
+  const porUsuario = new Map<string, { email: string; name: string; tareas: typeof tareas }>();
+  for (const t of tareas) {
+    if (!t.assignedUser?.email) continue;
+    const uid = t.assignedUser.id;
+    if (!porUsuario.has(uid)) {
+      porUsuario.set(uid, { email: t.assignedUser.email, name: t.assignedUser.name ?? "Usuario", tareas: [] });
+    }
+    porUsuario.get(uid)!.tareas.push(t);
+  }
+
   let enviados = 0;
-
-  for (const tarea of tareas) {
-    if (!tarea.assignedUser?.email || !tarea.dueDate) continue;
-
-    const msRestantes   = tarea.dueDate.getTime() - ahora.getTime();
+  for (const [, usuario] of porUsuario) {
+    // Tomar la tarea mas urgente para el email
+    const tarea = usuario.tareas[0];
+    if (!tarea.dueDate) continue;
+    const msRestantes = tarea.dueDate.getTime() - ahora.getTime();
     const horasRestantes = Math.round(msRestantes / (1000 * 60 * 60));
-    const dueDateStr     = tarea.dueDate.toLocaleDateString("es-MX", {
+    const dueDateStr = tarea.dueDate.toLocaleDateString("es-MX", {
       weekday: "long", year: "numeric", month: "long", day: "numeric",
     });
-
-    await sendMail(
-      tarea.assignedUser.email,
-      `⏰ Recordatorio: "${tarea.title}" vence pronto`,
-      templateRecordatorio(tarea.title, dueDateStr, horasRestantes)
-    );
+    const extra = usuario.tareas.length > 1 ? ` (+${usuario.tareas.length - 1} mas por vencer)` : "";
+    await sendEmail({
+      to: usuario.email,
+      subject: `⏰ ${usuario.tareas.length} tarea${usuario.tareas.length > 1 ? "s" : ""} por vencer - BoostMarketing`,
+      html: taskReminderHtml({
+        userName: usuario.name,
+        taskTitle: tarea.title + extra,
+        dueDate: dueDateStr,
+        status: tarea.status ?? "pending",
+        priority: tarea.priority ?? "medium",
+        appUrl,
+      }),
+    });
     enviados++;
   }
 
@@ -51,6 +66,6 @@ export async function GET(req: NextRequest) {
     ok: true,
     timestamp: ahora.toISOString(),
     tareasRevisadas: tareas.length,
-    emailsEnviados:  enviados,
+    emailsEnviados: enviados,
   });
 }
