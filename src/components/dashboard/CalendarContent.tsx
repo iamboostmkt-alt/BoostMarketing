@@ -420,7 +420,7 @@ function DayModal({
                         onClick={async () => {
                           if (!confirm(`¿Eliminar videollamada con ${apt.name}?`)) return;
                           await onDeleteAppointment(apt.id);
-                          onClose();
+
                         }}
                         className="shrink-0 p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
                         title="Eliminar">
@@ -578,13 +578,18 @@ export default function CalendarContent() {
     setDayModalOpen(true);
   }
  
-  const dayTasks = useMemo(
-    () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDay)),
-    [tasks, selectedDay]
-  );
- 
-  const total = dayTasks.length;
-  const capitalizedLabel = dayLabel(selectedDay);
+      const dayTasks = useMemo(
+        () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDay)),
+        [tasks, selectedDay]
+      );
+
+      const dayAppointments = useMemo(
+        () => appointments.filter((a) => isSameDay(new Date(a.date), selectedDay)),
+        [appointments, selectedDay]
+      );
+
+      const total = dayTasks.length + dayAppointments.length;
+      const capitalizedLabel = dayLabel(selectedDay);
  
   if (loading) {
     return (
@@ -718,6 +723,52 @@ export default function CalendarContent() {
               </div>
             )}
  
+
+                {dayAppointments.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
+                      <Video className="w-3 h-3" />
+                      Videollamadas ({dayAppointments.length})
+                    </div>
+                    {dayAppointments.map((apt) => (
+                      <div key={apt.id} className="bg-green-500/[0.06] border border-green-500/20 rounded-lg p-3 group relative">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2 flex-1 min-w-0">
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 bg-green-500/20 text-green-300">
+                              {apt.status === "confirmed" ? "Confirmada" : apt.status === "cancelled" ? "Cancelada" : "Pendiente"}
+                            </span>
+                            <p className="text-xs font-medium text-white/80 truncate">{apt.name}</p>
+                          </div>
+                          {isManager && (
+                            <div className="flex gap-1 shrink-0">
+                              <button type="button"
+                                onClick={() => { setEditingAppointment(apt); setApptEditOpen(true); }}
+                                className="p-1 rounded text-white/20 hover:text-green-400 hover:bg-green-500/10 transition-colors">
+                                <Pencil className="w-3 h-3" />
+                              </button>
+                              <button type="button"
+                                onClick={async () => {
+                                  if (!confirm("¿Eliminar esta videollamada?")) return;
+                                  await handleDeleteAppointment(apt.id);
+                                }}
+                                className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <span className="text-[10px] text-white/30">{apt.email}</span>
+                          <div className="flex items-center gap-1 text-[10px] text-white/25">
+                            <Clock className="w-2.5 h-2.5" />
+                            {format(new Date(apt.date), "HH:mm")}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
             {total === 0 && (
               <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center">
