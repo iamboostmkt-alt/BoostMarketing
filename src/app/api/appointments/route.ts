@@ -39,10 +39,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'La fecha debe ser en el futuro.' }, { status: 400 });
     }
 
+    const emailNorm = email.trim().toLowerCase();
+    const nameTrim  = name.trim();
+
+    // Crear appointment
     const appointment = await db.appointment.create({
       data: {
-        name:   name.trim(),
-        email:  email.trim().toLowerCase(),
+        name:   nameTrim,
+        email:  emailNorm,
         phone:  (phone ?? '').trim(),
         date:   parsedDate,
         notes:  (notes ?? '').trim(),
@@ -55,95 +59,101 @@ export async function POST(req: NextRequest) {
       day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
 
-    const emailNorm = appointment.email;
-
-    // Buscar o crear usuario
-    let targetUser = await db.user.findUnique({ where: { email: emailNorm } });
-    if (!targetUser) {
-      targetUser = await db.user.create({
+    // Buscar o crear User como PROSPECT (bloqueado del portal por middleware)
+    let prospectUser = await db.user.findUnique({ where: { email: emailNorm } });
+    if (!prospectUser) {
+      prospectUser = await db.user.create({
         data: {
-          name:            appointment.name,
+          name:            nameTrim,
           email:           emailNorm,
           role:            'CLIENT',
           lifecycleStatus: 'PROSPECT',
           password:        null,
         },
       });
-    } else if (!targetUser.lifecycleStatus) {
-      // Si existe pero no tiene lifecycleStatus, actualizarlo
+    } else {
+      // Si existe, marcar como PROSPECT para bloquearlo del portal
       await db.user.update({
-        where: { id: targetUser.id },
-        data: { lifecycleStatus: 'PROSPECT' },
+        where: { id: prospectUser.id },
+        data:  { lifecycleStatus: 'PROSPECT' },
       });
     }
 
-    // Crear cliente en CRM si no existe
-    const existingClient = await db.client.findFirst({
-      where: { email: emailNorm },
-    });
-
+    // Crear entrada en CRM con status 'lead' si no existe
+    const existingClient = await db.client.findFirst({ where: { email: emailNorm } });
     if (!existingClient) {
       await db.client.create({
         data: {
-          userId:  targetUser.id,
-          name:    appointment.name,
-          email:   emailNorm,
-          phone:   appointment.phone || '',
-          status:  'lead',
+          userId: prospectUser.id,
+          name:   nameTrim,
+          email:  emailNorm,
+          phone:  (phone ?? '').trim(),
+          status: 'lead',
           company: '',
         },
       });
     }
 
-    // Obtener managers y admins
-    const managers = await db.user.findMany({
-      where: { role: { in: ['ADMIN', 'PROJECT_MANAGER'] } },
+    // Obtener Admin y Ventas para notificar
+    const notifyUsers = await db.user.findMany({
+      where: { role: { in: ['ADMIN', 'SALES_REP'] } },
       select: { id: true, email: true },
     });
 
-    // Crear actividad en calendario para managers
-    if (managers.length > 0) {
-      const firstManager = managers[0];
-      await db.activity.create({
-        data: {
-          title:          `Videollamada con ${name}`,
-          description:    notes || `Cita agendada via web. Email: ${email}`,
-          status:         'pending',
-          priority:       'high',
-          startDate:      parsedDate,
-          endDate:        new Date(parsedDate.getTime() + 60 * 60 * 1000),
-          createdByUserId: firstManager.id,
-          assignedUserId:  firstManager.id,
-        },
-      });
+    // Obtener primer Admin para crear la actividad en calendario
+    const firstAdmin = await db.user.findFirst({
+      where: { role: 'ADMIN' },
+      select: { id: true },
+    });
 
-      // Notificaciones
+    // Crear actividad en calendario
+    if (firstAdmin) {
+      try {
+        await db.activity.create({
+          data: {
+            title:           `Videollamada con ${nameTrim} (Prospecto)`,
+            description:     notes?.trim() || `Cita agendada via web. Email: ${emailNorm} | Tel: ${(phone ?? '').trim()}`,
+            status:          'pending',
+            priority:        'high',
+            startDate:       parsedDate,
+            endDate:         new Date(parsedDate.getTime() + 60 * 60 * 1000),
+            createdByUserId: firstAdmin.id,
+            assignedUserId:  firstAdmin.id,
+          },
+        });
+      } catch (actErr) {
+        console.error('[appointments] Error creando actividad:', actErr);
+      }
+    }
+
+    // Notificaciones a Admin y Ventas
+    if (notifyUsers.length > 0) {
       await db.notification.createMany({
-        data: managers.map((m) => ({
-          userId:  m.id,
-          message: `Nueva videollamada agendada por ${name} para el ${dateStr}`,
+        data: notifyUsers.map((u) => ({
+          userId:  u.id,
+          message: `Nuevo prospecto: ${nameTrim} agendo videollamada para el ${dateStr}`,
           type:    'appointment',
-          link:    '/dashboard/admin',
+          link:    '/dashboard/crm',
         })),
       });
 
-      // Emails a managers
-      for (const manager of managers) {
-        if (manager.email) {
+      // Emails a Admin y Ventas
+      for (const u of notifyUsers) {
+        if (u.email) {
           sendMail(
-            manager.email,
-            `Nueva cita: ${name}`,
-            templateNuevaCita(name, email, dateStr, notes)
+            u.email,
+            `Nuevo prospecto: ${nameTrim}`,
+            templateNuevaCita(nameTrim, emailNorm, dateStr, notes)
           ).catch(console.error);
         }
       }
     }
 
-    // Email confirmacion al cliente
+    // Email confirmacion al prospecto
     sendMail(
-      appointment.email,
+      emailNorm,
       'Tu videollamada fue agendada - BoostMarketing',
-      templateVideollamadaConfirmada(name, dateStr)
+      templateVideollamadaConfirmada(nameTrim, dateStr)
     ).catch(console.error);
 
     return NextResponse.json({ appointment }, { status: 201 });
