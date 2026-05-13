@@ -527,7 +527,7 @@ export default function CalendarContent() {
           const meetRes = await fetch('/api/meetings');
           if (meetRes.ok) {
             const meetData = await meetRes.json();
-            setAppointments(prev => { const apptIds = new Set((appData?.appointments || []).map((a: any) => a.id)); const prevAppts = prev.filter(a => !(a as any).email?.endsWith('@internal.boost')); return [...prevAppts, ...(meetData.meetings || [])]; });
+            setAppointments(prev => { const prevAppts = prev.filter((a: any) => !a.email?.endsWith('@internal.boost')); return [...prevAppts, ...(meetData.meetings || [])]; });
           }
         }
       }
