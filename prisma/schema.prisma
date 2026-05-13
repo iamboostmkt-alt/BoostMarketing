@@ -28,19 +28,19 @@ enum UserLifecycleStatus {
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String  @map("user_id")
+  id                String @id @default(cuid())
+  userId            String @map("user_id")
   type              String
   provider          String
-  providerAccountId String  @map("provider_account_id")
+  providerAccountId String @map("provider_account_id")
 
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
+  refresh_token String?
+  access_token  String?
+  expires_at    Int?
+  token_type    String?
+  scope         String?
+  id_token      String?
+  session_state String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -60,42 +60,42 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime? @map("email_verified")
-  password      String?
-  image         String?
-  role          Role      @default(UNASSIGNED)
+  id              String               @id @default(cuid())
+  name            String?
+  email           String               @unique
+  emailVerified   DateTime?            @map("email_verified")
+  password        String?
+  image           String?
+  role            Role                 @default(UNASSIGNED)
   /// PROSPECT: lead desde videollamada; ACTIVE/INACTIVE: gestión admin
   lifecycleStatus UserLifecycleStatus? @map("lifecycle_status")
-  color         String    @default("#7c3aed")
-  active        Boolean   @default(true)
-  customRoleId  String?   @map("custom_role_id")
+  color           String               @default("#7c3aed")
+  active          Boolean              @default(true)
+  customRoleId    String?              @map("custom_role_id")
 
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  accounts           Account[]
-  sessions           Session[]
-  notifications      Notification[]
-  activityLogs       ActivityLog[]
-  tasks               Task[]                @relation("OwnedTasks")
-  assignedTasks       Task[]                @relation("AssignedTasks")
-  contacts            Contact[]
-  clients             Client[]
-  assignedActivities  Activity[]            @relation("AssignedActivities")
-  createdActivities   Activity[]            @relation("CreatedActivities")
-  activityAssignments ActivityAssignedUser[]
-  taskAssignments     TaskAssignedUser[]
-  clientAssignments   ClientAssignedUser[]
-  customRole         CustomRole?    @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
-  chatMessages       ChatMessage[]
-  chatReactions      ChatReaction[]
-  managedClients     Client[]           @relation("ClientManager")
-  activityComments         ActivityComment[]
-  appointmentAssignments   AppointmentAssignedUser[]
-  presence           UserPresence?
+  accounts               Account[]
+  sessions               Session[]
+  notifications          Notification[]
+  activityLogs           ActivityLog[]
+  tasks                  Task[]                    @relation("OwnedTasks")
+  assignedTasks          Task[]                    @relation("AssignedTasks")
+  contacts               Contact[]
+  clients                Client[]
+  assignedActivities     Activity[]                @relation("AssignedActivities")
+  createdActivities      Activity[]                @relation("CreatedActivities")
+  activityAssignments    ActivityAssignedUser[]
+  taskAssignments        TaskAssignedUser[]
+  clientAssignments      ClientAssignedUser[]
+  customRole             CustomRole?               @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
+  chatMessages           ChatMessage[]
+  chatReactions          ChatReaction[]
+  managedClients         Client[]                  @relation("ClientManager")
+  activityComments       ActivityComment[]
+  appointmentAssignments AppointmentAssignedUser[]
+  presence               UserPresence?
 
   @@map("users")
 }
@@ -149,9 +149,9 @@ model Task {
   startDate      DateTime? @map("start_date")
   dueDate        DateTime? @map("due_date")
 
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  deletedAt      DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   user          User               @relation("OwnedTasks", fields: [userId], references: [id], onDelete: Cascade)
   assignedUser  User?              @relation("AssignedTasks", fields: [assignedUserId], references: [id], onDelete: SetNull)
@@ -162,15 +162,15 @@ model Task {
 }
 
 model Contact {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  name      String
-  email     String
-  company   String   @default("")
-  phone     String   @default("")
-  status    String   @default("lead")
-  value     Float    @default(0)
-  notes     String   @default("")
+  id      String @id @default(cuid())
+  userId  String @map("user_id")
+  name    String
+  email   String
+  company String @default("")
+  phone   String @default("")
+  status  String @default("lead")
+  value   Float  @default(0)
+  notes   String @default("")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -181,14 +181,14 @@ model Contact {
 }
 
 model Client {
-  id                String   @id @default(cuid())
-  userId            String   @map("user_id")
-  assignedManagerId String?  @map("assigned_manager_id")
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  assignedManagerId String? @map("assigned_manager_id")
   name              String
   email             String
-  company           String   @default("")
-  phone             String   @default("")
-  status            String   @default("active")
+  company           String  @default("")
+  phone             String  @default("")
+  status            String  @default("active")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -203,26 +203,26 @@ model Client {
 }
 
 model Activity {
-  id              String    @id @default(cuid())
-  title           String
-  description     String    @default("")
-  status          String    @default("pending")
-  priority        String    @default("medium")
-  startDate       DateTime  @map("start_date")
-  endDate         DateTime? @map("end_date")
+  id          String    @id @default(cuid())
+  title       String
+  description String    @default("")
+  status      String    @default("pending")
+  priority    String    @default("medium")
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
 
-  assignedUserId  String?   @map("assigned_user_id")
-  createdByUserId String    @map("created_by_user_id")
-  clientId        String?   @map("client_id")
+  assignedUserId  String? @map("assigned_user_id")
+  createdByUserId String  @map("created_by_user_id")
+  clientId        String? @map("client_id")
 
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  assignedUser    User?                  @relation("AssignedActivities", fields: [assignedUserId], references: [id], onDelete: SetNull)
-  createdBy       User                   @relation("CreatedActivities", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  client          Client?                @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  comments        ActivityComment[]
-  assignedUsers   ActivityAssignedUser[]
+  assignedUser  User?                  @relation("AssignedActivities", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  createdBy     User                   @relation("CreatedActivities", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  client        Client?                @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  comments      ActivityComment[]
+  assignedUsers ActivityAssignedUser[]
 
   @@map("activities")
 }
@@ -239,13 +239,14 @@ model ActivityAssignedUser {
   @@unique([activityId, userId])
   @@map("activity_assigned_users")
 }
+
 model CustomRole {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String @id @default(cuid())
+  name        String @unique
   label       String
-  color       String   @default("#7c3aed")
-  description String   @default("")
-  permissions Json     @default("{}")
+  color       String @default("#7c3aed")
+  description String @default("")
+  permissions Json   @default("{}")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -318,14 +319,15 @@ model PasswordResetToken {
 }
 
 model Appointment {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String   @default("")
-  date      DateTime
-  notes     String   @default("")
-  status    String   @default("pending")
-  meetUrl   String   @default("") @map("meet_url")
+  id     String   @id @default(cuid())
+  name   String
+  email  String
+  phone  String   @default("")
+  date   DateTime
+  notes  String   @default("")
+  status String   @default("pending")
+
+  meetUrl String? @map("meet_url")
 
   assignedUsers AppointmentAssignedUser[]
 
@@ -430,3 +432,18 @@ model TeamMember {
   @@map("team_members")
 }
 
+model AppointmentAssignedUser {
+  id String @id @default(uuid())
+
+  appointmentId String
+  userId        String
+
+  createdAt DateTime @default(now())
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([appointmentId, userId])
+  @@map("appointment_assigned_users")
+}

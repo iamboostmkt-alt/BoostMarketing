@@ -15,6 +15,10 @@ import {
   User,
   Briefcase,
   Filter,
+  Video,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -62,6 +66,12 @@ export default function DashboardPage() {
   const [teamUsers,        setTeamUsers]         = useState<AdminUser[]>([]);
   const [teamUserFilter,   setTeamUserFilter]    = useState('all');
   const [teamStatusFilter, setTeamStatusFilter]  = useState('all');
+
+  // Meetings state (admin/PM only)
+  const [meetings,        setMeetings]        = useState<Appointment[]>([]);
+  const [loadingMeetings, setLoadingMeetings] = useState(true);
+  const [meetingsOpen,    setMeetingsOpen]    = useState(true);
+  const [deletingMeeting, setDeletingMeeting] = useState<string | null>(null);
 
   const userName  = session?.user?.name || 'Usuario';
   const userRole  = session?.user?.role as string | undefined;
