@@ -146,7 +146,8 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
     try {
       const method = appointment ? 'PATCH' : 'POST';
       const body: Record<string, unknown> = {
-        name, email, phone, date, notes, status, meetUrl, assignedUserIds,
+      const dateISO = date ? new Date(date).toISOString() : date;
+        name, email, phone, date: dateISO, notes, status, meetUrl, assignedUserIds,
       };
       if (appointment) body.id = appointment.id;
       const apiUrl = appointment ? '/api/appointments' : '/api/meetings';

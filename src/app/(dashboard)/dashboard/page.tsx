@@ -122,10 +122,14 @@ export default function DashboardPage() {
   // Fetch upcoming meetings
   useEffect(() => {
     if (!isManager) { setLoadingMeetings(false); return; }
-    fetch('/api/appointments?upcoming=1')
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d) setMeetings(d.appointments || []); })
-      .finally(() => setLoadingMeetings(false));
+    Promise.all([
+      fetch('/api/appointments?upcoming=1').then(r => r.ok ? r.json() : null),
+      fetch('/api/meetings').then(r => r.ok ? r.json() : null),
+    ]).then(([appts, meets]) => {
+      const a = appts?.appointments || [];
+      const m = (meets?.meetings || []).filter((x: any) => new Date(x.date) >= new Date());
+      setMeetings([...a, ...m].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+    }).finally(() => setLoadingMeetings(false));
   }, [isManager]);
 
   async function handleDeleteMeeting(id: string) {
