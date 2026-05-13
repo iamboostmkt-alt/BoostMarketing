@@ -14,11 +14,16 @@ import type { Appointment } from '@/lib/types';
 
 interface TeamUser { id: string; name: string | null; email: string; color: string; image: string | null; }
 
-const statusMap: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pending:   { label: 'Pendiente',  color: 'bg-amber-500/15 text-amber-300',  icon: <Clock        className='h-3 w-3' /> },
-  confirmed: { label: 'Confirmada', color: 'bg-green-500/15 text-green-300',  icon: <CheckCircle2 className='h-3 w-3' /> },
-  cancelled: { label: 'Cancelada',  color: 'bg-red-500/15 text-red-300',      icon: <XCircle      className='h-3 w-3' /> },
+const statusMap: Record<string, { label: string; color: string; iconName: string }> = {
+  pending:   { label: 'Pendiente',  color: 'bg-amber-500/15 text-amber-300',  iconName: 'clock' },
+  confirmed: { label: 'Confirmada', color: 'bg-green-500/15 text-green-300',  iconName: 'check' },
+  cancelled: { label: 'Cancelada',  color: 'bg-red-500/15 text-red-300',      iconName: 'x' },
 };
+function StatusIcon({ name }: { name: string }) {
+  if (name === 'clock') return <Clock className='h-3 w-3' />;
+  if (name === 'check') return <CheckCircle2 className='h-3 w-3' />;
+  return <XCircle className='h-3 w-3' />;
+}
 
 function initials(name: string | null, email: string) {
   return (name || email).split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
