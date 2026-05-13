@@ -231,6 +231,23 @@ export async function PATCH(req: NextRequest) {
       day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
 
+    // Notificar a usuarios recien asignados
+    if (assignedUserIds !== undefined && (assignedUserIds as string[]).length > 0) {
+      const assignedTeam = await db.user.findMany({
+        where: { id: { in: assignedUserIds as string[] } },
+        select: { id: true, email: true, name: true },
+      });
+      for (const u of assignedTeam) {
+        if (u.email) {
+          sendMail(
+            u.email,
+            'Nueva videollamada asignada - BoostMarketing',
+            templateVideollamadaConfirmada(existing.name, dateStr, existing.meetUrl || '')
+          ).catch(console.error);
+        }
+      }
+    }
+
     if (status === 'confirmed') {
       sendMail(
         existing.email,
