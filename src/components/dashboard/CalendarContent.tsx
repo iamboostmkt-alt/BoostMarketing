@@ -222,7 +222,7 @@ export default function CalendarContent() {
         const data = await tasksRes.json();
         setTasks(data.tasks || data || []);
         // Cargar activities
-        const actRes = await fetch('/api/activity');
+        const actRes = await fetch('/api/activities');
         if (actRes.ok) {
           const actData = await actRes.json();
           setActivities(actData.activities || []);
