@@ -404,7 +404,7 @@ export default function ChatContent({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8rem)] md:h-[calc(100vh-10rem)] md:max-h-[780px] w-full">
+    <div className="flex flex-col h-[calc(100dvh-8rem)] md:h-[calc(100vh-10rem)] md:max-h-[780px] w-full overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 pb-3 md:pb-4 border-b border-white/[0.06] mb-3 md:mb-4 shrink-0 px-1">
         <div className="w-9 h-9 rounded-xl bg-brand/20 flex items-center justify-center">
@@ -517,7 +517,7 @@ export default function ChatContent({
       </div>
 
       {/* Input + @mention dropdown */}
-      <form onSubmit={handleSend} className="mt-3 md:mt-4 shrink-0 pb-[env(safe-area-inset-bottom)]">
+          <form onSubmit={handleSend} className="mt-2 md:mt-4 shrink-0 pb-[env(safe-area-inset-bottom)]">
         <div className="relative">
           {/* @mention dropdown */}
           {mentionQuery !== null && filteredMentions.length > 0 && (
@@ -528,7 +528,7 @@ export default function ChatContent({
             />
           )}
 
-          <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 md:px-4 py-2 focus-within:border-brand/50 transition-colors w-full">
+          <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 focus-within:border-brand/50 transition-colors">
             {/* Emoji insert button */}
             <div className="relative" ref={emojiRef}>
               <button
@@ -562,7 +562,7 @@ export default function ChatContent({
             </button>
           </div>
         </div>
-        <p className="text-[11px] text-white/20 mt-1.5 ml-1 flex items-center gap-3">
+            <p className="hidden md:flex text-[11px] text-white/20 mt-1.5 ml-1 items-center gap-3">
           <span>Enter para enviar</span>
           <span className="flex items-center gap-1">
             <Users className="w-2.5 h-2.5" />
