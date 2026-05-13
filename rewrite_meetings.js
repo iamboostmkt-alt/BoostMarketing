@@ -1,4 +1,5 @@
-'use client';
+const fs = require('fs');
+const content = `'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
@@ -21,7 +22,7 @@ const STATUS: Record<string, { label: string; color: string }> = {
 };
 
 function ini(name: string | null, email: string) {
-  return (name || email).split(/[s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+  return (name || email).split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
 interface MeetDialogProps {
@@ -313,3 +314,7 @@ export default function MeetingsTab() {
     </div>
   );
 }
+`;
+fs.writeFileSync('src/components/dashboard/MeetingsTab.tsx', content, 'utf8');
+console.log('Written:', content.split('\n').length, 'lines');
+console.log('DONE');
