@@ -88,7 +88,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved }: Appo
         const d = new Date(appointment.date);
         const pad = (n: number) => String(n).padStart(2, '0');
         setDate(
-          \-\-\T\:\
+          `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
         );
       } catch { setDate(''); }
       setNotes((appointment as any).notes ?? '');
@@ -241,7 +241,7 @@ function DayModal({
                 {isToday(day) ? 'Hoy · ' : ''}{label}
               </DialogTitle>
               <p className="text-xs text-white/40 mt-0.5">
-                {total === 0 ? 'Sin elementos' : \ elemento\}
+                    {total === 0 ? 'Sin elementos' : `${total} elemento${total !== 1 ? 's' : ''}`}
               </p>
             </div>
           </div>
@@ -262,7 +262,7 @@ function DayModal({
                     <button type="button" className="flex-1 text-left"
                       onClick={() => { onEditTask(task); onClose(); }}>
                       <div className="flex items-start gap-2.5">
-                        <span className={inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 \}>
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${statusColors[task.status] || 'status-pending'}`}>
                           {statusLabels[task.status] || task.status}
                         </span>
                         <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
@@ -273,7 +273,7 @@ function DayModal({
                         <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-3 mt-2.5 pl-1 flex-wrap">
-                        <span className={	ext-[10px] font-medium \}>
+                        <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>
                           {priorityLabels[task.priority] || task.priority}
                         </span>
                         {task.dueDate && (
@@ -289,7 +289,7 @@ function DayModal({
                       <button type="button"
                         onClick={async (e) => {
                           e.stopPropagation();
-                          if (!confirm(¿Eliminar "\"?)) return;
+                          if (!confirm(`¿Eliminar "${task.title}"?`)) return;
                           await onDeleteTask(task.id);
                         }}
                         className="shrink-0 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
@@ -322,7 +322,7 @@ function DayModal({
                     {isManager && (
                       <button type="button"
                         onClick={async () => {
-                          if (!confirm(¿Eliminar videollamada con \?)) return;
+                          if (!confirm(`¿Eliminar videollamada con ${apt.name}?`)) return;
                           await onDeleteAppointment(apt.id);
                           onClose();
                         }}
@@ -450,7 +450,7 @@ export default function CalendarContent() {
  
   const handleDeleteTask = async (id: string) => {
     try {
-      const res = await fetch(/api/tasks?id=\, { method: 'DELETE' });
+      const res = await fetch(`/api/tasks?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
         setTasks((prev) => prev.filter((t) => t.id !== id));
         bus.emit(RT_EVENTS.TASK_DELETED, { id });
@@ -465,7 +465,7 @@ export default function CalendarContent() {
  
   const handleDeleteAppointment = async (id: string) => {
     try {
-      const res = await fetch(/api/appointments?id=\, { method: 'DELETE' });
+      const res = await fetch(`/api/appointments?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
         setAppointments((prev) => prev.filter((a) => a.id !== id));
         toast.success('Videollamada eliminada');
@@ -583,7 +583,7 @@ export default function CalendarContent() {
                     <button type="button" className="w-full text-left"
                       onClick={() => { setEditingTask(task); setTaskFormOpen(true); }}>
                       <div className="flex items-start gap-2.5">
-                        <span className={inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 \}>
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${statusColors[task.status] || 'status-pending'}`}>
                           {statusLabels[task.status] || task.status}
                         </span>
                         <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
@@ -594,7 +594,7 @@ export default function CalendarContent() {
                         <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-3 mt-2.5 pl-1">
-                        <span className={	ext-[10px] font-medium \}>
+                        <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>
                           {priorityLabels[task.priority] || task.priority}
                         </span>
                         {task.dueDate && (
@@ -609,7 +609,7 @@ export default function CalendarContent() {
                     {isManager && (
                       <button type="button"
                         onClick={async () => {
-                          if (!confirm(¿Eliminar "\"?)) return;
+                          if (!confirm(`¿Eliminar "${task.title}"?`)) return;
                           await handleDeleteTask(task.id);
                         }}
                         className="absolute top-2 right-2 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
