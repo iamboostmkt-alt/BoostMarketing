@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { bus, RT_EVENTS } from "@/lib/event-bus";
@@ -152,7 +152,7 @@ export function NotificationsDropdown() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 bg-[#15151c] border-white/[0.06] text-white" align="end">
+      <DropdownMenuContent className="w-80 bg-[#15151c] border-white/[0.06] text-white z-[9999]" align="end" side="bottom" sideOffset={8} collisionPadding={{ top: 80, right: 16, bottom: 16, left: 16 }}>
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notificaciones</span>
           <div className="flex gap-1">
