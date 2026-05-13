@@ -1,10 +1,10 @@
 'use client';
-
+ 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import {
-  CalendarDays, Plus, CheckSquare, Clock, Video, Pencil, Trash2 as Trash,
-  Sparkles, Trash2,
+  CalendarDays, Plus, CheckSquare, Clock, Video, Pencil, Trash2,
+  Sparkles,
 } from 'lucide-react';
 import {
   format, isSameDay, isToday,
@@ -17,10 +17,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-
+ 
 import TaskForm from '@/components/dashboard/TaskForm';
 import CalendarGrid from '@/components/dashboard/CalendarGrid';
 import type { Task, Activity, Appointment } from '@/lib/types';
@@ -28,9 +30,9 @@ import { bus, RT_EVENTS } from '@/lib/event-bus';
 import {
   statusColors, statusLabels, priorityColors, priorityLabels,
 } from '@/lib/theme-maps';
-
+ 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
-
+ 
 function dayLabel(day: Date): string {
   try {
     const label = format(day, "EEEE, d 'de' MMMM", { locale: es });
@@ -39,7 +41,7 @@ function dayLabel(day: Date): string {
     return day.toLocaleDateString('es-MX', { weekday: 'long', month: 'long', day: 'numeric' });
   }
 }
-
+ 
 function getTaskAvatar(u: { name: string | null; email: string; color: string; image?: string | null } | undefined) {
   if (!u) return null;
   return (
@@ -59,29 +61,162 @@ function getTaskAvatar(u: { name: string | null; email: string; color: string; i
     </div>
   );
 }
-
-interface DayModalProps {
+ 
+// ── AppointmentEditModal ─────────────────────────────────────────
+interface AppointmentEditModalProps {
   open:         boolean;
-  onClose:      () => void;
-  day:          Date;
-  tasks:        Task[];
-  activities:    Activity[];
-  appointments:  Appointment[];
-  isManager:     boolean;
-  onEditTask:   (t: Task) => void;
-  onNewTask:    () => void;
-  onDeleteTask: (id: string) => Promise<void>;
+  onOpenChange: (v: boolean) => void;
+  appointment:  Appointment | null;
+  onSaved:      () => void;
 }
-
+ 
+function AppointmentEditModal({ open, onOpenChange, appointment, onSaved }: AppointmentEditModalProps) {
+  const [name,   setName]   = useState('');
+  const [email,  setEmail]  = useState('');
+  const [phone,  setPhone]  = useState('');
+  const [date,   setDate]   = useState('');
+  const [notes,  setNotes]  = useState('');
+  const [status, setStatus] = useState('pending');
+  const [saving, setSaving] = useState(false);
+ 
+  useEffect(() => {
+    if (open && appointment) {
+      setName(appointment.name ?? '');
+      setEmail(appointment.email ?? '');
+      setPhone((appointment as any).phone ?? '');
+      try {
+        const d = new Date(appointment.date);
+        const pad = (n: number) => String(n).padStart(2, '0');
+        setDate(
+          \-\-\T\:\
+        );
+      } catch { setDate(''); }
+      setNotes((appointment as any).notes ?? '');
+      setStatus(appointment.status ?? 'pending');
+    } else if (open && !appointment) {
+      setName(''); setEmail(''); setPhone(''); setDate(''); setNotes(''); setStatus('pending');
+    }
+  }, [open, appointment]);
+ 
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const method = appointment ? 'PATCH' : 'POST';
+      const body: Record<string, unknown> = { name, email, phone, date, notes, status };
+      if (appointment) body.id = appointment.id;
+      const res = await fetch('/api/appointments', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al guardar');
+      toast.success(appointment ? 'Videollamada actualizada' : 'Reunion agendada');
+      onSaved();
+      onOpenChange(false);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
+    } finally {
+      setSaving(false);
+    }
+  }
+ 
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-white">
+            <Video className="h-4 w-4 text-green-400" />
+            {appointment ? 'Editar Videollamada' : 'Agendar Reunion'}
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSave} className="space-y-4 mt-2">
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Nombre *</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} required
+              placeholder="Nombre del prospecto"
+              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Email *</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+              placeholder="email@ejemplo.com"
+              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Telefono</Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)}
+              placeholder="+52 55 0000 0000"
+              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Fecha y hora *</Label>
+            <Input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} required
+              className="bg-white/[0.04] border-white/[0.08] text-white focus-visible:ring-brand [color-scheme:dark]" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Estado</Label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand"
+            >
+              <option value="pending">Pendiente</option>
+              <option value="confirmed">Confirmada</option>
+              <option value="cancelled">Cancelada</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Notas</Label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none placeholder:text-white/25"
+              placeholder="Notas opcionales..."
+            />
+          </div>
+          <div className="flex gap-3 pt-1">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
+              className="flex-1 border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06]">
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saving}
+              className="flex-1 bg-brand hover:bg-brand-dark text-white">
+              {saving ? 'Guardando...' : appointment ? 'Guardar' : 'Agendar'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+ 
+// ── DayModal ─────────────────────────────────────────────────────
+interface DayModalProps {
+  open:                boolean;
+  onClose:             () => void;
+  day:                 Date;
+  tasks:               Task[];
+  activities:          Activity[];
+  appointments:        Appointment[];
+  isManager:           boolean;
+  onEditTask:          (t: Task) => void;
+  onNewTask:           () => void;
+  onDeleteTask:        (id: string) => Promise<void>;
+  onEditAppointment:   (apt: Appointment) => void;
+  onDeleteAppointment: (id: string) => Promise<void>;
+}
+ 
 function DayModal({
   open, onClose, day, tasks, activities, appointments, isManager,
-  onEditTask, onNewTask, onDeleteTask,
+  onEditTask, onNewTask, onDeleteTask, onEditAppointment, onDeleteAppointment,
 }: DayModalProps) {
   const dayTasks = useMemo(
     () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day)),
     [tasks, day]
   );
-
   const dayActivities = useMemo(
     () => activities.filter((a) => a.startDate && isSameDay(new Date(a.startDate), day)),
     [activities, day]
@@ -92,29 +227,28 @@ function DayModal({
   );
   const total = dayTasks.length + dayActivities.length + dayAppointments.length;
   const label = dayLabel(day);
-
+ 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="bg-[#15151c] border-white/[0.06] text-white max-w-lg w-full max-h-[85vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-brand/15 flex items-center justify-center shrink-0">
-                <CalendarDays className="w-4 h-4 text-brand-light" />
-              </div>
-              <div>
-                <DialogTitle className="text-base font-semibold text-white leading-tight">
-                  {isToday(day) ? 'Hoy · ' : ''}{label}
-                </DialogTitle>
-                <p className="text-xs text-white/40 mt-0.5">
-                  {total === 0 ? 'Sin elementos' : `${total} elemento${total !== 1 ? 's' : ''}`}
-                </p>
-              </div>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-brand/15 flex items-center justify-center shrink-0">
+              <CalendarDays className="w-4 h-4 text-brand-light" />
+            </div>
+            <div>
+              <DialogTitle className="text-base font-semibold text-white leading-tight">
+                {isToday(day) ? 'Hoy · ' : ''}{label}
+              </DialogTitle>
+              <p className="text-xs text-white/40 mt-0.5">
+                {total === 0 ? 'Sin elementos' : \ elemento\}
+              </p>
             </div>
           </div>
         </DialogHeader>
-
+ 
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
+          {/* Tareas */}
           {dayTasks.length > 0 && (
             <section className="space-y-2">
               <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
@@ -122,18 +256,13 @@ function DayModal({
                 Tareas ({dayTasks.length})
               </div>
               {dayTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="w-full text-left bg-white/[0.03] border border-white/[0.05] rounded-lg p-3.5 hover:border-white/[0.10] hover:bg-white/[0.05] transition-colors group"
-                >
+                <div key={task.id}
+                  className="w-full text-left bg-white/[0.03] border border-white/[0.05] rounded-lg p-3.5 hover:border-white/[0.10] hover:bg-white/[0.05] transition-colors group">
                   <div className="flex items-start gap-2.5">
-                    <button
-                      type="button"
-                      className="flex-1 text-left"
-                      onClick={() => { onEditTask(task); onClose(); }}
-                    >
+                    <button type="button" className="flex-1 text-left"
+                      onClick={() => { onEditTask(task); onClose(); }}>
                       <div className="flex items-start gap-2.5">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${statusColors[task.status] || 'status-pending'}`}>
+                        <span className={inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 \}>
                           {statusLabels[task.status] || task.status}
                         </span>
                         <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
@@ -144,7 +273,7 @@ function DayModal({
                         <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-3 mt-2.5 pl-1 flex-wrap">
-                        <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>
+                        <span className={	ext-[10px] font-medium \}>
                           {priorityLabels[task.priority] || task.priority}
                         </span>
                         {task.dueDate && (
@@ -157,16 +286,14 @@ function DayModal({
                       </div>
                     </button>
                     {isManager && (
-                      <button
-                        type="button"
+                      <button type="button"
                         onClick={async (e) => {
                           e.stopPropagation();
-                          if (!confirm(`¿Eliminar "${task.title}"?`)) return;
+                          if (!confirm(¿Eliminar "\"?)) return;
                           await onDeleteTask(task.id);
                         }}
                         className="shrink-0 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                        title="Eliminar tarea"
-                      >
+                        title="Eliminar tarea">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -175,21 +302,35 @@ function DayModal({
               ))}
             </section>
           )}
-
+ 
           {/* Videollamadas */}
           {dayAppointments.length > 0 && (
             <section className="space-y-2">
               <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
-                <Clock className="w-3 h-3" />
+                <Video className="w-3 h-3" />
                 Videollamadas ({dayAppointments.length})
               </div>
               {dayAppointments.map((apt) => (
-                <div key={apt.id} className="bg-green-500/[0.06] border border-green-500/20 rounded-lg p-3.5">
-                  <div className="flex items-start gap-2.5">
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 bg-green-500/20 text-green-300">
-                      {apt.status === 'confirmed' ? 'Confirmada' : apt.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
-                    </span>
-                    <p className="text-sm font-medium text-white/90">{apt.name}</p>
+                <div key={apt.id} className="bg-green-500/[0.06] border border-green-500/20 rounded-lg p-3.5 group">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 bg-green-500/20 text-green-300">
+                        {apt.status === 'confirmed' ? 'Confirmada' : apt.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
+                      </span>
+                      <p className="text-sm font-medium text-white/90 truncate">{apt.name}</p>
+                    </div>
+                    {isManager && (
+                      <button type="button"
+                        onClick={async () => {
+                          if (!confirm(¿Eliminar videollamada con \?)) return;
+                          await onDeleteAppointment(apt.id);
+                          onClose();
+                        }}
+                        className="shrink-0 p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                        title="Eliminar">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 mt-2 pl-1 flex-wrap">
                     <span className="text-[10px] text-white/25">{apt.email}</span>
@@ -198,21 +339,15 @@ function DayModal({
                       {format(new Date(apt.date), 'HH:mm', { locale: es })}
                     </div>
                   </div>
-                  {apt.notes && <p className="text-xs text-white/35 mt-2">{apt.notes}</p>}
+                  {(apt as any).notes && (
+                    <p className="text-xs text-white/35 mt-2">{(apt as any).notes}</p>
+                  )}
                   {isManager && (
-                    <div className="flex gap-2 mt-2">
+                    <div className="mt-2.5">
                       <button type="button"
-                        onClick={() => { onClose(); }}
-                        className="text-[10px] text-white/30 hover:text-white/70 flex items-center gap-1 transition-colors">
+                        onClick={() => { onEditAppointment(apt); onClose(); }}
+                        className="text-[10px] text-green-400/60 hover:text-green-400 flex items-center gap-1 transition-colors">
                         <Pencil className="w-3 h-3" /> Editar
-                      </button>
-                      <button type="button"
-                        onClick={async () => {
-                          if (!confirm('Eliminar esta videollamada?')) return;
-                          await fetch('/api/appointments?id=' + apt.id, { method: 'DELETE' });
-                        }}
-                        className="text-[10px] text-red-400/60 hover:text-red-400 flex items-center gap-1 transition-colors">
-                        <Trash className="w-3 h-3" /> Eliminar
                       </button>
                     </div>
                   )}
@@ -220,7 +355,7 @@ function DayModal({
               ))}
             </section>
           )}
-
+ 
           {total === 0 && (
             <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
               <div className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center">
@@ -233,22 +368,17 @@ function DayModal({
             </div>
           )}
         </div>
-
+ 
         <div className="border-t border-white/[0.06] px-5 py-3 flex gap-2 shrink-0">
-          <Button
-            size="sm"
+          <Button size="sm"
             className="bg-brand hover:bg-brand-dark text-white gap-1.5 text-xs h-8"
-            onClick={() => { onNewTask(); onClose(); }}
-          >
+            onClick={() => { onNewTask(); onClose(); }}>
             <Plus className="w-3.5 h-3.5" />
             Tarea
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
+          <Button size="sm" variant="ghost"
             className="text-white/30 hover:text-white hover:bg-white/[0.06] text-xs h-8 ml-auto"
-            onClick={onClose}
-          >
+            onClick={onClose}>
             Cerrar
           </Button>
         </div>
@@ -256,22 +386,23 @@ function DayModal({
     </Dialog>
   );
 }
-
+ 
+// ── CalendarContent (main) ───────────────────────────────────────
 export default function CalendarContent() {
   const { data: session } = useSession();
   const [tasks,        setTasks]        = useState<Task[]>([]);
-  const [activities,    setActivities]   = useState<Activity[]>([]);
-  const [appointments,  setAppointments] = useState<Appointment[]>([]);
+  const [activities,   setActivities]   = useState<Activity[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [selectedDay,  setSelectedDay]  = useState<Date>(new Date());
   const [dayModalOpen, setDayModalOpen] = useState(false);
   const [taskFormOpen, setTaskFormOpen] = useState(false);
   const [editingTask,        setEditingTask]        = useState<Task | null>(null);
-  const [appointmentModalOpen,  setAppointmentModalOpen] = useState(false);
-  const [editingAppointment,    setEditingAppointment]   = useState<Appointment | null>(null);
-
+  const [apptEditOpen,       setApptEditOpen]       = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+ 
   const isManager = MANAGER_ROLES.includes(session?.user?.role ?? '');
-
+ 
   const fetchData = useCallback(async () => {
     const tasksUrl = isManager ? '/api/tasks?scope=all' : '/api/tasks';
     try {
@@ -279,13 +410,11 @@ export default function CalendarContent() {
       if (tasksRes.ok) {
         const data = await tasksRes.json();
         setTasks(data.tasks || data || []);
-        // Cargar activities
         const actRes = await fetch('/api/activities');
         if (actRes.ok) {
           const actData = await actRes.json();
           setActivities(actData.activities || []);
         }
-        // Cargar videollamadas
         const appRes = await fetch('/api/appointments');
         if (appRes.ok) {
           const appData = await appRes.json();
@@ -296,9 +425,9 @@ export default function CalendarContent() {
       setLoading(false);
     }
   }, [isManager]);
-
+ 
   useEffect(() => { fetchData(); }, [fetchData]);
-
+ 
   useEffect(() => {
     const unsubs = [
       bus.on<{ task: Task }>(RT_EVENTS.TASK_CREATED, ({ task }) => {
@@ -313,15 +442,15 @@ export default function CalendarContent() {
     ];
     return () => unsubs.forEach((u) => u());
   }, []);
-
+ 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 12_000);
     return () => clearTimeout(t);
   }, []);
-
+ 
   const handleDeleteTask = async (id: string) => {
     try {
-      const res = await fetch(`/api/tasks?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(/api/tasks?id=\, { method: 'DELETE' });
       if (res.ok) {
         setTasks((prev) => prev.filter((t) => t.id !== id));
         bus.emit(RT_EVENTS.TASK_DELETED, { id });
@@ -333,20 +462,34 @@ export default function CalendarContent() {
       toast.error('Error de red');
     }
   };
-
+ 
+  const handleDeleteAppointment = async (id: string) => {
+    try {
+      const res = await fetch(/api/appointments?id=\, { method: 'DELETE' });
+      if (res.ok) {
+        setAppointments((prev) => prev.filter((a) => a.id !== id));
+        toast.success('Videollamada eliminada');
+      } else {
+        toast.error('Error al eliminar');
+      }
+    } catch {
+      toast.error('Error de red');
+    }
+  };
+ 
   function handleSelectDay(day: Date) {
     setSelectedDay(day);
     setDayModalOpen(true);
   }
-
+ 
   const dayTasks = useMemo(
     () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDay)),
     [tasks, selectedDay]
   );
-
+ 
   const total = dayTasks.length;
   const capitalizedLabel = dayLabel(selectedDay);
-
+ 
   if (loading) {
     return (
       <div className="space-y-6">
@@ -367,7 +510,7 @@ export default function CalendarContent() {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -378,6 +521,15 @@ export default function CalendarContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {isManager && (
+            <Button
+              onClick={() => { setEditingAppointment(null); setApptEditOpen(true); }}
+              variant="outline"
+              className="border-green-500/30 text-green-400 hover:bg-green-500/10 hover:text-green-300 gap-2">
+              <Video className="w-4 h-4" />
+              Agendar Reunion
+            </Button>
+          )}
           <Button
             onClick={() => { setEditingTask(null); setTaskFormOpen(true); }}
             className="bg-brand hover:bg-brand-dark text-white gap-2">
@@ -386,7 +538,7 @@ export default function CalendarContent() {
           </Button>
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6">
           <CalendarGrid
@@ -397,7 +549,7 @@ export default function CalendarContent() {
             onSelectDay={handleSelectDay}
           />
         </div>
-
+ 
         <div className="bg-[#15151c] border border-white/[0.06] rounded-xl overflow-hidden flex flex-col">
           <div className="flex items-center justify-between p-4 md:p-5 border-b border-white/[0.06] shrink-0">
             <div className="flex items-center gap-2">
@@ -417,7 +569,7 @@ export default function CalendarContent() {
               </span>
             )}
           </div>
-
+ 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-5 space-y-4">
             {dayTasks.length > 0 && (
               <div className="space-y-2">
@@ -431,7 +583,7 @@ export default function CalendarContent() {
                     <button type="button" className="w-full text-left"
                       onClick={() => { setEditingTask(task); setTaskFormOpen(true); }}>
                       <div className="flex items-start gap-2.5">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${statusColors[task.status] || 'status-pending'}`}>
+                        <span className={inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 \}>
                           {statusLabels[task.status] || task.status}
                         </span>
                         <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
@@ -442,7 +594,7 @@ export default function CalendarContent() {
                         <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-3 mt-2.5 pl-1">
-                        <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>
+                        <span className={	ext-[10px] font-medium \}>
                           {priorityLabels[task.priority] || task.priority}
                         </span>
                         {task.dueDate && (
@@ -455,15 +607,13 @@ export default function CalendarContent() {
                       </div>
                     </button>
                     {isManager && (
-                      <button
-                        type="button"
+                      <button type="button"
                         onClick={async () => {
-                          if (!confirm(`¿Eliminar "${task.title}"?`)) return;
+                          if (!confirm(¿Eliminar "\"?)) return;
                           await handleDeleteTask(task.id);
                         }}
                         className="absolute top-2 right-2 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                        title="Eliminar tarea"
-                      >
+                        title="Eliminar tarea">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -471,7 +621,7 @@ export default function CalendarContent() {
                 ))}
               </div>
             )}
-
+ 
             {total === 0 && (
               <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center">
@@ -496,7 +646,7 @@ export default function CalendarContent() {
           </div>
         </div>
       </div>
-
+ 
       <DayModal
         open={dayModalOpen}
         onClose={() => setDayModalOpen(false)}
@@ -508,14 +658,23 @@ export default function CalendarContent() {
         onEditTask={(t) => { setEditingTask(t); setTaskFormOpen(true); }}
         onNewTask={() => { setEditingTask(null); setTaskFormOpen(true); }}
         onDeleteTask={handleDeleteTask}
+        onEditAppointment={(apt) => { setEditingAppointment(apt); setApptEditOpen(true); }}
+        onDeleteAppointment={handleDeleteAppointment}
       />
-
+ 
       <TaskForm
         open={taskFormOpen}
         onOpenChange={setTaskFormOpen}
         task={editingTask}
         isManager={isManager}
         onSuccess={fetchData}
+      />
+ 
+      <AppointmentEditModal
+        open={apptEditOpen}
+        onOpenChange={setApptEditOpen}
+        appointment={editingAppointment}
+        onSaved={fetchData}
       />
     </div>
   );

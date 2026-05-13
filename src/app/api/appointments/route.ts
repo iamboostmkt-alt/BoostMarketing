@@ -169,18 +169,29 @@ export async function PATCH(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
 
     const body = await req.json();
-    const { id, status, meetUrl } = body;
+    const { id, status, meetUrl, name, email, phone, date, notes } = body;
 
-    if (!id || !status) {
-      return NextResponse.json({ error: 'id y status son requeridos.' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'id es requerido.' }, { status: 400 });
     }
 
     const existing = await db.appointment.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: 'Cita no encontrada.' }, { status: 404 });
 
+    const updateData: Record<string, unknown> = {};
+    if (status  !== undefined) updateData.status  = status;
+    if (meetUrl !== undefined) updateData.meetUrl = meetUrl;
+    if (name    !== undefined) updateData.name    = (name as string).trim();
+    if (email   !== undefined) updateData.email   = (email as string).trim().toLowerCase();
+    if (phone   !== undefined) updateData.phone   = (phone as string).trim();
+    if (notes   !== undefined) updateData.notes   = (notes as string).trim();
+    if (date    !== undefined) {
+      const parsed = new Date(date as string);
+      if (!isNaN(parsed.getTime())) updateData.date = parsed;
+    }
     const appointment = await db.appointment.update({
       where: { id },
-      data: { status, ...(meetUrl && { meetUrl }) },
+      data: updateData,
     });
 
     const dateStr = existing.date.toLocaleDateString('es-MX', {
