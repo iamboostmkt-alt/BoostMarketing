@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 
 import TaskForm from '@/components/dashboard/TaskForm';
 import CalendarGrid from '@/components/dashboard/CalendarGrid';
-import type { Task, Activity } from '@/lib/types';
+import type { Task, Activity, Appointment } from '@/lib/types';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
 import {
   statusColors, statusLabels, priorityColors, priorityLabels,
@@ -205,7 +205,8 @@ function DayModal({
 export default function CalendarContent() {
   const { data: session } = useSession();
   const [tasks,        setTasks]        = useState<Task[]>([]);
-  const [activities,   setActivities]   = useState<Activity[]>([]);
+  const [activities,    setActivities]   = useState<Activity[]>([]);
+  const [appointments,  setAppointments] = useState<Appointment[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [selectedDay,  setSelectedDay]  = useState<Date>(new Date());
   const [dayModalOpen, setDayModalOpen] = useState(false);

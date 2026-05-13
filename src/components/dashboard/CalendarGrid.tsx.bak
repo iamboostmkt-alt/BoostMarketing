@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { Task, Activity, Appointment } from '@/lib/types';
+import type { Task, Activity } from '@/lib/types';
 import {
   startOfMonth,
   endOfMonth,
@@ -22,11 +22,10 @@ import {
 } from 'date-fns';
 
 interface CalendarGridProps {
-  tasks:        Task[];
-  activities?:  Activity[];
-  appointments?: Appointment[];
-  selectedDay:  Date | null;
-  onSelectDay:  (day: Date) => void;
+  tasks:      Task[];
+  activities?: Activity[];
+  selectedDay: Date | null;
+  onSelectDay: (day: Date) => void;
 }
 
 const DAY_NAMES   = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
@@ -46,12 +45,6 @@ function getTasksForDay(tasks: Task[], day: Date): Task[] {
   return tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day));
 }
 
-function getAppointmentsForDay(appointments: Appointment[], day: Date): Appointment[] {
-  return appointments.filter((a) => {
-    try { return isSameDay(new Date(a.date), day); } catch { return false; }
-  });
-}
-
 function getActivitiesForDay(activities: Activity[], day: Date): Activity[] {
   return activities.filter((a) => {
     try {
@@ -66,8 +59,7 @@ function getActivitiesForDay(activities: Activity[], day: Date): Activity[] {
 
 export default function CalendarGrid({
   tasks,
-  activities   = [],
-  appointments = [],
+  activities = [],
   selectedDay,
   onSelectDay,
 }: CalendarGridProps) {
