@@ -27,7 +27,7 @@ async function requireManager() {
   return session;
 }
 
-// ── POST: crear cita publica (sin auth) ──────────────────────────
+// â”€â”€ POST: crear cita publica (sin auth) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -78,7 +78,9 @@ export async function POST(req: NextRequest) {
       select: { id: true },
     });
 
-    if (firstAdmin) {
+    const session = await getServerSession(authOptions);
+    const isPublic = !session?.user;
+    if (firstAdmin && isPublic) {
       const existingContact = await db.contact.findFirst({ where: { email: emailNorm } });
       if (!existingContact) {
         await db.contact.create({
@@ -151,7 +153,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── GET: listar citas (managers) ─────────────────────────────────
+// â”€â”€ GET: listar citas (managers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function GET(req: NextRequest) {
   try {
     const session = await requireManager();
@@ -178,7 +180,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// ── PATCH: editar cita ───────────────────────────────────────────
+// â”€â”€ PATCH: editar cita â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function PATCH(req: NextRequest) {
   try {
     const session = await requireManager();
@@ -271,7 +273,7 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// ── DELETE: eliminar cita ────────────────────────────────────────
+// â”€â”€ DELETE: eliminar cita â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function DELETE(req: NextRequest) {
   try {
     const session = await requireManager();
