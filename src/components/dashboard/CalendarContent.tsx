@@ -519,6 +519,11 @@ export default function CalendarContent() {
             const appData = await appRes.json();
             setAppointments(appData.appointments || []);
           }
+          const meetRes = await fetch('/api/meetings');
+          if (meetRes.ok) {
+            const meetData = await meetRes.json();
+            setAppointments(prev => [...prev, ...(meetData.meetings || [])]);
+          }
         }
       }
     } finally {
