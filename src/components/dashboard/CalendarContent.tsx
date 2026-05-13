@@ -176,6 +176,34 @@ function DayModal({
             </section>
           )}
 
+          {/* Videollamadas */}
+          {dayAppointments.length > 0 && (
+            <section className="space-y-2">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
+                <Clock className="w-3 h-3" />
+                Videollamadas ({dayAppointments.length})
+              </div>
+              {dayAppointments.map((apt) => (
+                <div key={apt.id} className="bg-green-500/[0.06] border border-green-500/20 rounded-lg p-3.5">
+                  <div className="flex items-start gap-2.5">
+                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 bg-green-500/20 text-green-300">
+                      {apt.status === 'confirmed' ? 'Confirmada' : apt.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
+                    </span>
+                    <p className="text-sm font-medium text-white/90">{apt.name}</p>
+                  </div>
+                  <div className="flex items-center gap-3 mt-2 pl-1 flex-wrap">
+                    <span className="text-[10px] text-white/25">{apt.email}</span>
+                    <div className="flex items-center gap-1 text-[10px] text-white/25">
+                      <Clock className="w-2.5 h-2.5" />
+                      {format(new Date(apt.date), 'HH:mm', { locale: es })}
+                    </div>
+                  </div>
+                  {apt.notes && <p className="text-xs text-white/35 mt-2">{apt.notes}</p>}
+                </div>
+              ))}
+            </section>
+          )}
+
           {total === 0 && (
             <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
               <div className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center">
