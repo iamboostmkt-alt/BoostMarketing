@@ -202,7 +202,7 @@ function DayModal({
                   {isManager && (
                     <div className="flex gap-2 mt-2">
                       <button type="button"
-                        onClick={() => { setEditingAppointment(apt as any); setAppointmentModalOpen(true); onClose(); }}
+                        onClick={() => { onClose(); }}
                         className="text-[10px] text-white/30 hover:text-white/70 flex items-center gap-1 transition-colors">
                         <Pencil className="w-3 h-3" /> Editar
                       </button>
