@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 
 import TaskForm from '@/components/dashboard/TaskForm';
 import CalendarGrid from '@/components/dashboard/CalendarGrid';
-import type { Task } from '@/lib/types';
+import type { Task, Activity } from '@/lib/types';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
 import {
   statusColors, statusLabels, priorityColors, priorityLabels,
@@ -205,6 +205,7 @@ function DayModal({
 export default function CalendarContent() {
   const { data: session } = useSession();
   const [tasks,        setTasks]        = useState<Task[]>([]);
+  const [activities,   setActivities]   = useState<Activity[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [selectedDay,  setSelectedDay]  = useState<Date>(new Date());
   const [dayModalOpen, setDayModalOpen] = useState(false);
@@ -220,6 +221,12 @@ export default function CalendarContent() {
       if (tasksRes.ok) {
         const data = await tasksRes.json();
         setTasks(data.tasks || data || []);
+        // Cargar activities
+        const actRes = await fetch('/api/activity');
+        if (actRes.ok) {
+          const actData = await actRes.json();
+          setActivities(actData.activities || []);
+        }
       }
     } finally {
       setLoading(false);
@@ -320,7 +327,7 @@ export default function CalendarContent() {
         <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6">
           <CalendarGrid
             tasks={tasks}
-            activities={[]}
+            activities={activities}
             selectedDay={selectedDay}
             onSelectDay={handleSelectDay}
           />
