@@ -63,6 +63,7 @@ import { getRoleLabel } from '@/lib/roles';
 import CMSContent from '@/components/dashboard/CMSContent';
 import CustomRoleDialog, { type CustomRole, ALL_PERMISSIONS } from '@/components/dashboard/CustomRoleDialog';
 import { statusColors, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
+import MeetingsTab from '@/components/dashboard/MeetingsTab';
 import type { Appointment, Task } from '@/lib/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -642,6 +643,9 @@ export default function AdminDashboardPage() {
               </TabsTrigger>
             </>
           )}
+              <TabsTrigger value="meetings" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+                <Calendar className="h-4 w-4" />Reuniones
+              </TabsTrigger>
           <TabsTrigger value="tasks" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
             <CheckSquare className="h-4 w-4" />Tareas
             {openTasks > 0 && (
@@ -945,6 +949,13 @@ export default function AdminDashboardPage() {
                 </table>
               </div>
             </div>
+          </TabsContent>
+        )}
+
+        {/* Reuniones tab */}
+        {isAdmin && (
+          <TabsContent value="meetings" className="mt-4">
+            <MeetingsTab />
           </TabsContent>
         )}
 

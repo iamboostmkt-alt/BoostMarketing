@@ -42,11 +42,35 @@ export default function SettingsPage() {
   const [name, setName] = useState('');
   const [selectedColor, setSelectedColor] = useState('#7c3aed');
 
+  async function handleChangePassword() {
+    if (newPassword !== confirmPassword) { toast.error('Las contraseñas no coinciden'); return; }
+    if (newPassword.length < 6) { toast.error('Mínimo 6 caracteres'); return; }
+    setChangingPassword(true);
+    try {
+      const res = await fetch('/api/user/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || 'Error al cambiar contraseña'); return; }
+      toast.success('Contraseña actualizada');
+      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+    } catch { toast.error('Error de red'); }
+    finally { setChangingPassword(false); }
+  }
+
   // Preferences state (visual only)
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
   const [weeklyReport, setWeeklyReport] = useState(true);
   const [language, setLanguage] = useState('es');
+
+  // Change password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -356,6 +380,32 @@ export default function SettingsPage() {
                       )}
                     </Button>
                   </div>
+                </div>
+              </div>
+            </div>
+            {/* Change Password */}
+            <div className="glass-card rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-5">
+                <svg className="w-5 h-5 text-brand-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                <h3 className="text-base font-semibold text-white">Cambiar contraseña</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-white/70">Contraseña actual</Label>
+                  <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="••••••••" className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-white/70">Nueva contraseña</Label>
+                  <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-white/70">Confirmar nueva contraseña</Label>
+                  <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repite la nueva contraseña" className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                </div>
+                <div className="pt-2">
+                  <Button onClick={handleChangePassword} disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword} className="bg-brand hover:bg-brand-dark text-white gap-2">
+                    {changingPassword ? (<><div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Guardando...</>) : (<><Save className="w-4 h-4" />Cambiar contraseña</>)}
+                  </Button>
                 </div>
               </div>
             </div>

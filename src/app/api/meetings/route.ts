@@ -1,0 +1,85 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
+
+const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
+
+const include = {
+  assignedUsers: { include: { user: { select: { id: true, name: true, email: true, color: true, image: true } } } },
+} as const;
+
+async function requireManager() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || !MANAGER_ROLES.includes(session.user.role as string)) return null;
+  return session;
+}
+
+export async function GET(req: NextRequest) {
+  const session = await requireManager();
+  if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  const { searchParams } = new URL(req.url);
+  const status = searchParams.get("status");
+  const where: Record<string, unknown> = { email: { contains: "@internal.boost" } };
+  if (status) where.status = status;
+  const meetings = await db.appointment.findMany({ where, orderBy: { date: "asc" }, include });
+  return NextResponse.json({ meetings });
+}
+
+export async function POST(req: NextRequest) {
+  const session = await requireManager();
+  if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  const { name, date, notes, meetUrl, assignedUserIds } = await req.json();
+  if (!name || !date) return NextResponse.json({ error: "Nombre y fecha requeridos." }, { status: 400 });
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return NextResponse.json({ error: "Fecha invalida." }, { status: 400 });
+  const meeting = await db.appointment.create({
+    data: {
+      name: name.trim(),
+      email: "internal@internal.boost",
+      phone: "",
+      date: parsed,
+      notes: (notes ?? "").trim(),
+      meetUrl: (meetUrl ?? "").trim(),
+      status: "pending",
+      ...(assignedUserIds?.length > 0 && {
+        assignedUsers: { create: (assignedUserIds as string[]).map((uid) => ({ userId: uid })) },
+      }),
+    },
+    include,
+  });
+  return NextResponse.json({ meeting }, { status: 201 });
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await requireManager();
+  if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  const { id, status, meetUrl, name, date, notes, assignedUserIds } = await req.json();
+  if (!id) return NextResponse.json({ error: "id requerido." }, { status: 400 });
+  const data: Record<string, unknown> = {};
+  if (status  !== undefined) data.status  = status;
+  if (meetUrl !== undefined) data.meetUrl = (meetUrl as string).trim();
+  if (name    !== undefined) data.name    = (name as string).trim();
+  if (notes   !== undefined) data.notes   = (notes as string).trim();
+  if (date    !== undefined) { const p = new Date(date as string); if (!isNaN(p.getTime())) data.date = p; }
+  if (assignedUserIds !== undefined) {
+    await db.appointmentAssignedUser.deleteMany({ where: { appointmentId: id } });
+    if ((assignedUserIds as string[]).length > 0) {
+      await db.appointmentAssignedUser.createMany({
+        data: (assignedUserIds as string[]).map((uid) => ({ appointmentId: id, userId: uid })),
+        skipDuplicates: true,
+      });
+    }
+  }
+  const meeting = await db.appointment.update({ where: { id }, data, include });
+  return NextResponse.json({ meeting });
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await requireManager();
+  if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  const id = new URL(req.url).searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "id requerido." }, { status: 400 });
+  await db.appointment.delete({ where: { id } });
+  return NextResponse.json({ success: true });
+}
