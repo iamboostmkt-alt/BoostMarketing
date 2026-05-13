@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
       templateVideollamadaConfirmada(nameTrim, dateStr)
     ).catch(console.error);
 
-    return NextResponse.json({ appointment }, { status: 201 });
+    return NextResponse.json({ appointment, _debug: { firstAdminFound: !!firstAdmin, firstAdminId: firstAdmin?.id ?? null, notifyCount: notifyUsers.length } }, { status: 201 });
   } catch (error) {
     console.error('[appointments POST]', error);
     return NextResponse.json({ error: 'Error interno.' }, { status: 500 });
