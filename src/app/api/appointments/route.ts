@@ -94,6 +94,22 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Crear en tabla contacts (CRM pipeline) si no existe
+    const existingContact = await db.contact.findFirst({ where: { email: emailNorm } });
+    if (!existingContact) {
+      await db.contact.create({
+        data: {
+          userId:  prospectUser.id,
+          name:    nameTrim,
+          email:   emailNorm,
+          phone:   (phone ?? '').trim(),
+          status:  'prospect',
+          company: '',
+          notes:   notes?.trim() || '',
+        },
+      });
+    }
+
     // Obtener Admin y Ventas para notificar
     const notifyUsers = await db.user.findMany({
       where: { role: { in: ['ADMIN', 'SALES_REP', 'PROJECT_MANAGER'] } },
