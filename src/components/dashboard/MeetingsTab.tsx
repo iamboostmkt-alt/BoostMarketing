@@ -14,16 +14,11 @@ import type { Appointment } from '@/lib/types';
 
 interface TeamUser { id: string; name: string | null; email: string; color: string; image: string | null; }
 
-const statusMap: Record<string, { label: string; color: string; iconName: string }> = {
-  pending:   { label: 'Pendiente',  color: 'bg-amber-500/15 text-amber-300',  iconName: 'clock' },
-  confirmed: { label: 'Confirmada', color: 'bg-green-500/15 text-green-300',  iconName: 'check' },
-  cancelled: { label: 'Cancelada',  color: 'bg-red-500/15 text-red-300',      iconName: 'x' },
+const statusMap: Record<string, { label: string; color: string }> = {
+  pending:   { label: 'Pendiente',  color: 'bg-amber-500/15 text-amber-300' },
+  confirmed: { label: 'Confirmada', color: 'bg-green-500/15 text-green-300' },
+  cancelled: { label: 'Cancelada',  color: 'bg-red-500/15 text-red-300'    },
 };
-function StatusIcon({ name }: { name: string }) {
-  if (name === 'clock') return <Clock className='h-3 w-3' />;
-  if (name === 'check') return <CheckCircle2 className='h-3 w-3' />;
-  return <XCircle className='h-3 w-3' />;
-}
 
 function initials(name: string | null, email: string) {
   return (name || email).split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -278,13 +273,13 @@ ounded-full px-3 py-1 text-xs font-medium transition-colors }>
                       <Select value={meet.status} onValueChange={v => handleStatus(meet.id, v)}>
                         <SelectTrigger className='w-36 h-7 bg-white/[0.04] border-white/[0.08] text-white text-xs focus:ring-brand'>
                           <span className={inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium }>
-                            <StatusIcon name={st.iconName} />{st.label}
+                            {st.label}
                           </span>
                         </SelectTrigger>
                         <SelectContent className='bg-[#15151c] border-white/[0.08] text-white'>
                           {Object.entries(statusMap).map(([key, val]) => (
                             <SelectItem key={key} value={key} className='text-sm focus:bg-white/[0.06]'>
-                              <div className='flex items-center gap-1.5'><StatusIcon name={val.iconName} />{val.label}</div>
+                              <div className='flex items-center gap-1.5'>{val.label}</div>
                             </SelectItem>
                           ))}
                         </SelectContent>
