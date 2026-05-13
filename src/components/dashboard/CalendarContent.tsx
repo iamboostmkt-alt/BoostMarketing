@@ -470,12 +470,12 @@ function DayModal({
             onClick={() => { onNewTask(); onClose(); }}>
             <Plus className="w-3.5 h-3.5" />
             Tarea
+          </Button>
           <Button size="sm"
             className="bg-white/[0.06] hover:bg-white/[0.10] text-white gap-1.5 text-xs h-8"
             onClick={() => { onNewAppointment && onNewAppointment(); onClose(); }}>
             <Video className="w-3.5 h-3.5" />
             Reunion
-          </Button>
           </Button>
           <Button size="sm" variant="ghost"
             className="text-white/30 hover:text-white hover:bg-white/[0.06] text-xs h-8 ml-auto"
