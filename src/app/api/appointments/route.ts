@@ -163,7 +163,7 @@ export async function GET(req: NextRequest) {
     const status    = searchParams.get('status');
     const upcoming  = searchParams.get('upcoming');
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { email: { not: { endsWith: '@internal.boost' } } };
     if (status) where.status = status;
     if (upcoming === '1') where.date = { gte: new Date() };
 
