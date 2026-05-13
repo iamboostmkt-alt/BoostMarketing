@@ -70,40 +70,84 @@ interface AppointmentEditModalProps {
   onSaved:      () => void;
 }
  
-function AppointmentEditModal({ open, onOpenChange, appointment, onSaved }: AppointmentEditModalProps) {
-  const [name,   setName]   = useState('');
-  const [email,  setEmail]  = useState('');
-  const [phone,  setPhone]  = useState('');
-  const [date,   setDate]   = useState('');
-  const [notes,  setNotes]  = useState('');
-  const [status, setStatus] = useState('pending');
-  const [saving, setSaving] = useState(false);
- 
+// ── AppointmentEditModal ─────────────────────────────────────────
+interface InternalUser {
+  id: string;
+  name: string | null;
+  email: string;
+  color: string;
+  image?: string | null;
+}
+
+interface AppointmentEditModalProps {
+  open:         boolean;
+  onOpenChange: (v: boolean) => void;
+  appointment:  Appointment | null;
+  onSaved:      () => void;
+  onDeleted?:   (id: string) => void;
+}
+
+function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDeleted }: AppointmentEditModalProps) {
+  const [name,            setName]           = useState('');
+  const [email,           setEmail]          = useState('');
+  const [phone,           setPhone]          = useState('');
+  const [date,            setDate]           = useState('');
+  const [notes,           setNotes]          = useState('');
+  const [status,          setStatus]         = useState('pending');
+  const [meetUrl,         setMeetUrl]        = useState('');
+  const [assignedUserIds, setAssignedIds]    = useState<string[]>([]);
+  const [teamUsers,       setTeamUsers]      = useState<InternalUser[]>([]);
+  const [saving,          setSaving]         = useState(false);
+  const [deleting,        setDeleting]       = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      fetch('/api/admin/users')
+        .then((r) => r.json())
+        .then((d) => {
+          const internal = (d.users ?? []).filter((u: InternalUser & { role: string }) => u.role !== 'CLIENT');
+          setTeamUsers(internal);
+        })
+        .catch(() => {});
+    }
+  }, [open]);
+
   useEffect(() => {
     if (open && appointment) {
       setName(appointment.name ?? '');
       setEmail(appointment.email ?? '');
       setPhone((appointment as any).phone ?? '');
+      setNotes((appointment as any).notes ?? '');
+      setStatus(appointment.status ?? 'pending');
+      setMeetUrl((appointment as any).meetUrl ?? '');
+      const ids = ((appointment as any).assignedUsers ?? []).map((a: any) => a.user?.id ?? a.userId ?? a.id);
+      setAssignedIds(ids.filter(Boolean));
       try {
         const d = new Date(appointment.date);
         const pad = (n: number) => String(n).padStart(2, '0');
         setDate(
-          `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+          d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+          'T' + pad(d.getHours()) + ':' + pad(d.getMinutes())
         );
       } catch { setDate(''); }
-      setNotes((appointment as any).notes ?? '');
-      setStatus(appointment.status ?? 'pending');
     } else if (open && !appointment) {
-      setName(''); setEmail(''); setPhone(''); setDate(''); setNotes(''); setStatus('pending');
+      setName(''); setEmail(''); setPhone(''); setDate('');
+      setNotes(''); setStatus('pending'); setMeetUrl(''); setAssignedIds([]);
     }
   }, [open, appointment]);
- 
+
+  function toggleUser(id: string) {
+    setAssignedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
       const method = appointment ? 'PATCH' : 'POST';
-      const body: Record<string, unknown> = { name, email, phone, date, notes, status };
+      const body: Record<string, unknown> = {
+        name, email, phone, date, notes, status, meetUrl, assignedUserIds,
+      };
       if (appointment) body.id = appointment.id;
       const res = await fetch('/api/appointments', {
         method,
@@ -121,10 +165,27 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved }: Appo
       setSaving(false);
     }
   }
- 
+
+  async function handleDelete() {
+    if (!appointment) return;
+    if (!confirm('¿Eliminar esta videollamada?')) return;
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/appointments?id=' + appointment.id, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Error al eliminar');
+      toast.success('Videollamada eliminada');
+      onOpenChange(false);
+      onDeleted?.(appointment.id);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-md">
+      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
             <Video className="h-4 w-4 text-green-400" />
@@ -156,28 +217,63 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved }: Appo
               className="bg-white/[0.04] border-white/[0.08] text-white focus-visible:ring-brand [color-scheme:dark]" />
           </div>
           <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Link Google Meet</Label>
+            <Input value={meetUrl} onChange={(e) => setMeetUrl(e.target.value)}
+              placeholder="https://meet.google.com/xxx-xxxx-xxx"
+              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+          </div>
+          <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Estado</Label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand"
-            >
+            <select value={status} onChange={(e) => setStatus(e.target.value)}
+              className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
               <option value="pending">Pendiente</option>
               <option value="confirmed">Confirmada</option>
               <option value="cancelled">Cancelada</option>
             </select>
           </div>
+          {/* Equipo asignado */}
+          {teamUsers.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Equipo asignado</Label>
+              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto custom-scrollbar p-1">
+                {teamUsers.map((u) => {
+                  const selected = assignedUserIds.includes(u.id);
+                  return (
+                    <button key={u.id} type="button" onClick={() => toggleUser(u.id)}
+                      className={'flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border transition-colors ' +
+                        (selected
+                          ? 'border-brand bg-brand/20 text-brand-light'
+                          : 'border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-white/20')}>
+                      <Avatar className="h-4 w-4 shrink-0">
+                        <AvatarImage src={u.image || undefined} />
+                        <AvatarFallback className="text-[8px]"
+                          style={{ backgroundColor: (u.color || '#7c3aed') + '33', color: u.color || '#7c3aed' }}>
+                          {(u.name || u.email).slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      {u.name || u.email}
+                    </button>
+                  );
+                })}
+              </div>
+              {assignedUserIds.length > 0 && (
+                <p className="text-[10px] text-white/40">{assignedUserIds.length} miembro{assignedUserIds.length !== 1 ? 's' : ''} asignado{assignedUserIds.length !== 1 ? 's' : ''}</p>
+              )}
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Notas</Label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
               className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none placeholder:text-white/25"
-              placeholder="Notas opcionales..."
-            />
+              placeholder="Notas opcionales..." />
           </div>
           <div className="flex gap-3 pt-1">
+            {appointment && (
+              <Button type="button" variant="outline" disabled={deleting} onClick={handleDelete}
+                className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 px-3">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
               className="flex-1 border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06]">
               Cancelar
@@ -675,6 +771,7 @@ export default function CalendarContent() {
         onOpenChange={setApptEditOpen}
         appointment={editingAppointment}
         onSaved={fetchData}
+        onDeleted={(id) => setAppointments((prev) => prev.filter((a) => a.id !== id))}
       />
     </div>
   );

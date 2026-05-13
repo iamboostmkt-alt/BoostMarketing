@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
-import type { DashboardStats, Task } from '@/lib/types';
+import type { DashboardStats, Task, Appointment } from '@/lib/types';
 import {
   statusLabels, statusColors, priorityLabels, priorityColors,
 } from '@/lib/theme-maps';
@@ -108,6 +108,24 @@ export default function DashboardPage() {
       setTeamUsers(users);
     }).finally(() => setLoadingTeam(false));
   }, [isManager]);
+
+  // Fetch upcoming meetings
+  useEffect(() => {
+    if (!isManager) { setLoadingMeetings(false); return; }
+    fetch('/api/appointments?upcoming=1')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d) setMeetings(d.appointments || []); })
+      .finally(() => setLoadingMeetings(false));
+  }, [isManager]);
+
+  async function handleDeleteMeeting(id: string) {
+    if (!confirm('¿Eliminar esta videollamada?')) return;
+    setDeletingMeeting(id);
+    try {
+      const res = await fetch('/api/appointments?id=' + id, { method: 'DELETE' });
+      if (res.ok) setMeetings((prev) => prev.filter((m) => m.id !== id));
+    } finally { setDeletingMeeting(null); }
+  }
 
   const filteredTeamTasks = teamTasks.filter((t) => {
     if (teamStatusFilter !== 'all' && t.status !== teamStatusFilter) return false;
@@ -349,6 +367,111 @@ export default function DashboardPage() {
         </div>
       )}
 
+
+      {/* ── Reuniones proximas (admin/PM) ── */}
+      {isManager && (
+        <div className="glass-card rounded-xl">
+          <div
+            className="flex items-center justify-between p-4 md:p-6 border-b border-white/[0.06] cursor-pointer select-none"
+            onClick={() => setMeetingsOpen((p) => !p)}
+          >
+            <div className="flex items-center gap-2">
+              <Video className="w-5 h-5 text-green-400" />
+              <h3 className="text-base font-semibold text-white">Reuniones Proximas</h3>
+              <span className="text-xs text-white/30 ml-1">
+                {loadingMeetings ? '...' : `${meetings.length} reunion${meetings.length !== 1 ? 'es' : ''}`}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {meetings.length > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500/20 text-[10px] font-bold text-green-300">
+                  {meetings.length}
+                </span>
+              )}
+              {meetingsOpen ? <ChevronUp className="w-4 h-4 text-white/30" /> : <ChevronDown className="w-4 h-4 text-white/30" />}
+            </div>
+          </div>
+
+          {meetingsOpen && (
+            <div className="divide-y divide-white/[0.04] max-h-80 overflow-y-auto custom-scrollbar">
+              {loadingMeetings ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 p-4 md:px-6">
+                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/3" />
+                    </div>
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+                ))
+              ) : meetings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <Video className="w-8 h-8 text-white/15 mb-3" />
+                  <p className="text-sm text-white/40">No hay reuniones proximas</p>
+                </div>
+              ) : (
+                meetings.map((m) => {
+                  const assigned = (m as any).assignedUsers ?? [];
+                  return (
+                    <div key={m.id} className="flex items-center gap-3 p-4 md:px-6 hover:bg-white/[0.02] transition-colors group">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 shrink-0">
+                        <Video className="w-4 h-4 text-green-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white/90 truncate">{m.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span className="text-xs text-white/35">{m.email}</span>
+                          <div className="flex items-center gap-1 text-xs text-white/25">
+                            <Clock className="w-3 h-3" />
+                            {new Date(m.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                          {assigned.length > 0 && (
+                            <div className="flex -space-x-1">
+                              {assigned.slice(0, 3).map((a: any) => {
+                                const u = a.user ?? a;
+                                return (
+                                  <Avatar key={u.id} className="h-4 w-4 border border-[#0e0e14]">
+                                    <AvatarImage src={u.image || undefined} />
+                                    <AvatarFallback className="text-[8px]"
+                                      style={{ backgroundColor: (u.color || '#7c3aed') + '33', color: u.color || '#7c3aed' }}>
+                                      {(u.name || u.email || '?').slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                );
+                              })}
+                              {assigned.length > 3 && (
+                                <span className="text-[10px] text-white/30 pl-1">+{assigned.length - 3}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          m.status === 'confirmed' ? 'bg-green-500/15 text-green-300' :
+                          m.status === 'cancelled' ? 'bg-red-500/15 text-red-300' :
+                          'bg-amber-500/15 text-amber-300'
+                        }`}>
+                          {m.status === 'confirmed' ? 'Confirmada' : m.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={deletingMeeting === m.id}
+                          onClick={() => handleDeleteMeeting(m.id)}
+                          className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </div>
+      )}
       {/* Two column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent tasks */}
