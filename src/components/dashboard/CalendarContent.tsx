@@ -149,7 +149,8 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
         name, email, phone, date, notes, status, meetUrl, assignedUserIds,
       };
       if (appointment) body.id = appointment.id;
-      const res = await fetch('/api/appointments', {
+      const apiUrl = appointment ? '/api/appointments' : '/api/meetings';
+      const res = await fetch(apiUrl, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
