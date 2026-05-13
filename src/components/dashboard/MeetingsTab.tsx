@@ -194,7 +194,8 @@ export default function MeetingsTab() {
         {(['all', 'pending', 'confirmed', 'cancelled'] as const).map(f => (
           <button key={f} type='button'
             onClick={() => { setFilter(f); fetchMeetings(f); }}
-            className={ounded-full px-3 py-1 text-xs font-medium transition-colors }>
+            className={
+ounded-full px-3 py-1 text-xs font-medium transition-colors }>
             {f === 'all' ? 'Todas' : statusMap[f]?.label ?? f}
           </button>
         ))}
