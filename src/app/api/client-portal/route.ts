@@ -11,7 +11,7 @@ const taskUserInclude = {
   select: { id: true, name: true, email: true, color: true, image: true },
 } as const;
 
-// GET â€” returns portal data for the current CLIENT, or for any client (admin preview via ?clientId=)
+// GET Ã¢â‚¬â€ returns portal data for the current CLIENT, or for any client (admin preview via ?clientId=)
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
     if (role === 'UNASSIGNED') {
       return NextResponse.json(
-        { error: 'Tu cuenta aÃºn no tiene rol asignado. Espera a que un administrador te asigne acceso.' },
+        { error: 'Tu cuenta aÃƒÂºn no tiene rol asignado. Espera a que un administrador te asigne acceso.' },
         { status: 403 }
       );
     }
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       client = await db.client.findUnique({
         where: { id: clientId },
         include: {
-          assignedManager: { select: { id: true, name: true, email: true, color: true, image: true, phone: true } },
+          assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
         },
       });
     } else {
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       client = await db.client.findFirst({
         where: { email: { equals: userEmail, mode: 'insensitive' } },
         include: {
-          assignedManager: { select: { id: true, name: true, email: true, color: true, image: true, phone: true } },
+          assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
         },
       });
     }
@@ -70,8 +70,8 @@ export async function GET(req: NextRequest) {
         activities: [],
         tasks:      [],
         message:    isManager
-          ? 'No se encontrÃ³ el cliente especificado.'
-          : 'Tu cuenta de cliente aÃºn no ha sido configurada. Contacta a tu Project Manager.',
+          ? 'No se encontrÃƒÂ³ el cliente especificado.'
+          : 'Tu cuenta de cliente aÃƒÂºn no ha sido configurada. Contacta a tu Project Manager.',
       });
     }
 
