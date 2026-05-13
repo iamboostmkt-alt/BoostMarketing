@@ -272,13 +272,13 @@ export default function MeetingsTab() {
                       <Select value={meet.status} onValueChange={v => handleStatus(meet.id, v)}>
                         <SelectTrigger className='w-36 h-7 bg-white/[0.04] border-white/[0.08] text-white text-xs focus:ring-brand'>
                           <span className={inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium }>
-                            {st.icon}{st.label}
+                            <StatusIcon name={st.iconName} />{st.label}
                           </span>
                         </SelectTrigger>
                         <SelectContent className='bg-[#15151c] border-white/[0.08] text-white'>
                           {Object.entries(statusMap).map(([key, val]) => (
                             <SelectItem key={key} value={key} className='text-sm focus:bg-white/[0.06]'>
-                              <div className='flex items-center gap-1.5'>{val.icon}{val.label}</div>
+                              <div className='flex items-center gap-1.5'><StatusIcon name={val.iconName} />{val.label}</div>
                             </SelectItem>
                           ))}
                         </SelectContent>
