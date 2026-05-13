@@ -56,11 +56,7 @@ export default function LoginPage() {
         redirect: false,
       });
 
-      if (result?.error === 'PROSPECT_PENDING') {
-          router.push('/prospect-pending');
-          return;
-        }
-        if (result?.error) {
+      if (result?.error) {
         let msg = result.error;
         try { msg = decodeURIComponent(msg); } catch { /* keep original */ }
         if (msg === 'CredentialsSignin') {
@@ -111,11 +107,7 @@ export default function LoginPage() {
         callbackUrl: '/dashboard',
         redirect: false,
       });
-      if (result?.error === 'PROSPECT_PENDING') {
-          router.push('/prospect-pending');
-          return;
-        }
-        if (result?.error) {
+      if (result?.error) {
         setError(result.error);
         setMagicLoading(false);
         return;
