@@ -543,7 +543,7 @@ function TestimonialsTab() {
             </div>
             <Field label="Testimonio *"><Textarea required value={form.text} onChange={(e) => setForm((p) => ({ ...p, text: e.target.value }))} className={areaCls} rows={3} placeholder="Lo que dice el cliente..." /></Field>
             <div className="grid grid-cols-2 gap-3">
-              <ImageUploader value={form.imageUrl} onChange={(url) => setForm((p) => ({ ...p, imageUrl: url }))} folder="testimonials" label="Foto del cliente" />
+              <Field label="URL foto (opcional)"><Input value={form.imageUrl} onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))} className={inputCls} placeholder="https://..." /></Field>
               <Field label="Orden"><Input type="number" value={form.order} onChange={(e) => setForm((p) => ({ ...p, order: Number(e.target.value) }))} className={inputCls} /></Field>
             </div>
             <div className="flex items-center gap-2">
