@@ -85,9 +85,10 @@ interface AppointmentEditModalProps {
   appointment:  Appointment | null;
   onSaved:      () => void;
   onDeleted?:   (id: string) => void;
+  initialDate?: Date | null;
 }
 
-function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDeleted }: AppointmentEditModalProps) {
+function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDeleted, initialDate }: AppointmentEditModalProps) {
   const [name,            setName]           = useState('');
   const [email,           setEmail]          = useState('');
   const [phone,           setPhone]          = useState('');
@@ -131,7 +132,8 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
         );
       } catch { setDate(''); }
     } else if (open && !appointment) {
-      setName(''); setEmail(''); setPhone(''); setDate('');
+      setName(''); setEmail(''); setPhone('');
+      if (initialDate) { const pad = (n: number) => String(n).padStart(2,'0'); const d = initialDate; setDate(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T10:00'); } else { setDate(''); }
       setNotes(''); setStatus('pending'); setMeetUrl(''); setAssignedIds([]);
     }
   }, [open, appointment]);
@@ -198,13 +200,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Nombre *</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} required
-              placeholder="Nombre del prospecto"
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Email *</Label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-              placeholder="email@ejemplo.com"
+              placeholder="Titulo de la reunion"
               className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
           <div className="space-y-1.5">
@@ -302,6 +298,7 @@ interface DayModalProps {
   isManager:           boolean;
   onEditTask:          (t: Task) => void;
   onNewTask:           () => void;
+  onNewAppointment?:  () => void;
   onDeleteTask:        (id: string) => Promise<void>;
   onEditAppointment:   (apt: Appointment) => void;
   onDeleteAppointment: (id: string) => Promise<void>;
@@ -309,7 +306,7 @@ interface DayModalProps {
  
 function DayModal({
   open, onClose, day, tasks, activities, appointments, isManager,
-  onEditTask, onNewTask, onDeleteTask, onEditAppointment, onDeleteAppointment,
+  onEditTask, onNewTask, onDeleteTask, onEditAppointment, onDeleteAppointment, onNewAppointment,
 }: DayModalProps) {
   const dayTasks = useMemo(
     () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day)),
@@ -473,6 +470,12 @@ function DayModal({
             onClick={() => { onNewTask(); onClose(); }}>
             <Plus className="w-3.5 h-3.5" />
             Tarea
+          <Button size="sm"
+            className="bg-white/[0.06] hover:bg-white/[0.10] text-white gap-1.5 text-xs h-8"
+            onClick={() => { onNewAppointment && onNewAppointment(); onClose(); }}>
+            <Video className="w-3.5 h-3.5" />
+            Reunion
+          </Button>
           </Button>
           <Button size="sm" variant="ghost"
             className="text-white/30 hover:text-white hover:bg-white/[0.06] text-xs h-8 ml-auto"
@@ -498,6 +501,7 @@ export default function CalendarContent() {
   const [editingTask,        setEditingTask]        = useState<Task | null>(null);
   const [apptEditOpen,       setApptEditOpen]       = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [apptInitialDate, setApptInitialDate] = useState<Date | null>(null);
  
   const isManager = MANAGER_ROLES.includes(session?.user?.role ?? '');
   const isClient  = session?.user?.role === 'CLIENT';
@@ -814,6 +818,7 @@ export default function CalendarContent() {
         isManager={isManager}
         onEditTask={(t) => { setEditingTask(t); setTaskFormOpen(true); }}
         onNewTask={() => { setEditingTask(null); setTaskFormOpen(true); }}
+        onNewAppointment={() => { setEditingAppointment(null); setApptInitialDate(selectedDay); setApptEditOpen(true); }}
         onDeleteTask={handleDeleteTask}
         onEditAppointment={(apt) => { setEditingAppointment(apt); setApptEditOpen(true); }}
         onDeleteAppointment={handleDeleteAppointment}
@@ -831,6 +836,7 @@ export default function CalendarContent() {
         open={apptEditOpen}
         onOpenChange={setApptEditOpen}
         appointment={editingAppointment}
+        initialDate={apptInitialDate}
         onSaved={fetchData}
         onDeleted={(id) => setAppointments((prev) => prev.filter((a) => a.id !== id))}
       />
