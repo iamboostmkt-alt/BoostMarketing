@@ -157,6 +157,10 @@ export default function CalendarGrid({
                   {dayActivities.slice(0, 2).map((_, i) => (
                     <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-brand-light/70" />
                   ))}
+                      {/* Appointment dots (green) */}
+                      {dayAppointments.slice(0, 2).map((_, i) => (
+                        <span key={`ap${i}`} className="w-1.5 h-1.5 rounded-full bg-green-400/80" />
+                      ))}
                   {/* Overflow count */}
                   {(dayTasks.length + dayActivities.length) > 5 && (
                     <span className="text-[8px] text-white/30">
