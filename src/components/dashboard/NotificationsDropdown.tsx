@@ -140,7 +140,7 @@ export function NotificationsDropdown() {
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon"
           className="relative text-white/60 hover:text-white hover:bg-white/[0.06]">
@@ -152,7 +152,7 @@ export function NotificationsDropdown() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 bg-[#15151c] border-white/[0.06] text-white z-[9999]" align="end" side="bottom" sideOffset={8} collisionPadding={{ top: 80, right: 16, bottom: 16, left: 16 }}>
+      <DropdownMenuContent className="w-80 bg-[#15151c] border-white/[0.06] text-white z-[9999]" align="end" side="bottom" sideOffset={8} collisionPadding={{ top: 80, right: 16, bottom: 16, left: 16 }} onCloseAutoFocus={(e) => e.preventDefault()}>
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notificaciones</span>
           <div className="flex gap-1">
