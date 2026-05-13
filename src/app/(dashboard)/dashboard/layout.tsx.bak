@@ -50,16 +50,14 @@ export default function DashboardLayout({
               <TopNav />
 
               {/* Main content */}
-              <main className="flex-1 overflow-hidden flex flex-col">
-                <div className="flex-1 overflow-y-auto custom-scrollbar">
-                  <div className="p-4 md:p-6 lg:p-8 h-full">
-                    <Suspense fallback={null}>
-                      <ForbiddenBanner />
-                    </Suspense>
-                    <ErrorBoundary>
-                      {children}
-                    </ErrorBoundary>
-                  </div>
+              <main className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="p-4 md:p-6 lg:p-8">
+                  <Suspense fallback={null}>
+                    <ForbiddenBanner />
+                  </Suspense>
+                  <ErrorBoundary>
+                    {children}
+                  </ErrorBoundary>
                 </div>
               </main>
             </div>
