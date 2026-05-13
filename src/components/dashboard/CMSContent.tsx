@@ -62,10 +62,25 @@ function ImageUploader({ value, onChange, folder = 'team', label = 'Foto' }: Ima
   async function handleFile(file: File) {
     setUploading(true);
     try {
+      const compressed = await new Promise<Blob>((resolve, reject) => {
+        const img = new window.Image();
+        const ou = URL.createObjectURL(file);
+        img.onload = () => {
+          const MAX = 1200;
+          const r = Math.min(MAX / img.width, MAX / img.height, 1);
+          const cv = document.createElement('canvas');
+          cv.width = Math.round(img.width * r);
+          cv.height = Math.round(img.height * r);
+          cv.getContext('2d')!.drawImage(img, 0, 0, cv.width, cv.height);
+          URL.revokeObjectURL(ou);
+          cv.toBlob((b) => b ? resolve(b) : reject(new Error('fail')), 'image/webp', 0.82);
+        };
+        img.onerror = reject;
+        img.src = ou;
+      });
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', new File([compressed], 'image.webp', { type: 'image/webp' }));
       fd.append('folder', folder);
-      const res = await fetch('/api/cms/upload', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       onChange(data.url);
