@@ -16,7 +16,7 @@ export default function Contact() {
         <div className="grid gap-5 md:grid-cols-2">
           {/* WhatsApp card */}
           <a
-            href="https://wa.me/1234567890"
+            href="https://wa.me/521063469"
             target="_blank"
             rel="noopener noreferrer"
             className="glass-card group flex flex-col gap-4 rounded-2xl p-6 transition-all duration-300 hover:border-green-500/20 hover:shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-8 animate-slide-up"
@@ -25,9 +25,9 @@ export default function Contact() {
               <MessageCircle className="h-6 w-6 text-green-400" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-foreground">¿Listo para empezar?</h3>
+              <h3 className="text-xl font-semibold text-foreground">Â¿Listo para empezar?</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Escríbenos por WhatsApp y recibe atención inmediata. Respondemos en menos de 5 minutos.
+                EscrÃ­benos por WhatsApp y recibe atenciÃ³n inmediata. Respondemos en menos de 5 minutos.
               </p>
             </div>
             <span className="inline-flex items-center gap-2 text-sm font-medium text-green-400 transition-transform group-hover:translate-x-1">
@@ -48,7 +48,7 @@ export default function Contact() {
             <div>
               <h3 className="text-xl font-semibold text-foreground">Agenda una videollamada</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Reserva una sesión de descubrimiento gratuita de 30 minutos con nuestro equipo.
+                Reserva una sesiÃ³n de descubrimiento gratuita de 30 minutos con nuestro equipo.
               </p>
             </div>
             <span className="inline-flex items-center gap-2 text-sm font-medium text-brand-light transition-transform group-hover:translate-x-1">
@@ -71,11 +71,11 @@ export default function Contact() {
             </div>
             <h2 className="max-w-2xl text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
               Empieza tu{' '}
-              <span className="text-gradient-brand">transformación digital</span>{' '}
+              <span className="text-gradient-brand">transformaciÃ³n digital</span>{' '}
               hoy
             </h2>
             <p className="mt-4 max-w-lg text-base text-muted-foreground sm:text-lg">
-              Únete a más de 150 empresas que ya escalaron su marca con BoostMarketing.
+              Ãšnete a mÃ¡s de 150 empresas que ya escalaron su marca con BoostMarketing.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link href="/login">

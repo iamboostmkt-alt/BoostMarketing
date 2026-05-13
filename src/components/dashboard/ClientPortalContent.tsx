@@ -25,9 +25,9 @@ import ChatContent from '@/components/dashboard/ChatContent';
 import { ReportButton } from '@/components/dashboard/ReportButton';
 import type { ClientPortalData, Task, TaskAssignee } from '@/lib/types';
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const DAY_NAMES   = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const DAY_NAMES   = ['Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b', 'Dom'];
 const MONTH_NAMES = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
@@ -41,14 +41,14 @@ const taskStatusConfig: Record<string, { label: string; color: string; icon: Rea
   completed:   { label: 'Completado',   color: 'bg-green-500/15 text-green-300 border-green-500/20',  icon: <CheckCircle2 className="h-3 w-3" /> },
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function initials(name: string | null | undefined, email?: string) {
   return ((name || email || 'U')).split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
 function fmtDate(iso: string | null | undefined) {
-  if (!iso) return '—';
+  if (!iso) return 'â€”';
   try { return format(new Date(iso), "d 'de' MMM yyyy", { locale: es }); } catch { return iso; }
 }
 
@@ -56,7 +56,7 @@ function getTasksForDay(tasks: Task[], day: Date): Task[] {
   return tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day));
 }
 
-// ── Day detail modal ──────────────────────────────────────────────────────────
+// â”€â”€ Day detail modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface DayModalProps {
   day: Date | null;
@@ -82,7 +82,7 @@ function DayModal({ day, tasks, onClose }: DayModalProps) {
         {!hasItems ? (
           <div className="py-12 flex flex-col items-center gap-3 text-center">
             <Calendar className="w-10 h-10 text-white/15" />
-            <p className="text-white/40 text-sm">No hay tareas con vencimiento este día.</p>
+            <p className="text-white/40 text-sm">No hay tareas con vencimiento este dÃ­a.</p>
           </div>
         ) : (
           <div className="space-y-4 mt-1">
@@ -123,7 +123,7 @@ function DayModal({ day, tasks, onClose }: DayModalProps) {
   );
 }
 
-// ── Calendar grid ─────────────────────────────────────────────────────────────
+// â”€â”€ Calendar grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface CalendarProps {
   tasks: Task[];
@@ -233,7 +233,7 @@ function PortalCalendar({ tasks, onSelectDay }: CalendarProps) {
   );
 }
 
-// ── Task cards ────────────────────────────────────────────────────────────────
+// â”€â”€ Task cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TaskCard({ task }: { task: Task }) {
   const cfg = taskStatusConfig[task.status] ?? taskStatusConfig.pending;
@@ -264,7 +264,7 @@ function TaskCard({ task }: { task: Task }) {
   );
 }
 
-// ── Progress bar ──────────────────────────────────────────────────────────────
+// â”€â”€ Progress bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ProgressBar({ total, completed }: { total: number; completed: number }) {
   const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -280,12 +280,12 @@ function ProgressBar({ total, completed }: { total: number; completed: number })
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="text-[11px] text-white/30">{completed} de {total} ítems completados</p>
+      <p className="text-[11px] text-white/30">{completed} de {total} Ã­tems completados</p>
     </div>
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -358,11 +358,11 @@ export default function ClientPortalContent() {
         </SelectTrigger>
         <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
           <SelectItem value="none" className="text-white/40 focus:bg-white/[0.06]">
-            — Selecciona un cliente —
+            â€” Selecciona un cliente â€”
           </SelectItem>
           {clients.map((c) => (
             <SelectItem key={c.id} value={c.id} className="focus:bg-white/[0.06]">
-              {c.name}{c.company ? ` — ${c.company}` : ''}
+              {c.name}{c.company ? ` â€” ${c.company}` : ''}
             </SelectItem>
           ))}
         </SelectContent>
@@ -406,7 +406,7 @@ export default function ClientPortalContent() {
             <p className="text-white/40 text-sm mt-1 max-w-sm">
               {isManager
                 ? 'Este cliente no tiene un registro en el sistema.'
-                : 'Tu cuenta de cliente aún no ha sido vinculada al sistema. Contacta a tu Project Manager.'}
+                : 'Tu cuenta de cliente aÃºn no ha sido vinculada al sistema. Contacta a tu Project Manager.'}
             </p>
           </div>
         </div>
@@ -500,7 +500,7 @@ export default function ClientPortalContent() {
                 </p>
               </div>
               <a
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5215555555555'}?text=Hola ${encodeURIComponent(client.assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
+                href={`https://wa.me/${(client.assignedManager.phone || '521063469').replace(/\D/g, '')}?text=Hola ${encodeURIComponent(client.assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
                 target="_blank"
                 rel="noopener noreferrer"
                 title="WhatsApp PM"
@@ -592,7 +592,7 @@ export default function ClientPortalContent() {
         />
       </div>
 
-      {/* List — tabs */}
+      {/* List â€” tabs */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
           {(['all', 'tasks'] as const).map((tab) => (
@@ -614,7 +614,7 @@ export default function ClientPortalContent() {
         {displayedTasks.length === 0 ? (
           <div className="glass-card rounded-xl py-16 flex flex-col items-center gap-3 text-center">
             <Calendar className="w-10 h-10 text-white/15" />
-            <p className="text-white/35 text-sm">No hay ítems para mostrar.</p>
+            <p className="text-white/35 text-sm">No hay Ã­tems para mostrar.</p>
           </div>
         ) : (
           <div className="space-y-3">
