@@ -210,7 +210,6 @@ function DayModal({
                         onClick={async () => {
                           if (!confirm('Eliminar esta videollamada?')) return;
                           await fetch('/api/appointments?id=' + apt.id, { method: 'DELETE' });
-                          setAppointments((prev) => prev.filter((a) => a.id !== apt.id));
                         }}
                         className="text-[10px] text-red-400/60 hover:text-red-400 flex items-center gap-1 transition-colors">
                         <Trash className="w-3 h-3" /> Eliminar
