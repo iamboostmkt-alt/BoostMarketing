@@ -15,9 +15,15 @@ export async function GET(req: NextRequest) {
     const userId  = (session.user as any).id;
     const role    = session.user.role as string;
     const isManager = MANAGER_ROLES.includes(role);
+    const isClient  = role === "CLIENT";
 
     const activities = await db.activity.findMany({
-      where: isManager ? {} : {
+      where: isManager ? {} : isClient ? {
+        OR: [
+          { assignedUserId: userId },
+          { assignedUsers: { some: { userId } } },
+        ],
+      } : {
         OR: [
           { assignedUserId: userId },
           { createdByUserId: userId },

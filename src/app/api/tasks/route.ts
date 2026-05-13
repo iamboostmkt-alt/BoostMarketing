@@ -20,7 +20,7 @@ const clientInclude = {
   select: { id: true, name: true, company: true },
 };
 
-// ─── GET ──────────────────────────────────────────────────────
+// â”€â”€â”€ GET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -28,16 +28,32 @@ export async function GET(req: NextRequest) {
   const userId    = (session.user as any).id;
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
 
+  const isClient = (session.user.role as string) === "CLIENT";
+
   const tasks = await db.task.findMany({
-    where:   isManager ? {} : { assignedUserId: userId },
-    include: { assignedUser: userInclude, client: clientInclude },
+    where: isManager ? {} : {
+      OR: [
+        { assignedUserId: userId },
+        { assignedUsers: { some: { userId } } },
+      ],
+    },
+    include: {
+      assignedUser:  userInclude,
+      assignedUsers: { include: { user: userInclude } },
+      client:        clientInclude,
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ tasks });
+  // CLIENT solo ve sus tareas, sin datos internos del equipo
+  const filtered = isClient
+    ? tasks.map((t: any) => ({ ...t, assignedUsers: undefined }))
+    : tasks;
+
+  return NextResponse.json({ tasks: isClient ? filtered : tasks });
 }
 
-// ─── helper: recopilar emails de todos los asignados ──────────
+// â”€â”€â”€ helper: recopilar emails de todos los asignados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function getAssignedEmails(taskId: string): Promise<Set<string>> {
   const t = await db.task.findUnique({
     where: { id: taskId },
@@ -52,7 +68,7 @@ async function getAssignedEmails(taskId: string): Promise<Set<string>> {
   return emails;
 }
 
-// ─── POST ─────────────────────────────────────────────────────
+// â”€â”€â”€ POST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -63,7 +79,7 @@ export async function POST(req: NextRequest) {
   const { title, description, priority, dueDate, assignedUserId: _assignedUserId, assignedUserIds, clientId } = body;
   const assignedUserId = _assignedUserId || (Array.isArray(assignedUserIds) && assignedUserIds[0]) || null;
 
-  if (!title) return NextResponse.json({ error: "Título requerido" }, { status: 400 });
+  if (!title) return NextResponse.json({ error: "TÃ­tulo requerido" }, { status: 400 });
 
   const task = await db.task.create({
     data: {
@@ -98,7 +114,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ task }, { status: 201 });
 }
 
-// ─── PUT ──────────────────────────────────────────────────────
+// â”€â”€â”€ PUT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -134,7 +150,7 @@ export async function PUT(req: NextRequest) {
     include: { assignedUser: userInclude, client: clientInclude },
   });
 
-  // ── Notificaciones ───────────────────────────────────────────
+  // â”€â”€ Notificaciones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // 1. Cambio de estado
   if (status && existing.status !== task.status) {
@@ -192,7 +208,7 @@ export async function PUT(req: NextRequest) {
     }
   }
 
-  // 3. Edicion de campos — notificar a asignados
+  // 3. Edicion de campos â€” notificar a asignados
   const cambios: Array<{campo: string, antes: string, despues: string}> = [];
   if (title && title !== existing.title) {
     cambios.push({ campo: "Titulo", antes: existing.title, despues: title });
@@ -241,7 +257,7 @@ export async function PUT(req: NextRequest) {
   return NextResponse.json({ task });
 }
 
-// ─── DELETE ───────────────────────────────────────────────────
+// â”€â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });

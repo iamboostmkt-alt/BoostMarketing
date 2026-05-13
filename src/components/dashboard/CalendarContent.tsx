@@ -62,7 +62,7 @@ function getTaskAvatar(u: { name: string | null; email: string; color: string; i
   );
 }
  
-// ── AppointmentEditModal ─────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ AppointmentEditModal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 interface AppointmentEditModalProps {
   open:         boolean;
   onOpenChange: (v: boolean) => void;
@@ -70,7 +70,7 @@ interface AppointmentEditModalProps {
   onSaved:      () => void;
 }
  
-// ── AppointmentEditModal ─────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ AppointmentEditModal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 interface InternalUser {
   id: string;
   name: string | null;
@@ -168,7 +168,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
 
   async function handleDelete() {
     if (!appointment) return;
-    if (!confirm('¿Eliminar esta videollamada?')) return;
+    if (!confirm('Ã‚Â¿Eliminar esta videollamada?')) return;
     setDeleting(true);
     try {
       const res = await fetch('/api/appointments?id=' + appointment.id, { method: 'DELETE' });
@@ -289,7 +289,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
   );
 }
  
-// ── DayModal ─────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ DayModal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 interface DayModalProps {
   open:                boolean;
   onClose:             () => void;
@@ -334,7 +334,7 @@ function DayModal({
             </div>
             <div>
               <DialogTitle className="text-base font-semibold text-white leading-tight">
-                {isToday(day) ? 'Hoy · ' : ''}{label}
+                {isToday(day) ? 'Hoy Ã‚Â· ' : ''}{label}
               </DialogTitle>
               <p className="text-xs text-white/40 mt-0.5">
                     {total === 0 ? 'Sin elementos' : `${total} elemento${total !== 1 ? 's' : ''}`}
@@ -385,7 +385,7 @@ function DayModal({
                       <button type="button"
                         onClick={async (e) => {
                           e.stopPropagation();
-                          if (!confirm(`¿Eliminar "${task.title}"?`)) return;
+                          if (!confirm(`Ã‚Â¿Eliminar "${task.title}"?`)) return;
                           await onDeleteTask(task.id);
                         }}
                         className="shrink-0 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
@@ -418,7 +418,7 @@ function DayModal({
                     {isManager && (
                       <button type="button"
                         onClick={async () => {
-                          if (!confirm(`¿Eliminar videollamada con ${apt.name}?`)) return;
+                          if (!confirm(`Ã‚Â¿Eliminar videollamada con ${apt.name}?`)) return;
                           await onDeleteAppointment(apt.id);
 
                         }}
@@ -483,7 +483,7 @@ function DayModal({
   );
 }
  
-// ── CalendarContent (main) ───────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ CalendarContent (main) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 export default function CalendarContent() {
   const { data: session } = useSession();
   const [tasks,        setTasks]        = useState<Task[]>([]);
@@ -498,6 +498,7 @@ export default function CalendarContent() {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
  
   const isManager = MANAGER_ROLES.includes(session?.user?.role ?? '');
+  const isClient  = session?.user?.role === 'CLIENT';
  
   const fetchData = useCallback(async () => {
     const tasksUrl = isManager ? '/api/tasks?scope=all' : '/api/tasks';
@@ -511,10 +512,12 @@ export default function CalendarContent() {
           const actData = await actRes.json();
           setActivities(actData.activities || []);
         }
-        const appRes = await fetch('/api/appointments');
-        if (appRes.ok) {
-          const appData = await appRes.json();
-          setAppointments(appData.appointments || []);
+        if (!isClient) {
+          const appRes = await fetch('/api/appointments');
+          if (appRes.ok) {
+            const appData = await appRes.json();
+            setAppointments(appData.appointments || []);
+          }
         }
       }
     } finally {
@@ -618,7 +621,7 @@ export default function CalendarContent() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">Calendario</h1>
           <p className="text-white/40 text-sm mt-1">
-            Haz clic en un dia para ver su detalle · actualizacion en tiempo real
+            Haz clic en un dia para ver su detalle Ã‚Â· actualizacion en tiempo real
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -710,7 +713,7 @@ export default function CalendarContent() {
                     {isManager && (
                       <button type="button"
                         onClick={async () => {
-                          if (!confirm(`¿Eliminar "${task.title}"?`)) return;
+                          if (!confirm(`Ã‚Â¿Eliminar "${task.title}"?`)) return;
                           await handleDeleteTask(task.id);
                         }}
                         className="absolute top-2 right-2 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
@@ -748,7 +751,7 @@ export default function CalendarContent() {
                               </button>
                               <button type="button"
                                 onClick={async () => {
-                                  if (!confirm("¿Eliminar esta videollamada?")) return;
+                                  if (!confirm("Ã‚Â¿Eliminar esta videollamada?")) return;
                                   await handleDeleteAppointment(apt.id);
                                 }}
                                 className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors">
