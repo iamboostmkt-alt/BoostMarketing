@@ -65,14 +65,16 @@ interface DayModalProps {
   onClose:      () => void;
   day:          Date;
   tasks:        Task[];
-  isManager:    boolean;
+  activities:    Activity[];
+  appointments:  Appointment[];
+  isManager:     boolean;
   onEditTask:   (t: Task) => void;
   onNewTask:    () => void;
   onDeleteTask: (id: string) => Promise<void>;
 }
 
 function DayModal({
-  open, onClose, day, tasks, isManager,
+  open, onClose, day, tasks, activities, appointments, isManager,
   onEditTask, onNewTask, onDeleteTask,
 }: DayModalProps) {
   const dayTasks = useMemo(
@@ -80,7 +82,15 @@ function DayModal({
     [tasks, day]
   );
 
-  const total = dayTasks.length;
+  const dayActivities = useMemo(
+    () => activities.filter((a) => a.startDate && isSameDay(new Date(a.startDate), day)),
+    [activities, day]
+  );
+  const dayAppointments = useMemo(
+    () => appointments.filter((a) => isSameDay(new Date(a.date), day)),
+    [appointments, day]
+  );
+  const total = dayTasks.length + dayActivities.length + dayAppointments.length;
   const label = dayLabel(day);
 
   return (
@@ -228,6 +238,12 @@ export default function CalendarContent() {
           const actData = await actRes.json();
           setActivities(actData.activities || []);
         }
+        // Cargar videollamadas
+        const appRes = await fetch('/api/appointments');
+        if (appRes.ok) {
+          const appData = await appRes.json();
+          setAppointments(appData.appointments || []);
+        }
       }
     } finally {
       setLoading(false);
@@ -329,6 +345,7 @@ export default function CalendarContent() {
           <CalendarGrid
             tasks={tasks}
             activities={activities}
+            appointments={appointments}
             selectedDay={selectedDay}
             onSelectDay={handleSelectDay}
           />
@@ -438,6 +455,8 @@ export default function CalendarContent() {
         onClose={() => setDayModalOpen(false)}
         day={selectedDay}
         tasks={tasks}
+        activities={activities}
+        appointments={appointments}
         isManager={isManager}
         onEditTask={(t) => { setEditingTask(t); setTaskFormOpen(true); }}
         onNewTask={() => { setEditingTask(null); setTaskFormOpen(true); }}
@@ -454,4 +473,3 @@ export default function CalendarContent() {
     </div>
   );
 }
-// updated
