@@ -527,7 +527,7 @@ export default function CalendarContent() {
           const meetRes = await fetch('/api/meetings');
           if (meetRes.ok) {
             const meetData = await meetRes.json();
-            setAppointments(prev => [...prev, ...(meetData.meetings || [])]);
+            setAppointments(prev => { const apptIds = new Set((appData?.appointments || []).map((a: any) => a.id)); const prevAppts = prev.filter(a => !(a as any).email?.endsWith('@internal.boost')); return [...prevAppts, ...(meetData.meetings || [])]; });
           }
         }
       }
@@ -575,10 +575,13 @@ export default function CalendarContent() {
  
   const handleDeleteAppointment = async (id: string) => {
     try {
-      const res = await fetch(`/api/appointments?id=${id}`, { method: 'DELETE' });
+      const appt = appointments.find(a => a.id === id);
+      const isMeeting = appt && (appt as any).email?.endsWith('@internal.boost');
+      const apiUrl = isMeeting ? `/api/meetings?id=${id}` : `/api/appointments?id=${id}`;
+      const res = await fetch(apiUrl, { method: 'DELETE' });
       if (res.ok) {
         setAppointments((prev) => prev.filter((a) => a.id !== id));
-        toast.success('Videollamada eliminada');
+        toast.success(isMeeting ? 'Reunion eliminada' : 'Videollamada eliminada');
       } else {
         toast.error('Error al eliminar');
       }
