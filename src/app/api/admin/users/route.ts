@@ -178,6 +178,10 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'No puedes cambiar tu propio rol.' }, { status: 403 });
     }
     updateData.role = role as Role;
+    // Limpiar lifecycleStatus si deja de ser CLIENT
+    if (role !== 'CLIENT') {
+      (updateData as any).lifecycleStatus = null;
+    }
   }
 
   if (name !== undefined) updateData.name = name.trim();

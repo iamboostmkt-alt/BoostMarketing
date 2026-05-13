@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import bcrypt from 'bcryptjs';
 import { authOptions } from '@/lib/auth';
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     subject: '¡Bienvenido a BoostMarketing!',
     html:    welcomeHtml({
       userName: user.name ?? 'Usuario',
-      appUrl:   process.env.NEXTAUTH_URL ?? 'https://boostmarketing.vercel.app',
+      appUrl:   process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? 'https://boostmarketingboost.com',
     }),
   }).catch(() => undefined);
 
