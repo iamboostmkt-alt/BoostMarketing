@@ -81,6 +81,7 @@ function ImageUploader({ value, onChange, folder = 'team', label = 'Foto' }: Ima
       const fd = new FormData();
       fd.append('file', new File([compressed], 'image.webp', { type: 'image/webp' }));
       fd.append('folder', folder);
+      const res = await fetch('/api/cms/upload', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       onChange(data.url);
