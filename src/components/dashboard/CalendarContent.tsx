@@ -144,9 +144,9 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
     e.preventDefault();
     setSaving(true);
     try {
+      const dateISO = date ? new Date(date).toISOString() : date;
       const method = appointment ? 'PATCH' : 'POST';
       const body: Record<string, unknown> = {
-      const dateISO = date ? new Date(date).toISOString() : date;
         name, email, phone, date: dateISO, notes, status, meetUrl, assignedUserIds,
       };
       if (appointment) body.id = appointment.id;
