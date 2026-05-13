@@ -28,32 +28,8 @@ export async function GET(req: NextRequest) {
   const userId    = (session.user as any).id;
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
 
-  // Filtros granulares:
-  // - ADMIN ve todo
-  // - PROJECT_MANAGER ve: tareas propias + asignadas a el + de sus clientes asignados
-  // - resto: solo tareas asignadas a el
-  const isAdmin = session.user.role === 'ADMIN';
-  const taskWhere = isAdmin
-    ? {}
-    : isManager
-      ? {
-          OR: [
-            { userId },
-            { assignedUserId: userId },
-            { assignedUsers: { some: { userId } } },
-            { client: { assignedManagerId: userId } },
-          ],
-        }
-      : {
-          OR: [
-            { userId },
-            { assignedUserId: userId },
-            { assignedUsers: { some: { userId } } },
-          ],
-        };
-
   const tasks = await db.task.findMany({
-    where:   taskWhere,
+    where:   isManager ? {} : { assignedUserId: userId },
     include: { assignedUser: userInclude, client: clientInclude },
     orderBy: { createdAt: "desc" },
   });
@@ -98,8 +74,11 @@ export async function POST(req: NextRequest) {
       dueDate:     dueDate     ? new Date(dueDate) : null,
       assignedUserId: isManager ? assignedUserId || null : null,
       clientId:       isManager ? clientId       || null : null,
+      ...(isManager && Array.isArray(assignedUserIds) && assignedUserIds.length > 0 && {
+        assignedUsers: { create: assignedUserIds.map((uid: string) => ({ userId: uid })) },
+      }),
     },
-    include: { assignedUser: userInclude, client: clientInclude },
+    include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },
   });
 
   // Notificar a TODOS los asignados
