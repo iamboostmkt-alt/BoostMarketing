@@ -181,7 +181,6 @@ export interface Appointment {
   status: string;
   createdAt: string;
   updatedAt: string;
-  updatedAt: string;
   meetUrl?: string;
   assignedUsers?: { user: { id: string; name: string | null; email: string; color: string; image: string | null } }[];
 }
