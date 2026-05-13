@@ -120,11 +120,12 @@ export default function CalendarGrid({
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
           const dayTasks      = getTasksForDay(tasks, day);
-          const dayActivities = getActivitiesForDay(activities, day);
+          const dayActivities   = getActivitiesForDay(activities, day);
+          const dayAppointments = getAppointmentsForDay(appointments, day);
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const isSelected     = selectedDay && isSameDay(day, selectedDay);
           const today          = isToday(day);
-          const hasItems       = dayTasks.length > 0 || dayActivities.length > 0;
+          const hasItems       = dayTasks.length > 0 || dayActivities.length > 0 || dayAppointments.length > 0;
 
           return (
             <button
@@ -159,7 +160,7 @@ export default function CalendarGrid({
                   {/* Overflow count */}
                   {(dayTasks.length + dayActivities.length) > 5 && (
                     <span className="text-[8px] text-white/30">
-                      +{dayTasks.length + dayActivities.length - 5}
+                      +{dayTasks.length + dayActivities.length + dayAppointments.length - 5}
                     </span>
                   )}
                 </div>

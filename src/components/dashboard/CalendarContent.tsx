@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import {
-  CalendarDays, Plus, CheckSquare, Clock,
+  CalendarDays, Plus, CheckSquare, Clock, Video, Pencil, Trash2 as Trash,
   Sparkles, Trash2,
 } from 'lucide-react';
 import {
@@ -199,6 +199,24 @@ function DayModal({
                     </div>
                   </div>
                   {apt.notes && <p className="text-xs text-white/35 mt-2">{apt.notes}</p>}
+                  {isManager && (
+                    <div className="flex gap-2 mt-2">
+                      <button type="button"
+                        onClick={() => { setEditingAppointment(apt as any); setAppointmentModalOpen(true); onClose(); }}
+                        className="text-[10px] text-white/30 hover:text-white/70 flex items-center gap-1 transition-colors">
+                        <Pencil className="w-3 h-3" /> Editar
+                      </button>
+                      <button type="button"
+                        onClick={async () => {
+                          if (!confirm('Eliminar esta videollamada?')) return;
+                          await fetch('/api/appointments?id=' + apt.id, { method: 'DELETE' });
+                          setAppointments((prev) => prev.filter((a) => a.id !== apt.id));
+                        }}
+                        className="text-[10px] text-red-400/60 hover:text-red-400 flex items-center gap-1 transition-colors">
+                        <Trash className="w-3 h-3" /> Eliminar
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </section>
@@ -249,7 +267,9 @@ export default function CalendarContent() {
   const [selectedDay,  setSelectedDay]  = useState<Date>(new Date());
   const [dayModalOpen, setDayModalOpen] = useState(false);
   const [taskFormOpen, setTaskFormOpen] = useState(false);
-  const [editingTask,  setEditingTask]  = useState<Task | null>(null);
+  const [editingTask,        setEditingTask]        = useState<Task | null>(null);
+  const [appointmentModalOpen,  setAppointmentModalOpen] = useState(false);
+  const [editingAppointment,    setEditingAppointment]   = useState<Appointment | null>(null);
 
   const isManager = MANAGER_ROLES.includes(session?.user?.role ?? '');
 
