@@ -1,3 +1,5 @@
+'use client';
+
 export default function AppointmentConfirmedPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -8,16 +10,12 @@ export default function AppointmentConfirmedPage() {
           </svg>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2">¡Cita recibida!</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Cita recibida</h1>
           <p className="text-white/60 text-sm leading-relaxed">
-            Gracias por agendar tu videollamada. Nuestro equipo revisará tu solicitud
-            y te contactará pronto para confirmar los detalles.
+            Gracias por agendar tu videollamada. Nuestro equipo te contactara pronto para confirmar los detalles.
           </p>
         </div>
-        
-          href="/"
-          className="inline-flex items-center gap-2 rounded-xl bg-brand hover:bg-brand-dark text-white px-6 py-2.5 text-sm font-medium transition-colors"
-        >
+        <a href="/" className="inline-flex items-center gap-2 rounded-xl bg-brand hover:bg-brand-dark text-white px-6 py-2.5 text-sm font-medium transition-colors">
           Volver al inicio
         </a>
       </div>
