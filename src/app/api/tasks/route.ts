@@ -230,8 +230,17 @@ export async function PUT(req: NextRequest) {
 
   if (status && existing.status !== task.status) {
     const notifyIds = new Set<string>();
-    if (task.assignedUser?.id) notifyIds.add(task.assignedUser.id);
-    existing.assignedUsers?.forEach((au: any) => notifyIds.add(au.user.id));
+    if (task.clientId) {
+      const clientTeam = await db.client.findUnique({
+        where: { id: task.clientId },
+        include: { assignedUsers: { include: { user: true } }, assignedManager: true },
+      });
+      if (clientTeam?.assignedManager?.id) notifyIds.add(clientTeam.assignedManager.id);
+      clientTeam?.assignedUsers?.forEach((au: any) => notifyIds.add(au.user.id));
+    } else {
+      if (task.assignedUser?.id) notifyIds.add(task.assignedUser.id);
+      existing.assignedUsers?.forEach((au: any) => notifyIds.add(au.user.id));
+    }
     notifyIds.delete(userId);
     for (const uid of notifyIds) {
       await db.notification.create({
