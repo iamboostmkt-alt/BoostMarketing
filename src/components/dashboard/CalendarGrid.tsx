@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Video, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Task, Activity, Appointment } from '@/lib/types';
 import {
@@ -20,40 +20,40 @@ interface CalendarGridProps {
 }
 
 const DAY_NAMES   = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
-const MONTH_NAMES = [
-  'Enero','Febrero','Marzo','Abril','Mayo','Junio',
-  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
-];
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-const priorityBarColors: Record<string, string> = {
-  low:    'bg-emerald-400/25',
-  medium: 'bg-amber-400/25',
+// Colores de rango por prioridad
+const rangeColors: Record<string, string> = {
+  low:    'bg-emerald-400/20',
+  medium: 'bg-amber-400/20',
   high:   'bg-red-400/25',
-  urgent: 'bg-red-500/30',
+  urgent: 'bg-red-500/35',
 };
 
-// Colores para multiples tareas en mismo dia
-const rangeColors = [
-  'bg-violet-400/30',
-  'bg-cyan-400/30',
-  'bg-emerald-400/30',
-  'bg-amber-400/30',
-  'bg-rose-400/30',
-  'bg-blue-400/30',
-];
-const priorityDotColors: Record<string, string> = {
+// Dots por tipo
+const taskDotColors: Record<string, string> = {
   low:    'bg-emerald-400',
   medium: 'bg-amber-400',
   high:   'bg-red-400',
   urgent: 'bg-red-600',
 };
 
+// Colores de borde por prioridad para rangos
+const rangeBorderColors: Record<string, string> = {
+  low:    'border-emerald-400/40',
+  medium: 'border-amber-400/40',
+  high:   'border-red-400/40',
+  urgent: 'border-red-500/50',
+};
+
 function getTasksForDay(tasks: Task[], day: Date): Task[] {
   return tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day));
 }
+
 function getAppointmentsForDay(appointments: Appointment[], day: Date): Appointment[] {
   return appointments.filter((a) => { try { return isSameDay(new Date(a.date), day); } catch { return false; } });
 }
+
 function getActivitiesForDay(activities: Activity[], day: Date): Activity[] {
   return activities.filter((a) => {
     try {
@@ -64,55 +64,41 @@ function getActivitiesForDay(activities: Activity[], day: Date): Activity[] {
   });
 }
 
-// Tareas con rango (startDate → dueDate, al menos 2 dias)
 function getRangeTasksForDay(tasks: Task[], day: Date): Task[] {
   return tasks.filter((t) => {
     if (!t.startDate || !t.dueDate) return false;
     const start = startOfDay(new Date(t.startDate));
     const end   = endOfDay(new Date(t.dueDate));
-    const diff  = differenceInCalendarDays(end, start);
-    if (diff < 1) return false;
+    if (differenceInCalendarDays(end, start) < 1) return false;
     return isWithinInterval(startOfDay(day), { start, end });
   });
 }
 
-// Determinar posicion de la barra en la semana
 function getRangeBarProps(task: Task, day: Date, days: Date[]) {
   const start  = startOfDay(new Date(task.startDate!));
   const end    = startOfDay(new Date(task.dueDate!));
   const dayIdx = days.findIndex((d) => isSameDay(d, day));
   if (dayIdx === -1) return null;
-
   const isStart  = isSameDay(day, start);
   const isEnd    = isSameDay(day, end);
-  const isFirst  = dayIdx % 7 === 0; // primer dia de la fila
-  const isLast   = dayIdx % 7 === 6; // ultimo dia de la fila
-
-  const roundLeft  = isStart || isFirst;
-  const roundRight = isEnd   || isLast;
-
-  return { isStart, isEnd, roundLeft, roundRight };
+  const isFirst  = dayIdx % 7 === 0;
+  const isLast   = dayIdx % 7 === 6;
+  return { isStart, isEnd, roundLeft: isStart || isFirst, roundRight: isEnd || isLast };
 }
 
-export default function CalendarGrid({
-  tasks, activities = [], appointments = [], selectedDay, onSelectDay,
-}: CalendarGridProps) {
+export default function CalendarGrid({ tasks, activities = [], appointments = [], selectedDay, onSelectDay }: CalendarGridProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd   = endOfMonth(currentMonth);
     const calStart   = startOfWeek(monthStart, { weekStartsOn: 1 });
-    const calEnd     = endOfWeek(monthEnd,     { weekStartsOn: 1 });
+    const calEnd     = endOfWeek(monthEnd, { weekStartsOn: 1 });
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
 
-  // Tareas con rango valido
   const rangeTasks = useMemo(() =>
-    tasks.filter((t) => {
-      if (!t.startDate || !t.dueDate) return false;
-      return differenceInCalendarDays(new Date(t.dueDate), new Date(t.startDate)) >= 1;
-    }),
+    tasks.filter((t) => t.startDate && t.dueDate && differenceInCalendarDays(new Date(t.dueDate), new Date(t.startDate)) >= 1),
   [tasks]);
 
   const monthLabel = `${MONTH_NAMES[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
@@ -123,16 +109,13 @@ export default function CalendarGrid({
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">{monthLabel}</h2>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
-            onClick={() => setCurrentMonth((m) => subMonths(m, 1))}>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]" onClick={() => setCurrentMonth(m => subMonths(m, 1))}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs text-white/50 hover:text-white hover:bg-white/[0.06]"
-            onClick={() => setCurrentMonth(new Date())}>
+          <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs text-white/50 hover:text-white hover:bg-white/[0.06]" onClick={() => setCurrentMonth(new Date())}>
             Hoy
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
-            onClick={() => setCurrentMonth((m) => addMonths(m, 1))}>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]" onClick={() => setCurrentMonth(m => addMonths(m, 1))}>
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
@@ -140,7 +123,7 @@ export default function CalendarGrid({
 
       {/* Day names */}
       <div className="grid grid-cols-7 gap-1">
-        {DAY_NAMES.map((name) => (
+        {DAY_NAMES.map(name => (
           <div key={name} className="text-center text-[11px] font-medium text-white/30 py-2">{name}</div>
         ))}
       </div>
@@ -155,7 +138,8 @@ export default function CalendarGrid({
           const isCurrentMonth  = isSameMonth(day, currentMonth);
           const isSelected      = selectedDay && isSameDay(day, selectedDay);
           const today           = isToday(day);
-          const hasItems        = dayTasks.length > 0 || dayActivities.length > 0 || dayAppointments.length > 0 || dayRangeTasks.length > 0;
+          const hasAppointment  = dayAppointments.length > 0;
+          const urgentTask      = dayTasks.find(t => t.priority === 'urgent' || t.priority === 'high');
 
           return (
             <button
@@ -163,68 +147,77 @@ export default function CalendarGrid({
               type="button"
               onClick={() => onSelectDay(day)}
               className={`
-                relative flex flex-col items-start justify-start min-h-[64px] md:min-h-[76px] rounded-lg transition-all overflow-hidden
-                border border-transparent pt-1.5 pb-1 px-1
+                relative flex flex-col items-start justify-start min-h-[68px] md:min-h-[80px] rounded-lg transition-all overflow-hidden
+                border pt-1.5 pb-1 px-1
                 ${isCurrentMonth ? 'text-white/80' : 'text-white/20'}
-                ${today && !isSelected ? 'border-brand/40 bg-brand/[0.06]' : ''}
+                ${today && !isSelected ? 'border-brand/50 bg-brand/[0.07]' : 'border-transparent'}
                 ${isSelected ? 'border-brand bg-brand/20 text-white shadow-lg shadow-brand/10' : ''}
-                ${!isSelected && !today ? 'hover:bg-white/[0.03] hover:border-white/[0.06]' : ''}
+                ${!isSelected && !today ? 'hover:bg-white/[0.04] hover:border-white/[0.08]' : ''}
+                ${hasAppointment && !isSelected ? 'ring-1 ring-inset ring-green-400/20' : ''}
               `}
             >
+              {/* Appointment glow top border */}
+              {hasAppointment && (
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-400/60 via-emerald-300/80 to-green-400/60 rounded-t-lg" />
+              )}
+
+              {/* Urgent indicator */}
+              {urgentTask && !isSelected && (
+                <div className="absolute top-1 right-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                </div>
+              )}
+
               {/* Day number */}
-              <span className={`relative z-10 text-xs font-medium w-full text-center mb-0.5 ${today ? 'text-brand-light' : ''} ${isSelected ? 'text-white' : ''}`}>
+              <span className={`relative z-10 text-xs font-medium w-full text-center mb-0.5 ${today ? 'text-brand-light font-bold' : ''} ${isSelected ? 'text-white' : ''}`}>
                 {format(day, 'd')}
               </span>
 
-              {/* Range task bars - subtle background highlights */}
-              {dayRangeTasks.slice(0, 3).map((task, i) => {
-                const barProps = getRangeBarProps(task, day, days);
-                if (!barProps) return null;
-                const { roundLeft, roundRight } = barProps;
-                const color = rangeColors[i % rangeColors.length];
-                return (
-                  <div
-                    key={`range-${task.id}-${i}`}
-                    className={`
-                      w-full h-1 z-0
-                      ${color}
-                      ${roundLeft  ? 'rounded-l-full' : 'rounded-l-none -ml-px'}
-                      ${roundRight ? 'rounded-r-full' : 'rounded-r-none -mr-px'}
-                    `}
-                    style={{ marginBottom: '1px' }}
-                    title={task.title}
-                  />
-                );
-              })}
+              {/* Range task bars */}
+              <div className="w-full space-y-px">
+                {dayRangeTasks.slice(0, 2).map((task, i) => {
+                  const barProps = getRangeBarProps(task, day, days);
+                  if (!barProps) return null;
+                  const { roundLeft, roundRight } = barProps;
+                  const color = rangeColors[task.priority] || 'bg-violet-400/20';
+                  return (
+                    <div
+                      key={`range-${task.id}-${i}`}
+                      className={`h-1 ${color} ${roundLeft ? 'rounded-l-full' : '-ml-px'} ${roundRight ? 'rounded-r-full' : '-mr-px'}`}
+                      title={task.title}
+                    />
+                  );
+                })}
+              </div>
 
-              {/* Indicator dots for non-range tasks */}
-              {(dayTasks.length > 0 || dayActivities.length > 0 || dayAppointments.length > 0) && (
-                <div className="relative z-10 flex items-center gap-0.5 mt-auto flex-wrap justify-center w-full">
-                  {dayTasks.slice(0, 2).map((task, i) => (
-                    <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${priorityDotColors[task.priority] || 'bg-white/30'}`} />
-                  ))}
-                  {dayActivities.slice(0, 1).map((_, i) => (
-                    <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-brand-light/70" />
-                  ))}
-                  {dayAppointments.slice(0, 1).map((_, i) => (
-                    <span key={`ap${i}`} className="w-1.5 h-1.5 rounded-full bg-green-400/80" />
-                  ))}
-                  {(dayTasks.length + dayActivities.length + dayAppointments.length) > 4 && (
-                    <span className="text-[8px] text-white/30">
-                      +{dayTasks.length + dayActivities.length + dayAppointments.length - 4}
-                    </span>
-                  )}
-                </div>
-              )}
+              {/* Bottom indicators */}
+              <div className="relative z-10 flex items-center gap-0.5 mt-auto flex-wrap justify-center w-full pt-0.5">
+                {/* Task dots by priority */}
+                {dayTasks.slice(0, 2).map((task, i) => (
+                  <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${taskDotColors[task.priority] || 'bg-white/30'}`} title={task.title} />
+                ))}
+                {/* Activity dot — brand color */}
+                {dayActivities.slice(0, 1).map((_, i) => (
+                  <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-violet-400/80" title="Actividad" />
+                ))}
+                {/* Appointment dot — green with video icon hint */}
+                {dayAppointments.slice(0, 1).map((_, i) => (
+                  <span key={`ap${i}`} className="w-1.5 h-1.5 rounded-full bg-green-400" title="Videollamada" />
+                ))}
+                {/* Overflow count */}
+                {(dayTasks.length + dayActivities.length + dayAppointments.length) > 4 && (
+                  <span className="text-[8px] text-white/30">+{dayTasks.length + dayActivities.length + dayAppointments.length - 4}</span>
+                )}
+              </div>
             </button>
           );
         })}
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 pt-1 border-t border-white/[0.04]">
+      <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/[0.04]">
         <div className="flex items-center gap-1.5">
-          <span className="w-4 h-1.5 rounded-full bg-amber-400/70 inline-block" />
+          <span className="w-5 h-1 rounded-full bg-amber-400/60 inline-block" />
           <span className="text-[11px] text-white/30">Rango tarea</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -232,12 +225,20 @@ export default function CalendarGrid({
           <span className="text-[11px] text-white/30">Vencimiento</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-brand-light/70 inline-block" />
-          <span className="text-[11px] text-white/30">Actividades</span>
+          <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+          <span className="text-[11px] text-white/30">Alta prioridad</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-green-400/80 inline-block" />
-          <span className="text-[11px] text-white/30">Reuniones</span>
+          <span className="w-2 h-2 rounded-full bg-violet-400/80 inline-block" />
+          <span className="text-[11px] text-white/30">Actividad</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
+          <span className="text-[11px] text-white/30">Videollamada</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
+          <span className="text-[11px] text-white/30">Urgente</span>
         </div>
       </div>
     </div>
