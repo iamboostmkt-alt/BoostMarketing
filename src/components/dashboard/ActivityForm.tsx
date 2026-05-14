@@ -57,6 +57,7 @@ export default function ActivityForm({
   const [endDate, setEndDate]           = useState<Date | undefined>();
   const [assignedUserIds, setAssignees] = useState<string[]>([]);
   const [clientId, setClientId]         = useState('');
+  const [visibleToClient, setVisibleToClient] = useState(false);
   const [users, setUsers]               = useState<User[]>([]);
   const [clients, setClients]           = useState<{ id: string; name: string; company: string }[]>([]);
   const [startOpen, setStartOpen]       = useState(false);
@@ -75,6 +76,7 @@ export default function ActivityForm({
         (activity.assignedUserId ? [activity.assignedUserId] : []);
       setAssignees(ids);
       setClientId(activity.clientId ?? '');
+      setVisibleToClient(activity.visibleToClient ?? false);
     } else {
       setTitle('');
       setDesc('');
@@ -126,6 +128,7 @@ export default function ActivityForm({
         endDate:         endDate?.toISOString() ?? null,
         assignedUserIds: assignedUserIds.length > 0 ? assignedUserIds : null,
         clientId:        clientId || null,
+        visibleToClient: visibleToClient,
       };
 
       const res = await fetch('/api/activities', {
@@ -335,6 +338,20 @@ export default function ActivityForm({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {/* Visible to client toggle */}
+          {isManager && clientId && (
+            <div className="flex items-center justify-between bg-white/[0.03] border border-white/[0.05] rounded-lg px-3 py-2.5">
+              <div>
+                <p className="text-sm text-white/70">Visible para el cliente</p>
+                <p className="text-[11px] text-white/30">El cliente puede ver esta actividad en su portal</p>
+              </div>
+              <button type="button" onClick={() => setVisibleToClient(v => !v)}
+                className={"relative inline-flex h-5 w-9 items-center rounded-full transition-colors " + (visibleToClient ? "bg-brand" : "bg-white/[0.12]")}>
+                <span className={"inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform " + (visibleToClient ? "translate-x-4" : "translate-x-0.5")} />
+              </button>
             </div>
           )}
 

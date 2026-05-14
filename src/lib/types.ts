@@ -47,6 +47,7 @@ export interface Task {
   userId: string;
   assignedUserId: string | null;
   clientId: string | null;
+  visibleToClient?: boolean;
   title: string;
   description: string;
   status: string;
@@ -243,6 +244,7 @@ export interface Activity {
   assignedUserId: string | null;
   createdByUserId: string;
   clientId: string | null;
+  visibleToClient?: boolean;
   createdAt: string;
   updatedAt: string;
   assignedUser?: ActivityAssignee | null;
