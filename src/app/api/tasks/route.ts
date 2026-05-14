@@ -7,6 +7,7 @@ import {
   sendMail,
   templateNuevaTarea,
   templateCambioEstado,
+  templateTareaCompletada,
   templateTareaEditada,
 } from "@/lib/mailer";
 
@@ -178,6 +179,18 @@ export async function PUT(req: NextRequest) {
         "Estado de tarea actualizado",
         templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending")
       );
+    // Email felicitacion al completar
+    if (task.status === "completed") {
+      for (const email of emails) {
+        sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName)).catch(console.error);
+      }
+    }
+    // Email felicitacion al completar
+    if (task.status === "completed") {
+      for (const email of emails) {
+        sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName)).catch(console.error);
+      }
+    }
     }
     return NextResponse.json({ task });
   }
