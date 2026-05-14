@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { getBranding, emailLayout, type Branding } from "@/lib/branding";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
@@ -10,14 +11,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendMail(
-  to: string,
-  subject: string,
-  html: string
-): Promise<void> {
+export async function sendMail(to: string, subject: string, html: string): Promise<void> {
   try {
     await transporter.sendMail({
-      from: `"Sistema de Tareas" <${process.env.SMTP_USER}>`,
+      from: `"${process.env.BRAND_NAME || 'BoostMarketing'}" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,
@@ -28,423 +25,265 @@ export async function sendMail(
   }
 }
 
-// ─── PLANTILLAS HTML ────────────────────────────────────────
-
-export function templateNuevaTarea(title: string, description: string, dueDate?: string) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:#4f46e5;padding:24px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">📌 Nueva Tarea Asignada</h1>
-    </div>
-    <div style="padding:24px">
-      <h2 style="color:#111827;margin-top:0">${title}</h2>
-      <p style="color:#6b7280">${description || "Sin descripción"}</p>
-      ${dueDate ? `<p style="color:#ef4444"><strong>⏰ Vence:</strong> ${dueDate}</p>` : ""}
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://boostmarketingboost.com"}/dashboard/tasks"
-         style="display:inline-block;background:#4f46e5;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:16px">
-        Ver Tarea
-      </a>
-    </div>
-    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
-      Sistema de Gestión de Tareas
-    </div>
-  </div>`;
-}
-
-export function templateCambioEstado(title: string, oldStatus: string, newStatus: string) {
-  const colors: Record<string, string> = {
-    pending:     "#f59e0b",
-    in_progress: "#3b82f6",
-    completed:   "#10b981",
-    cancelled:   "#ef4444",
-  };
-  const color = colors[newStatus] || "#6b7280";
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:${color};padding:24px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">🔄 Estado Actualizado</h1>
-    </div>
-    <div style="padding:24px">
-      <h2 style="color:#111827;margin-top:0">${title}</h2>
-      <p style="color:#6b7280">
-        <strong>Antes:</strong> ${oldStatus} &nbsp;→&nbsp; <strong>Ahora:</strong>
-        <span style="color:${color};font-weight:bold">${newStatus}</span>
-      </p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://boostmarketingboost.com"}/dashboard/tasks"
-         style="display:inline-block;background:${color};color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:16px">
-        Ver Tarea
-      </a>
-    </div>
-  </div>`;
-}
-
-export function templateRecordatorio(title: string, dueDate: string, horasRestantes: number) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:#f59e0b;padding:24px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">⏰ Recordatorio de Tarea</h1>
-    </div>
-    <div style="padding:24px">
-      <h2 style="color:#111827;margin-top:0">${title}</h2>
-      <p style="color:#ef4444;font-size:18px;font-weight:bold">
-        Vence en ${horasRestantes} hora${horasRestantes !== 1 ? "s" : ""}
-      </p>
-      <p style="color:#6b7280">Fecha límite: ${dueDate}</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://boostmarketingboost.com"}/dashboard/tasks"
-         style="display:inline-block;background:#f59e0b;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:16px">
-        Completar Tarea
-      </a>
-    </div>
-  </div>`;
-}
-
 export function isSmtpConfigured(): boolean {
   return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
-// ─── BIENVENIDA ──────────────────────────────────────────────
-export function templateBienvenida(name: string) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:32px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:24px">👋 Bienvenido a BoostMarketing</h1>
-    </div>
-    <div style="padding:32px">
-      <h2 style="color:#111827">Hola, ${name}!</h2>
-      <p style="color:#6b7280;line-height:1.6">
-        Tu cuenta ha sido creada exitosamente. Ya puedes acceder a todas las herramientas
-        de gestión de tareas, clientes y proyectos.
+// ─── HELPERS ────────────────────────────────────────────────
+
+function btn(url: string, label: string, color: string) {
+  return `<div style="text-align:center;margin:24px 0;">
+    <a href="${url}" style="display:inline-block;background:${color};color:white;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:-0.2px;">${label}</a>
+  </div>`;
+}
+
+function infoBox(content: string, color: string) {
+  return `<div style="background:rgba(255,255,255,0.04);border-left:3px solid ${color};border-radius:0 8px 8px 0;padding:16px 20px;margin:16px 0;">${content}</div>`;
+}
+
+function statusBadge(status: string, color: string) {
+  return `<span style="display:inline-block;background:${color}22;color:${color};padding:3px 12px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid ${color}44;">${status}</span>`;
+}
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://boostmarketingboost.com";
+
+// ─── TEMPLATES ──────────────────────────────────────────────
+
+export function templateNuevaTarea(title: string, description: string, dueDate?: string, b?: Branding) {
+  const color = b?.brandColor || '#7c3aed';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">📌 Nueva tarea asignada</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">Se te ha asignado una nueva tarea</p>
+    ${infoBox(`
+      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">${title}</p>
+      <p style="margin:0;color:rgba(255,255,255,0.5);font-size:14px;">${description || 'Sin descripción'}</p>
+      ${dueDate ? `<p style="margin:8px 0 0;color:#f59e0b;font-size:13px;">⏰ Vence: ${dueDate}</p>` : ''}
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
+export function templateCambioEstado(title: string, oldStatus: string, newStatus: string, b?: Branding) {
+  const colors: Record<string, string> = { pending:'#f59e0b', in_progress:'#3b82f6', completed:'#10b981', cancelled:'#ef4444' };
+  const color = colors[newStatus] || b?.brandColor || '#7c3aed';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🔄 Estado actualizado</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">${title}</p>
+    ${infoBox(`
+      <p style="margin:0;color:rgba(255,255,255,0.5);font-size:14px;">
+        ${statusBadge(oldStatus, '#6b7280')} &nbsp;→&nbsp; ${statusBadge(newStatus, color)}
       </p>
-      <div style="background:#f9fafb;border-radius:8px;padding:16px;margin:20px 0">
-        <p style="margin:0;color:#374151;font-weight:600">¿Qué puedes hacer?</p>
-        <ul style="color:#6b7280;margin:8px 0;padding-left:20px">
-          <li>Gestionar tus tareas asignadas</li>
-          <li>Ver el estado de proyectos</li>
-          <li>Colaborar con tu equipo</li>
-        </ul>
-      </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/dashboard"
-         style="display:inline-block;background:#4f46e5;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;margin-top:8px">
-        Ir al Dashboard
-      </a>
-    </div>
-    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
-      BoostMarketing © ${new Date().getFullYear()}
-    </div>
-  </div>`;
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
+  return b ? emailLayout(content, b) : content;
 }
 
-// ─── NUEVO COMENTARIO ────────────────────────────────────────
-export function templateNuevoComentario(taskTitle: string, authorName: string, comment: string) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:#0ea5e9;padding:24px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">💬 Nuevo comentario en tu tarea</h1>
-    </div>
-    <div style="padding:24px">
-      <p style="color:#6b7280;margin-top:0">Tarea: <strong style="color:#111827">${taskTitle}</strong></p>
-      <div style="background:#f0f9ff;border-left:4px solid #0ea5e9;padding:16px;border-radius:0 8px 8px 0;margin:16px 0">
-        <p style="margin:0 0 8px;color:#0369a1;font-weight:600;font-size:14px">${authorName} comentó:</p>
-        <p style="margin:0;color:#374151">${comment}</p>
-      </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/dashboard/tasks"
-         style="display:inline-block;background:#0ea5e9;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
-        Ver Comentario
-      </a>
-    </div>
-  </div>`;
+export function templateRecordatorio(title: string, dueDate: string, horasRestantes: number, b?: Branding) {
+  const color = '#f59e0b';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">⏰ Recordatorio de tarea</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">Una tarea está próxima a vencer</p>
+    ${infoBox(`
+      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">${title}</p>
+      <p style="margin:0;color:${color};font-weight:700;font-size:18px;">Vence en ${horasRestantes} hora${horasRestantes !== 1 ? 's' : ''}</p>
+      <p style="margin:6px 0 0;color:rgba(255,255,255,0.4);font-size:13px;">Fecha límite: ${dueDate}</p>
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Completar Tarea', color)}`;
+  return b ? emailLayout(content, b) : content;
 }
 
-// ─── TAREA COMPLETADA ────────────────────────────────────────
-export function templateTareaCompletada(taskTitle: string, completedBy: string) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:#10b981;padding:24px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">🎉 Tarea Completada</h1>
-    </div>
-    <div style="padding:24px">
-      <h2 style="color:#111827;margin-top:0">${taskTitle}</h2>
-      <p style="color:#6b7280">
-        <strong>${completedBy}</strong> marcó esta tarea como completada.
+export function templateBienvenida(name: string, b?: Branding) {
+  const color = b?.brandColor || '#7c3aed';
+  const brandName = b?.brandName || 'BoostMarketing';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:22px;">👋 Bienvenido, ${name}!</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 24px;">Tu cuenta en ${brandName} ha sido creada exitosamente.</p>
+    ${infoBox(`
+      <p style="margin:0 0 8px;color:white;font-weight:600;">¿Qué puedes hacer?</p>
+      <p style="margin:0;color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;">
+        ✅ Gestionar tus tareas asignadas<br/>
+        📊 Ver el estado de proyectos<br/>
+        💬 Colaborar con tu equipo<br/>
+        📅 Revisar el calendario
       </p>
-      <div style="background:#ecfdf5;border-radius:8px;padding:16px;text-align:center;margin:16px 0">
-        <span style="font-size:48px">✅</span>
-        <p style="color:#065f46;font-weight:600;margin:8px 0 0">¡Excelente trabajo!</p>
-      </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/dashboard/tasks"
-         style="display:inline-block;background:#10b981;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
-        Ver Tareas
-      </a>
-    </div>
-  </div>`;
+    `, color)}
+    ${btn(`${APP_URL}/dashboard`, 'Ir al Dashboard', color)}`;
+  return b ? emailLayout(content, b) : content;
 }
 
-// ─── TAREA VENCIDA ───────────────────────────────────────────
-export function templateTareaVencida(taskTitle: string, dueDate: string) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:#ef4444;padding:24px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">🚨 Tarea Vencida</h1>
-    </div>
-    <div style="padding:24px">
-      <h2 style="color:#111827;margin-top:0">${taskTitle}</h2>
-      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:16px;margin:16px 0">
-        <p style="color:#dc2626;margin:0;font-weight:600">⚠️ Esta tarea venció el ${dueDate}</p>
-        <p style="color:#6b7280;margin:8px 0 0;font-size:14px">Por favor actualiza el estado o contacta a tu manager.</p>
-      </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/dashboard/tasks"
-         style="display:inline-block;background:#ef4444;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
-        Ver Tarea
-      </a>
-    </div>
-  </div>`;
+export function templateNuevoComentario(taskTitle: string, authorName: string, comment: string, b?: Branding) {
+  const color = '#0ea5e9';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">💬 Nuevo comentario</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">En la tarea: <strong style="color:white;">${taskTitle}</strong></p>
+    ${infoBox(`
+      <p style="margin:0 0 6px;color:${color};font-weight:600;font-size:13px;">${authorName} comentó:</p>
+      <p style="margin:0;color:rgba(255,255,255,0.8);">${comment}</p>
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Comentario', color)}`;
+  return b ? emailLayout(content, b) : content;
 }
 
-// ─── RESUMEN SEMANAL ─────────────────────────────────────────
-export function templateResumenSemanal(
-  name: string,
-  pendientes: number,
-  enProgreso: number,
-  completadas: number,
-  tareas: Array<{title: string, dueDate?: string, status: string}>
-) {
-  const filas = tareas.map(t => `
-    <tr>
-      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#374151">${t.title}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px">${t.dueDate || "Sin fecha"}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6">
-        <span style="background:${t.status === 'completed' ? '#ecfdf5' : t.status === 'in_progress' ? '#eff6ff' : '#fefce8'};
-                     color:${t.status === 'completed' ? '#065f46' : t.status === 'in_progress' ? '#1d4ed8' : '#854d0e'};
-                     padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600">
-          ${t.status === 'completed' ? 'Completada' : t.status === 'in_progress' ? 'En progreso' : 'Pendiente'}
-        </span>
-      </td>
-    </tr>
-  `).join('');
-
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:32px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:22px">📊 Tu Resumen Semanal</h1>
-      <p style="color:#c7d2fe;margin:8px 0 0">Semana del ${new Date().toLocaleDateString('es-MX', {day:'numeric',month:'long'})}</p>
+export function templateTareaCompletada(taskTitle: string, completedBy: string, b?: Branding) {
+  const color = '#10b981';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🎉 Tarea completada</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;"><strong style="color:white;">${completedBy}</strong> marcó una tarea como completada</p>
+    ${infoBox(`
+      <p style="margin:0;color:white;font-weight:600;font-size:16px;">✅ ${taskTitle}</p>
+    `, color)}
+    <div style="text-align:center;margin:20px 0;padding:20px;background:rgba(16,185,129,0.08);border-radius:12px;">
+      <p style="margin:0;color:${color};font-weight:700;font-size:18px;">¡Excelente trabajo! 🚀</p>
     </div>
-    <div style="padding:24px">
-      <p style="color:#374151">Hola <strong>${name}</strong>, aquí está tu resumen de esta semana:</p>
-      <div style="display:flex;gap:12px;margin:20px 0">
-        <div style="flex:1;background:#fefce8;border-radius:8px;padding:16px;text-align:center">
-          <p style="font-size:28px;font-weight:700;color:#854d0e;margin:0">${pendientes}</p>
-          <p style="color:#92400e;margin:4px 0 0;font-size:13px">Pendientes</p>
-        </div>
-        <div style="flex:1;background:#eff6ff;border-radius:8px;padding:16px;text-align:center">
-          <p style="font-size:28px;font-weight:700;color:#1d4ed8;margin:0">${enProgreso}</p>
-          <p style="color:#1e40af;margin:4px 0 0;font-size:13px">En Progreso</p>
-        </div>
-        <div style="flex:1;background:#ecfdf5;border-radius:8px;padding:16px;text-align:center">
-          <p style="font-size:28px;font-weight:700;color:#065f46;margin:0">${completadas}</p>
-          <p style="color:#047857;margin:4px 0 0;font-size:13px">Completadas</p>
-        </div>
-      </div>
-      ${tareas.length > 0 ? `
-      <table style="width:100%;border-collapse:collapse;margin-top:16px">
-        <thead>
-          <tr style="background:#f9fafb">
-            <th style="padding:10px 12px;text-align:left;font-size:13px;color:#6b7280;font-weight:600">Tarea</th>
-            <th style="padding:10px 12px;text-align:left;font-size:13px;color:#6b7280;font-weight:600">Vence</th>
-            <th style="padding:10px 12px;text-align:left;font-size:13px;color:#6b7280;font-weight:600">Estado</th>
-          </tr>
-        </thead>
-        <tbody>${filas}</tbody>
-      </table>` : ''}
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/dashboard/tasks"
-         style="display:inline-block;background:#4f46e5;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;margin-top:20px">
-        Ver todas mis tareas
-      </a>
-    </div>
-    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
-      BoostMarketing © ${new Date().getFullYear()} · Recibes esto porque tienes tareas asignadas
-    </div>
-  </div>`;
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tareas', color)}`;
+  return b ? emailLayout(content, b) : content;
 }
 
-// ─── RESET DE CONTRASEÑA ─────────────────────────────────────
-export function templateResetPassword(name: string, resetUrl: string) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:#7c3aed;padding:28px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">🔐 Restablecer Contraseña</h1>
-    </div>
-    <div style="padding:28px">
-      <p style="color:#374151">Hola <strong>${name}</strong>,</p>
-      <p style="color:#6b7280;line-height:1.6">
-        Recibimos una solicitud para restablecer la contraseña de tu cuenta.
-        Haz clic en el botón para crear una nueva contraseña.
-      </p>
-      <div style="text-align:center;margin:28px 0">
-        <a href="${resetUrl}"
-           style="display:inline-block;background:#7c3aed;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">
-          Restablecer Contraseña
-        </a>
-      </div>
-      <div style="background:#fef9ff;border:1px solid #e9d5ff;border-radius:8px;padding:14px;margin-top:16px">
-        <p style="margin:0;color:#6b7280;font-size:13px">
-          ⏰ Este enlace expira en <strong>1 hora</strong>.<br/>
-          Si no solicitaste esto, ignora este mensaje — tu contraseña no cambiará.
-        </p>
-      </div>
-    </div>
-    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
-      BoostMarketing · Por seguridad nunca compartimos tu contraseña
-    </div>
-  </div>`;
+export function templateTareaVencida(taskTitle: string, dueDate: string, b?: Branding) {
+  const color = '#ef4444';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🚨 Tarea vencida</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">Una tarea ha superado su fecha límite</p>
+    ${infoBox(`
+      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">${taskTitle}</p>
+      <p style="margin:0;color:${color};font-weight:600;">⚠️ Venció el ${dueDate}</p>
+      <p style="margin:6px 0 0;color:rgba(255,255,255,0.4);font-size:13px;">Actualiza el estado o contacta a tu manager.</p>
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
+  return b ? emailLayout(content, b) : content;
 }
 
-// ─── VIDEOLLAMADA CONFIRMADA (AL CLIENTE) ────────────────────
-export function templateVideollamadaConfirmada(
-  clientName: string,
-  date: string,
-  meetUrl?: string
-) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7);padding:28px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">🎥 Videollamada Confirmada</h1>
-    </div>
-    <div style="padding:28px">
-      <p style="color:#374151">Hola <strong>${clientName}</strong>,</p>
-      <p style="color:#6b7280">Tu videollamada con el equipo de BoostMarketing ha sido confirmada.</p>
-      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:20px;margin:20px 0">
-        <p style="margin:0 0 8px;color:#0369a1;font-weight:700;font-size:15px">📅 Detalles de la reunión</p>
-        <p style="margin:0;color:#374151"><strong>Fecha:</strong> ${date}</p>
-        ${meetUrl ? `<p style="margin:8px 0 0;color:#374151"><strong>Enlace:</strong> <a href="${meetUrl}" style="color:#0ea5e9">${meetUrl}</a></p>` : ''}
-      </div>
-      ${meetUrl ? `
-      <div style="text-align:center;margin:20px 0">
-        <a href="${meetUrl}"
-           style="display:inline-block;background:#0ea5e9;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">
-          Unirse a la Videollamada
-        </a>
-      </div>` : ''}
-      <p style="color:#6b7280;font-size:13px">
-        Si necesitas reagendar, contáctanos respondiendo este correo.
-      </p>
-    </div>
-    <div style="background:#f9fafb;padding:12px;text-align:center;font-size:12px;color:#9ca3af">
-      BoostMarketing © ${new Date().getFullYear()}
-    </div>
-  </div>`;
+export function templateResumenSemanal(name: string, pendientes: number, enProgreso: number, completadas: number, tareas: Array<{title: string, dueDate?: string, status: string}>, b?: Branding) {
+  const color = b?.brandColor || '#7c3aed';
+  const filas = tareas.map(t => {
+    const sc: Record<string,string> = { completed:'#10b981', in_progress:'#3b82f6', pending:'#f59e0b' };
+    const sl: Record<string,string> = { completed:'Completada', in_progress:'En progreso', pending:'Pendiente' };
+    return `<tr>
+      <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.8);font-size:14px;">${t.title}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);font-size:13px;">${t.dueDate || 'Sin fecha'}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);">${statusBadge(sl[t.status]||t.status, sc[t.status]||'#6b7280')}</td>
+    </tr>`;
+  }).join('');
+  const content = `
+    <h2 style="color:white;margin:0 0 4px;font-size:22px;">📊 Resumen semanal</h2>
+    <p style="color:rgba(255,255,255,0.4);margin:0 0 24px;font-size:14px;">Hola <strong style="color:white;">${name}</strong>, aquí está tu semana:</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>
+        <td width="33%" style="padding:0 6px 0 0;"><div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:16px;text-align:center;"><p style="margin:0;font-size:28px;font-weight:700;color:#f59e0b;">${pendientes}</p><p style="margin:4px 0 0;color:rgba(255,255,255,0.4);font-size:12px;">Pendientes</p></div></td>
+        <td width="33%" style="padding:0 3px;"><div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:16px;text-align:center;"><p style="margin:0;font-size:28px;font-weight:700;color:#3b82f6;">${enProgreso}</p><p style="margin:4px 0 0;color:rgba(255,255,255,0.4);font-size:12px;">En Progreso</p></div></td>
+        <td width="33%" style="padding:0 0 0 6px;"><div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:16px;text-align:center;"><p style="margin:0;font-size:28px;font-weight:700;color:#10b981;">${completadas}</p><p style="margin:4px 0 0;color:rgba(255,255,255,0.4);font-size:12px;">Completadas</p></div></td>
+      </tr>
+    </table>
+    ${tareas.length > 0 ? `<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+      <thead><tr style="background:rgba(255,255,255,0.04);">
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);font-weight:600;">TAREA</th>
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);font-weight:600;">VENCE</th>
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);font-weight:600;">ESTADO</th>
+      </tr></thead>
+      <tbody>${filas}</tbody>
+    </table>` : ''}
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver todas mis tareas', color)}`;
+  return b ? emailLayout(content, b) : content;
 }
 
-// ─── NUEVA CITA (A LOS MANAGERS) ─────────────────────────────
-export function templateNuevaCita(
-  clientName: string,
-  clientEmail: string,
-  date: string,
-  notes?: string
-) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:#f59e0b;padding:24px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">📆 Nueva Cita Agendada</h1>
-    </div>
-    <div style="padding:24px">
-      <p style="color:#6b7280;margin-top:0">Un prospecto agendó una videollamada:</p>
-      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0">
-        <p style="margin:0 0 6px;color:#374151"><strong>👤 Nombre:</strong> ${clientName}</p>
-        <p style="margin:0 0 6px;color:#374151"><strong>📧 Email:</strong> ${clientEmail}</p>
-        <p style="margin:0 0 6px;color:#374151"><strong>📅 Fecha:</strong> ${date}</p>
-        ${notes ? `<p style="margin:8px 0 0;color:#6b7280"><strong>📝 Notas:</strong> ${notes}</p>` : ''}
-      </div>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/dashboard/admin"
-         style="display:inline-block;background:#f59e0b;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
-        Ver en Dashboard
-      </a>
-    </div>
-  </div>`;
+export function templateResetPassword(name: string, resetUrl: string, b?: Branding) {
+  const color = b?.brandColor || '#7c3aed';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🔐 Restablecer contraseña</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${name}</strong>, recibimos una solicitud para restablecer tu contraseña.</p>
+    ${btn(resetUrl, 'Restablecer Contraseña', color)}
+    ${infoBox(`<p style="margin:0;color:rgba(255,255,255,0.4);font-size:13px;">⏰ Este enlace expira en <strong style="color:white;">1 hora</strong>.<br/>Si no solicitaste esto, ignora este mensaje.</p>`, '#6b7280')}`;
+  return b ? emailLayout(content, b) : content;
 }
 
-// ─── CITA CANCELADA ──────────────────────────────────────────
-export function templateCitaCancelada(clientName: string, date: string) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:#ef4444;padding:24px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">❌ Cita Cancelada</h1>
-    </div>
-    <div style="padding:24px">
-      <p style="color:#374151">Hola <strong>${clientName}</strong>,</p>
-      <p style="color:#6b7280">
-        Lamentamos informarte que tu cita del <strong>${date}</strong> ha sido cancelada.
-      </p>
-      <p style="color:#6b7280">Por favor contáctanos para reagendar.</p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}"
-         style="display:inline-block;background:#ef4444;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:8px">
-        Reagendar
-      </a>
-    </div>
-  </div>`;
+export function templateVideollamadaConfirmada(clientName: string, date: string, meetUrl?: string, b?: Branding) {
+  const color = '#0ea5e9';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🎥 Videollamada confirmada</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong>, tu videollamada ha sido confirmada.</p>
+    ${infoBox(`
+      <p style="margin:0 0 8px;color:rgba(255,255,255,0.4);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">📅 Detalles de la reunión</p>
+      <p style="margin:0 0 6px;color:white;font-size:16px;font-weight:600;">${date}</p>
+      ${meetUrl ? `<p style="margin:6px 0 0;"><a href="${meetUrl}" style="color:${color};font-size:14px;">${meetUrl}</a></p>` : ''}
+    `, color)}
+    ${meetUrl ? btn(meetUrl, '🔗 Unirse a la Videollamada', color) : ''}
+    <p style="color:rgba(255,255,255,0.3);font-size:13px;text-align:center;">Si necesitas reagendar, contáctanos respondiendo este correo.</p>`;
+  return b ? emailLayout(content, b) : content;
 }
 
-// ─── TAREA EDITADA ───────────────────────────────────────────
-export function templateTareaEditada(
-  taskTitle: string,
-  cambios: Array<{campo: string, antes: string, despues: string}>
-) {
-  const filas = cambios.map(c => `
-    <tr>
-      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;font-weight:600">${c.campo}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#ef4444;font-size:13px;text-decoration:line-through">${c.antes}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#10b981;font-size:13px;font-weight:600">${c.despues}</td>
-    </tr>
-  `).join('');
-
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:#6366f1;padding:24px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">✏️ Tarea Actualizada</h1>
-    </div>
-    <div style="padding:24px">
-      <h2 style="color:#111827;margin-top:0">${taskTitle}</h2>
-      <p style="color:#6b7280">Se realizaron los siguientes cambios:</p>
-      <table style="width:100%;border-collapse:collapse;margin-top:12px">
-        <thead>
-          <tr style="background:#f9fafb">
-            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280">Campo</th>
-            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280">Antes</th>
-            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280">Ahora</th>
-          </tr>
-        </thead>
-        <tbody>${filas}</tbody>
-      </table>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/dashboard/tasks"
-         style="display:inline-block;background:#6366f1;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;margin-top:20px">
-        Ver Tarea
-      </a>
-    </div>
-  </div>`;
+export function templateNuevaCita(clientName: string, clientEmail: string, date: string, notes?: string, b?: Branding) {
+  const color = '#f59e0b';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">📆 Nueva cita agendada</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Un prospecto agendó una videollamada</p>
+    ${infoBox(`
+      <p style="margin:0 0 8px;color:white;"><span style="color:rgba(255,255,255,0.4);font-size:13px;">👤 NOMBRE</span><br/><strong>${clientName}</strong></p>
+      <p style="margin:0 0 8px;color:white;"><span style="color:rgba(255,255,255,0.4);font-size:13px;">📧 EMAIL</span><br/><strong>${clientEmail}</strong></p>
+      <p style="margin:0 ${notes ? '0 8px' : ''};color:white;"><span style="color:rgba(255,255,255,0.4);font-size:13px;">📅 FECHA</span><br/><strong>${date}</strong></p>
+      ${notes ? `<p style="margin:0;color:rgba(255,255,255,0.6);font-size:14px;">📝 ${notes}</p>` : ''}
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/calendar`, 'Ver en Dashboard', color)}`;
+  return b ? emailLayout(content, b) : content;
 }
 
+export function templateCitaCancelada(clientName: string, date: string, b?: Branding) {
+  const color = '#ef4444';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">❌ Cita cancelada</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong></p>
+    ${infoBox(`<p style="margin:0;color:rgba(255,255,255,0.7);">Tu cita del <strong style="color:white;">${date}</strong> ha sido cancelada.<br/><span style="font-size:13px;color:rgba(255,255,255,0.4);">Por favor contáctanos para reagendar.</span></p>`, color)}
+    ${btn(APP_URL, 'Reagendar', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
 
-export function templateNuevaReunion(userName: string, meetingTitle: string, date: string, meetUrl?: string) {
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
-    <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:28px;text-align:center">
-      <h1 style="color:white;margin:0;font-size:20px">📅 Nueva Reunión Asignada</h1>
-    </div>
-    <div style="padding:28px">
-      <p style="color:#374151">Hola <strong>${userName}</strong>,</p>
-      <p style="color:#6b7280">Se te ha asignado a la siguiente reunión interna:</p>
-      <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:20px;margin:20px 0">
-        <p style="margin:0 0 8px;color:#6d28d9;font-weight:700;font-size:15px">🗓 ${meetingTitle}</p>
-        <p style="margin:0;color:#374151"><strong>Fecha:</strong> ${date}</p>
-        ${meetUrl ? `<p style="margin:8px 0 0;color:#374151"><strong>Enlace:</strong> <a href="${meetUrl}" style="color:#7c3aed">${meetUrl}</a></p>` : ""}
-      </div>
-      ${meetUrl ? `
-      <div style="text-align:center;margin:20px 0">
-        <a href="${meetUrl}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">
-          Unirse a la Reunión
-        </a>
-      </div>` : ""}
-      <p style="color:#6b7280;font-size:13px">Este es un recordatorio automático del sistema BoostMarketing.</p>
-    </div>
-  </div>
-  `;
+export function templateTareaEditada(taskTitle: string, cambios: Array<{campo: string, antes: string, despues: string}>, b?: Branding) {
+  const color = b?.brandColor || '#6366f1';
+  const filas = cambios.map(c => `<tr>
+    <td style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:13px;">${c.campo}</td>
+    <td style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:#ef4444;font-size:13px;text-decoration:line-through;">${c.antes}</td>
+    <td style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:#10b981;font-size:13px;font-weight:600;">${c.despues}</td>
+  </tr>`).join('');
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">✏️ Tarea actualizada</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;"><strong style="color:white;">${taskTitle}</strong></p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+      <thead><tr style="background:rgba(255,255,255,0.04);">
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">CAMPO</th>
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">ANTES</th>
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">AHORA</th>
+      </tr></thead>
+      <tbody>${filas}</tbody>
+    </table>
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
+export function templateNuevaReunion(userName: string, meetingTitle: string, date: string, meetUrl?: string, b?: Branding) {
+  const color = b?.brandColor || '#7c3aed';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">📅 Nueva reunión asignada</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${userName}</strong>, se te asignó a una reunión</p>
+    ${infoBox(`
+      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">🗓 ${meetingTitle}</p>
+      <p style="margin:0;color:rgba(255,255,255,0.6);font-size:14px;">${date}</p>
+      ${meetUrl ? `<p style="margin:6px 0 0;"><a href="${meetUrl}" style="color:${color};font-size:14px;">${meetUrl}</a></p>` : ''}
+    `, color)}
+    ${meetUrl ? btn(meetUrl, 'Unirse a la Reunión', color) : ''}`;
+  return b ? emailLayout(content, b) : content;
+}
+
+export function templateRecordatorioVideollamada(params: { name: string; dateStr: string; meetUrl: string; minutesBefore: number; }, b?: Branding) {
+  const { name, dateStr, meetUrl, minutesBefore } = params;
+  const color = '#0ea5e9';
+  const label = minutesBefore >= 1440 ? '24 horas' : minutesBefore >= 60 ? '1 hora' : '15 minutos';
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">⏰ Recordatorio de videollamada</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${name}</strong>, tu reunión comienza en <strong style="color:${color};">${label}</strong></p>
+    ${infoBox(`
+      <p style="margin:0 0 6px;color:rgba(255,255,255,0.4);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">📅 Fecha y hora</p>
+      <p style="margin:0;color:white;font-size:16px;font-weight:600;">${dateStr}</p>
+    `, color)}
+    ${meetUrl ? btn(meetUrl, '🔗 Unirse a la Reunión', color) : ''}
+    <p style="color:rgba(255,255,255,0.3);font-size:13px;text-align:center;">Si tienes alguna pregunta, responde a este correo.</p>`;
+  return b ? emailLayout(content, b) : content;
 }
