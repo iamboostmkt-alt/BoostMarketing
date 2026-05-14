@@ -173,6 +173,7 @@ export async function POST(req: NextRequest) {
       description: description || "",
       priority:    priority    || "medium",
       dueDate:     dueDate     ? new Date(dueDate) : null,
+      startDate:   body.startDate ? new Date(body.startDate) : null,
       assignedUserId: isManager ? assignedUserId || null : null,
       clientId:       isManager ? clientId       || null : null,
       ...(isManager && Array.isArray(assignedUserIds) && assignedUserIds.length > 0 && {
@@ -199,7 +200,7 @@ export async function PUT(req: NextRequest) {
   const userName  = (session.user as any).name || "Un usuario";
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const body      = await req.json();
-  const { id, title, description, status, priority, dueDate, assignedUserId, assignedUserIds, clientId } = body;
+  const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId } = body;
 
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
@@ -219,6 +220,7 @@ export async function PUT(req: NextRequest) {
       ...(description !== undefined && { description }),
       ...(priority    !== undefined && { priority }),
       ...(dueDate     !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
+      ...(startDate   !== undefined && { startDate: startDate ? new Date(startDate) : null }),
       ...(status      !== undefined && { status: normalizeTaskStatus(status) }),
       ...(isManager && assignedUserId !== undefined && { assignedUserId }),
       ...(isManager && clientId       !== undefined && { clientId }),
