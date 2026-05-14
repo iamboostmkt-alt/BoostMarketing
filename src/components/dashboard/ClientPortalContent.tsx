@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Calendar, CheckSquare, Clock,
-  CheckCircle2, Loader2, AlertCircle, User, Building2, Eye, MessageCircle,
+  CheckCircle2, Loader2, AlertCircle, User, Building2, Eye, MessageCircle, Video,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,6 +24,83 @@ import { es } from 'date-fns/locale';
 import ChatContent from '@/components/dashboard/ChatContent';
 import { ReportButton } from '@/components/dashboard/ReportButton';
 import type { ClientPortalData, Task, TaskAssignee } from '@/lib/types';
+
+// Timeline component
+function ProjectTimeline({ tasks, appointments }) {
+  const now = new Date();
+  const events = [
+    ...tasks.filter(t => t.dueDate).map(t => ({
+      id: t.id, date: new Date(t.dueDate), title: t.title,
+      type: 'task', status: t.status,
+      isPast: new Date(t.dueDate) < now,
+      isToday: isSameDay(new Date(t.dueDate), now),
+    })),
+    ...appointments.map(a => ({
+      id: a.id, date: new Date(a.date), title: 'Videollamada: ' + a.name,
+      type: 'appointment', status: a.status,
+      isPast: new Date(a.date) < now,
+      isToday: isSameDay(new Date(a.date), now),
+    })),
+  ].sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 8);
+
+  if (events.length === 0) return null;
+
+  const pendingEvents = events.filter(e => !e.isPast && e.status !== 'completed');
+
+  return (
+    <div className="glass-card rounded-2xl p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="w-1.5 h-5 rounded-full bg-brand" />
+        <h3 className="text-sm font-semibold text-white">Timeline del proyecto</h3>
+      </div>
+      <div className="relative">
+        <div className="absolute left-3.5 top-2 bottom-2 w-px bg-white/[0.06]" />
+        <div className="space-y-1">
+          {events.map((event, i) => {
+            const isCompleted = event.status === 'completed' || (event.type === 'appointment' && event.isPast);
+            const isNext = !isCompleted && pendingEvents[0]?.id === event.id;
+            return (
+              <div key={event.id} className="flex items-start gap-4 pl-1">
+                <div className="relative z-10 mt-1.5 shrink-0">
+                  {isCompleted ? (
+                    <div className="w-5 h-5 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center">
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                    </div>
+                  ) : isNext ? (
+                    <div className="w-5 h-5 rounded-full bg-brand/20 border border-brand/60 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+                    </div>
+                  ) : event.type === 'appointment' ? (
+                    <div className="w-5 h-5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                      <Video className="w-2.5 h-2.5 text-green-400" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-white/[0.04] border border-white/[0.10] flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                    </div>
+                  )}
+                </div>
+                <div className={"flex-1 " + (i === events.length - 1 ? "pb-0" : "pb-4")}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className={"text-sm leading-tight " + (isCompleted ? "text-white/40 line-through" : isNext ? "text-white font-medium" : "text-white/70")}>
+                      {event.title}
+                    </p>
+                    {isNext && <span className="text-[10px] bg-brand/20 text-brand-light px-2 py-0.5 rounded-full shrink-0">Siguiente</span>}
+                    {event.isToday && <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full shrink-0">Hoy</span>}
+                  </div>
+                  <p className={"text-[11px] mt-0.5 " + (isCompleted ? "text-white/25" : "text-white/40")}>
+                    {format(event.date, "d 'de' MMM yyyy", { locale: es })}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -291,6 +368,7 @@ const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
 interface ClientSummary { id: string; name: string; company: string; email: string; }
 
+
 export default function ClientPortalContent() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -303,6 +381,7 @@ export default function ClientPortalContent() {
   const [previewClientId,  setPreviewClientId]  = useState<string>('');
 
   const [data,     setData]     = useState<ClientPortalData | null>(null);
+  const [appointments, setAppointments] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState<string | null>(null);
   const [noClient, setNoClient] = useState(false);
@@ -341,6 +420,7 @@ export default function ClientPortalContent() {
       .then((r) => r.json())
       .then((d) => {
         if (d.client === null) { setNoClient(true); return; }
+        fetch('/api/appointments?upcoming=1').then(r => r.json()).then(ad => setAppointments(ad.appointments || [])).catch(() => {});
         if (d.error)           { setError(d.error); return; }
         setData(d);
       })
@@ -591,6 +671,8 @@ export default function ClientPortalContent() {
           </button>
         ))}
       </div>
+
+      {portalTab === 'resumen' && <ProjectTimeline tasks={tasks} appointments={appointments} />}
 
       {/* Report Button */}
       {isManager && client && (
