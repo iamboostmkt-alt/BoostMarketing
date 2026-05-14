@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -50,6 +50,7 @@ export default function ContactForm({
   const [value, setValue] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Populate form when editing
   useEffect(() => {
@@ -114,6 +115,18 @@ export default function ContactForm({
       setLoading(false);
     }
   };
+
+  async function handleDelete() {
+    if (!contact?.id) return;
+    if (!confirm("Eliminar este contacto?")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/contacts?id=" + contact.id, { method: "DELETE" });
+      if (res.ok) { toast.success("Contacto eliminado."); onSuccess(); onOpenChange(false); }
+      else { const d = await res.json(); toast.error(d.error || "Error al eliminar."); }
+    } catch { toast.error("Error de red."); }
+    finally { setDeleting(false); }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -246,6 +259,13 @@ export default function ContactForm({
           </div>
 
           <DialogFooter className="pt-2">
+            {isEditing && (
+              <Button type="button" variant="ghost" onClick={handleDelete} disabled={deleting || loading}
+                className="text-red-400 hover:text-red-300 hover:bg-red-400/10 mr-auto gap-1.5">
+                {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                Eliminar
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"
