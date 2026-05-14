@@ -88,6 +88,7 @@ model User {
   createdActivities      Activity[]                @relation("CreatedActivities")
   activityAssignments    ActivityAssignedUser[]
   taskAssignments        TaskAssignedUser[]
+  taskAttachments        TaskAttachment[]
   clientAssignments      ClientAssignedUser[]
   customRole             CustomRole?               @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
   chatMessages           ChatMessage[]
@@ -159,6 +160,7 @@ model Task {
   assignedUser  User?              @relation("AssignedTasks", fields: [assignedUserId], references: [id], onDelete: SetNull)
   client        Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
   assignedUsers TaskAssignedUser[]
+  attachments    TaskAttachment[]
 
   @@map("tasks")
 }
@@ -469,4 +471,20 @@ model Settings {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   @@map("settings")
+}
+model TaskAttachment {
+  id        String    @id @default(cuid())
+  taskId    String    @map("task_id")
+  userId    String    @map("user_id")
+  fileName  String    @map("file_name")
+  fileUrl   String    @map("file_url")
+  fileType  String    @map("file_type")
+  fileSize  Int       @map("file_size")
+  isInternal Boolean  @default(false) @map("is_internal")
+  status    String    @default("active")
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("task_attachments")
 }
