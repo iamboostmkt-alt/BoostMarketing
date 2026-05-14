@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
   if (scope === "mine") {
     const tasks = await db.task.findMany({
       where: {
+        ...(isClient && { visibility: 'client_visible' }),
         OR: [
           { userId },
           { assignedUserId: userId },
@@ -82,7 +83,7 @@ export async function GET(req: NextRequest) {
 
     const result = await Promise.all(
       clients.map(async (client) => {
-        const taskWhere: any = { clientId: client.id };
+        const taskWhere: any = { clientId: client.id, ...(isClient && { visibility: 'client_visible' }) };
         if (!isManager) {
           taskWhere.OR = [
             { assignedUserId: userId },
