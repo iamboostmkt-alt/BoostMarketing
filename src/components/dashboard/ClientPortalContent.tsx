@@ -308,6 +308,7 @@ export default function ClientPortalContent() {
   const [noClient, setNoClient] = useState(false);
   const [selectedDay,      setSelectedDay]      = useState<Date | null>(null);
   const [activeTab,        setActiveTab]        = useState<'all' | 'tasks'>('all');
+  const [portalTab,        setPortalTab]        = useState<'resumen' | 'tareas' | 'calendario' | 'reuniones' | 'chat'>('resumen');
 
   // Load client list for admin/PM selector
   useEffect(() => {
@@ -571,6 +572,24 @@ export default function ClientPortalContent() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Portal Navigation Tabs */}
+      <div className="flex gap-1 border-b border-white/[0.06] pb-0 overflow-x-auto">
+        {([
+          { id: 'resumen',    label: 'Resumen',    icon: 'layout' },
+          { id: 'tareas',     label: 'Tareas',     icon: 'check' },
+          { id: 'calendario', label: 'Calendario', icon: 'calendar' },
+          { id: 'reuniones',  label: 'Reuniones',  icon: 'video' },
+          { id: 'chat',       label: 'Chat',       icon: 'chat' },
+        ] as const).map(tab => (
+          <button key={tab.id} onClick={() => setPortalTab(tab.id)}
+            className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap ${
+              portalTab === tab.id ? 'border-brand text-white' : 'border-transparent text-white/40 hover:text-white/70'
+            }`}>
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Report Button */}
