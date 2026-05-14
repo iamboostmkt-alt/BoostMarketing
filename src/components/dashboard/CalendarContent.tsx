@@ -333,7 +333,7 @@ function DayModal({
             </div>
             <div>
               <DialogTitle className="text-base font-semibold text-white leading-tight">
-                {isToday(day) ? 'Hoy Ã‚Â· ' : ''}{label}
+                {isToday(day) ? 'Hoy · ' : ''}{label}
               </DialogTitle>
               <p className="text-xs text-white/40 mt-0.5">
                     {total === 0 ? 'Sin elementos' : `${total} elemento${total !== 1 ? 's' : ''}`}
