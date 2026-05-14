@@ -3,22 +3,14 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+  DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import type { Client } from '@/lib/types';
 
@@ -29,6 +21,23 @@ interface Manager {
   color: string;
 }
 
+interface TeamMember {
+  id: string;
+  name: string | null;
+  email: string;
+  color: string;
+  role: string;
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: 'Admin',
+  PROJECT_MANAGER: 'PM',
+  TEAM_MEMBER: 'Equipo',
+  DESIGNER: 'Diseno',
+  MARKETING: 'Marketing',
+  SALES_REP: 'Ventas',
+};
+
 interface ClientFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -37,13 +46,7 @@ interface ClientFormProps {
   isAdmin?: boolean;
 }
 
-export default function ClientForm({
-  open,
-  onOpenChange,
-  client,
-  onSuccess,
-  isAdmin = false,
-}: ClientFormProps) {
+export default function ClientForm({ open, onOpenChange, client, onSuccess, isAdmin = false }: ClientFormProps) {
   const isEditing = !!client;
   const [loading,           setLoading]           = useState(false);
   const [name,              setName]              = useState('');
@@ -52,16 +55,22 @@ export default function ClientForm({
   const [phone,             setPhone]             = useState('');
   const [status,            setStatus]            = useState('active');
   const [assignedManagerId, setAssignedManagerId] = useState('');
+  const [assignedUserIds,   setAssignedUserIds]   = useState<string[]>([]);
   const [managers,          setManagers]          = useState<Manager[]>([]);
+  const [teamMembers,       setTeamMembers]       = useState<TeamMember[]>([]);
 
   useEffect(() => {
     if (open) {
-      setName(client?.name              || '');
-      setEmail(client?.email            || '');
-      setCompany(client?.company        || '');
-      setPhone(client?.phone            || '');
-      setStatus(client?.status          || 'active');
+      setName(client?.name     || '');
+      setEmail(client?.email   || '');
+      setCompany(client?.company || '');
+      setPhone(client?.phone   || '');
+      setStatus(client?.status || 'active');
       setAssignedManagerId(client?.assignedManagerId || '');
+
+      // Pre-fill assigned users from client
+      const existingIds = ((client as any)?.assignedUsers ?? []).map((u: any) => u.id ?? u.userId ?? u.user?.id).filter(Boolean);
+      setAssignedUserIds(existingIds);
 
       if (isAdmin) {
         fetch('/api/managers')
@@ -69,26 +78,34 @@ export default function ClientForm({
           .then((d) => setManagers(d.managers ?? []))
           .catch(() => {});
       }
+
+      // Cargar equipo para multiasignacion
+      fetch('/api/team-members')
+        .then((r) => r.json())
+        .then((d) => setTeamMembers(d.users ?? []))
+        .catch(() => {});
     }
   }, [open, client, isAdmin]);
 
+  function toggleUser(id: string) {
+    setAssignedUserIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!name.trim() || !email.trim()) {
-      toast.error('Nombre y email son requeridos');
-      return;
-    }
+    if (!name.trim() || !email.trim()) { toast.error('Nombre y email son requeridos'); return; }
 
     setLoading(true);
     try {
-      const method = isEditing ? 'PUT' : 'POST';
-      const body = isEditing
-        ? { id: client!.id, name, email, company, phone, status, assignedManagerId: assignedManagerId || null }
-        : { name, email, company, phone, status, assignedManagerId: assignedManagerId || null };
+      const body = {
+        ...(isEditing ? { id: client!.id } : {}),
+        name, email, company, phone, status,
+        assignedManagerId: assignedManagerId || null,
+        assignedUserIds,
+      };
 
       const res = await fetch('/api/clients', {
-        method,
+        method:  isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(body),
       });
@@ -112,79 +129,46 @@ export default function ClientForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#15151c] border-white/[0.06] text-white sm:max-w-md max-h-[92vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white">
-            {isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}
-          </DialogTitle>
+          <DialogTitle className="text-white">{isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
           <DialogDescription className="text-white/40">
-            {isEditing
-              ? 'Modifica los datos del cliente.'
-              : 'Completa los datos para crear un nuevo cliente.'}
+            {isEditing ? 'Modifica los datos del cliente.' : 'Completa los datos para crear un nuevo cliente.'}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="client-name" className="text-white/70">
-              Nombre <span className="text-red-400">*</span>
-            </Label>
-            <Input
-              id="client-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Nombre del cliente"
-              required
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand"
-            />
+            <Label htmlFor="client-name" className="text-white/70">Nombre <span className="text-red-400">*</span></Label>
+            <Input id="client-name" value={name} onChange={(e) => setName(e.target.value)}
+              placeholder="Nombre del cliente" required
+              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client-email" className="text-white/70">
-              Email <span className="text-red-400">*</span>
-            </Label>
-            <Input
-              id="client-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="correo@ejemplo.com"
-              required
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand"
-            />
+            <Label htmlFor="client-email" className="text-white/70">Email <span className="text-red-400">*</span></Label>
+            <Input id="client-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder="correo@ejemplo.com" required
+              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="client-company" className="text-white/70">
-                Empresa
-              </Label>
-              <Input
-                id="client-company"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
+              <Label htmlFor="client-company" className="text-white/70">Empresa</Label>
+              <Input id="client-company" value={company} onChange={(e) => setCompany(e.target.value)}
                 placeholder="Nombre de la empresa"
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand"
-              />
+                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="client-phone" className="text-white/70">
-                Teléfono
-              </Label>
-              <Input
-                id="client-phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+              <Label htmlFor="client-phone" className="text-white/70">Telefono</Label>
+              <Input id="client-phone" value={phone} onChange={(e) => setPhone(e.target.value)}
                 placeholder="+52 555 123 4567"
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand"
-              />
+                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label className="text-white/70">Estado</Label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full focus-visible:ring-brand">
-                <SelectValue placeholder="Seleccionar estado" />
-              </SelectTrigger>
+              <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
                 <SelectItem value="active">Activo</SelectItem>
                 <SelectItem value="prospect">Prospecto</SelectItem>
@@ -193,53 +177,79 @@ export default function ClientForm({
             </Select>
           </div>
 
-          {/* Assigned manager — admin only */}
+          {/* PM responsable - solo admin */}
           {isAdmin && (
             <div className="space-y-2">
               <Label className="text-white/70">Project Manager responsable</Label>
               <Select value={assignedManagerId || 'none'} onValueChange={(v) => setAssignedManagerId(v === 'none' ? '' : v)}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full focus-visible:ring-brand">
-                  <SelectValue placeholder="Sin asignar" />
-                </SelectTrigger>
+                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
                 <SelectContent className="bg-[#15151c] border-white/[0.08] text-white max-h-48">
-                  <SelectItem value="none" className="text-white/40 focus:bg-white/[0.06]">
-                    Sin asignar
-                  </SelectItem>
+                  <SelectItem value="none" className="text-white/40 focus:bg-white/[0.06]">Sin asignar</SelectItem>
                   {managers.map((m) => (
                     <SelectItem key={m.id} value={m.id} className="focus:bg-white/[0.06]">
                       <span className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full shrink-0 inline-block"
-                          style={{ backgroundColor: m.color || '#7c3aed' }} />
+                        <span className="w-2 h-2 rounded-full shrink-0 inline-block" style={{ backgroundColor: m.color || '#7c3aed' }} />
                         {m.name || m.email}
                       </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {/* Equipo asignado - multiselect */}
+          {teamMembers.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-white/70 flex items-center justify-between">
+                <span>Equipo asignado {assignedUserIds.length > 0 && <span className="text-brand-light text-xs">({assignedUserIds.length})</span>}</span>
+                {assignedUserIds.length > 0 && (
+                  <button type="button" onClick={() => setAssignedUserIds([])}
+                    className="text-[11px] text-white/30 hover:text-white/60 transition-colors">
+                    Limpiar
+                  </button>
+                )}
+              </Label>
+              <div className="bg-white/[0.04] border border-white/[0.08] rounded-lg p-1 max-h-44 overflow-y-auto">
+                {teamMembers.map((u) => {
+                  const checked = assignedUserIds.includes(u.id);
+                  return (
+                    <button key={u.id} type="button" onClick={() => toggleUser(u.id)}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md transition-colors text-left text-sm ${
+                        checked ? 'bg-brand/25 text-white' : 'text-white/70 hover:bg-white/[0.04] hover:text-white'
+                      }`}>
+                      <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                        checked ? 'border-brand bg-brand' : 'border-white/20 bg-white/[0.04]'
+                      }`}>
+                        {checked && (
+                          <svg viewBox="0 0 12 12" className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M2 6l3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </span>
+                      <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: u.color || '#7c3aed' }} />
+                      <span className="truncate flex-1">{u.name || u.email}</span>
+                      <span className="text-[10px] text-white/30">{ROLE_LABELS[u.role] || u.role}</span>
+                    </button>
+                  );
+                })}
+              </div>
               <p className="text-[11px] text-white/30">
-                Los PMs solo ven sus propios clientes asignados.
+                El cliente solo vera Project Managers y Admins en su portal.
               </p>
             </div>
           )}
 
           <DialogFooter className="pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="border-white/[0.1] text-white/70 hover:text-white hover:bg-white/[0.06]"
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
+              className="border-white/[0.1] text-white/70 hover:text-white hover:bg-white/[0.06]">
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="bg-brand hover:bg-brand-dark text-white"
-            >
+            <Button type="submit" disabled={loading} className="bg-brand hover:bg-brand-dark text-white">
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  {isEditing ? 'Guardando…' : 'Creando…'}
+                  {isEditing ? 'Guardando...' : 'Creando...'}
                 </span>
               ) : isEditing ? 'Guardar Cambios' : 'Crear Cliente'}
             </Button>
