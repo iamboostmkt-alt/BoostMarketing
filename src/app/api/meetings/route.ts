@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { sendMail, templateVideollamadaConfirmada } from "@/lib/mailer";
 
 const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
 
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await requireManager();
   if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-  const { name, date, notes, meetUrl, assignedUserIds } = await req.json();
+  const { name, date, notes, meetUrl, assignedUserIds, status } = await req.json();
   if (!name || !date) return NextResponse.json({ error: "Nombre y fecha requeridos." }, { status: 400 });
   const parsed = new Date(date);
   if (isNaN(parsed.getTime())) return NextResponse.json({ error: "Fecha invalida." }, { status: 400 });
@@ -41,13 +42,21 @@ export async function POST(req: NextRequest) {
       date: parsed,
       notes: (notes ?? "").trim(),
       meetUrl: (meetUrl ?? "").trim(),
-      status: "pending",
+      status: (status as string) || "pending",
       ...(assignedUserIds?.length > 0 && {
         assignedUsers: { create: (assignedUserIds as string[]).map((uid) => ({ userId: uid })) },
       }),
     },
     include,
   });
+  // Notificar a asignados
+  if (assignedUserIds?.length > 0) {
+    const dateStr = parsed.toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    const team = await db.user.findMany({ where: { id: { in: assignedUserIds as string[] } }, select: { email: true, name: true } });
+    for (const u of team) {
+      if (u.email) sendMail(u.email, "Nueva reunion asignada - BoostMarketing", templateVideollamadaConfirmada(name.trim(), dateStr, (meetUrl ?? "").trim())).catch(console.error);
+    }
+  }
   return NextResponse.json({ meeting }, { status: 201 });
 }
 
@@ -72,6 +81,17 @@ export async function PATCH(req: NextRequest) {
     }
   }
   const meeting = await db.appointment.update({ where: { id }, data, include });
+  // Notificar a nuevos asignados
+  if (assignedUserIds !== undefined && (assignedUserIds as string[]).length > 0) {
+    const upd = await db.appointment.findUnique({ where: { id }, select: { name: true, date: true, meetUrl: true } });
+    if (upd) {
+      const dateStr = new Date(upd.date).toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      const team = await db.user.findMany({ where: { id: { in: assignedUserIds as string[] } }, select: { email: true } });
+      for (const u of team) {
+        if (u.email) sendMail(u.email, "Reunion actualizada - BoostMarketing", templateVideollamadaConfirmada(upd.name, dateStr, upd.meetUrl || "")).catch(console.error);
+      }
+    }
+  }
   return NextResponse.json({ meeting });
 }
 
