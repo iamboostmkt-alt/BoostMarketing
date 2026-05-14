@@ -26,11 +26,21 @@ const MONTH_NAMES = [
 ];
 
 const priorityBarColors: Record<string, string> = {
-  low:    'bg-emerald-500/70',
-  medium: 'bg-amber-500/70',
-  high:   'bg-red-500/70',
-  urgent: 'bg-red-600/90',
+  low:    'bg-emerald-400/25',
+  medium: 'bg-amber-400/25',
+  high:   'bg-red-400/25',
+  urgent: 'bg-red-500/30',
 };
+
+// Colores para multiples tareas en mismo dia
+const rangeColors = [
+  'bg-violet-400/30',
+  'bg-cyan-400/30',
+  'bg-emerald-400/30',
+  'bg-amber-400/30',
+  'bg-rose-400/30',
+  'bg-blue-400/30',
+];
 const priorityDotColors: Record<string, string> = {
   low:    'bg-emerald-400',
   medium: 'bg-amber-400',
@@ -162,24 +172,26 @@ export default function CalendarGrid({
               `}
             >
               {/* Day number */}
-              <span className={`text-xs font-medium w-full text-center mb-0.5 ${today ? 'text-brand-light' : ''} ${isSelected ? 'text-white' : ''}`}>
+              <span className={`relative z-10 text-xs font-medium w-full text-center mb-0.5 ${today ? 'text-brand-light' : ''} ${isSelected ? 'text-white' : ''}`}>
                 {format(day, 'd')}
               </span>
 
-              {/* Range task bars */}
-              {dayRangeTasks.slice(0, 2).map((task, i) => {
+              {/* Range task bars - subtle background highlights */}
+              {dayRangeTasks.slice(0, 3).map((task, i) => {
                 const barProps = getRangeBarProps(task, day, days);
                 if (!barProps) return null;
                 const { roundLeft, roundRight } = barProps;
+                const color = rangeColors[i % rangeColors.length];
                 return (
                   <div
                     key={`range-${task.id}-${i}`}
                     className={`
-                      w-full h-1.5 mb-0.5
-                      ${priorityBarColors[task.priority] || 'bg-white/30'}
-                      ${roundLeft  ? 'rounded-l-full ml-0.5' : '-ml-1'}
-                      ${roundRight ? 'rounded-r-full mr-0.5' : '-mr-1'}
+                      w-full h-1 z-0
+                      ${color}
+                      ${roundLeft  ? 'rounded-l-full' : 'rounded-l-none -ml-px'}
+                      ${roundRight ? 'rounded-r-full' : 'rounded-r-none -mr-px'}
                     `}
+                    style={{ marginBottom: '1px' }}
                     title={task.title}
                   />
                 );
@@ -187,7 +199,7 @@ export default function CalendarGrid({
 
               {/* Indicator dots for non-range tasks */}
               {(dayTasks.length > 0 || dayActivities.length > 0 || dayAppointments.length > 0) && (
-                <div className="flex items-center gap-0.5 mt-auto flex-wrap justify-center w-full">
+                <div className="relative z-10 flex items-center gap-0.5 mt-auto flex-wrap justify-center w-full">
                   {dayTasks.slice(0, 2).map((task, i) => (
                     <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${priorityDotColors[task.priority] || 'bg-white/30'}`} />
                   ))}
