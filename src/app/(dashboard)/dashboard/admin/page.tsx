@@ -386,6 +386,7 @@ export default function AdminDashboardPage() {
   const [loadingAppts,  setLoadingAppts]  = useState(true);
   const [apptFilter,    setApptFilter]    = useState<string>('all');
   const [updatingAppt,  setUpdatingAppt]  = useState<string | null>(null);
+  const [deletingAppt,  setDeletingAppt]  = useState<string | null>(null);
 
   // Tasks (reemplaza el antiguo módulo de actividades)
   const [tasks,       setTasks]       = useState<Task[]>([]);
@@ -532,6 +533,17 @@ export default function AdminDashboardPage() {
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error');
     } finally { setUpdatingAppt(null); }
+  }
+
+  async function handleApptDelete(id: string) {
+    if (!confirm("¿Eliminar esta cita?")) return;
+    setDeletingAppt(id);
+    try {
+      const res = await fetch(`/api/appointments?id=${id}`, { method: "DELETE" });
+      if (res.ok) { setAppointments(prev => prev.filter(a => a.id !== id)); toast.success("Cita eliminada."); }
+      else toast.error("Error al eliminar.");
+    } catch { toast.error("Error de red."); }
+    finally { setDeletingAppt(null); }
   }
 
   // ── Task actions ───────────────────────────────────────────────────────────
@@ -887,6 +899,7 @@ export default function AdminDashboardPage() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden lg:table-cell">Notas</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Estado</th>
+                       <th className="px-4 py-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
@@ -941,6 +954,15 @@ export default function AdminDashboardPage() {
                                     ))}
                                   </SelectContent>
                                 </Select>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10"
+                                    disabled={deletingAppt === appt.id}
+                                    onClick={() => handleApptDelete(appt.id)}>
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
                               </td>
                             </tr>
                           );
