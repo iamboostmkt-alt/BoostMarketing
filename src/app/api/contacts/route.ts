@@ -107,7 +107,9 @@ export async function PUT(req: NextRequest) {
     }
 
     const existing = await db.contact.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) {
+    const userRole = (session.user as any).role as string;
+    const canManage = ['ADMIN', 'PROJECT_MANAGER'].includes(userRole);
+    if (!existing || (!canManage && existing.userId !== userId)) {
       return NextResponse.json(
         { error: 'Contacto no encontrado' },
         { status: 404 }
