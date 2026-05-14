@@ -438,7 +438,19 @@ export default function ClientPortalContent() {
 
   const assignedManager = client.assignedManager;
 
-  const teamMembers: any[] = [];
+  const teamMembersMap = new Map();
+  if (isManager) {
+    tasks.forEach((t) => {
+      if (t.assignedUser && t.assignedUser.id !== assignedManager?.id) {
+        const u = t.assignedUser;
+        teamMembersMap.set(u.id, { id: u.id, name: u.name, email: u.email, color: u.color, image: u.image ?? null });
+      }
+      for (const u of t.assignedUsers ?? []) {
+        if (u.id !== assignedManager?.id) teamMembersMap.set(u.id, u);
+      }
+    });
+  }
+  const teamMembers = [...teamMembersMap.values()];
 
 
   const totalItems     = tasks.length;
