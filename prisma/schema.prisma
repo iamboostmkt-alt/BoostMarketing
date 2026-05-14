@@ -329,7 +329,18 @@ model Appointment {
   notes  String   @default("")
   status String   @default("pending")
 
-  meetUrl String? @map("meet_url")
+  meetUrl          String?   @map("meet_url")
+  meetingProvider  String    @default("google_meet") @map("meeting_provider")
+  isInternal       Boolean   @default(false) @map("is_internal")
+  timezone         String    @default("America/Mexico_City")
+  reminderCount    Int       @default(0) @map("reminder_count")
+  reminder24hSent  Boolean   @default(false) @map("reminder_24h_sent")
+  reminder1hSent   Boolean   @default(false) @map("reminder_1h_sent")
+  reminder15mSent  Boolean   @default(false) @map("reminder_15m_sent")
+  lastReminderAt   DateTime? @map("last_reminder_at")
+  nextReminderAt   DateTime? @map("next_reminder_at")
+  meetingStartedAt DateTime? @map("meeting_started_at")
+  meetingEndedAt   DateTime? @map("meeting_ended_at")
 
   assignedUsers AppointmentAssignedUser[]
 
