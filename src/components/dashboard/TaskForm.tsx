@@ -82,10 +82,10 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   useEffect(() => {
     if (!open) return;
     // Usar /api/managers que es accesible para roles internos
-    fetch('/api/managers')
+    fetch('/api/team-members')
       .then((r) => r.json())
       .then((d) => {
-        const all = d.managers ?? d.users ?? [];
+        const all = d.users ?? [];
         const internal = all.filter((u: InternalUser) => u.role !== 'CLIENT' && u.role !== 'UNASSIGNED');
         setUsers(internal);
       })
