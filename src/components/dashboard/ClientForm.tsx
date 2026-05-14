@@ -14,28 +14,12 @@ import {
 } from '@/components/ui/select';
 import type { Client } from '@/lib/types';
 
-interface Manager {
-  id: string;
-  name: string | null;
-  email: string;
-  color: string;
-}
-
-interface TeamMember {
-  id: string;
-  name: string | null;
-  email: string;
-  color: string;
-  role: string;
-}
+interface Manager { id: string; name: string | null; email: string; color: string; }
+interface TeamMember { id: string; name: string | null; email: string; color: string; role: string; }
 
 const ROLE_LABELS: Record<string, string> = {
-  ADMIN: 'Admin',
-  PROJECT_MANAGER: 'PM',
-  TEAM_MEMBER: 'Equipo',
-  DESIGNER: 'Diseno',
-  MARKETING: 'Marketing',
-  SALES_REP: 'Ventas',
+  ADMIN: 'Admin', PROJECT_MANAGER: 'PM', TEAM_MEMBER: 'Equipo',
+  DESIGNER: 'Diseno', MARKETING: 'Marketing', SALES_REP: 'Ventas',
 };
 
 interface ClientFormProps {
@@ -61,15 +45,15 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
 
   useEffect(() => {
     if (open) {
-      setName(client?.name     || '');
-      setEmail(client?.email   || '');
+      setName(client?.name || '');
+      setEmail(client?.email || '');
       setCompany(client?.company || '');
-      setPhone(client?.phone   || '');
+      setPhone(client?.phone || '');
       setStatus(client?.status || 'active');
       setAssignedManagerId(client?.assignedManagerId || '');
-
-      // Pre-fill assigned users from client
-      const existingIds = ((client as any)?.assignedUsers ?? []).map((u: any) => u.id ?? u.userId ?? u.user?.id).filter(Boolean);
+      const existingIds = ((client as any)?.assignedUsers ?? [])
+        .map((u: any) => u.id ?? u.userId ?? u.user?.id)
+        .filter(Boolean);
       setAssignedUserIds(existingIds);
 
       if (isAdmin) {
@@ -78,8 +62,6 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
           .then((d) => setManagers(d.managers ?? []))
           .catch(() => {});
       }
-
-      // Cargar equipo para multiasignacion
       fetch('/api/team-members')
         .then((r) => r.json())
         .then((d) => setTeamMembers(d.users ?? []))
@@ -94,7 +76,6 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) { toast.error('Nombre y email son requeridos'); return; }
-
     setLoading(true);
     try {
       const body = {
@@ -103,18 +84,15 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
         assignedManagerId: assignedManagerId || null,
         assignedUserIds,
       };
-
       const res = await fetch('/api/clients', {
-        method:  isEditing ? 'PUT' : 'POST',
+        method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body),
+        body: JSON.stringify(body),
       });
-
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || 'Error al guardar el cliente');
       }
-
       toast.success(isEditing ? 'Cliente actualizado' : 'Cliente creado');
       onOpenChange(false);
       onSuccess?.();
@@ -177,7 +155,6 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
             </Select>
           </div>
 
-          {/* PM responsable - solo admin */}
           {isAdmin && (
             <div className="space-y-2">
               <Label className="text-white/70">Project Manager responsable</Label>
@@ -198,18 +175,20 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
             </div>
           )}
 
-          {/* Equipo asignado - multiselect */}
           {teamMembers.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-white/70 flex items-center justify-between">
-                <span>Equipo asignado {assignedUserIds.length > 0 && <span className="text-brand-light text-xs">({assignedUserIds.length})</span>}</span>
+              <div className="flex items-center justify-between">
+                <Label className="text-white/70">
+                  Equipo asignado
+                  {assignedUserIds.length > 0 && <span className="text-brand-light text-xs ml-1">({assignedUserIds.length})</span>}
+                </Label>
                 {assignedUserIds.length > 0 && (
                   <button type="button" onClick={() => setAssignedUserIds([])}
                     className="text-[11px] text-white/30 hover:text-white/60 transition-colors">
                     Limpiar
                   </button>
                 )}
-              </Label>
+              </div>
               <div className="bg-white/[0.04] border border-white/[0.08] rounded-lg p-1 max-h-44 overflow-y-auto">
                 {teamMembers.map((u) => {
                   const checked = assignedUserIds.includes(u.id);
@@ -234,9 +213,7 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
                   );
                 })}
               </div>
-              <p className="text-[11px] text-white/30">
-                El cliente solo vera Project Managers y Admins en su portal.
-              </p>
+              <p className="text-[11px] text-white/30">El cliente solo vera Project Managers y Admins en su portal.</p>
             </div>
           )}
 
