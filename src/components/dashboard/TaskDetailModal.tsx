@@ -186,7 +186,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit }: TaskDet
             <Button
               size="sm"
               variant="outline"
-              onClick={() => { onEdit(task); onClose(); }}
+              onClick={() => onEdit(task)}
               className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-1.5 text-xs h-8"
             >
               <Pencil className="w-3.5 h-3.5" />
