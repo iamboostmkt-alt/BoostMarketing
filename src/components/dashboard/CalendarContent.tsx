@@ -491,6 +491,16 @@ function DayModal({
 // Ã¢â€â‚¬Ã¢â€â‚¬ CalendarContent (main) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 export default function CalendarContent() {
   const { data: session } = useSession();
+  const role      = session?.user?.role ?? '';
+  const userId    = (session?.user as any)?.id ?? '';
+  const isAdmin   = role === 'ADMIN';
+  const isPM      = role === 'PROJECT_MANAGER';
+  const isManager = isAdmin || isPM;
+  const isClient  = role === 'CLIENT';
+
+  type CalView = 'mine' | 'team' | 'clients' | 'all';
+
+  const [calView,      setCalView]      = useState<CalView>('mine');
   const [tasks,        setTasks]        = useState<Task[]>([]);
   const [activities,   setActivities]   = useState<Activity[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -501,43 +511,56 @@ export default function CalendarContent() {
   const [editingTask,        setEditingTask]        = useState<Task | null>(null);
   const [apptEditOpen,       setApptEditOpen]       = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
-  const [apptInitialDate, setApptInitialDate] = useState<Date | null>(null);
- 
-  const isManager = MANAGER_ROLES.includes(session?.user?.role ?? '');
-  const isClient  = session?.user?.role === 'CLIENT';
- 
+  const [apptInitialDate,    setApptInitialDate]    = useState<Date | null>(null);
+
   const fetchData = useCallback(async () => {
-    const tasksUrl = isManager ? '/api/tasks?scope=all' : '/api/tasks';
+    setLoading(true);
     try {
+      let tasksUrl = '/api/tasks?scope=mine';
+      if (calView === 'all' && isAdmin)    tasksUrl = '/api/tasks?scope=all';
+      else if (calView === 'team' && isManager) tasksUrl = '/api/tasks?scope=all';
+      else if (calView === 'clients')      tasksUrl = '/api/tasks?scope=clients-with-tasks';
+
       const tasksRes = await fetch(tasksUrl);
       if (tasksRes.ok) {
         const data = await tasksRes.json();
-        setTasks(data.tasks || data || []);
-        const actRes = await fetch('/api/activities');
-        if (actRes.ok) {
-          const actData = await actRes.json();
-          setActivities(actData.activities || []);
+        if (calView === 'clients') {
+          const clients = data.clients ?? [];
+          const allTasks = clients.flatMap((c: any) => c.tasks ?? []);
+          setTasks(allTasks);
+        } else {
+          setTasks(data.tasks || []);
         }
-        if (!isClient) {
-          const appRes = await fetch('/api/appointments');
-          if (appRes.ok) {
-            const appData = await appRes.json();
-            setAppointments(appData.appointments || []);
-          }
-          const meetRes = await fetch('/api/meetings');
-          if (meetRes.ok) {
-            const meetData = await meetRes.json();
-            setAppointments(prev => { const prevAppts = prev.filter((a: any) => !a.email?.endsWith('@internal.boost')); return [...prevAppts, ...(meetData.meetings || [])]; });
-          }
+      }
+
+      const actRes = await fetch('/api/activities');
+      if (actRes.ok) {
+        const actData = await actRes.json();
+        setActivities(actData.activities || []);
+      }
+
+      if (!isClient) {
+        const appRes = await fetch('/api/appointments');
+        if (appRes.ok) {
+          const appData = await appRes.json();
+          setAppointments(appData.appointments || []);
+        }
+        const meetRes = await fetch('/api/meetings');
+        if (meetRes.ok) {
+          const meetData = await meetRes.json();
+          setAppointments(prev => {
+            const prevAppts = prev.filter((a: any) => !a.email?.endsWith('@internal.boost'));
+            return [...prevAppts, ...(meetData.meetings || [])];
+          });
         }
       }
     } finally {
       setLoading(false);
     }
-  }, [isManager]);
- 
+  }, [calView, isAdmin, isManager, isClient]);
+
   useEffect(() => { fetchData(); }, [fetchData]);
- 
+
   useEffect(() => {
     const unsubs = [
       bus.on<{ task: Task }>(RT_EVENTS.TASK_CREATED, ({ task }) => {
@@ -552,12 +575,12 @@ export default function CalendarContent() {
     ];
     return () => unsubs.forEach((u) => u());
   }, []);
- 
+
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 12_000);
     return () => clearTimeout(t);
   }, []);
- 
+
   const handleDeleteTask = async (id: string) => {
     try {
       const res = await fetch(`/api/tasks?id=${id}`, { method: 'DELETE' });
@@ -565,14 +588,10 @@ export default function CalendarContent() {
         setTasks((prev) => prev.filter((t) => t.id !== id));
         bus.emit(RT_EVENTS.TASK_DELETED, { id });
         toast.success('Tarea eliminada');
-      } else {
-        toast.error('Error al eliminar la tarea');
-      }
-    } catch {
-      toast.error('Error de red');
-    }
+      } else { toast.error('Error al eliminar la tarea'); }
+    } catch { toast.error('Error de red'); }
   };
- 
+
   const handleDeleteAppointment = async (id: string) => {
     try {
       const appt = appointments.find(a => a.id === id);
@@ -582,32 +601,35 @@ export default function CalendarContent() {
       if (res.ok) {
         setAppointments((prev) => prev.filter((a) => a.id !== id));
         toast.success(isMeeting ? 'Reunion eliminada' : 'Videollamada eliminada');
-      } else {
-        toast.error('Error al eliminar');
-      }
-    } catch {
-      toast.error('Error de red');
-    }
+      } else { toast.error('Error al eliminar'); }
+    } catch { toast.error('Error de red'); }
   };
- 
+
   function handleSelectDay(day: Date) {
     setSelectedDay(day);
     setDayModalOpen(true);
   }
- 
-      const dayTasks = useMemo(
-        () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDay)),
-        [tasks, selectedDay]
-      );
 
-      const dayAppointments = useMemo(
-        () => appointments.filter((a) => isSameDay(new Date(a.date), selectedDay)),
-        [appointments, selectedDay]
-      );
+  const dayTasks = useMemo(
+    () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDay)),
+    [tasks, selectedDay]
+  );
 
-      const total = dayTasks.length + dayAppointments.length;
-      const capitalizedLabel = dayLabel(selectedDay);
- 
+  const dayAppointments = useMemo(
+    () => appointments.filter((a) => isSameDay(new Date(a.date), selectedDay)),
+    [appointments, selectedDay]
+  );
+
+  const total = dayTasks.length + dayAppointments.length;
+  const capitalizedLabel = dayLabel(selectedDay);
+
+  const calTabs = [
+    { id: 'mine'    as CalView, label: 'Mi Calendario', show: true },
+    { id: 'team'    as CalView, label: 'Equipo',        show: isManager },
+    { id: 'clients' as CalView, label: 'Clientes',      show: isManager || role === 'TEAM_MEMBER' },
+    { id: 'all'     as CalView, label: 'Todos',         show: isAdmin },
+  ].filter(t => t.show);
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -628,14 +650,14 @@ export default function CalendarContent() {
       </div>
     );
   }
- 
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">Calendario</h1>
           <p className="text-white/40 text-sm mt-1">
-            Haz clic en un dia para ver su detalle Ã‚Â· actualizacion en tiempo real
+            Haz clic en un dia para ver su detalle
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -656,7 +678,23 @@ export default function CalendarContent() {
           </Button>
         </div>
       </div>
- 
+
+      {/* Tabs de vista */}
+      {calTabs.length > 1 && (
+        <div className="flex gap-1 border-b border-white/[0.06] pb-0">
+          {calTabs.map((tab) => (
+            <button key={tab.id} onClick={() => setCalView(tab.id)}
+              className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+                calView === tab.id
+                  ? 'border-brand text-white'
+                  : 'border-transparent text-white/40 hover:text-white/70 hover:border-white/20'
+              }`}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6">
           <CalendarGrid
@@ -667,7 +705,7 @@ export default function CalendarContent() {
             onSelectDay={handleSelectDay}
           />
         </div>
- 
+
         <div className="bg-[#15151c] border border-white/[0.06] rounded-xl overflow-hidden flex flex-col">
           <div className="flex items-center justify-between p-4 md:p-5 border-b border-white/[0.06] shrink-0">
             <div className="flex items-center gap-2">
@@ -687,7 +725,7 @@ export default function CalendarContent() {
               </span>
             )}
           </div>
- 
+
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-5 space-y-4">
             {dayTasks.length > 0 && (
               <div className="space-y-2">
@@ -727,11 +765,10 @@ export default function CalendarContent() {
                     {isManager && (
                       <button type="button"
                         onClick={async () => {
-                          if (!confirm(`Ã‚Â¿Eliminar "${task.title}"?`)) return;
+                          if (!confirm(`Eliminar "${task.title}"?`)) return;
                           await handleDeleteTask(task.id);
                         }}
-                        className="absolute top-2 right-2 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                        title="Eliminar tarea">
+                        className="absolute top-2 right-2 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -739,52 +776,51 @@ export default function CalendarContent() {
                 ))}
               </div>
             )}
- 
 
-                {dayAppointments.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
-                      <Video className="w-3 h-3" />
-                      Videollamadas ({dayAppointments.length})
-                    </div>
-                    {dayAppointments.map((apt) => (
-                      <div key={apt.id} className="bg-green-500/[0.06] border border-green-500/20 rounded-lg p-3 group relative">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-start gap-2 flex-1 min-w-0">
-                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 bg-green-500/20 text-green-300">
-                              {apt.status === "confirmed" ? "Confirmada" : apt.status === "cancelled" ? "Cancelada" : "Pendiente"}
-                            </span>
-                            <p className="text-xs font-medium text-white/80 truncate">{apt.name}</p>
-                          </div>
-                          {isManager && (
-                            <div className="flex gap-1 shrink-0">
-                              <button type="button"
-                                onClick={() => { setEditingAppointment(apt); setApptEditOpen(true); }}
-                                className="p-1 rounded text-white/20 hover:text-green-400 hover:bg-green-500/10 transition-colors">
-                                <Pencil className="w-3 h-3" />
-                              </button>
-                              <button type="button"
-                                onClick={async () => {
-                                  if (!confirm("Ã‚Â¿Eliminar esta videollamada?")) return;
-                                  await handleDeleteAppointment(apt.id);
-                                }}
-                                className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className="text-[10px] text-white/30">{apt.email}</span>
-                          <div className="flex items-center gap-1 text-[10px] text-white/25">
-                            <Clock className="w-2.5 h-2.5" />
-                            {format(new Date(apt.date), "HH:mm")}
-                          </div>
-                        </div>
+            {dayAppointments.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
+                  <Video className="w-3 h-3" />
+                  Videollamadas ({dayAppointments.length})
+                </div>
+                {dayAppointments.map((apt) => (
+                  <div key={apt.id} className="bg-green-500/[0.06] border border-green-500/20 rounded-lg p-3 group relative">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2 flex-1 min-w-0">
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 bg-green-500/20 text-green-300">
+                          {apt.status === "confirmed" ? "Confirmada" : apt.status === "cancelled" ? "Cancelada" : "Pendiente"}
+                        </span>
+                        <p className="text-xs font-medium text-white/80 truncate">{apt.name}</p>
                       </div>
-                    ))}
+                      {isManager && (
+                        <div className="flex gap-1 shrink-0">
+                          <button type="button"
+                            onClick={() => { setEditingAppointment(apt); setApptEditOpen(true); }}
+                            className="p-1 rounded text-white/20 hover:text-green-400 hover:bg-green-500/10 transition-colors">
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          <button type="button"
+                            onClick={async () => {
+                              if (!confirm("Eliminar esta videollamada?")) return;
+                              await handleDeleteAppointment(apt.id);
+                            }}
+                            className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span className="text-[10px] text-white/30">{apt.email}</span>
+                      <div className="flex items-center gap-1 text-[10px] text-white/25">
+                        <Clock className="w-2.5 h-2.5" />
+                        {format(new Date(apt.date), "HH:mm")}
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
+              </div>
+            )}
 
             {total === 0 && (
               <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
@@ -810,7 +846,7 @@ export default function CalendarContent() {
           </div>
         </div>
       </div>
- 
+
       <DayModal
         open={dayModalOpen}
         onClose={() => setDayModalOpen(false)}
@@ -826,7 +862,7 @@ export default function CalendarContent() {
         onEditAppointment={(apt) => { setEditingAppointment(apt); setApptEditOpen(true); }}
         onDeleteAppointment={handleDeleteAppointment}
       />
- 
+
       <TaskForm
         open={taskFormOpen}
         onOpenChange={setTaskFormOpen}
@@ -834,14 +870,14 @@ export default function CalendarContent() {
         isManager={isManager}
         onSuccess={fetchData}
       />
- 
+
       <AppointmentEditModal
         open={apptEditOpen}
         onOpenChange={setApptEditOpen}
         appointment={editingAppointment}
-        initialDate={apptInitialDate}
         onSaved={fetchData}
-        onDeleted={(id) => setAppointments((prev) => prev.filter((a) => a.id !== id))}
+        onDeleted={(id) => setAppointments(prev => prev.filter(a => a.id !== id))}
+        initialDate={apptInitialDate}
       />
     </div>
   );
