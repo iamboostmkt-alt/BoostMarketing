@@ -24,13 +24,14 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const userId    = (session.user as any).id;
-  const role      = session.user.role as string;
-  const isManager = MANAGER_ROLES.includes(role);
+  const userId   = (session.user as any).id;
+  const role     = session.user.role as string;
+  const isAdmin  = role === "ADMIN";
+  const isPM     = role === "PROJECT_MANAGER";
+  const isManager = isAdmin || isPM;
   const isClient  = role === "CLIENT";
   const scope     = req.nextUrl.searchParams.get("scope");
 
-  // ── MY TASKS ──────────────────────────────────────────────
   if (scope === "mine") {
     const tasks = await db.task.findMany({
       where: {
@@ -50,28 +51,35 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ tasks });
   }
 
-  // ── CLIENTS WITH TASKS ────────────────────────────────────
   if (scope === "clients-with-tasks") {
-    // Obtener IDs de clientes accesibles
     let clientIds: string[] | null = null;
-
-    if (!isManager) {
+    if (!isAdmin) {
       const assignments = await db.clientAssignedUser.findMany({
         where: { userId },
         select: { clientId: true },
       });
-      clientIds = assignments.map((a) => a.clientId);
+      if (isPM) {
+        const managed = await db.client.findMany({
+          where: { assignedManagerId: userId },
+          select: { id: true },
+        });
+        const allIds = new Set([
+          ...assignments.map((a) => a.clientId),
+          ...managed.map((c) => c.id),
+        ]);
+        clientIds = [...allIds];
+      } else {
+        clientIds = assignments.map((a) => a.clientId);
+      }
       if (clientIds.length === 0) return NextResponse.json({ clients: [] });
     }
 
-    // Obtener clientes
     const clients = await db.client.findMany({
       where: clientIds ? { id: { in: clientIds } } : {},
       select: { id: true, name: true, company: true },
       orderBy: { name: "asc" },
     });
 
-    // Para cada cliente obtener sus tareas
     const result = await Promise.all(
       clients.map(async (client) => {
         const taskWhere: any = { clientId: client.id };
@@ -97,7 +105,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ clients: result.filter((c) => c.tasks.length > 0) });
   }
 
-  // ── ALL TASKS (managers only) ─────────────────────────────
   if (scope === "all" && isManager) {
     const tasks = await db.task.findMany({
       include: {
@@ -110,7 +117,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ tasks });
   }
 
-  // ── DEFAULT ───────────────────────────────────────────────
   const tasks = await db.task.findMany({
     where: isClient ? { assignedUserId: userId } : {
       OR: [
