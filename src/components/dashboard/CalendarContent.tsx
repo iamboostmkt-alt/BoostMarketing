@@ -498,7 +498,7 @@ export default function CalendarContent() {
   const isManager = isAdmin || isPM;
   const isClient  = role === 'CLIENT';
 
-  type CalView = 'mine' | 'team' | 'clients' | 'all';
+  type CalView = 'mine' | 'team' | 'clients' | 'all' | 'meetings' | 'deliveries';
 
   const [calView,      setCalView]      = useState<CalView>('mine');
   const [tasks,        setTasks]        = useState<Task[]>([]);
@@ -520,6 +520,7 @@ export default function CalendarContent() {
       if (calView === 'all' && isAdmin)    tasksUrl = '/api/tasks?scope=all';
       else if (calView === 'team' && isManager) tasksUrl = '/api/tasks?scope=all';
       else if (calView === 'clients')      tasksUrl = '/api/tasks?scope=clients-with-tasks';
+      else if (calView === 'deliveries')   tasksUrl = '/api/tasks?scope=all&has_due=1';
 
       const tasksRes = await fetch(tasksUrl);
       if (tasksRes.ok) {
@@ -627,7 +628,9 @@ export default function CalendarContent() {
     { id: 'mine'    as CalView, label: 'Mi Calendario', show: true },
     { id: 'team'    as CalView, label: 'Equipo',        show: isManager },
     { id: 'clients' as CalView, label: 'Clientes',      show: isManager || role === 'TEAM_MEMBER' },
-    { id: 'all'     as CalView, label: 'Todos',         show: isAdmin },
+    { id: 'all'       as CalView, label: 'Todos',        show: isAdmin },
+    { id: 'meetings'  as CalView, label: 'Reuniones',     show: isManager },
+    { id: 'deliveries' as CalView, label: 'Entregas',     show: isManager || role === 'TEAM_MEMBER' },
   ].filter(t => t.show);
 
   if (loading) {
@@ -698,9 +701,9 @@ export default function CalendarContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6">
           <CalendarGrid
-            tasks={tasks}
-            activities={activities}
-            appointments={appointments}
+            tasks={calView === "meetings" ? [] : calView === "deliveries" ? tasks.filter(t => !!t.dueDate) : tasks}
+            activities={calView === "meetings" ? [] : activities}
+            appointments={calView === "deliveries" ? [] : appointments}
             selectedDay={selectedDay}
             onSelectDay={handleSelectDay}
           />
