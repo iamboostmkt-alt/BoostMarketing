@@ -738,7 +738,16 @@ export default function CalendarContent() {
                 </div>
                 {dayTasks.map((task) => (
                   <div key={task.id}
-                    className="w-full text-left bg-white/[0.03] border border-white/[0.05] rounded-lg p-3.5 hover:border-white/[0.10] hover:bg-white/[0.05] transition-colors group relative">
+                    className={`w-full text-left rounded-lg p-3.5 transition-colors group relative overflow-hidden border
+                      ${task.priority === "urgent" ? "bg-red-500/[0.06] border-red-500/20 hover:border-red-500/30" :
+                        task.priority === "high" ? "bg-orange-500/[0.05] border-orange-500/15 hover:border-orange-500/25" :
+                        task.priority === "medium" ? "bg-amber-500/[0.04] border-amber-500/10 hover:border-amber-500/20" :
+                        "bg-emerald-500/[0.04] border-emerald-500/10 hover:border-emerald-500/20"}`}>
+                    <div className={`absolute left-0 top-0 bottom-0 w-0.5 rounded-l-lg
+                      ${task.priority === "urgent" ? "bg-red-500" :
+                        task.priority === "high" ? "bg-orange-400" :
+                        task.priority === "medium" ? "bg-amber-400" :
+                        "bg-emerald-400"}`} />
                     <button type="button" className="w-full text-left"
                       onClick={() => { setEditingTask(task); setTaskFormOpen(true); }}>
                       <div className="flex items-start gap-2.5">
