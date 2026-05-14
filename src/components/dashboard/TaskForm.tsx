@@ -53,6 +53,10 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   const [assignedUserIds, setAssigneeIds] = useState<string[]>([]);
   const [clientId, setClientId]           = useState('');
   const [visibility, setVisibility]       = useState('internal');
+  const [references, setReferences]       = useState<{title:string;url:string;type:string}[]>([]);
+  const [refTitle, setRefTitle]           = useState('');
+  const [refUrl, setRefUrl]               = useState('');
+  const [refType, setRefType]             = useState('generic');
   const [users, setUsers]                 = useState<InternalUser[]>([]);
   const [clients, setClients]             = useState<{ id: string; name: string; company: string }[]>([]);
 
@@ -69,6 +73,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         : (task.assignedUserId ? [task.assignedUserId] : []);
       setAssigneeIds(ids);
       setVisibility(task.visibility || 'internal');
+      setReferences(Array.isArray(task.references) ? task.references : []);
       setClientId(task.clientId ?? '');
     } else {
       setTitle(''); setDescription(''); setStatus('pending'); setPriority('medium');
@@ -322,9 +327,40 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             </div>
           )}
 
+          <div className="space-y-2">
+            <label className="text-white/70 text-sm">Referencias</label>
+            {references.length > 0 && (
+              <div className="space-y-1 mb-2">
+                {references.map((r, i) => (
+                  <div key={i} className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-md px-3 py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xs text-white/40 uppercase">{r.type}</span>
+                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:underline truncate">{r.title || r.url}</a>
+                    </div>
+                    <button type="button" onClick={() => setReferences(references.filter((_,j)=>j!==i))} className="text-white/30 hover:text-red-400 ml-2 text-xs">x</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input value={refTitle} onChange={e=>setRefTitle(e.target.value)} placeholder="Titulo" className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30" />
+              <select value={refType} onChange={e=>setRefType(e.target.value)} className="bg-white/[0.04] border border-white/[0.08] rounded-md px-2 py-2 text-sm text-white">
+                <option value="generic">Link</option>
+                <option value="drive">Drive</option>
+                <option value="figma">Figma</option>
+                <option value="loom">Loom</option>
+                <option value="pinterest">Pinterest</option>
+                <option value="youtube">YouTube</option>
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <input value={refUrl} onChange={e=>setRefUrl(e.target.value)} placeholder="URL" className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30" />
+              <button type="button" onClick={()=>{ if(!refUrl.trim()) return; setReferences([...references,{title:refTitle.trim()||refUrl.trim(),url:refUrl.trim(),type:refType}]); setRefTitle(''); setRefUrl(''); setRefType('generic'); }} className="px-3 py-2 bg-white/[0.08] hover:bg-white/[0.12] text-white text-sm rounded-md">+ Agregar</button>
+            </div>
+          </div>
+
           <DialogFooter className="pt-2">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}
-              className="text-white/50 hover:text-white hover:bg-white/[0.06]" disabled={loading}>Cancelar</Button>
+            <Button variant="outline" type="button" onClick={() => onOpenChange(false)} className="border-white/[0.06]" disabled={loading}>Cancelar</Button>
             <Button type="submit" disabled={loading || !title.trim()} className="bg-brand hover:bg-brand-dark text-white gap-2">
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEditing ? 'Guardar Cambios' : 'Crear Tarea'}

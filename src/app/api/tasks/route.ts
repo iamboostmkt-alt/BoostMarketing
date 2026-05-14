@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
   const userId    = (session.user as any).id;
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const body      = await req.json();
-  const { title, description, priority, dueDate, assignedUserId: _assignedUserId, assignedUserIds, clientId, visibility } = body;
+  const { title, description, priority, dueDate, assignedUserId: _assignedUserId, assignedUserIds, clientId, visibility, references } = body;
   const assignedUserId = _assignedUserId || (Array.isArray(assignedUserIds) && assignedUserIds[0]) || null;
 
   if (!title) return NextResponse.json({ error: "Titulo requerido" }, { status: 400 });
@@ -178,6 +178,7 @@ export async function POST(req: NextRequest) {
       assignedUserId: isManager ? assignedUserId || null : null,
       clientId:       isManager ? clientId       || null : null,
       visibility:     isManager ? (visibility || 'internal') : 'internal',
+      references:     Array.isArray(references) ? references : [],
       ...(isManager && Array.isArray(assignedUserIds) && assignedUserIds.length > 0 && {
         assignedUsers: { create: assignedUserIds.map((uid: string) => ({ userId: uid })) },
       }),
@@ -202,7 +203,7 @@ export async function PUT(req: NextRequest) {
   const userName  = (session.user as any).name || "Un usuario";
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const body      = await req.json();
-  const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId, visibility } = body;
+  const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId, visibility, references } = body;
 
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
@@ -227,6 +228,7 @@ export async function PUT(req: NextRequest) {
       ...(isManager && assignedUserId !== undefined && { assignedUserId }),
       ...(isManager && clientId       !== undefined && { clientId }),
       ...(isManager && visibility     !== undefined && { visibility }),
+      ...(references !== undefined && { references: Array.isArray(references) ? references : [] }),
     },
     include: { assignedUser: userInclude, client: clientInclude },
   });

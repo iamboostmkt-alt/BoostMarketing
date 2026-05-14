@@ -147,6 +147,7 @@ model Task {
   status         String    @default("pending")
   priority       String    @default("medium")
   visibility     String    @default("internal")
+  references     Json?      @default("[]") @map("task_references")
   startDate      DateTime? @map("start_date")
   dueDate        DateTime? @map("due_date")
 

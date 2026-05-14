@@ -52,6 +52,7 @@ export interface Task {
   status: string;
   priority: string;
   visibility: string;
+  references: { title: string; url: string; type: string }[];
   startDate: string | null;
   dueDate: string | null;
   createdAt: string;
