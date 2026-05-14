@@ -18,7 +18,7 @@ export async function GET() {
 
     const users = await db.user.findMany({
       where: {
-        role: { in: INTERNAL_ROLES },
+        role: { in: INTERNAL_ROLES as any },
         active: true,
       },
       select: {
