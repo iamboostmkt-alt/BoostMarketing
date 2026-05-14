@@ -422,3 +422,29 @@ export function templateTareaEditada(
   </div>`;
 }
 
+
+export function templateNuevaReunion(userName: string, meetingTitle: string, date: string, meetUrl?: string) {
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:28px;text-align:center">
+      <h1 style="color:white;margin:0;font-size:20px">📅 Nueva Reunión Asignada</h1>
+    </div>
+    <div style="padding:28px">
+      <p style="color:#374151">Hola <strong>${userName}</strong>,</p>
+      <p style="color:#6b7280">Se te ha asignado a la siguiente reunión interna:</p>
+      <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:20px;margin:20px 0">
+        <p style="margin:0 0 8px;color:#6d28d9;font-weight:700;font-size:15px">🗓 ${meetingTitle}</p>
+        <p style="margin:0;color:#374151"><strong>Fecha:</strong> ${date}</p>
+        ${meetUrl ? `<p style="margin:8px 0 0;color:#374151"><strong>Enlace:</strong> <a href="${meetUrl}" style="color:#7c3aed">${meetUrl}</a></p>` : ""}
+      </div>
+      ${meetUrl ? `
+      <div style="text-align:center;margin:20px 0">
+        <a href="${meetUrl}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">
+          Unirse a la Reunión
+        </a>
+      </div>` : ""}
+      <p style="color:#6b7280;font-size:13px">Este es un recordatorio automático del sistema BoostMarketing.</p>
+    </div>
+  </div>
+  `;
+}

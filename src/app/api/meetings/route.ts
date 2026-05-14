@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { sendMail, templateVideollamadaConfirmada } from "@/lib/mailer";
+import { sendMail, templateNuevaReunion } from "@/lib/mailer";
 
 const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     const dateStr = parsed.toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
     const team = await db.user.findMany({ where: { id: { in: assignedUserIds as string[] } }, select: { email: true, name: true } });
     for (const u of team) {
-      if (u.email) sendMail(u.email, "Nueva reunion asignada - BoostMarketing", templateVideollamadaConfirmada(name.trim(), dateStr, (meetUrl ?? "").trim())).catch(console.error);
+      if (u.email) sendMail(u.email, "Nueva reunion asignada - BoostMarketing", templateNuevaReunion(u.name || u.email, name.trim(), dateStr, (meetUrl ?? "").trim())).catch(console.error);
     }
   }
   return NextResponse.json({ meeting }, { status: 201 });
@@ -88,7 +88,7 @@ export async function PATCH(req: NextRequest) {
       const dateStr = new Date(upd.date).toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
       const team = await db.user.findMany({ where: { id: { in: assignedUserIds as string[] } }, select: { email: true } });
       for (const u of team) {
-        if (u.email) sendMail(u.email, "Reunion actualizada - BoostMarketing", templateVideollamadaConfirmada(upd.name, dateStr, upd.meetUrl || "")).catch(console.error);
+        if (u.email) sendMail(u.email, "Reunion actualizada - BoostMarketing", templateNuevaReunion(u.email, upd.name, dateStr, upd.meetUrl || "")).catch(console.error);
       }
     }
   }
