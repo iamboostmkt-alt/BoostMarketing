@@ -52,6 +52,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   const [dueOpen, setDueOpen]             = useState(false);
   const [assignedUserIds, setAssigneeIds] = useState<string[]>([]);
   const [clientId, setClientId]           = useState('');
+  const [visibility, setVisibility]       = useState('internal');
   const [users, setUsers]                 = useState<InternalUser[]>([]);
   const [clients, setClients]             = useState<{ id: string; name: string; company: string }[]>([]);
 
@@ -67,6 +68,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         ? task.assignedUsers.map((u) => u.id)
         : (task.assignedUserId ? [task.assignedUserId] : []);
       setAssigneeIds(ids);
+      setVisibility(task.visibility || 'internal');
       setClientId(task.clientId ?? '');
     } else {
       setTitle(''); setDescription(''); setStatus('pending'); setPriority('medium');
@@ -145,6 +147,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         dueDate:   dueDate?.toISOString()   ?? null,
         assignedUserIds: isManager ? assignedUserIds : undefined,
         clientId:        isManager && clientId ? clientId : undefined,
+        visibility:      isManager ? visibility : undefined,
         ...(isEditing ? { id: task!.id } : {}),
       };
       const res = await fetch('/api/tasks', {
@@ -223,6 +226,21 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               </Select>
             </div>
           </div>
+
+          {isManager && (
+            <div className="space-y-2">
+              <Label className="text-white/70 text-sm">Visibilidad</Label>
+              <Select value={visibility} onValueChange={setVisibility}>
+                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#1c1c27] border-white/[0.08]">
+                  <SelectItem value="internal" className="text-white/80 focus:text-white focus:bg-white/[0.06]">Interno</SelectItem>
+                  <SelectItem value="client_visible" className="text-white/80 focus:text-white focus:bg-white/[0.06]">Visible al cliente</SelectItem>
+                  <SelectItem value="management" className="text-white/80 focus:text-white focus:bg-white/[0.06]">Solo gerencia</SelectItem>
+                  <SelectItem value="team_only" className="text-white/80 focus:text-white focus:bg-white/[0.06]">Solo equipo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-white/70 text-sm">Fecha inicio <span className="text-white/30 text-[10px]">(opcional)</span></Label>
