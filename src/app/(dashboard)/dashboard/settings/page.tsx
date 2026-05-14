@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
-import { Save, Moon, Bell, Globe, Palette, Camera } from 'lucide-react';
+import { Save, Moon, Bell, Globe, Palette, Camera, Building2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { UserProfile } from '@/lib/types';
+import { useUploadThing } from '@/lib/uploadthing';
 
 const PREDEFINED_COLORS = [
   { value: '#7c3aed', label: 'Violeta' },
@@ -35,6 +36,10 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const { startUpload } = useUploadThing("imageUploader", {
+    onClientUploadComplete: (res) => { if (res?.[0]?.url) { setLogoUrl(res[0].url); setLogoPreview(res[0].url); } },
+    onUploadError: (err) => { toast.error("Error: " + err.message); },
+  });
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -71,6 +76,12 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('');
+  const [brandName, setBrandName] = useState('BoostMarketing');
+  const [brandColor, setBrandColor] = useState('#7c3aed');
+  const [logoPreview, setLogoPreview] = useState('');
+  const [savingBrand, setSavingBrand] = useState(false);
+  const [savedBrand, setSavedBrand] = useState(false);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -150,6 +161,15 @@ export default function SettingsPage() {
     }
   };
 
+  async function handleSaveBrand() {
+    setSavingBrand(true);
+    try {
+      await fetch('/api/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logoUrl, brandName, brandColor }) });
+      setSavedBrand(true); setTimeout(() => setSavedBrand(false), 2000);
+      toast.success('Configuracion guardada');
+    } finally { setSavingBrand(false); }
+  }
+
   const handleSavePreferences = () => {
     toast.success('Preferencias guardadas correctamente');
   };
@@ -178,6 +198,7 @@ export default function SettingsPage() {
             >
               Preferencias
             </TabsTrigger>
+            <TabsTrigger value="empresa" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50">Empresa</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
@@ -513,6 +534,34 @@ export default function SettingsPage() {
               <Save className="w-4 h-4" />
               Guardar
             </Button>
+          </TabsContent>
+
+          <TabsContent value="empresa" className="space-y-6">
+            <div className="glass-card rounded-xl p-6 space-y-6">
+              <div className="flex items-center gap-3"><Building2 className="w-5 h-5 text-brand-light" /><h3 className="text-base font-semibold text-white">Branding de la empresa</h3></div>
+              <p className="text-white/40 text-sm">El logo se usara en todos los emails del sistema</p>
+              <div className="space-y-3">
+                <label className="text-white/70 text-sm font-medium">Logo</label>
+                {logoPreview && (<div className="flex items-center justify-center bg-white/[0.06] border border-white/[0.08] rounded-lg p-4 w-48 h-24"><img src={logoPreview} alt="Logo" className="max-h-16 max-w-full object-contain" /></div>)}
+                <label className="cursor-pointer inline-block">
+                  <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) startUpload([f]); }} disabled={uploading} />
+                  <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.08] rounded-lg text-white text-sm transition-colors w-fit">{uploading ? <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />&nbsp;Subiendo...</> : <><Upload className="w-4 h-4" />&nbsp;Subir logo</>}</div>
+                </label>
+              </div>
+              <div className="space-y-2">
+                <label className="text-white/70 text-sm font-medium">Nombre de la empresa</label>
+                <Input value={brandName} onChange={e => setBrandName(e.target.value)} className="bg-white/[0.04] border-white/[0.08] text-white max-w-sm" placeholder="BoostMarketing" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-white/70 text-sm font-medium">Color principal</label>
+                <div className="flex items-center gap-3">
+                  <input type="color" value={brandColor} onChange={e => setBrandColor(e.target.value)} className="w-10 h-10 rounded cursor-pointer border border-white/[0.08] bg-transparent" />
+                  <Input value={brandColor} onChange={e => setBrandColor(e.target.value)} className="bg-white/[0.04] border-white/[0.08] text-white w-32" />
+                  <div className="w-8 h-8 rounded-full border border-white/20" style={{ background: brandColor }} />
+                </div>
+              </div>
+              <Button onClick={handleSaveBrand} disabled={savingBrand || uploading} className="bg-brand hover:bg-brand-dark text-white gap-2">{savingBrand ? <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />&nbsp;Guardando...</> : <><Save className="w-4 h-4" />&nbsp;{savedBrand ? "Guardado!" : "Guardar cambios"}</>}</Button>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

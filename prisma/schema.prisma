@@ -460,3 +460,13 @@ model AppointmentAssignedUser {
   @@unique([appointmentId, userId])
   @@map("appointment_assigned_users")
 }
+
+model Settings {
+  id          String   @id @default("global")
+  logoUrl     String?  @map("logo_url")
+  brandName   String   @default("BoostMarketing") @map("brand_name")
+  brandColor  String   @default("#7c3aed") @map("brand_color")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  @@map("settings")
+}
