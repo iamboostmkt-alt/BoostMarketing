@@ -20,23 +20,19 @@ const clientInclude = {
   select: { id: true, name: true, company: true },
 };
 
-// ─── GET ──────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const userId   = (session.user as any).id;
-  const role     = session.user.role as string;
-  const isAdmin  = role === "ADMIN";
-  const isPM     = role === "PROJECT_MANAGER";
-  const isManager = isAdmin || isPM;
+  const userId    = (session.user as any).id;
+  const role      = session.user.role as string;
+  const isManager = MANAGER_ROLES.includes(role);
   const isClient  = role === "CLIENT";
+  const scope     = req.nextUrl.searchParams.get("scope");
 
-  const scope = req.nextUrl.searchParams.get("scope");
-
-  // ── MY TASKS (scope=mine) ─────────────────────────────────
+  // ── MY TASKS ──────────────────────────────────────────────
   if (scope === "mine") {
-    const myTasks = await db.task.findMany({
+    const tasks = await db.task.findMany({
       where: {
         OR: [
           { userId },
@@ -51,90 +47,70 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json({ tasks: myTasks });
+    return NextResponse.json({ tasks });
   }
 
-  // ── TASKS BY CLIENT (scope=client&clientId=xxx) ───────────
-  if (scope === "client") {
-    const clientId = req.nextUrl.searchParams.get("clientId");
-    if (!clientId) return NextResponse.json({ tasks: [] });
+  // ── CLIENTS WITH TASKS ────────────────────────────────────
+  if (scope === "clients-with-tasks") {
+    // Obtener IDs de clientes accesibles
+    let clientIds: string[] | null = null;
 
-    // Verificar acceso al cliente para no-managers
     if (!isManager) {
-      const access = await db.clientAssignedUser.findFirst({
-        where: { clientId, userId },
+      const assignments = await db.clientAssignedUser.findMany({
+        where: { userId },
+        select: { clientId: true },
       });
-      if (!access) return NextResponse.json({ error: "Sin acceso" }, { status: 403 });
+      clientIds = assignments.map((a) => a.clientId);
+      if (clientIds.length === 0) return NextResponse.json({ clients: [] });
     }
 
-    const clientTasks = await db.task.findMany({
-      where: {
-        clientId,
-        ...(!isManager && {
-          OR: [
+    // Obtener clientes
+    const clients = await db.client.findMany({
+      where: clientIds ? { id: { in: clientIds } } : {},
+      select: { id: true, name: true, company: true },
+      orderBy: { name: "asc" },
+    });
+
+    // Para cada cliente obtener sus tareas
+    const result = await Promise.all(
+      clients.map(async (client) => {
+        const taskWhere: any = { clientId: client.id };
+        if (!isManager) {
+          taskWhere.OR = [
             { assignedUserId: userId },
             { assignedUsers: { some: { userId } } },
-          ],
-        }),
-      },
-      include: {
-        assignedUser:  userInclude,
-        assignedUsers: { include: { user: userInclude } },
-        client:        clientInclude,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json({ tasks: clientTasks });
-  }
-
-  // ── ALL TASKS (scope=all, solo managers) ──────────────────
-  if (scope === "all" && isManager) {
-    const allTasks = await db.task.findMany({
-      include: {
-        assignedUser:  userInclude,
-        assignedUsers: { include: { user: userInclude } },
-        client:        clientInclude,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json({ tasks: allTasks });
-  }
-
-  // ── CLIENTS CON SUS TAREAS (scope=clients-with-tasks) ─────
-  if (scope === "clients-with-tasks") {
-    let clientWhere = {};
-    if (!isManager) {
-      clientWhere = { assignedUsers: { some: { userId } } };
-    }
-
-    const clients = await db.client.findMany({
-      where: clientWhere,
-      select: {
-        id: true, name: true, company: true,
-        tasks: {
-          where: !isManager ? {
-            OR: [
-              { assignedUserId: userId },
-              { assignedUsers: { some: { userId } } },
-            ],
-          } : {},
+          ];
+        }
+        const tasks = await db.task.findMany({
+          where: taskWhere,
           include: {
             assignedUser:  userInclude,
             assignedUsers: { include: { user: userInclude } },
             client:        clientInclude,
           },
           orderBy: { createdAt: "desc" },
-        },
-      },
-      orderBy: { name: "asc" },
-    });
+        });
+        return { ...client, tasks };
+      })
+    );
 
-    // Solo clientes que tienen tareas
-    const withTasks = clients.filter((c) => c.tasks.length > 0);
-    return NextResponse.json({ clients: withTasks });
+    return NextResponse.json({ clients: result.filter((c) => c.tasks.length > 0) });
   }
 
-  // ── DEFAULT: tareas propias ────────────────────────────────
+  // ── ALL TASKS (managers only) ─────────────────────────────
+  if (scope === "all" && isManager) {
+    const tasks = await db.task.findMany({
+      include: {
+        assignedUser:  userInclude,
+        assignedUsers: { include: { user: userInclude } },
+        client:        clientInclude,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json({ tasks });
+  }
+
+  // ── DEFAULT ───────────────────────────────────────────────
   const tasks = await db.task.findMany({
     where: isClient ? { assignedUserId: userId } : {
       OR: [
@@ -158,7 +134,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ tasks: filtered });
 }
 
-// ─── helper emails ────────────────────────────────────────────
 async function getAssignedEmails(taskId: string): Promise<Set<string>> {
   const t = await db.task.findUnique({
     where: { id: taskId },
@@ -173,7 +148,6 @@ async function getAssignedEmails(taskId: string): Promise<Set<string>> {
   return emails;
 }
 
-// ─── POST ─────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -211,7 +185,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ task }, { status: 201 });
 }
 
-// ─── PUT ──────────────────────────────────────────────────────
 export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -252,13 +225,11 @@ export async function PUT(req: NextRequest) {
     if (task.assignedUser?.id) notifyIds.add(task.assignedUser.id);
     existing.assignedUsers?.forEach((au: any) => notifyIds.add(au.user.id));
     notifyIds.delete(userId);
-
     for (const uid of notifyIds) {
       await db.notification.create({
         data: { userId: uid, message: `"${task.title}" cambio a estado: ${task.status}`, type: "task", link: "/dashboard/tasks" },
       });
     }
-
     const emails = await getAssignedEmails(task.id);
     for (const email of emails) {
       await sendMail(email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending"));
@@ -311,7 +282,6 @@ export async function PUT(req: NextRequest) {
   return NextResponse.json({ task });
 }
 
-// ─── DELETE ───────────────────────────────────────────────────
 export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
