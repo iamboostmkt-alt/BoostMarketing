@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Loader2, CalendarIcon, X } from 'lucide-react';
@@ -79,9 +79,9 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
     setAssigneeIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
+  // Cargar todos los usuarios del equipo
   useEffect(() => {
     if (!open) return;
-    // Usar /api/managers que es accesible para roles internos
     fetch('/api/team-members')
       .then((r) => r.json())
       .then((d) => {
@@ -97,6 +97,38 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         .catch(() => {});
     }
   }, [isManager, open]);
+
+  // Selector inteligente: cuando se elige cliente, filtrar usuarios asignados a ese cliente
+  const [allUsers, setAllUsers] = React.useState<InternalUser[]>([]);
+  useEffect(() => {
+    if (!open) return;
+    fetch('/api/team-members')
+      .then((r) => r.json())
+      .then((d) => {
+        const all = (d.users ?? []).filter((u: InternalUser) => u.role !== 'CLIENT' && u.role !== 'UNASSIGNED');
+        setAllUsers(all);
+      })
+      .catch(() => {});
+  }, [open]);
+
+  useEffect(() => {
+    if (!clientId || !isManager) {
+      setUsers(allUsers);
+      return;
+    }
+    // Filtrar por usuarios asignados al cliente seleccionado
+    fetch(`/api/clients/team?clientId=${clientId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        const clientTeam = d.users ?? [];
+        if (clientTeam.length > 0) {
+          setUsers(clientTeam);
+        } else {
+          setUsers(allUsers); // fallback a todos si el cliente no tiene equipo
+        }
+      })
+      .catch(() => setUsers(allUsers));
+  }, [clientId, allUsers, isManager]);
 
   function toggleStart() { setStartOpen((p) => !p); setDueOpen(false); }
   function toggleDue()   { setDueOpen((p) => !p);   setStartOpen(false); }
