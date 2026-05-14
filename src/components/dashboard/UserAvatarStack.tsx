@@ -9,8 +9,8 @@ interface UserAvatarStackProps {
   size?: 'xs' | 'sm';
 }
 
-function initials(name: string | null, email: string) {
-  return (name || email).split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+function initials(name: string | null | undefined, email: string | null | undefined) {
+  return ((name || email || 'U')).split(/[\s@]/).map((n) => n[0] || '').join('').toUpperCase().slice(0, 2) || 'U';
 }
 
 export default function UserAvatarStack({ users, max = 4, size = 'xs' }: UserAvatarStackProps) {
