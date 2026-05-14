@@ -74,6 +74,11 @@ export async function GET(req: NextRequest) {
       ];
     }
 
+    // TEAM_MEMBER solo ve clientes asignados a el
+    if (role === 'TEAM_MEMBER' || role === 'DESIGNER' || role === 'MARKETING' || role === 'SALES_REP') {
+      where.assignedUsers = { some: { userId } };
+    }
+
     // Segment filter takes precedence over raw status filter
     if (segment === 'prospect') {
       where.status = 'prospect';
