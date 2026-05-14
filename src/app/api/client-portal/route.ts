@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
     const role      = session.user.role as string;
 
     const isManager = MANAGER_ROLES.includes(role);
+    const isClient  = role === 'CLIENT';
 
     if (role === 'UNASSIGNED') {
       return NextResponse.json(
@@ -76,7 +77,7 @@ export async function GET(req: NextRequest) {
     }
 
     const tasks = await db.task.findMany({
-      where: { clientId: client.id, deletedAt: null },
+      where: { clientId: client.id, deletedAt: null, ...(isClient && { visibility: 'client_visible' }) },
       include: {
         user:         taskUserInclude,
         assignedUser: taskUserInclude,
