@@ -46,14 +46,24 @@ export async function GET(req: NextRequest) {
   const scope     = req.nextUrl.searchParams.get("scope");
 
   if (scope === "mine") {
+    // Para CLIENT: buscar su registro de cliente por email para obtener clientId
+    let clientRecord: { id: string } | null = null;
+    if (isClient) {
+      const userEmail = (session.user as any).email;
+      clientRecord = await db.client.findFirst({
+        where: { email: { equals: userEmail, mode: 'insensitive' } },
+        select: { id: true },
+      });
+    }
     const tasks = await db.task.findMany({
       where: {
-        ...(isClient && { visibility: 'client_visible' }),
         OR: [
           { userId },
           { assignedUserId: userId },
           { assignedUsers: { some: { userId } } },
           ...(isManager ? [{ userId }] : []),
+          // Cliente ve tareas de su cuenta con visibility=client_visible
+          ...(isClient && clientRecord ? [{ clientId: clientRecord.id, visibility: 'client_visible' }] : []),
         ],
       },
       include: {
