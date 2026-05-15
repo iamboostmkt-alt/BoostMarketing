@@ -669,37 +669,6 @@ export default function CalendarContent() {
         </div>
         {/* Selector placeholder en skeleton */}
 
-      {/* Selector de cliente */}
-      {!isClient && clientOptions.length > 0 && (
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-xs text-white/40 font-medium shrink-0">Cliente:</span>
-          <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-            <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm h-8 w-auto min-w-[180px] max-w-xs focus:ring-brand">
-              <SelectValue placeholder="Todos los clientes" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
-              {(isAdmin || isPM) && (
-                <SelectItem value="all" className="focus:bg-white/[0.06]">
-                  {isAdmin ? 'Todos los clientes' : 'Todos mis clientes'}
-                </SelectItem>
-              )}
-              {clientOptions.map((c) => (
-                <SelectItem key={c.id} value={c.id} className="focus:bg-white/[0.06]">
-                  {c.name}{c.company ? ` — ${c.company}` : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedClientId !== 'all' && (
-            <button
-              onClick={() => setSelectedClientId('all')}
-              className="text-xs text-white/40 hover:text-white/70 transition-colors underline underline-offset-2">
-              Limpiar filtro
-            </button>
-          )}
-        </div>
-      )}
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <Skeleton className="h-[360px] w-full rounded-xl bg-white/[0.06]" />
@@ -723,7 +692,35 @@ export default function CalendarContent() {
             Haz clic en un dia para ver su detalle
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Selector de cliente */}
+          {!isClient && clientOptions.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm h-9 w-auto min-w-[160px] max-w-[220px] focus:ring-brand">
+                  <SelectValue placeholder="Todos los clientes" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                  {(isAdmin || isPM) && (
+                    <SelectItem value="all" className="focus:bg-white/[0.06]">
+                      {isAdmin ? 'Todos los clientes' : 'Todos mis clientes'}
+                    </SelectItem>
+                  )}
+                  {clientOptions.map((c) => (
+                    <SelectItem key={c.id} value={c.id} className="focus:bg-white/[0.06]">
+                      {c.name}{c.company ? ` — ${c.company}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedClientId !== 'all' && (
+                <button onClick={() => setSelectedClientId('all')}
+                  className="text-xs text-white/40 hover:text-white/70 transition-colors underline underline-offset-2">
+                  Todos
+                </button>
+              )}
+            </div>
+          )}
           {isManager && (
             <Button
               onClick={() => { setEditingAppointment(null); setApptEditOpen(true); }}

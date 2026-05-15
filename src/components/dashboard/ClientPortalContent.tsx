@@ -681,36 +681,39 @@ export default function ClientPortalContent() {
           </div>
 
           {/* Assigned manager + WhatsApp */}
-          {client.assignedManager && (
-            <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl px-4 py-2.5 shrink-0">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={client.assignedManager.image || undefined} />
-                <AvatarFallback className="text-[10px] font-medium"
-                  style={{
-                    backgroundColor: (client.assignedManager.color || '#7c3aed') + '33',
-                    color:            client.assignedManager.color || '#7c3aed',
-                  }}>
-                  {initials(client.assignedManager.name, client.assignedManager.email)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="mr-2">
-                <p className="text-[10px] text-white/30 font-medium uppercase tracking-wider">Tu PM</p>
-                <p className="text-sm text-white/80 font-medium">
-                  {client.assignedManager.name || client.assignedManager.email}
-                </p>
+           <div className="flex items-center gap-3 flex-wrap shrink-0">
+            {client.assignedManager && (
+              <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl px-4 py-2.5">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={client.assignedManager.image || undefined} />
+                  <AvatarFallback className="text-[10px] font-medium"
+                    style={{
+                      backgroundColor: (client.assignedManager.color || '#7c3aed') + '33',
+                      color: client.assignedManager.color || '#7c3aed',
+                    }}>
+                    {initials(client.assignedManager.name, client.assignedManager.email)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="mr-2">
+                  <p className="text-[10px] text-white/30 font-medium uppercase tracking-wider">Tu PM</p>
+                  <p className="text-sm text-white/80 font-medium">
+                    {client.assignedManager.name || client.assignedManager.email}
+                  </p>
+                </div>
+                <a
+                  href={`https://wa.me/521063469?text=Hola ${encodeURIComponent(client.assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
+                  target="_blank" rel="noopener noreferrer" title="WhatsApp PM"
+                  className="flex items-center gap-1.5 rounded-lg bg-green-500/15 hover:bg-green-500/25 border border-green-500/20 px-2.5 py-1.5 text-green-400 text-xs font-medium transition-colors"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  WhatsApp
+                </a>
               </div>
-              <a
-                href={`https://wa.me/521063469?text=Hola ${encodeURIComponent(client.assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="WhatsApp PM"
-                className="flex items-center gap-1.5 rounded-lg bg-green-500/15 hover:bg-green-500/25 border border-green-500/20 px-2.5 py-1.5 text-green-400 text-xs font-medium transition-colors"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                WhatsApp
-              </a>
-            </div>
-          )}
+            )}
+            {isManager && client && (
+              <ReportButton clientId={client.id} clientName={client.name} clientEmail={client.email} />
+            )}
+          </div>
         </div>
 
         {/* Progress */}
@@ -733,9 +736,6 @@ export default function ClientPortalContent() {
           <div className="pt-1 border-t border-white/[0.04] space-y-3">
             <div className="flex items-center justify-between gap-2">
               <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider">Personal Asignado</p>
-              {isManager && client && (
-                <ReportButton clientId={client.id} clientName={client.name} clientEmail={client.email} />
-              )}
             </div>
             <div className="flex flex-wrap gap-3">
               {assignedManager && (
@@ -782,101 +782,66 @@ export default function ClientPortalContent() {
         <PortalCalendar tasks={tasks} onSelectDay={setSelectedDay} />
       </div>
 
-      {/* Portal Navigation Tabs — sin Calendario */}
-      <div className="flex gap-1 border-b border-white/[0.06] pb-0 overflow-x-auto">
-        {([
-          { id: 'resumen',     label: 'Resumen',      show: true },
-          { id: 'tareas',      label: 'Tareas',       show: true },
-          { id: 'actividades', label: 'Actividades',  show: !isManager },
-          { id: 'reuniones',   label: 'Reuniones',    show: true },
-          { id: 'chat',        label: 'Chat',         show: true },
-        ] as const).filter(t => t.show).map(tab => (
-          <button key={tab.id} onClick={() => setPortalTab(tab.id as any)}
-            className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap ${
-              portalTab === tab.id ? 'border-brand text-white' : 'border-transparent text-white/40 hover:text-white/70'
-            }`}>
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── RESUMEN ── */}
-      {portalTab === 'resumen' && (
-        <div className="space-y-4">
-          <ProjectTimeline tasks={tasks} appointments={appointments} />
-          {!isManager && activities.length > 0 && (
-            <div className="glass-card rounded-2xl p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-5 rounded-full bg-brand" />
-                  <h3 className="text-sm font-semibold text-white">Actualizaciones recientes</h3>
-                </div>
-                {activities.length > 3 && (
-                  <button onClick={() => setPortalTab('actividades')} className="text-xs text-brand-light hover:text-white transition-colors">
-                    Ver todas →
-                  </button>
-                )}
-              </div>
-              <div className="space-y-3">
-                {activities.slice(0, 3).map((a) => <ActivityCard key={a.id} activity={a} />)}
-              </div>
-            </div>
-          )}
-
+      {/* Chat + Tareas lado a lado */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="glass-card rounded-2xl p-5">
+          <ChatContent room={client.id} title="Chat con tu equipo" subtitle="Habla en tiempo real con tu Project Manager" />
         </div>
-      )}
-
-      {/* ── TAREAS ── */}
-      {portalTab === 'tareas' && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            {(['all', 'tasks'] as const).map((tab) => (
-              <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${activeTab === tab ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]'}`}>
-                {tab === 'all' ? 'Todas' : 'Abiertas'}
-              </button>
-            ))}
+        <div className="glass-card rounded-2xl p-5 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-5 rounded-full bg-brand" />
+              <h3 className="text-sm font-semibold text-white">Tareas</h3>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {(['all', 'tasks'] as const).map((tab) => (
+                <button key={tab} type="button" onClick={() => setActiveTab(tab)}
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${activeTab === tab ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white'}`}>
+                  {tab === 'all' ? 'Todas' : 'Abiertas'}
+                </button>
+              ))}
+            </div>
           </div>
           {displayedTasks.length === 0 ? (
-            <div className="glass-card rounded-xl py-16 flex flex-col items-center gap-3 text-center">
-              <CheckSquare className="w-10 h-10 text-white/15" />
-              <p className="text-white/35 text-sm">No hay tareas para mostrar.</p>
+            <div className="py-10 flex flex-col items-center gap-2 text-center">
+              <CheckSquare className="w-8 h-8 text-white/15" />
+              <p className="text-white/35 text-sm">No hay tareas.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
               {displayedTasks.map((task) => <TaskCard key={task.id} task={task} />)}
             </div>
           )}
         </div>
-      )}
+      </div>
 
-      {/* ── ACTIVIDADES — solo clientes ── */}
-      {portalTab === 'actividades' && !isManager && (
-        <div className="space-y-3">
-          {activities.length === 0 ? (
-            <div className="glass-card rounded-xl py-16 flex flex-col items-center gap-3 text-center">
-              <Eye className="w-10 h-10 text-white/15" />
-              <p className="text-white/35 text-sm">No hay actualizaciones disponibles aún.</p>
+      {/* Resumen — Timeline + Actividades recientes */}
+      <div className="space-y-4">
+        <ProjectTimeline tasks={tasks} appointments={appointments} />
+        {!isManager && activities.length > 0 && (
+          <div className="glass-card rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-5 rounded-full bg-brand" />
+                <h3 className="text-sm font-semibold text-white">Actualizaciones recientes</h3>
+              </div>
+              {activities.length > 3 && (
+                <button onClick={() => setPortalTab('actividades')} className="text-xs text-brand-light hover:text-white transition-colors">
+                  Ver todas →
+                </button>
+              )}
             </div>
-          ) : (
-            activities.map((a) => <ActivityCard key={a.id} activity={a} />)
-          )}
-        </div>
-      )}
+            <div className="space-y-3">
+              {activities.slice(0, 3).map((a) => <ActivityCard key={a.id} activity={a} />)}
+            </div>
+          </div>
+        )}
+      </div>
 
-      {/* ── REUNIONES ── */}
-      {portalTab === 'reuniones' && (
-        <div className="glass-card rounded-2xl p-5">
-          <p className="text-white/40 text-sm text-center py-8">Próximamente — vista de reuniones</p>
-        </div>
-      )}
-
-      {/* ── CHAT ── */}
-      {portalTab === 'chat' && (
-        <div className="glass-card rounded-2xl p-5">
-          <ChatContent room={client.id} title="Chat con tu equipo" subtitle="Habla en tiempo real con tu Project Manager y el equipo de la agencia" />
-        </div>
-      )}
+      {/* Reuniones */}
+      <div className="glass-card rounded-2xl p-5">
+        <p className="text-white/40 text-sm text-center py-8">Próximamente — vista de reuniones</p>
+      </div>
 
       <DayModal day={selectedDay} tasks={tasks} onClose={() => setSelectedDay(null)} />
     </div>
