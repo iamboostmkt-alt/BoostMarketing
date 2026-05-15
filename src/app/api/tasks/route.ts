@@ -17,6 +17,18 @@ const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
 const userInclude = {
   select: { id: true, name: true, email: true, color: true, image: true },
 };
+
+// Aplana task.assignedUsers de { user: {...} }[] a TaskAssignee[] (id directo)
+function flattenTask(task: any) {
+  if (!task) return task;
+  return {
+    ...task,
+    assignedUsers: (task.assignedUsers ?? []).map((au: any) =>
+      au.user ? { ...au.user } : au
+    ),
+  };
+}
+function flattenTasks(tasks: any[]) { return tasks.map(flattenTask); }
 const clientInclude = {
   select: { id: true, name: true, company: true },
 };
@@ -51,7 +63,7 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json({ tasks });
+    return NextResponse.json({ tasks: flattenTasks(tasks) });
   }
 
   if (scope === "clients-with-tasks") {
@@ -107,7 +119,7 @@ export async function GET(req: NextRequest) {
           },
           orderBy: { createdAt: "desc" },
         });
-        return { ...client, tasks };
+        return { ...client, tasks: flattenTasks(tasks) };
       })
     );
 
@@ -123,7 +135,7 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json({ tasks });
+    return NextResponse.json({ tasks: flattenTasks(tasks) });
   }
 
   const tasks = await db.task.findMany({
@@ -146,7 +158,7 @@ export async function GET(req: NextRequest) {
     ? tasks.map((t: any) => ({ ...t, assignedUsers: undefined }))
     : tasks;
 
-  return NextResponse.json({ tasks: filtered });
+  return NextResponse.json({ tasks: flattenTasks(filtered as any[]) });
 }
 
 async function getAssignedEmails(taskId: string): Promise<Set<string>> {
@@ -201,7 +213,7 @@ export async function POST(req: NextRequest) {
     await sendMail(email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding));
   }
 
-  return NextResponse.json({ task }, { status: 201 });
+  return NextResponse.json({ task: flattenTask(task) }, { status: 201 });
 }
 
 export async function PUT(req: NextRequest) {
@@ -229,10 +241,18 @@ export async function PUT(req: NextRequest) {
   if (isManager && Array.isArray(assignedUserIds)) {
     await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
     if (assignedUserIds.length > 0) {
-      await db.taskAssignedUser.createMany({
-        data: assignedUserIds.map((uid: string) => ({ taskId: id, userId: uid })),
-        skipDuplicates: true,
+      // Validar que los userId existen antes de insertar (evita P2003)
+      const validUsers = await db.user.findMany({
+        where: { id: { in: assignedUserIds } },
+        select: { id: true },
       });
+      const validIds = validUsers.map((u: { id: string }) => u.id);
+      if (validIds.length > 0) {
+        await db.taskAssignedUser.createMany({
+          data: validIds.map((uid: string) => ({ taskId: id, userId: uid })),
+          skipDuplicates: true,
+        });
+      }
     }
   }
 
@@ -281,7 +301,7 @@ export async function PUT(req: NextRequest) {
         sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName)).catch(console.error);
       }
     }
-    return NextResponse.json({ task });
+    return NextResponse.json({ task: flattenTask(task) });
   }
 
   if (isManager && assignedUserId && assignedUserId !== existing.assignedUserId) {
@@ -321,7 +341,7 @@ export async function PUT(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ task });
+  return NextResponse.json({ task: flattenTask(task) });
 }
 
 export async function DELETE(req: NextRequest) {

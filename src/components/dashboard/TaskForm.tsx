@@ -69,7 +69,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       setStartDate(task.startDate ? new Date(task.startDate) : undefined);
       setDueDate(task.dueDate ? new Date(task.dueDate) : undefined);
       const ids = (task.assignedUsers && task.assignedUsers.length > 0)
-        ? task.assignedUsers.map((u) => u.id)
+        ? task.assignedUsers.map((u) => u.id).filter(Boolean)
         : (task.assignedUserId ? [task.assignedUserId] : []);
       setAssigneeIds(ids);
       setVisibility(task.visibility || 'internal');
