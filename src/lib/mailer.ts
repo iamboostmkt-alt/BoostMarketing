@@ -18,6 +18,7 @@ export async function sendMail(to: string, subject: string, html: string): Promi
       to,
       subject,
       html,
+      encoding: 'utf-8',
     });
     console.log(`[MAIL] Enviado a ${to}: ${subject}`);
   } catch (err) {
