@@ -23,7 +23,7 @@ import {
 import { es } from 'date-fns/locale';
 import ChatContent from '@/components/dashboard/ChatContent';
 import { ReportButton } from '@/components/dashboard/ReportButton';
-import type { ClientPortalData, Task, TaskAssignee } from '@/lib/types';
+import type { ClientPortalData, Task, TaskAssignee, Activity } from '@/lib/types';
 
 // Timeline component
 function ProjectTimeline({ tasks, appointments }) {
@@ -341,6 +341,44 @@ function TaskCard({ task }: { task: Task }) {
   );
 }
 
+
+// ── Activity cards ────────────────────────────────────────────────────────────
+
+const activityStatusConfig: Record<string, { label: string; color: string }> = {
+  pending:     { label: 'Pendiente',   color: 'bg-amber-500/15 text-amber-300 border-amber-500/20' },
+  in_progress: { label: 'En progreso', color: 'bg-blue-500/15 text-blue-300 border-blue-500/20' },
+  completed:   { label: 'Completado',  color: 'bg-green-500/15 text-green-300 border-green-500/20' },
+};
+
+function ActivityCard({ activity }: { activity: Activity }) {
+  const cfg = activityStatusConfig[activity.status] ?? activityStatusConfig.pending;
+  return (
+    <div className="glass-card rounded-xl p-4 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Eye className="h-4 w-4 text-brand-light shrink-0" />
+          <p className="text-sm font-semibold text-white truncate">{activity.title}</p>
+        </div>
+        <span className={`flex-shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
+          {cfg.label}
+        </span>
+      </div>
+      {activity.description && (
+        <p className="text-xs text-white/45 line-clamp-3 pl-6">{activity.description}</p>
+      )}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pl-6 text-[11px] text-white/35">
+        <span>{fmtDate(activity.startDate)}</span>
+        {activity.createdBy && (
+          <span className="flex items-center gap-1">
+            <User className="h-3 w-3" />
+            {activity.createdBy.name || activity.createdBy.email}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Progress bar ──────────────────────────────────────────────────────────────
 
 function ProgressBar({ total, completed }: { total: number; completed: number }) {
@@ -387,7 +425,7 @@ export default function ClientPortalContent() {
   const [noClient, setNoClient] = useState(false);
   const [selectedDay,      setSelectedDay]      = useState<Date | null>(null);
   const [activeTab,        setActiveTab]        = useState<'all' | 'tasks'>('all');
-  const [portalTab,        setPortalTab]        = useState<'resumen' | 'tareas' | 'calendario' | 'reuniones' | 'chat'>('resumen');
+  const [portalTab,        setPortalTab]        = useState<'resumen' | 'tareas' | 'calendario' | 'actividades' | 'reuniones' | 'chat'>('resumen');
 
   // Load client list for admin/PM selector
   useEffect(() => {
@@ -509,7 +547,7 @@ export default function ClientPortalContent() {
 
   if (!data) return null;
 
-  const { client, tasks } = data;
+  const { client, tasks, activities = [] } = data;
 
   // Redirect CLIENT users without assigned PM to waiting screen
   if (!isManager && !client.assignedManagerId) {
@@ -660,6 +698,7 @@ export default function ClientPortalContent() {
           { id: 'resumen',    label: 'Resumen',    icon: 'layout' },
           { id: 'tareas',     label: 'Tareas',     icon: 'check' },
           { id: 'calendario', label: 'Calendario', icon: 'calendar' },
+          { id: 'actividades', label: 'Actividades', icon: 'eye' },
           { id: 'reuniones',  label: 'Reuniones',  icon: 'video' },
           { id: 'chat',       label: 'Chat',       icon: 'chat' },
         ] as const).map(tab => (
@@ -672,75 +711,97 @@ export default function ClientPortalContent() {
         ))}
       </div>
 
-      {portalTab === 'resumen' && <ProjectTimeline tasks={tasks} appointments={appointments} />}
-
-      {/* Report Button */}
-      {isManager && client && (
-        <div className="flex items-center justify-between flex-wrap gap-3 px-1">
-          <p className="text-sm font-medium text-white/50">Reporte mensual</p>
-          <ReportButton
-            clientId={client.id}
-            clientName={client.name}
-            clientEmail={client.email}
-          />
+      {/* ── RESUMEN ── */}
+      {portalTab === 'resumen' && (
+        <div className="space-y-4">
+          <ProjectTimeline tasks={tasks} appointments={appointments} />
+          {!isManager && activities.length > 0 && (
+            <div className="glass-card rounded-2xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-5 rounded-full bg-brand" />
+                  <h3 className="text-sm font-semibold text-white">Actualizaciones recientes</h3>
+                </div>
+                {activities.length > 3 && (
+                  <button onClick={() => setPortalTab('actividades')} className="text-xs text-brand-light hover:text-white transition-colors">
+                    Ver todas →
+                  </button>
+                )}
+              </div>
+              <div className="space-y-3">
+                {activities.slice(0, 3).map((a) => <ActivityCard key={a.id} activity={a} />)}
+              </div>
+            </div>
+          )}
+          {isManager && client && (
+            <div className="flex items-center justify-between flex-wrap gap-3 px-1">
+              <p className="text-sm font-medium text-white/50">Reporte mensual</p>
+              <ReportButton clientId={client.id} clientName={client.name} clientEmail={client.email} />
+            </div>
+          )}
         </div>
       )}
 
-      {/* Calendar */}
-      <div className="glass-card rounded-2xl p-5">
-        <PortalCalendar
-          tasks={tasks}
-          onSelectDay={setSelectedDay}
-        />
-      </div>
-
-      {/* List — tabs */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          {(['all', 'tasks'] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                activeTab === tab
-                  ? 'bg-brand text-white'
-                  : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]'
-              }`}
-            >
-              {tab === 'all' ? 'Todas' : 'Abiertas'}
-            </button>
-          ))}
+      {/* ── TAREAS ── */}
+      {portalTab === 'tareas' && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            {(['all', 'tasks'] as const).map((tab) => (
+              <button key={tab} type="button" onClick={() => setActiveTab(tab)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${activeTab === tab ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]'}`}>
+                {tab === 'all' ? 'Todas' : 'Abiertas'}
+              </button>
+            ))}
+          </div>
+          {displayedTasks.length === 0 ? (
+            <div className="glass-card rounded-xl py-16 flex flex-col items-center gap-3 text-center">
+              <CheckSquare className="w-10 h-10 text-white/15" />
+              <p className="text-white/35 text-sm">No hay tareas para mostrar.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {displayedTasks.map((task) => <TaskCard key={task.id} task={task} />)}
+            </div>
+          )}
         </div>
+      )}
 
-        {displayedTasks.length === 0 ? (
-          <div className="glass-card rounded-xl py-16 flex flex-col items-center gap-3 text-center">
-            <Calendar className="w-10 h-10 text-white/15" />
-            <p className="text-white/35 text-sm">No hay ítems para mostrar.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {displayedTasks.map((task) => <TaskCard key={task.id} task={task} />)}
-          </div>
-        )}
-      </div>
+      {/* ── CALENDARIO ── */}
+      {portalTab === 'calendario' && (
+        <div className="glass-card rounded-2xl p-5">
+          <PortalCalendar tasks={tasks} onSelectDay={setSelectedDay} />
+        </div>
+      )}
 
-      {/* Day modal */}
-      <DayModal
-        day={selectedDay}
-        tasks={tasks}
-        onClose={() => setSelectedDay(null)}
-      />
+      {/* ── ACTIVIDADES ── */}
+      {portalTab === 'actividades' && !isManager && (
+        <div className="space-y-3">
+          {activities.length === 0 ? (
+            <div className="glass-card rounded-xl py-16 flex flex-col items-center gap-3 text-center">
+              <Eye className="w-10 h-10 text-white/15" />
+              <p className="text-white/35 text-sm">No hay actualizaciones disponibles aún.</p>
+            </div>
+          ) : (
+            activities.map((a) => <ActivityCard key={a.id} activity={a} />)
+          )}
+        </div>
+      )}
 
-      {/* Real-time chat with the agency */}
-      <div className="glass-card rounded-2xl p-5">
-        <ChatContent
-          room={client.id}
-          title="Chat con tu equipo"
-          subtitle="Habla en tiempo real con tu Project Manager y el equipo de la agencia"
-        />
-      </div>
+      {/* ── REUNIONES ── */}
+      {portalTab === 'reuniones' && (
+        <div className="glass-card rounded-2xl p-5">
+          <p className="text-white/40 text-sm text-center py-8">Próximamente — vista de reuniones</p>
+        </div>
+      )}
+
+      {/* ── CHAT ── */}
+      {portalTab === 'chat' && (
+        <div className="glass-card rounded-2xl p-5">
+          <ChatContent room={client.id} title="Chat con tu equipo" subtitle="Habla en tiempo real con tu Project Manager y el equipo de la agencia" />
+        </div>
+      )}
+
+      <DayModal day={selectedDay} tasks={tasks} onClose={() => setSelectedDay(null)} />
     </div>
   );
 }
-

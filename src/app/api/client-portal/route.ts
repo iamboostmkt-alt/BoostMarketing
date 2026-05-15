@@ -108,7 +108,21 @@ export async function GET(req: NextRequest) {
       assignedUsers: t.assignedUsers.map((r) => r.user),
     }));
 
-    return NextResponse.json({ client, activities: [], tasks: shapedTasks });
+    // Fetch activities visibles al cliente
+    const activities = await db.activity.findMany({
+      where: {
+        clientId: client.id,
+        ...(isClient && { visibleToClient: true }),
+      },
+      include: {
+        createdBy:    { select: { id: true, name: true, email: true, color: true, image: true } },
+        assignedUser: { select: { id: true, name: true, email: true, color: true, image: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+
+    return NextResponse.json({ client, activities, tasks: shapedTasks });
   } catch (error) {
     log.err('/api/client-portal GET', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
