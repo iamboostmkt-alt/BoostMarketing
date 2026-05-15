@@ -104,10 +104,12 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
 
   useEffect(() => {
     if (open) {
-      fetch('/api/admin/users')
+      fetch('/api/team-members')
         .then((r) => r.json())
         .then((d) => {
-          const internal = (d.users ?? []).filter((u: InternalUser & { role: string }) => u.role !== 'CLIENT');
+          const internal = (d.users ?? []).filter((u: InternalUser & { role: string }) =>
+            u.role !== 'CLIENT' && u.role !== 'UNASSIGNED'
+          );
           setTeamUsers(internal);
         })
         .catch(() => {});
