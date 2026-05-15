@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink } from 'lucide-react';
+import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -23,10 +23,11 @@ interface Attachment {
 }
 
 interface TaskDetailModalProps {
-  task:    Task | null;
-  open:    boolean;
-  onClose: () => void;
-  onEdit?: (t: Task) => void;
+  task:      Task | null;
+  open:      boolean;
+  onClose:   () => void;
+  onEdit?:   (t: Task) => void;
+  isManager?: boolean;
 }
 
 function fmtDate(iso: string | null | undefined) {
@@ -63,11 +64,31 @@ function FileIcon({ type }: { type: string }) {
   return <FileText className="w-4 h-4 text-white/40" />;
 }
 
-export default function TaskDetailModal({ task, open, onClose, onEdit }: TaskDetailModalProps) {
+export default function TaskDetailModal({ task, open, onClose, onEdit, isManager = false }: TaskDetailModalProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [reminding, setReminding] = useState(false);
+
+  async function handleRemind() {
+    if (!task) return;
+    setReminding(true);
+    try {
+      const res = await fetch('/api/tasks/remind', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskId: task.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
+      alert(`Recordatorio enviado a ${data.enviados} usuario${data.enviados !== 1 ? 's' : ''}`);
+    } catch (err: any) {
+      alert(err.message || 'Error al enviar recordatorio');
+    } finally {
+      setReminding(false);
+    }
+  }
 
   const { startUpload, isUploading } = useUploadThing('taskAttachment', {
     onClientUploadComplete: async (res) => {
@@ -271,10 +292,17 @@ export default function TaskDetailModal({ task, open, onClose, onEdit }: TaskDet
           </div>
 
           {/* Footer */}
-          <div className="border-t border-white/[0.06] px-5 py-3 flex items-center gap-2 shrink-0">
+          <div className="border-t border-white/[0.06] px-5 py-3 flex items-center gap-2 shrink-0 flex-wrap">
             {onEdit && (
               <Button size="sm" variant="outline" onClick={() => onEdit(task)} className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-1.5 text-xs h-8">
                 <Pencil className="w-3.5 h-3.5" />Editar tarea
+              </Button>
+            )}
+            {isManager && task.status !== 'completed' && (
+              <Button size="sm" variant="outline" onClick={handleRemind} disabled={reminding}
+                className="border-amber-500/30 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 gap-1.5 text-xs h-8">
+                {reminding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bell className="w-3.5 h-3.5" />}
+                {reminding ? 'Enviando...' : 'Recordatorio'}
               </Button>
             )}
             <Button size="sm" variant="ghost" onClick={onClose} className="text-white/30 hover:text-white hover:bg-white/[0.06] text-xs h-8 ml-auto">
