@@ -50,6 +50,14 @@ export async function POST(req: NextRequest) {
     const emailNorm = email.trim().toLowerCase();
     const nameTrim  = name.trim();
 
+    // Obtener sesión para auto-asignar al creador
+    const creatorSession = await getServerSession(authOptions);
+    const creatorId = creatorSession?.user ? (creatorSession.user as any).id : null;
+    // Combinar creador + assignedUserIds sin duplicados
+    const allAssignedIds = [...new Set([
+      ...(creatorId ? [creatorId] : []),
+      ...(assignedUserIds ?? []),
+    ])] as string[];
     const appointment = await db.appointment.create({
       data: {
         name:    nameTrim,
@@ -59,9 +67,9 @@ export async function POST(req: NextRequest) {
         notes:   (notes ?? '').trim(),
         meetUrl: (meetUrl ?? '').trim(),
         status:  'pending',
-        ...(assignedUserIds?.length > 0 && {
+        ...(allAssignedIds.length > 0 && {
           assignedUsers: {
-            create: (assignedUserIds as string[]).map((uid) => ({ userId: uid })),
+            create: allAssignedIds.map((uid) => ({ userId: uid })),
           },
         }),
       },
@@ -210,10 +218,16 @@ export async function PATCH(req: NextRequest) {
 
     // Actualizar asignaciones si se envian
     if (assignedUserIds !== undefined) {
+      const patchSession = await getServerSession(authOptions);
+      const patchUserId = patchSession?.user ? (patchSession.user as any).id : null;
+      const allPatchIds = [...new Set([
+        ...(patchUserId ? [patchUserId] : []),
+        ...(assignedUserIds as string[]),
+      ])];
       await db.appointmentAssignedUser.deleteMany({ where: { appointmentId: id } });
-      if ((assignedUserIds as string[]).length > 0) {
+      if (allPatchIds.length > 0) {
         await db.appointmentAssignedUser.createMany({
-          data: (assignedUserIds as string[]).map((uid) => ({
+          data: allPatchIds.map((uid) => ({
             appointmentId: id,
             userId: uid,
           })),

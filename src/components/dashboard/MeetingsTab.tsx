@@ -164,7 +164,10 @@ export default function MeetingsTab() {
 
   useEffect(() => {
     fetchMeetings();
-    fetch('/api/admin/users').then(r => r.json()).then(d => setTeamUsers(d.users ?? [])).catch(() => {});
+    fetch('/api/team-members')
+      .then(r => r.json())
+      .then(d => setTeamUsers((d.users ?? []).filter((u: TeamUser & { role: string }) => u.role !== 'CLIENT' && u.role !== 'UNASSIGNED')))
+      .catch(() => {});
   }, [fetchMeetings]);
 
   async function handleDelete(id: string) {
