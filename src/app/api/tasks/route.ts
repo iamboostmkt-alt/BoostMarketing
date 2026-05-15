@@ -10,6 +10,7 @@ import {
   templateTareaCompletada,
   templateTareaEditada,
 } from "@/lib/mailer";
+import { getBranding } from "@/lib/branding";
 
 const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
 
@@ -187,9 +188,10 @@ export async function POST(req: NextRequest) {
   });
 
   const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined;
+  const branding = await getBranding();
   const emails = await getAssignedEmails(task.id);
   for (const email of emails) {
-    await sendMail(email, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", dueDateStr));
+    await sendMail(email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding));
   }
 
   return NextResponse.json({ task }, { status: 201 });
