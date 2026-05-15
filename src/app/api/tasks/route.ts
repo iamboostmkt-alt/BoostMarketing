@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
           { userId },
           { assignedUserId: userId },
           { assignedUsers: { some: { userId } } },
+          ...(isManager ? [{ userId }] : []),
         ],
       },
       include: {
@@ -85,7 +86,13 @@ export async function GET(req: NextRequest) {
     const result = await Promise.all(
       clients.map(async (client) => {
         const taskWhere: any = { clientId: client.id, ...(isClient && { visibility: 'client_visible' }) };
-        if (!isManager) {
+        if (isAdmin) {
+          // Admin ve todas las tareas del cliente
+        } else if (isPM) {
+          // PM solo ve tareas que él creó para este cliente
+          taskWhere.userId = userId;
+        } else {
+          // Team member: solo tareas donde está asignado
           taskWhere.OR = [
             { assignedUserId: userId },
             { assignedUsers: { some: { userId } } },
@@ -243,7 +250,7 @@ export async function PUT(req: NextRequest) {
       ...(isManager && visibility     !== undefined && { visibility }),
       ...(references !== undefined && { references: Array.isArray(references) ? references : [] }),
     },
-    include: { assignedUser: userInclude, client: clientInclude },
+    include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },
   });
 
   if (status && existing.status !== task.status) {
