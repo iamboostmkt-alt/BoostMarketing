@@ -712,27 +712,31 @@ export default function ClientPortalContent() {
   const assignedManager = client.assignedManager;
 
   const teamMembersMap = new Map();
-  if (isManager) {
-    tasks.forEach((t) => {
-      if (t.assignedUser && t.assignedUser.id !== assignedManager?.id) {
-        const u = t.assignedUser;
-        teamMembersMap.set(u.id, { id: u.id, name: u.name, email: u.email, color: u.color, image: u.image ?? null });
-      }
-      for (const u of t.assignedUsers ?? []) {
-        if (u.id !== assignedManager?.id) teamMembersMap.set(u.id, u);
-      }
-    });
-  }
+  // Equipo visible: solo de tareas client_visible (cliente no ve equipo de tareas internas)
+  const tasksForTeam = isManager ? tasks : tasks.filter((t) => t.visibility === 'client_visible');
+  tasksForTeam.forEach((t) => {
+    if (t.assignedUser && t.assignedUser.id !== assignedManager?.id) {
+      const u = t.assignedUser;
+      teamMembersMap.set(u.id, { id: u.id, name: u.name, email: u.email, color: u.color, image: u.image ?? null });
+    }
+    for (const u of t.assignedUsers ?? []) {
+      if (u.id !== assignedManager?.id) teamMembersMap.set(u.id, u);
+    }
+  });
   const teamMembers = [...teamMembersMap.values()];
 
 
   const totalItems     = tasks.length;
   const completedItems = tasks.filter((t) => t.status === 'completed').length;
 
+  // Cliente solo ve tareas client_visible; managers ven todas
+  const visibleTasks = isManager
+    ? tasks
+    : tasks.filter((t) => t.visibility === 'client_visible');
   const displayedTasks =
     activeTab === 'tasks'
-      ? tasks.filter((t) => t.status !== 'completed')
-      : tasks;
+      ? visibleTasks.filter((t) => t.status !== 'completed')
+      : visibleTasks;
 
   return (
     <div className="space-y-6">

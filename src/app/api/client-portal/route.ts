@@ -76,6 +76,11 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // Portal siempre muestra solo tareas visibles al cliente (nunca internas)
+    const taskVisibilityFilter = isClient
+      ? { visibility: 'client_visible' }
+      : { visibility: { in: ['client_visible', 'team_only', 'management', 'internal'] } };
+    // Managers ven todas, cliente solo client_visible
     const tasks = await db.task.findMany({
       where: { clientId: client.id, deletedAt: null, ...(isClient && { visibility: 'client_visible' }) },
       include: {
