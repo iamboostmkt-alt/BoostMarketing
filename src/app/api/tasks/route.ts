@@ -218,6 +218,17 @@ export async function PUT(req: NextRequest) {
   });
   if (!existing) return NextResponse.json({ error: "Tarea no encontrada" }, { status: 404 });
 
+  // Update assignedUsers many-to-many if provided
+  if (isManager && Array.isArray(assignedUserIds)) {
+    await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
+    if (assignedUserIds.length > 0) {
+      await db.taskAssignedUser.createMany({
+        data: assignedUserIds.map((uid: string) => ({ taskId: id, userId: uid })),
+        skipDuplicates: true,
+      });
+    }
+  }
+
   const task = await db.task.update({
     where: { id },
     data: {

@@ -42,7 +42,7 @@ function fmtSize(bytes: number) {
 }
 
 function initials(name: string | null | undefined, email: string) {
-  return (name || email).split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+  return (name || email || 'U').split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
 function resolveAssignees(task: Task): TaskAssignee[] {
