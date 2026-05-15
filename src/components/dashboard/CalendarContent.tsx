@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -499,8 +500,11 @@ export default function CalendarContent() {
   const isClient  = role === 'CLIENT';
 
   type CalView = 'mine' | 'team' | 'clients' | 'all' | 'meetings' | 'deliveries';
+  interface ClientOption { id: string; name: string; company?: string | null; }
 
   const [calView,      setCalView]      = useState<CalView>('mine');
+  const [selectedClientId,  setSelectedClientId]  = useState<string>('all');
+  const [clientOptions,     setClientOptions]     = useState<ClientOption[]>([]);
   const [tasks,        setTasks]        = useState<Task[]>([]);
   const [activities,   setActivities]   = useState<Activity[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -562,6 +566,19 @@ export default function CalendarContent() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Cargar opciones de clientes para el selector
+  useEffect(() => {
+    const url = '/api/clients';
+    fetch(url)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.clients) setClientOptions(d.clients);
+      })
+      .catch(() => {});
+  }, [isAdmin, isManager, role]);
+
+
+
   useEffect(() => {
     const unsubs = [
       bus.on<{ task: Task }>(RT_EVENTS.TASK_CREATED, ({ task }) => {
@@ -621,6 +638,16 @@ export default function CalendarContent() {
     [appointments, selectedDay]
   );
 
+  const filteredTasks = useMemo(
+    () => selectedClientId === 'all' ? tasks : tasks.filter(t => t.clientId === selectedClientId),
+    [tasks, selectedClientId]
+  );
+
+  const filteredDayTasks = useMemo(
+    () => filteredTasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDay)),
+    [filteredTasks, selectedDay]
+  );
+
   const total = dayTasks.length + dayAppointments.length;
   const capitalizedLabel = dayLabel(selectedDay);
 
@@ -640,7 +667,38 @@ export default function CalendarContent() {
           <Skeleton className="h-9 w-44 rounded-lg bg-white/[0.06]" />
           <Skeleton className="h-9 w-32 rounded-lg bg-white/[0.06]" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Selector de cliente */}
+      {clientOptions.length > 0 && (
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-xs text-white/40 font-medium shrink-0">Cliente:</span>
+          <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+            <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm h-8 w-auto min-w-[180px] max-w-xs focus:ring-brand">
+              <SelectValue placeholder="Todos los clientes" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+              {(isAdmin || isPM) && (
+                <SelectItem value="all" className="focus:bg-white/[0.06]">
+                  {isAdmin ? 'Todos los clientes' : 'Todos mis clientes'}
+                </SelectItem>
+              )}
+              {clientOptions.map((c) => (
+                <SelectItem key={c.id} value={c.id} className="focus:bg-white/[0.06]">
+                  {c.name}{c.company ? ` — ${c.company}` : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedClientId !== 'all' && (
+            <button
+              onClick={() => setSelectedClientId('all')}
+              className="text-xs text-white/40 hover:text-white/70 transition-colors underline underline-offset-2">
+              Limpiar filtro
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <Skeleton className="h-[360px] w-full rounded-xl bg-white/[0.06]" />
           </div>
@@ -701,7 +759,7 @@ export default function CalendarContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6">
           <CalendarGrid
-            tasks={calView === "meetings" ? [] : calView === "deliveries" ? tasks.filter(t => !!t.dueDate) : tasks}
+            tasks={calView === "meetings" ? [] : calView === "deliveries" ? filteredTasks.filter(t => !!t.dueDate) : filteredTasks}
             activities={calView === "meetings" ? [] : activities}
             appointments={calView === "deliveries" ? [] : appointments}
             selectedDay={selectedDay}
@@ -730,13 +788,13 @@ export default function CalendarContent() {
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-5 space-y-4">
-            {dayTasks.length > 0 && (
+            {filteredDayTasks.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
                   <CheckSquare className="w-3 h-3" />
-                  Tareas ({dayTasks.length})
+                  Tareas ({filteredDayTasks.length})
                 </div>
-                {dayTasks.map((task) => (
+                {filteredDayTasks.map((task) => (
                   <div key={task.id}
                     className={`w-full text-left rounded-lg p-3.5 transition-colors group relative overflow-hidden border
                       ${task.priority === "urgent" ? "bg-red-500/[0.06] border-red-500/20 hover:border-red-500/30" :
