@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { sendEmail, welcomeHtml } from "@/lib/resend";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   await sendEmail({
     to: "iamboostmkt@gmail.com",
