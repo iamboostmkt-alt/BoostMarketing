@@ -667,7 +667,9 @@ export default function CalendarContent() {
           <Skeleton className="h-9 w-44 rounded-lg bg-white/[0.06]" />
           <Skeleton className="h-9 w-32 rounded-lg bg-white/[0.06]" />
         </div>
-        {/* Selector de cliente */}
+        {/* Selector placeholder en skeleton */}
+
+      {/* Selector de cliente */}
       {!isClient && clientOptions.length > 0 && (
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-xs text-white/40 font-medium shrink-0">Cliente:</span>
