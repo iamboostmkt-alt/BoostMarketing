@@ -187,6 +187,11 @@ export async function POST(req: NextRequest) {
 
   if (!title) return NextResponse.json({ error: "Titulo requerido" }, { status: 400 });
 
+  // Auto-incluir al creador en assignedUsers
+  const finalAssignedIds = isManager && Array.isArray(assignedUserIds)
+    ? [...new Set([userId, ...assignedUserIds])]
+    : [userId];
+
   const task = await db.task.create({
     data: {
       userId,
@@ -199,9 +204,7 @@ export async function POST(req: NextRequest) {
       clientId:       isManager ? clientId       || null : null,
       visibility:     isManager ? (visibility || 'internal') : 'internal',
       references:     Array.isArray(references) ? references : [],
-      ...(isManager && Array.isArray(assignedUserIds) && assignedUserIds.length > 0 && {
-        assignedUsers: { create: assignedUserIds.map((uid: string) => ({ userId: uid })) },
-      }),
+      assignedUsers: { create: finalAssignedIds.map((uid: string) => ({ userId: uid })) },
     },
     include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },
   });
@@ -237,13 +240,13 @@ export async function PUT(req: NextRequest) {
   });
   if (!existing) return NextResponse.json({ error: "Tarea no encontrada" }, { status: 404 });
 
-  // Update assignedUsers many-to-many if provided
+  // Update assignedUsers many-to-many — auto-incluir al editor
   if (isManager && Array.isArray(assignedUserIds)) {
+    const allIds = [...new Set([userId, ...assignedUserIds])];
     await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
-    if (assignedUserIds.length > 0) {
-      // Validar que los userId existen antes de insertar (evita P2003)
+    if (allIds.length > 0) {
       const validUsers = await db.user.findMany({
-        where: { id: { in: assignedUserIds } },
+        where: { id: { in: allIds } },
         select: { id: true },
       });
       const validIds = validUsers.map((u: { id: string }) => u.id);
