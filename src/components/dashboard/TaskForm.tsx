@@ -86,15 +86,17 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
     setAssigneeIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
-  // Cargar todos los usuarios del equipo
+  // Cargar todos los usuarios del equipo (una sola vez al abrir)
+  const [allUsers, setAllUsers] = React.useState<InternalUser[]>([]);
+
   useEffect(() => {
     if (!open) return;
     fetch('/api/team-members')
       .then((r) => r.json())
       .then((d) => {
-        const all = d.users ?? [];
-        const internal = all.filter((u: InternalUser) => u.role !== 'CLIENT' && u.role !== 'UNASSIGNED');
-        setUsers(internal);
+        const all = (d.users ?? []).filter((u: InternalUser) => u.role !== 'CLIENT' && u.role !== 'UNASSIGNED');
+        setAllUsers(all);
+        setUsers(all);
       })
       .catch(() => {});
     if (isManager) {
@@ -105,37 +107,12 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
     }
   }, [isManager, open]);
 
-  // Selector inteligente: cuando se elige cliente, filtrar usuarios asignados a ese cliente
-  const [allUsers, setAllUsers] = React.useState<InternalUser[]>([]);
+  // Cuando cambia clientId, mostrar SIEMPRE todos los usuarios (no filtrar por cliente)
+  // El PM debe poder asignar cualquier miembro del equipo independientemente del cliente
   useEffect(() => {
-    if (!open) return;
-    fetch('/api/team-members')
-      .then((r) => r.json())
-      .then((d) => {
-        const all = (d.users ?? []).filter((u: InternalUser) => u.role !== 'CLIENT' && u.role !== 'UNASSIGNED');
-        setAllUsers(all);
-      })
-      .catch(() => {});
-  }, [open]);
-
-  useEffect(() => {
-    if (!clientId || !isManager) {
-      setUsers(allUsers);
-      return;
-    }
-    // Filtrar por usuarios asignados al cliente seleccionado
-    fetch(`/api/clients/team?clientId=${clientId}`)
-      .then((r) => r.json())
-      .then((d) => {
-        const clientTeam = d.users ?? [];
-        if (clientTeam.length > 0) {
-          setUsers(clientTeam);
-        } else {
-          setUsers(allUsers); // fallback a todos si el cliente no tiene equipo
-        }
-      })
-      .catch(() => setUsers(allUsers));
-  }, [clientId, allUsers, isManager]);
+    if (allUsers.length === 0) return;
+    setUsers(allUsers);
+  }, [clientId, allUsers]);
 
   function toggleStart() { setStartOpen((p) => !p); setDueOpen(false); }
   function toggleDue()   { setDueOpen((p) => !p);   setStartOpen(false); }
