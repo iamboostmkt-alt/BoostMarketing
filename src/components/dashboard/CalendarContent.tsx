@@ -939,6 +939,7 @@ export default function CalendarContent() {
       <TaskForm
         open={taskFormOpen}
         onOpenChange={setTaskFormOpen}
+        initialDate={editingTask ? null : selectedDay}
         task={editingTask}
         isManager={isManager}
         onSuccess={fetchData}

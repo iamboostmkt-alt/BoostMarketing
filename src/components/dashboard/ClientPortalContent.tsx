@@ -964,6 +964,7 @@ export default function ClientPortalContent() {
           open={meetingOpen}
           onOpenChange={setMeetingOpen}
           teamUsers={meetingTeam}
+          initialClientEmail={client?.email}
           onSaved={() => {
             setMeetingOpen(false);
             const clientEmailParam = client?.email ? `&clientEmail=${encodeURIComponent(client.email)}` : '';

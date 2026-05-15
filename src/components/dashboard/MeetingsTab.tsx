@@ -30,16 +30,19 @@ interface MeetDialogProps {
   meeting?: Appointment | null;
   teamUsers: TeamUser[];
   onSaved: () => void;
+  clients?: { id: string; name: string; email: string; company: string }[];
+  initialClientEmail?: string;
 }
 
-export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved }: MeetDialogProps) {
+export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved, clients = [], initialClientEmail }: MeetDialogProps) {
   const isEdit = !!meeting;
-  const [name,     setName]     = useState('');
-  const [date,     setDate]     = useState('');
-  const [notes,    setNotes]    = useState('');
-  const [meetUrl,  setMeetUrl]  = useState('');
-  const [assigned, setAssigned] = useState<string[]>([]);
-  const [saving,   setSaving]   = useState(false);
+  const [name,        setName]        = useState('');
+  const [date,        setDate]        = useState('');
+  const [notes,       setNotes]       = useState('');
+  const [meetUrl,     setMeetUrl]     = useState('');
+  const [assigned,    setAssigned]    = useState<string[]>([]);
+  const [clientEmail, setClientEmail] = useState('');
+  const [saving,      setSaving]      = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -48,8 +51,9 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved 
       setNotes(meeting?.notes ?? '');
       setMeetUrl(meeting?.meetUrl ?? '');
       setAssigned((meeting?.assignedUsers ?? []).map((au: any) => au.user?.id ?? au.userId));
+      setClientEmail(initialClientEmail ?? (meeting as any)?.email ?? '');
     }
-  }, [open, meeting]);
+  }, [open, meeting, initialClientEmail]);
 
   function toggleUser(id: string) {
     setAssigned(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -60,7 +64,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved 
     if (!name.trim() || !date) { toast.error('Nombre y fecha requeridos.'); return; }
     setSaving(true);
     try {
-      const body = { name, date, notes, meetUrl, assignedUserIds: assigned };
+      const body = { name, date: new Date(date).toISOString(), notes, meetUrl, assignedUserIds: assigned, ...(clientEmail ? { email: clientEmail } : {}) };
       const url = '/api/meetings';
       const res = isEdit
         ? await fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: meeting!.id, ...body }) })
@@ -90,6 +94,18 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved 
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Reunion semanal" required
               className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
+          {clients.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Cliente (opcional)</Label>
+              <select value={clientEmail} onChange={e => setClientEmail(e.target.value)}
+                className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+                <option value="">Sin cliente</option>
+                {clients.map(c => (
+                  <option key={c.id} value={c.email}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Fecha y hora *</Label>
             <Input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} required
@@ -150,6 +166,7 @@ export default function MeetingsTab() {
   const [editing,   setEditing]   = useState<Appointment | null>(null);
   const [deleting,  setDeleting]  = useState<string | null>(null);
   const [teamUsers, setTeamUsers] = useState<TeamUser[]>([]);
+  const [clients,   setClients]   = useState<{ id: string; name: string; email: string; company: string }[]>([]);
 
   const fetchMeetings = useCallback(async (status = 'all') => {
     setLoading(true);
@@ -167,6 +184,10 @@ export default function MeetingsTab() {
     fetch('/api/team-members')
       .then(r => r.json())
       .then(d => setTeamUsers((d.users ?? []).filter((u: TeamUser & { role: string }) => u.role !== 'CLIENT' && u.role !== 'UNASSIGNED')))
+      .catch(() => {});
+    fetch('/api/clients')
+      .then(r => r.json())
+      .then(d => setClients(d.clients ?? []))
       .catch(() => {});
   }, [fetchMeetings]);
 
@@ -312,7 +333,7 @@ export default function MeetingsTab() {
           </table>
         </div>
       </div>
-      <MeetingDialog open={dialog} onOpenChange={setDialog} meeting={editing} teamUsers={teamUsers} onSaved={() => fetchMeetings(filter)} />
+      <MeetingDialog open={dialog} onOpenChange={setDialog} meeting={editing} teamUsers={teamUsers} clients={clients} onSaved={() => fetchMeetings(filter)} />
     </div>
   );
 }

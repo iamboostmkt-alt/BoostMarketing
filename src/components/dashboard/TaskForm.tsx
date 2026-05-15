@@ -36,9 +36,10 @@ interface TaskFormProps {
   task?: Task | null;
   isManager?: boolean;
   onSuccess?: () => void;
+  initialDate?: Date | null;
 }
 
-export default function TaskForm({ open, onOpenChange, task, isManager = false, onSuccess }: TaskFormProps) {
+export default function TaskForm({ open, onOpenChange, task, isManager = false, onSuccess, initialDate }: TaskFormProps) {
   const isEditing = !!task;
 
   const [loading, setLoading]             = useState(false);
@@ -77,7 +78,9 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       setClientId(task.clientId ?? '');
     } else {
       setTitle(''); setDescription(''); setStatus('pending'); setPriority('medium');
-      setStartDate(undefined); setDueDate(undefined); setAssigneeIds([]); setClientId('');
+      setStartDate(initialDate ?? undefined);
+      setDueDate(initialDate ?? undefined);
+      setAssigneeIds([]); setClientId('');
     }
     setStartOpen(false); setDueOpen(false);
   }, [task, open]);
