@@ -772,17 +772,21 @@ export default function ClientPortalContent() {
         )}
       </div>
 
-      {/* Portal Navigation Tabs */}
+      {/* Calendario SIEMPRE visible */}
+      <div className="glass-card rounded-2xl p-5">
+        <PortalCalendar tasks={tasks} onSelectDay={setSelectedDay} />
+      </div>
+
+      {/* Portal Navigation Tabs — sin Calendario */}
       <div className="flex gap-1 border-b border-white/[0.06] pb-0 overflow-x-auto">
         {([
-          { id: 'resumen',    label: 'Resumen',    icon: 'layout' },
-          { id: 'tareas',     label: 'Tareas',     icon: 'check' },
-          { id: 'calendario', label: 'Calendario', icon: 'calendar' },
-          { id: 'actividades', label: 'Actividades', icon: 'eye' },
-          { id: 'reuniones',  label: 'Reuniones',  icon: 'video' },
-          { id: 'chat',       label: 'Chat',       icon: 'chat' },
-        ] as const).map(tab => (
-          <button key={tab.id} onClick={() => setPortalTab(tab.id)}
+          { id: 'resumen',     label: 'Resumen',      show: true },
+          { id: 'tareas',      label: 'Tareas',       show: true },
+          { id: 'actividades', label: 'Actividades',  show: !isManager },
+          { id: 'reuniones',   label: 'Reuniones',    show: true },
+          { id: 'chat',        label: 'Chat',         show: true },
+        ] as const).filter(t => t.show).map(tab => (
+          <button key={tab.id} onClick={() => setPortalTab(tab.id as any)}
             className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap ${
               portalTab === tab.id ? 'border-brand text-white' : 'border-transparent text-white/40 hover:text-white/70'
             }`}>
@@ -846,14 +850,7 @@ export default function ClientPortalContent() {
         </div>
       )}
 
-      {/* ── CALENDARIO ── */}
-      {portalTab === 'calendario' && (
-        <div className="glass-card rounded-2xl p-5">
-          <PortalCalendar tasks={tasks} onSelectDay={setSelectedDay} />
-        </div>
-      )}
-
-      {/* ── ACTIVIDADES ── */}
+      {/* ── ACTIVIDADES — solo clientes ── */}
       {portalTab === 'actividades' && !isManager && (
         <div className="space-y-3">
           {activities.length === 0 ? (

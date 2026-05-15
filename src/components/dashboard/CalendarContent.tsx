@@ -568,14 +568,14 @@ export default function CalendarContent() {
 
   // Cargar opciones de clientes para el selector
   useEffect(() => {
-    const url = '/api/clients';
-    fetch(url)
+    if (!role) return; // esperar a que session esté lista
+    fetch('/api/clients')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.clients) setClientOptions(d.clients);
       })
       .catch(() => {});
-  }, [isAdmin, isManager, role]);
+  }, [role]);
 
 
 
@@ -668,7 +668,7 @@ export default function CalendarContent() {
           <Skeleton className="h-9 w-32 rounded-lg bg-white/[0.06]" />
         </div>
         {/* Selector de cliente */}
-      {clientOptions.length > 0 && (
+      {!isClient && clientOptions.length > 0 && (
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-xs text-white/40 font-medium shrink-0">Cliente:</span>
           <Select value={selectedClientId} onValueChange={setSelectedClientId}>
