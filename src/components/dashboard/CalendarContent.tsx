@@ -524,14 +524,16 @@ export default function CalendarContent() {
       if (calView === 'all' && isAdmin)    tasksUrl = '/api/tasks?scope=all';
       else if (calView === 'team' && isManager) tasksUrl = '/api/tasks?scope=all';
       else if (calView === 'clients')      tasksUrl = '/api/tasks?scope=clients-with-tasks';
-      else if (calView === 'deliveries')   tasksUrl = '/api/tasks?scope=all&has_due=1';
+      else if (calView === 'deliveries')   tasksUrl = isAdmin ? '/api/tasks?scope=all&has_due=1' : '/api/tasks?scope=mine&has_due=1';
 
       const tasksRes = await fetch(tasksUrl);
       if (tasksRes.ok) {
         const data = await tasksRes.json();
         if (calView === 'clients') {
           const clients = data.clients ?? [];
-          const allTasks = clients.flatMap((c: any) => c.tasks ?? []);
+          const allTasks = clients.flatMap((c: any) =>
+            (c.tasks ?? []).map((t: any) => ({ ...t, clientId: t.clientId ?? c.id }))
+          );
           setTasks(allTasks);
         } else {
           setTasks(data.tasks || []);
@@ -693,8 +695,8 @@ export default function CalendarContent() {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          {/* Selector de cliente */}
-          {!isClient && clientOptions.length > 0 && (
+          {/* Selector de cliente — solo en tabs clientes/entregas */}
+          {!isClient && clientOptions.length > 0 && (calView === 'clients' || calView === 'deliveries') && (
             <div className="flex items-center gap-2">
               <Select value={selectedClientId} onValueChange={setSelectedClientId}>
                 <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm h-9 w-auto min-w-[160px] max-w-[220px] focus:ring-brand">

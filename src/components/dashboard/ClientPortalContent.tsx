@@ -682,6 +682,9 @@ export default function ClientPortalContent() {
 
           {/* Assigned manager + WhatsApp */}
            <div className="flex items-center gap-3 flex-wrap shrink-0">
+            {isManager && client && (
+              <ReportButton clientId={client.id} clientName={client.name} clientEmail={client.email} />
+            )}
             {client.assignedManager && (
               <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl px-4 py-2.5">
                 <Avatar className="h-8 w-8">
@@ -709,9 +712,6 @@ export default function ClientPortalContent() {
                   WhatsApp
                 </a>
               </div>
-            )}
-            {isManager && client && (
-              <ReportButton clientId={client.id} clientName={client.name} clientEmail={client.email} />
             )}
           </div>
         </div>
