@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Calendar, CheckSquare, Clock,
   CheckCircle2, Loader2, AlertCircle, User, Building2, Eye, MessageCircle, Video,
+  ChevronDown, Flag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -313,30 +314,76 @@ function PortalCalendar({ tasks, onSelectDay }: CalendarProps) {
 // ── Task cards ────────────────────────────────────────────────────────────────
 
 function TaskCard({ task }: { task: Task }) {
+  const [expanded, setExpanded] = useState(false);
   const cfg = taskStatusConfig[task.status] ?? taskStatusConfig.pending;
+  const priorityColor: Record<string, string> = {
+    urgent: 'text-red-400', high: 'text-orange-400', medium: 'text-blue-400', low: 'text-emerald-400',
+  };
+  const priorityLabel: Record<string, string> = {
+    urgent: 'Urgente', high: 'Alta', medium: 'Media', low: 'Baja',
+  };
   return (
-    <div className="glass-card rounded-xl p-4 space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <CheckSquare className="h-4 w-4 text-amber-400 shrink-0" />
-          <p className="text-sm font-semibold text-white truncate">{task.title}</p>
+    <div
+      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
+      onClick={() => setExpanded(e => !e)}
+    >
+      {/* Header siempre visible */}
+      <div className="p-4 space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <CheckSquare className="h-4 w-4 text-amber-400 shrink-0" />
+            <p className="text-sm font-semibold text-white truncate">{task.title}</p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
+              {cfg.icon}{cfg.label}
+            </span>
+            <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+          </div>
         </div>
-        <span className={`flex-shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
-          {cfg.icon}{cfg.label}
-        </span>
-      </div>
-      {task.description && (
-        <p className="text-xs text-white/45 line-clamp-2 pl-6">{task.description}</p>
-      )}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pl-6 text-[11px] text-white/35">
-        {task.dueDate && <span>Vence: {fmtDate(task.dueDate)}</span>}
-        {task.assignedUser && (
-          <span className="flex items-center gap-1">
-            <User className="h-3 w-3" />
-            {task.assignedUser.name || task.assignedUser.email}
-          </span>
+        {!expanded && task.description && (
+          <p className="text-xs text-white/45 line-clamp-1 pl-6">{task.description}</p>
+        )}
+        {!expanded && (
+          <div className="flex flex-wrap items-center gap-x-3 pl-6 text-[11px] text-white/35">
+            {task.dueDate && <span>Vence: {fmtDate(task.dueDate)}</span>}
+          </div>
         )}
       </div>
+
+      {/* Detalle expandido */}
+      {expanded && (
+        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
+          {task.description && (
+            <p className="text-xs text-white/60 leading-relaxed">{task.description}</p>
+          )}
+          <div className="grid grid-cols-2 gap-2">
+            {task.dueDate && (
+              <div className="bg-white/[0.03] rounded-lg p-2.5">
+                <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Vence</p>
+                <p className="text-xs text-white/70 font-medium">{fmtDate(task.dueDate)}</p>
+              </div>
+            )}
+            {task.priority && (
+              <div className="bg-white/[0.03] rounded-lg p-2.5">
+                <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Prioridad</p>
+                <p className={`text-xs font-medium flex items-center gap-1 ${priorityColor[task.priority] || 'text-white/50'}`}>
+                  <Flag className="w-3 h-3" />
+                  {priorityLabel[task.priority] || task.priority}
+                </p>
+              </div>
+            )}
+          </div>
+          {task.assignedUser && (
+            <div className="flex items-center gap-2 pt-1">
+              <User className="h-3.5 w-3.5 text-white/30" />
+              <span className="text-xs text-white/50">
+                Asignado a <span className="text-white/70 font-medium">{task.assignedUser.name || task.assignedUser.email}</span>
+              </span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -351,30 +398,63 @@ const activityStatusConfig: Record<string, { label: string; color: string }> = {
 };
 
 function ActivityCard({ activity }: { activity: Activity }) {
+  const [expanded, setExpanded] = useState(false);
   const cfg = activityStatusConfig[activity.status] ?? activityStatusConfig.pending;
   return (
-    <div className="glass-card rounded-xl p-4 space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <Eye className="h-4 w-4 text-brand-light shrink-0" />
-          <p className="text-sm font-semibold text-white truncate">{activity.title}</p>
+    <div
+      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
+      onClick={() => setExpanded(e => !e)}
+    >
+      {/* Header siempre visible */}
+      <div className="p-4 space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Eye className="h-4 w-4 text-brand-light shrink-0" />
+            <p className="text-sm font-semibold text-white truncate">{activity.title}</p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
+              {cfg.label}
+            </span>
+            <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+          </div>
         </div>
-        <span className={`flex-shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
-          {cfg.label}
-        </span>
-      </div>
-      {activity.description && (
-        <p className="text-xs text-white/45 line-clamp-3 pl-6">{activity.description}</p>
-      )}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pl-6 text-[11px] text-white/35">
-        <span>{fmtDate(activity.startDate)}</span>
-        {activity.createdBy && (
-          <span className="flex items-center gap-1">
-            <User className="h-3 w-3" />
-            {activity.createdBy.name || activity.createdBy.email}
-          </span>
+        {!expanded && activity.description && (
+          <p className="text-xs text-white/45 line-clamp-1 pl-6">{activity.description}</p>
+        )}
+        {!expanded && (
+          <p className="text-[11px] text-white/35 pl-6">{fmtDate(activity.startDate)}</p>
         )}
       </div>
+
+      {/* Detalle expandido */}
+      {expanded && (
+        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
+          {activity.description && (
+            <p className="text-xs text-white/60 leading-relaxed">{activity.description}</p>
+          )}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-white/[0.03] rounded-lg p-2.5">
+              <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Inicio</p>
+              <p className="text-xs text-white/70 font-medium">{fmtDate(activity.startDate)}</p>
+            </div>
+            {activity.endDate && (
+              <div className="bg-white/[0.03] rounded-lg p-2.5">
+                <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Fin</p>
+                <p className="text-xs text-white/70 font-medium">{fmtDate(activity.endDate)}</p>
+              </div>
+            )}
+          </div>
+          {activity.createdBy && (
+            <div className="flex items-center gap-2 pt-1">
+              <User className="h-3.5 w-3.5 text-white/30" />
+              <span className="text-xs text-white/50">
+                Publicado por <span className="text-white/70 font-medium">{activity.createdBy.name || activity.createdBy.email}</span>
+              </span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
