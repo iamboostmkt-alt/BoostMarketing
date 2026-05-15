@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Calendar, CheckSquare, Clock,
-  CheckCircle2, Loader2, AlertCircle, User, Building2, Eye, MessageCircle, Video,
+  CheckCircle2, Loader2, AlertCircle, User, Building2, Eye, MessageCircle, Video, Plus,
   ChevronDown, Flag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ import {
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ChatContent from '@/components/dashboard/ChatContent';
+import { MeetingDialog, TeamUser } from '@/components/dashboard/MeetingsTab';
 import { ReportButton } from '@/components/dashboard/ReportButton';
 import type { ClientPortalData, Task, TaskAssignee, Activity } from '@/lib/types';
 
@@ -578,6 +579,8 @@ export default function ClientPortalContent() {
   const [error,    setError]    = useState<string | null>(null);
   const [noClient, setNoClient] = useState(false);
   const [selectedDay,      setSelectedDay]      = useState<Date | null>(null);
+  const [meetingOpen,      setMeetingOpen]      = useState(false);
+  const [meetingTeam,      setMeetingTeam]      = useState<TeamUser[]>([]);
   const [activeTab,        setActiveTab]        = useState<'all' | 'tasks'>('all');
   const [portalTab,        setPortalTab]        = useState<'resumen' | 'tareas' | 'calendario' | 'actividades' | 'reuniones' | 'chat'>('resumen');
 
@@ -619,6 +622,15 @@ export default function ClientPortalContent() {
       .catch(() => setError('Error al cargar el portal. Intenta nuevamente.'))
       .finally(() => setLoading(false));
   }, [isManager, previewClientId]);
+
+  // Cargar equipo para modal de reunión
+  useEffect(() => {
+    if (!isManager) return;
+    fetch('/api/team-members')
+      .then(r => r.json())
+      .then(d => setMeetingTeam((d.users ?? []).filter((u: any) => u.role !== 'CLIENT' && u.role !== 'UNASSIGNED')))
+      .catch(() => {});
+  }, [isManager]);
 
   // Admin selector header (always visible for managers)
   const AdminSelectorBar = isManager ? (
@@ -893,11 +905,20 @@ export default function ClientPortalContent() {
 
           {/* Reuniones */}
           <div className="pt-3 border-t border-white/[0.04] space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-5 rounded-full bg-green-500" />
-              <h3 className="text-sm font-semibold text-white">Reuniones</h3>
-              {appointments.length > 0 && (
-                <span className="text-[10px] bg-green-500/15 text-green-300 border border-green-500/20 rounded-full px-2 py-0.5">{appointments.length}</span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-5 rounded-full bg-green-500" />
+                <h3 className="text-sm font-semibold text-white">Reuniones</h3>
+                {appointments.length > 0 && (
+                  <span className="text-[10px] bg-green-500/15 text-green-300 border border-green-500/20 rounded-full px-2 py-0.5">{appointments.length}</span>
+                )}
+              </div>
+              {isManager && (
+                <button type="button" onClick={() => setMeetingOpen(true)}
+                  className="flex items-center gap-1 text-[11px] text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md px-2 py-1 transition-colors">
+                  <Plus className="w-3 h-3" />
+                  Agendar
+                </button>
               )}
             </div>
             {appointments.length === 0 ? (
@@ -938,6 +959,18 @@ export default function ClientPortalContent() {
       </div>
 
       <DayModal day={selectedDay} tasks={tasks} onClose={() => setSelectedDay(null)} />
+      {isManager && (
+        <MeetingDialog
+          open={meetingOpen}
+          onOpenChange={setMeetingOpen}
+          teamUsers={meetingTeam}
+          onSaved={() => {
+            setMeetingOpen(false);
+            const clientEmailParam = client?.email ? `&clientEmail=${encodeURIComponent(client.email)}` : '';
+            fetch(`/api/appointments?upcoming=1${clientEmailParam}`).then(r => r.json()).then(ad => setAppointments(ad.appointments || [])).catch(() => {});
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Appointment } from '@/lib/types';
 
-interface TeamUser { id: string; name: string | null; email: string; color: string; image: string | null; }
+export interface TeamUser { id: string; name: string | null; email: string; color: string; image: string | null; }
 
 const STATUS: Record<string, { label: string; color: string }> = {
   pending:   { label: 'Pendiente',  color: 'bg-amber-500/15 text-amber-300' },
@@ -32,7 +32,7 @@ interface MeetDialogProps {
   onSaved: () => void;
 }
 
-function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved }: MeetDialogProps) {
+export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved }: MeetDialogProps) {
   const isEdit = !!meeting;
   const [name,     setName]     = useState('');
   const [date,     setDate]     = useState('');
