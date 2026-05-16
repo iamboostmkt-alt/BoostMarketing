@@ -721,7 +721,7 @@ export default function ClientPortalContent() {
   // ── Estado UI ────────────────────────────────────────────────────────────
   const [previewClientId, setPreviewClientId] = useState<string>('');
   const [clients,         setClients]         = useState<ClientSummary[]>([]);
-  const [selectedDay,     setSelectedDay]     = useState<Date | null>(new Date());
+  const [selectedDay,     setSelectedDay]     = useState<Date | null>(null);
   const [meetingOpen,     setMeetingOpen]     = useState(false);
   const [meetingTeam,     setMeetingTeam]     = useState<TeamUser[]>([]);
   const [requestOpen,     setRequestOpen]     = useState(false);
@@ -1138,7 +1138,7 @@ export default function ClientPortalContent() {
         open={portalTaskOpen}
         onOpenChange={(v) => { setPortalTaskOpen(v); if (!v) setEditingTask(null); }}
         isManager={isManager}
-        initialDate={editingTask ? null : (selectedDay ?? null)}
+        initialDate={editingTask ? null : (selectedDay ?? new Date())}
         initialClientId={client?.id ?? null}
         task={editingTask}
         onSuccess={() => {
@@ -1223,7 +1223,7 @@ export default function ClientPortalContent() {
           onOpenChange={setMeetingOpen}
           teamUsers={meetingTeam}
           initialClientEmail={client?.email}
-          initialDate={selectedDay ?? undefined}
+          initialDate={selectedDay ?? new Date()}
           onSaved={() => {
             setMeetingOpen(false);
             refetchSilent();
