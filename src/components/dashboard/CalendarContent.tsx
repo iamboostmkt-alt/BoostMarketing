@@ -43,6 +43,15 @@ function dayLabel(day: Date): string {
   }
 }
  
+function sameLocalDay(dateStr: string | Date, day: Date): boolean {
+  const d = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
+  return (
+    d.getFullYear() === day.getFullYear() &&
+    d.getMonth()    === day.getMonth()    &&
+    d.getDate()     === day.getDate()
+  );
+}
+
 function getTaskAvatar(u: { name: string | null; email: string; color: string; image?: string | null } | undefined) {
   if (!u) return null;
   return (
@@ -335,15 +344,15 @@ function DayModal({
   onEditTask, onNewTask, onDeleteTask, onEditAppointment, onDeleteAppointment, onNewAppointment,
 }: DayModalProps) {
   const dayTasks = useMemo(
-    () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day)),
+    () => tasks.filter((t) => t.dueDate && sameLocalDay(t.dueDate, day)),
     [tasks, day]
   );
   const dayActivities = useMemo(
-    () => activities.filter((a) => a.startDate && isSameDay(new Date(a.startDate), day)),
+    () => activities.filter((a) => a.startDate && sameLocalDay(a.startDate, day)),
     [activities, day]
   );
   const dayAppointments = useMemo(
-    () => appointments.filter((a) => isSameDay(new Date(a.date), day)),
+    () => appointments.filter((a) => sameLocalDay(a.date, day)),
     [appointments, day]
   );
   const total = dayTasks.length + dayActivities.length + dayAppointments.length;
@@ -635,12 +644,12 @@ export default function CalendarContent() {
   }
 
   const dayTasks = useMemo(
-    () => tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDay)),
+    () => tasks.filter((t) => t.dueDate && sameLocalDay(t.dueDate, selectedDay)),
     [tasks, selectedDay]
   );
 
   const dayAppointments = useMemo(
-    () => appointments.filter((a) => isSameDay(new Date(a.date), selectedDay)),
+    () => appointments.filter((a) => sameLocalDay(a.date, selectedDay)),
     [appointments, selectedDay]
   );
 
@@ -650,7 +659,7 @@ export default function CalendarContent() {
   );
 
   const filteredDayTasks = useMemo(
-    () => filteredTasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), selectedDay)),
+    () => filteredTasks.filter((t) => t.dueDate && sameLocalDay(t.dueDate, selectedDay)),
     [filteredTasks, selectedDay]
   );
 
