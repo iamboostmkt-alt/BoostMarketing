@@ -11,6 +11,8 @@ import {
   templateTareaEditada,
 } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
+import { getSessionUser } from "@/core/auth/get-session-user";
+import { AccessControl } from "@/core/access/access-control";
 
 const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
 
@@ -18,7 +20,6 @@ const userInclude = {
   select: { id: true, name: true, email: true, color: true, image: true },
 };
 
-// Aplana task.assignedUsers de { user: {...} }[] a TaskAssignee[] (id directo)
 function flattenTask(task: any) {
   if (!task) return task;
   return {
@@ -29,41 +30,45 @@ function flattenTask(task: any) {
   };
 }
 function flattenTasks(tasks: any[]) { return tasks.map(flattenTask); }
+
 const clientInclude = {
-  select: { id: true, name: true, company: true },
+  select: { id: true, name: true, company: true, assignedManagerId: true },
 };
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const userId   = (session.user as any).id;
-  const role     = session.user.role as string;
-  const isAdmin  = role === "ADMIN";
-  const isPM     = role === "PROJECT_MANAGER";
+  // FASE 1: usar user context normalizado
+  const user = await getSessionUser();
+  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  const userId    = user.id;
+  const role      = user.role;
+  const isAdmin   = role === "ADMIN";
+  const isPM      = role === "PROJECT_MANAGER";
   const isManager = isAdmin || isPM;
   const isClient  = role === "CLIENT";
   const scope     = req.nextUrl.searchParams.get("scope");
 
   if (scope === "mine") {
-    // Para CLIENT: buscar su registro de cliente por email para obtener clientId
     let clientRecord: { id: string } | null = null;
     if (isClient) {
-      const userEmail = (session.user as any).email;
       clientRecord = await db.client.findFirst({
-        where: { email: { equals: userEmail, mode: 'insensitive' } },
+        where: { email: { equals: user.email, mode: "insensitive" } },
         select: { id: true },
       });
     }
+
     const tasks = await db.task.findMany({
       where: {
         OR: [
           { userId },
           { assignedUserId: userId },
           { assignedUsers: { some: { userId } } },
-          ...(isManager ? [{ userId }] : []),
-          // Cliente ve tareas de su cuenta con visibility=client_visible
-          ...(isClient && clientRecord ? [{ clientId: clientRecord.id, visibility: 'client_visible' }] : []),
+          ...(isClient && clientRecord
+            ? [{ clientId: clientRecord.id, visibility: "client_visible" }]
+            : []),
         ],
       },
       include: {
@@ -73,7 +78,10 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json({ tasks: flattenTasks(tasks) });
+
+    const flattened = flattenTasks(tasks);
+    const filtered  = flattened.filter((t: any) => AccessControl.canViewTask(user, t));
+    return NextResponse.json({ tasks: filtered });
   }
 
   if (scope === "clients-with-tasks") {
@@ -101,20 +109,19 @@ export async function GET(req: NextRequest) {
 
     const clients = await db.client.findMany({
       where: clientIds ? { id: { in: clientIds } } : {},
-      select: { id: true, name: true, company: true },
+      select: { id: true, name: true, company: true, assignedManagerId: true },
       orderBy: { name: "asc" },
     });
 
     const result = await Promise.all(
       clients.map(async (client) => {
-        const taskWhere: any = { clientId: client.id, ...(isClient && { visibility: 'client_visible' }) };
-        if (isAdmin) {
-          // Admin ve todas las tareas del cliente
-        } else if (isPM) {
-          // PM solo ve tareas que él creó para este cliente
+        const taskWhere: any = {
+          clientId: client.id,
+          ...(isClient && { visibility: "client_visible" }),
+        };
+        if (!isAdmin && isPM) {
           taskWhere.userId = userId;
-        } else {
-          // Team member: solo tareas donde está asignado
+        } else if (!isAdmin && !isPM) {
           taskWhere.OR = [
             { assignedUserId: userId },
             { assignedUsers: { some: { userId } } },
@@ -129,7 +136,9 @@ export async function GET(req: NextRequest) {
           },
           orderBy: { createdAt: "desc" },
         });
-        return { ...client, tasks: flattenTasks(tasks) };
+        const flattened = flattenTasks(tasks);
+        const filtered  = flattened.filter((t: any) => AccessControl.canViewTask(user, t));
+        return { ...client, tasks: filtered };
       })
     );
 
@@ -148,14 +157,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ tasks: flattenTasks(tasks) });
   }
 
+  // Fallback — mismo comportamiento que antes
   const tasks = await db.task.findMany({
-    where: isClient ? { assignedUserId: userId } : {
-      OR: [
-        { userId },
-        { assignedUserId: userId },
-        { assignedUsers: { some: { userId } } },
-      ],
-    },
+    where: isClient
+      ? { assignedUserId: userId }
+      : {
+          OR: [
+            { userId },
+            { assignedUserId: userId },
+            { assignedUsers: { some: { userId } } },
+          ],
+        },
     include: {
       assignedUser:  userInclude,
       assignedUsers: { include: { user: userInclude } },
@@ -164,11 +176,9 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
   });
 
-  const filtered = isClient
-    ? tasks.map((t: any) => ({ ...t, assignedUsers: undefined }))
-    : tasks;
-
-  return NextResponse.json({ tasks: flattenTasks(filtered as any[]) });
+  const flattened = flattenTasks(tasks as any[]);
+  const filtered  = flattened.filter((t: any) => AccessControl.canViewTask(user, t));
+  return NextResponse.json({ tasks: filtered });
 }
 
 async function getAssignedEmails(taskId: string): Promise<Set<string>> {
@@ -197,7 +207,6 @@ export async function POST(req: NextRequest) {
 
   if (!title) return NextResponse.json({ error: "Titulo requerido" }, { status: 400 });
 
-  // Auto-incluir al creador en assignedUsers
   const finalAssignedIds = isManager && Array.isArray(assignedUserIds)
     ? [...new Set([userId, ...assignedUserIds])]
     : [userId];
@@ -212,7 +221,7 @@ export async function POST(req: NextRequest) {
       startDate:   body.startDate ? new Date(body.startDate) : null,
       assignedUserId: isManager ? assignedUserId || null : null,
       clientId:       isManager ? clientId       || null : null,
-      visibility:     isManager ? (visibility || 'internal') : 'internal',
+      visibility:     isManager ? (visibility || "internal") : "internal",
       references:     Array.isArray(references) ? references : [],
       assignedUsers: { create: finalAssignedIds.map((uid: string) => ({ userId: uid })) },
     },
@@ -250,7 +259,6 @@ export async function PUT(req: NextRequest) {
   });
   if (!existing) return NextResponse.json({ error: "Tarea no encontrada" }, { status: 404 });
 
-  // Update assignedUsers many-to-many — auto-incluir al editor
   if (isManager && Array.isArray(assignedUserIds)) {
     const allIds = [...new Set([userId, ...assignedUserIds])];
     await db.taskAssignedUser.deleteMany({ where: { taskId: id } });

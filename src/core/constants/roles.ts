@@ -1,0 +1,21 @@
+export const ROLES = {
+  ADMIN: "ADMIN",
+  PM: "PROJECT_MANAGER",
+  TEAM: "TEAM_MEMBER",
+  DESIGNER: "DESIGNER",
+  MARKETING: "MARKETING",
+  SALES_REP: "SALES_REP",
+  CLIENT: "CLIENT",
+  UNASSIGNED: "UNASSIGNED",
+} as const;
+
+export const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"] as const;
+
+export const INTERNAL_ROLES = [
+  "ADMIN",
+  "PROJECT_MANAGER",
+  "TEAM_MEMBER",
+  "DESIGNER",
+  "MARKETING",
+  "SALES_REP",
+] as const;

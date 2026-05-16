@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { log } from '@/lib/logger';
 import { normalizeTaskStatus } from '@/lib/task-status';
+import { getSessionUser } from '@/core/auth/get-session-user';
+import { AccessControl } from '@/core/access/access-control';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -11,22 +13,23 @@ const taskUserInclude = {
   select: { id: true, name: true, email: true, color: true, image: true },
 } as const;
 
-// GET Ã¢â‚¬â€ returns portal data for the current CLIENT, or for any client (admin preview via ?clientId=)
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-    const userId    = (session.user as { id: string }).id;
-    const userEmail = session.user.email as string;
-    const role      = session.user.role as string;
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
+    const userId    = user.id;
+    const userEmail = user.email;
+    const role      = user.role;
     const isManager = MANAGER_ROLES.includes(role);
     const isClient  = role === 'CLIENT';
 
     if (role === 'UNASSIGNED') {
       return NextResponse.json(
-        { error: 'Tu cuenta aÃƒÂºn no tiene rol asignado. Espera a que un administrador te asigne acceso.' },
+        { error: 'Tu cuenta aún no tiene rol asignado. Espera a que un administrador te asigne acceso.' },
         { status: 403 }
       );
     }
@@ -38,7 +41,6 @@ export async function GET(req: NextRequest) {
     let client;
 
     if (isManager) {
-      // Admin preview: ?clientId=xxx required
       const { searchParams } = new URL(req.url);
       const clientId = searchParams.get('clientId');
 
@@ -55,15 +57,12 @@ export async function GET(req: NextRequest) {
           assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
         },
       });
-      // Solo ADMIN o PM asignado pueden ver este portal
-      if (client && role !== 'ADMIN') {
-        const isAssignedPM = client.assignedManagerId === userId;
-        if (!isAssignedPM) {
-          return NextResponse.json({ error: 'No tienes acceso al portal de este cliente.' }, { status: 403 });
-        }
+
+      // AccessControl reemplaza el check manual de PM asignado
+      if (client && !AccessControl.canAccessClientPortal(user, clientId)) {
+        return NextResponse.json({ error: 'No tienes acceso al portal de este cliente.' }, { status: 403 });
       }
     } else {
-      // CLIENT: find by their email
       client = await db.client.findFirst({
         where: { email: { equals: userEmail, mode: 'insensitive' } },
         include: {
@@ -78,27 +77,35 @@ export async function GET(req: NextRequest) {
         activities: [],
         tasks:      [],
         message:    isManager
-          ? 'No se encontrÃƒÂ³ el cliente especificado.'
-          : 'Tu cuenta de cliente aÃƒÂºn no ha sido configurada. Contacta a tu Project Manager.',
+          ? 'No se encontró el cliente especificado.'
+          : 'Tu cuenta de cliente aún no ha sido configurada. Contacta a tu Project Manager.',
       });
     }
 
-    // Portal siempre muestra solo tareas visibles al cliente (nunca internas)
-    // Cliente solo ve client_visible; managers ven todas
-    const tasks = await db.task.findMany({
-      where: { clientId: client.id, deletedAt: null, ...(isClient && { visibility: 'client_visible' }) },
+    const rawTasks = await db.task.findMany({
+      where: { clientId: client.id, deletedAt: null },
       include: {
-        user:         taskUserInclude,
-        assignedUser: taskUserInclude,
-        assignedUsers: {
-          include: { user: taskUserInclude },
-        },
-        client: { select: { id: true, name: true, company: true } },
+        user:          taskUserInclude,
+        assignedUser:  taskUserInclude,
+        assignedUsers: { include: { user: taskUserInclude } },
+        client:        { select: { id: true, name: true, company: true, assignedManagerId: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    // Log portal access (non-blocking, only for CLIENT self-views)
+    // AccessControl filtra visibilidad en lugar del spread condicional anterior
+    const userForFilter = isClient
+      ? { ...user, clientId: client.id }
+      : user;
+
+    const shapedTasks = rawTasks
+      .map((t) => ({
+        ...t,
+        status:        normalizeTaskStatus(t.status),
+        assignedUsers: t.assignedUsers.map((r) => r.user),
+      }))
+      .filter((t) => AccessControl.canViewTask(userForFilter, t));
+
     if (role === 'CLIENT') {
       db.activityLog.create({
         data: {
@@ -111,13 +118,6 @@ export async function GET(req: NextRequest) {
       }).catch(() => undefined);
     }
 
-    const shapedTasks = tasks.map((t) => ({
-      ...t,
-      status: normalizeTaskStatus(t.status),
-      assignedUsers: t.assignedUsers.map((r) => r.user),
-    }));
-
-    // Fetch activities visibles al cliente
     const activities = await db.activity.findMany({
       where: {
         clientId: client.id,
@@ -131,11 +131,10 @@ export async function GET(req: NextRequest) {
       take: 50,
     });
 
-    // Reuniones vinculadas al cliente por email
     const appointments = await db.appointment.findMany({
       where: {
         email: { equals: client.email, mode: 'insensitive' },
-        date:  { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // últimos 30 días + futuras
+        date:  { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
       },
       orderBy: { date: 'asc' },
       include: {
