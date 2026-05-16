@@ -378,7 +378,7 @@ function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () 
   };
   return (
     <div
-      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
+      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
@@ -1120,6 +1120,18 @@ export default function ClientPortalContent() {
             </div>
           )}
 
+          {/* Barra acción selección múltiple entregas */}
+          {selectMode && isManager && selectedTaskIds.size > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-red-500/10 border border-red-500/20 rounded-xl mt-2">
+              <span className="text-xs text-white/60 flex-1">{selectedTaskIds.size} entrega{selectedTaskIds.size !== 1 ? 's' : ''} seleccionada{selectedTaskIds.size !== 1 ? 's' : ''}</span>
+              <button type="button" disabled={deletingMultiple} onClick={handleDeleteMultiple}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/20 hover:bg-red-500/30 border border-red-500/25 text-red-300 transition-colors disabled:opacity-50">
+                <Trash2 className="w-3.5 h-3.5" />
+                {deletingMultiple ? 'Eliminando...' : 'Eliminar seleccionadas'}
+              </button>
+            </div>
+          )}
+
           {/* Reuniones */}
           <div className="pt-3 border-t border-white/[0.04] space-y-3 bg-green-500/[0.02] rounded-xl p-3 -mx-1">
             <div className="flex items-center justify-between gap-2">
@@ -1160,6 +1172,18 @@ export default function ClientPortalContent() {
             ) : (
               <div className="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
                 {appointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} isManager={isManager} onDelete={handleDeleteAppt} onEdit={(apt) => { if (apt) { setEditingAppt(apt); setApptEditOpen(true); } }} />)}
+              </div>
+            )}
+
+            {/* Barra acción selección múltiple reuniones */}
+            {selectMode && isManager && selectedApptIds.size > 0 && (
+              <div className="flex items-center gap-3 p-3 bg-red-500/10 border border-red-500/20 rounded-xl mt-2">
+                <span className="text-xs text-white/60 flex-1">{selectedApptIds.size} reunión{selectedApptIds.size !== 1 ? 'es' : ''} seleccionada{selectedApptIds.size !== 1 ? 's' : ''}</span>
+                <button type="button" disabled={deletingMultiple} onClick={handleDeleteMultiple}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/20 hover:bg-red-500/30 border border-red-500/25 text-red-300 transition-colors disabled:opacity-50">
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {deletingMultiple ? 'Eliminando...' : 'Eliminar seleccionadas'}
+                </button>
               </div>
             )}
           </div>
@@ -1273,7 +1297,8 @@ export default function ClientPortalContent() {
 
       {/* Barra selección múltiple */}
       {selectMode && isManager && (selectedTaskIds.size > 0 || selectedApptIds.size > 0) && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#15151c] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl">
+        <div className="sticky bottom-4 z-50 flex items-center justify-center mt-4">
+          <div className="flex items-center gap-3 bg-[#15151c] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl">
           <span className="text-sm text-white/70">
             {selectedTaskIds.size + selectedApptIds.size} seleccionado{selectedTaskIds.size + selectedApptIds.size !== 1 ? 's' : ''}
           </span>
@@ -1286,6 +1311,7 @@ export default function ClientPortalContent() {
             className="text-sm text-white/40 hover:text-white transition-colors">
             Cancelar
           </button>
+          </div>
         </div>
       )}
 
