@@ -303,10 +303,12 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEvents }:
               type="button"
               onClick={() => { if (isCurrentMonth) onSelectDay(day); }}
               className={`
-                relative flex flex-col items-center justify-center min-h-[52px] md:min-h-[64px] rounded-lg transition-all border border-transparent
+                relative flex flex-col items-center justify-center min-h-[52px] md:min-h-[64px] rounded-lg transition-all border
                 ${isCurrentMonth ? 'text-white/80' : 'text-white/15 cursor-default'}
                 ${today ? 'border-brand/40 bg-brand/[0.06]' : ''}
-                ${isCurrentMonth && !today ? 'hover:bg-white/[0.03] hover:border-white/[0.06]' : ''}
+                ${isCurrentMonth && !today && dayAppts.length > 0 && dayTasks.length === 0 ? 'border-green-500/30 bg-green-500/[0.03]' : ''}
+                ${isCurrentMonth && !today && dayAppts.length > 0 && dayTasks.length > 0 ? 'border-green-500/20' : ''}
+                ${isCurrentMonth && !today && dayAppts.length === 0 ? 'border-transparent hover:bg-white/[0.03] hover:border-white/[0.06]' : ''}
               `}
             >
               <span className={`text-sm font-medium ${today ? 'text-brand-light' : ''}`}>
@@ -376,7 +378,7 @@ function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () 
   };
   return (
     <div
-      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
+      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
@@ -469,7 +471,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   const cfg = activityStatusConfig[activity.status] ?? activityStatusConfig.pending;
   return (
     <div
-      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
+      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
@@ -541,7 +543,7 @@ function MeetingCard({ appointment, isManager = false, onDelete, onEdit }: { app
 
   return (
     <div
-      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
+      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
