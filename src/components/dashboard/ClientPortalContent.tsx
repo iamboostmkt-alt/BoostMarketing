@@ -87,8 +87,8 @@ interface DayModalProps {
   onClose:       () => void;
   onDeleteTask?: (id: string) => void;
   onDeleteAppt?: (id: string) => void;
-  onEditAppt?:   (apt: any) => void;
-  onEditTask?:   (task: any) => void;
+  onEditAppt?:   (apt: any | null) => void;
+  onEditTask?:   (task: any | null) => void;
   onFeedback?:   () => void;
 }
 
@@ -214,6 +214,22 @@ function DayModal({ day, tasks, appointments = [], isManager = false, onClose, o
                 ))}
               </div>
             )}
+          </div>
+        )}
+        {isManager && (
+          <div className="flex gap-2 pt-2 border-t border-white/[0.06] mt-2">
+            <button type="button"
+              onClick={() => { onEditTask?.(null); onClose(); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand/15 hover:bg-brand/25 border border-brand/25 text-brand-light transition-colors">
+              <Plus className="w-3.5 h-3.5" />
+              Nueva entrega
+            </button>
+            <button type="button"
+              onClick={() => { onEditAppt?.(null); onClose(); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/15 hover:bg-green-500/25 border border-green-500/25 text-green-300 transition-colors">
+              <Video className="w-3.5 h-3.5" />
+              Agendar reunión
+            </button>
           </div>
         )}
       </DialogContent>

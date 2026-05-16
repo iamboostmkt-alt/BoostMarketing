@@ -304,7 +304,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             </div>
           )}
 
-          {isManager && clients.length > 0 && (
+          {isManager && clients.length > 0 && !initialClientId && (
             <div className="space-y-2">
               <Label className="text-white/70 text-sm">Cuenta de cliente</Label>
               <Select value={clientId || 'none'} onValueChange={(v) => setClientId(v === 'none' ? '' : v)}>
