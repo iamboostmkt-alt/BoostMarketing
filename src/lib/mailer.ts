@@ -237,6 +237,32 @@ export function templateCitaCancelada(clientName: string, date: string, b?: Bran
   return b ? emailLayout(content, b) : content;
 }
 
+export function templateFeedbackCliente(
+  taskTitle: string,
+  clientName: string,
+  type: 'approved' | 'changes_requested' | 'rejected',
+  message: string,
+  b?: Branding
+) {
+  const configs = {
+    approved:          { emoji: '✅', label: 'aprobó',           color: '#10b981', title: 'Entrega aprobada' },
+    changes_requested: { emoji: '📝', label: 'solicitó cambios en', color: '#f59e0b', title: 'Cambios solicitados' },
+    rejected:          { emoji: '❌', label: 'rechazó',           color: '#ef4444', title: 'Entrega rechazada' },
+  };
+  const cfg = configs[type];
+  const content = `
+    <h2 style="color:white;margin:0 0 8px;font-size:20px;">${cfg.emoji} ${cfg.title}</h2>
+    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">
+      <strong style="color:white;">${clientName}</strong> ${cfg.label} una entrega
+    </p>
+    ${infoBox(`
+      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">${taskTitle}</p>
+      ${message ? `<p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:13px;">"${message}"</p>` : ''}
+    `, cfg.color)}
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver en Dashboard', cfg.color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
 export function templateTareaEditada(taskTitle: string, cambios: Array<{campo: string, antes: string, despues: string}>, b?: Branding) {
   const color = b?.brandColor || '#6366f1';
   const filas = cambios.map(c => `<tr>

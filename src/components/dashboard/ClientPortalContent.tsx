@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Calendar, CheckSquare, Clock,
   CheckCircle2, Loader2, AlertCircle, User, Building2, Eye, MessageCircle, Video, Plus,
-  ChevronDown, Flag,
+  ChevronDown, Flag, Pencil, Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -34,6 +34,7 @@ import type { Task, Activity } from '@/lib/types';
 import { useClientPortal } from '@/hooks/client-portal/useClientPortal';
 import { useClientCalendar, sameLocalDay } from '@/hooks/client-portal/useClientCalendar';
 import TaskFeedbackButtons from '@/components/client-portal/TaskFeedbackButtons';
+import PortalAppointmentEditModal from '@/components/client-portal/PortalAppointmentEditModal';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -449,7 +450,7 @@ const meetingStatusConfig: Record<string, { label: string; color: string }> = {
   cancelled: { label: 'Cancelada',  color: 'bg-red-500/15 text-red-300 border-red-500/20' },
 };
 
-function MeetingCard({ appointment }: { appointment: any }) {
+function MeetingCard({ appointment, isManager = false, onDelete, onEdit }: { appointment: any; isManager?: boolean; onDelete?: (id: string) => void; onEdit?: (apt: any) => void }) {
   const [expanded, setExpanded] = useState(false);
   const status = appointment.status || 'pending';
   const cfg    = meetingStatusConfig[status] ?? meetingStatusConfig.pending;
@@ -506,6 +507,22 @@ function MeetingCard({ appointment }: { appointment: any }) {
               <Video className="w-3.5 h-3.5" />
               Unirse a la reunión
             </a>
+          )}
+          {isManager && (
+            <div className="flex gap-2 pt-2 border-t border-white/[0.04] mt-2" onClick={e => e.stopPropagation()}>
+              <button type="button"
+                onClick={() => onEdit?.(appointment)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
+                <Pencil className="w-3 h-3" />
+                Editar
+              </button>
+              <button type="button"
+                onClick={() => { if (confirm("¿Eliminar " + appointment.name + "?")) onDelete?.(appointment.id); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 transition-colors">
+                <Trash2 className="w-3 h-3" />
+                Eliminar
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -630,6 +647,9 @@ export default function ClientPortalContent() {
   const [requestNotes,    setRequestNotes]    = useState('');
   const [requestSaving,   setRequestSaving]   = useState(false);
   const [activeTab,       setActiveTab]       = useState<'all' | 'tasks'>('all');
+  const [editingAppt,     setEditingAppt]     = useState<any>(null);
+  const [editingTask,     setEditingTask]     = useState<any>(null);
+  const [apptEditOpen,    setApptEditOpen]    = useState(false);
 
   // ── Data layer (hook limpio) ─────────────────────────────────────────────
   const {
@@ -641,6 +661,13 @@ export default function ClientPortalContent() {
   const tasks = deliverables as unknown as Task[];
 
   // Calendario cliente — usa hook con timezone fix y colores por tipo
+  async function handleDeleteAppt(id: string) {
+    try {
+      const res = await fetch(`/api/appointments?id=${id}`, { method: 'DELETE' });
+      if (res.ok) { refetch(); } else { alert('Error al eliminar'); }
+    } catch { alert('Error de red'); }
+  }
+
   const { getDayEvents } = useClientCalendar({
     deliverables: deliverables as any[],
     appointments: appointments as any[],
@@ -918,7 +945,18 @@ export default function ClientPortalContent() {
             </div>
           ) : (
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
-              {displayedTasks.map((task) => <TaskCard key={task.id} task={task} onFeedback={!isManager ? refetch : undefined} />)}
+              {displayedTasks.map((task) => (
+                <div key={task.id} className="relative group/taskwrap">
+                  <TaskCard task={task} onFeedback={!isManager ? refetch : undefined} />
+                  {isManager && (
+                    <button type="button"
+                      onClick={() => { setEditingTask(task as any); setPortalTaskOpen(true); }}
+                      className="absolute top-3 right-3 p-1.5 rounded-md text-white/20 hover:text-white hover:bg-white/[0.08] transition-colors opacity-0 group-hover/taskwrap:opacity-100 z-10">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
@@ -953,7 +991,7 @@ export default function ClientPortalContent() {
               </div>
             ) : (
               <div className="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
-                {appointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} />)}
+                {appointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} isManager={isManager} onDelete={handleDeleteAppt} onEdit={(apt) => { setEditingAppt(apt); setApptEditOpen(true); }} />)}
               </div>
             )}
           </div>
@@ -986,12 +1024,14 @@ export default function ClientPortalContent() {
 
       <TaskForm
         open={portalTaskOpen}
-        onOpenChange={setPortalTaskOpen}
+        onOpenChange={(v) => { setPortalTaskOpen(v); if (!v) setEditingTask(null); }}
         isManager={isManager}
         initialDate={null}
         initialClientId={client?.id ?? null}
+        task={editingTask}
         onSuccess={() => {
           setPortalTaskOpen(false);
+          setEditingTask(null);
           refetch();
         }}
       />
@@ -1056,6 +1096,14 @@ export default function ClientPortalContent() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <PortalAppointmentEditModal
+        open={apptEditOpen}
+        onOpenChange={setApptEditOpen}
+        appointment={editingAppt}
+        onSaved={() => { setApptEditOpen(false); refetch(); }}
+        onDeleted={() => { setApptEditOpen(false); refetch(); }}
+      />
 
       {isManager && (
         <MeetingDialog

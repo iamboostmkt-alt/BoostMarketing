@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/core/auth/get-session-user';
+import { sendMail, templateFeedbackCliente } from '@/lib/mailer';
+import { getBranding } from '@/lib/branding';
 
 export async function POST(req: NextRequest) {
   try {
@@ -68,6 +70,25 @@ export async function POST(req: NextRequest) {
         deliverableStatus: deliverableStatusMap[type] ?? null,
       },
     });
+
+    // Enviar correo al PM con el feedback del cliente
+    try {
+      const pm = await db.user.findUnique({
+        where: { id: task.client?.assignedManagerId || task.userId },
+        select: { email: true, name: true },
+      });
+      if (pm?.email) {
+        const branding = await getBranding();
+        const clientName = (user as any).name || user.email;
+        await sendMail(
+          pm.email,
+          `Feedback de cliente: ${task.title}`,
+          templateFeedbackCliente(task.title, clientName, type, message || '', branding)
+        );
+      }
+    } catch (e) {
+      console.error('[feedback mail]', e);
+    }
 
     // Si rechazó o pidió cambios → crear change_request interna asignada al PM
     if (type === 'rejected' || type === 'changes_requested') {
