@@ -21,92 +21,18 @@ import {
 } from '@/components/ui/select';
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
-  eachDayOfInterval, format, isSameDay, isToday,
-  addMonths, subMonths, isSameMonth,
+  eachDayOfInterval, format, isToday, addMonths, subMonths, isSameMonth,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ChatContent from '@/components/dashboard/ChatContent';
 import { MeetingDialog, TeamUser } from '@/components/dashboard/MeetingsTab';
 import TaskForm from '@/components/dashboard/TaskForm';
 import { ReportButton } from '@/components/dashboard/ReportButton';
-import type { ClientPortalData, Task, TaskAssignee, Activity } from '@/lib/types';
+import type { Task, Activity } from '@/lib/types';
 
-// Timeline component
-function ProjectTimeline({ tasks, appointments }) {
-  const now = new Date();
-  const events = [
-    ...tasks.filter(t => t.dueDate).map(t => ({
-      id: t.id, date: new Date(t.dueDate), title: t.title,
-      type: 'task', status: t.status,
-      isPast: new Date(t.dueDate) < now,
-      isToday: isSameDay(new Date(t.dueDate), now),
-    })),
-    ...appointments.map(a => ({
-      id: a.id, date: new Date(a.date), title: 'Videollamada: ' + a.name,
-      type: 'appointment', status: a.status,
-      isPast: new Date(a.date) < now,
-      isToday: isSameDay(new Date(a.date), now),
-    })),
-  ].sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 8);
-
-  if (events.length === 0) return null;
-
-  const pendingEvents = events.filter(e => !e.isPast && e.status !== 'completed');
-
-  return (
-    <div className="glass-card rounded-2xl p-5 space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="w-1.5 h-5 rounded-full bg-brand" />
-        <h3 className="text-sm font-semibold text-white">Timeline del proyecto</h3>
-      </div>
-      <div className="relative">
-        <div className="absolute left-3.5 top-2 bottom-2 w-px bg-white/[0.06]" />
-        <div className="space-y-1">
-          {events.map((event, i) => {
-            const isCompleted = event.status === 'completed' || (event.type === 'appointment' && event.isPast);
-            const isNext = !isCompleted && pendingEvents[0]?.id === event.id;
-            return (
-              <div key={event.id} className="flex items-start gap-4 pl-1">
-                <div className="relative z-10 mt-1.5 shrink-0">
-                  {isCompleted ? (
-                    <div className="w-5 h-5 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center">
-                      <CheckCircle2 className="w-3 h-3 text-green-400" />
-                    </div>
-                  ) : isNext ? (
-                    <div className="w-5 h-5 rounded-full bg-brand/20 border border-brand/60 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
-                    </div>
-                  ) : event.type === 'appointment' ? (
-                    <div className="w-5 h-5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                      <Video className="w-2.5 h-2.5 text-green-400" />
-                    </div>
-                  ) : (
-                    <div className="w-5 h-5 rounded-full bg-white/[0.04] border border-white/[0.10] flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
-                    </div>
-                  )}
-                </div>
-                <div className={"flex-1 " + (i === events.length - 1 ? "pb-0" : "pb-4")}>
-                  <div className="flex items-start justify-between gap-2">
-                    <p className={"text-sm leading-tight " + (isCompleted ? "text-white/40 line-through" : isNext ? "text-white font-medium" : "text-white/70")}>
-                      {event.title}
-                    </p>
-                    {isNext && <span className="text-[10px] bg-brand/20 text-brand-light px-2 py-0.5 rounded-full shrink-0">Siguiente</span>}
-                    {event.isToday && <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full shrink-0">Hoy</span>}
-                  </div>
-                  <p className={"text-[11px] mt-0.5 " + (isCompleted ? "text-white/25" : "text-white/40")}>
-                    {format(event.date, "d 'de' MMM yyyy", { locale: es })}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
+// ── Nuevo data layer del portal ──────────────────────────────────────────────
+import { useClientPortal } from '@/hooks/client-portal/useClientPortal';
+import { useClientCalendar, sameLocalDay } from '@/hooks/client-portal/useClientCalendar';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -117,11 +43,14 @@ const MONTH_NAMES = [
 ];
 
 const taskStatusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pending:     { label: 'Pendiente',    color: 'bg-amber-500/15 text-amber-300 border-amber-500/20',   icon: <Clock        className="h-3 w-3" /> },
-  in_progress: { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
-  editing:     { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
-  review:      { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',      icon: <Clock        className="h-3 w-3" /> },
-  completed:   { label: 'Completado',   color: 'bg-green-500/15 text-green-300 border-green-500/20',  icon: <CheckCircle2 className="h-3 w-3" /> },
+  pending:          { label: 'Pendiente',    color: 'bg-amber-500/15 text-amber-300 border-amber-500/20',   icon: <Clock        className="h-3 w-3" /> },
+  in_progress:      { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
+  editing:          { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
+  review:           { label: 'En revisión',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
+  client_review:    { label: 'Por revisar',  color: 'bg-purple-500/15 text-purple-300 border-purple-500/20', icon: <Eye        className="h-3 w-3" /> },
+  changes_requested:{ label: 'Con cambios',  color: 'bg-orange-500/15 text-orange-300 border-orange-500/20', icon: <Clock      className="h-3 w-3" /> },
+  approved:         { label: 'Aprobado',     color: 'bg-green-500/15 text-green-300 border-green-500/20',  icon: <CheckCircle2 className="h-3 w-3" /> },
+  completed:        { label: 'Completado',   color: 'bg-green-500/15 text-green-300 border-green-500/20',  icon: <CheckCircle2 className="h-3 w-3" /> },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -137,29 +66,30 @@ function fmtDate(iso: string | null | undefined) {
 
 function getTasksForDay(tasks: Task[], day: Date): Task[] {
   return tasks.filter((t) => {
-    if (t.dueDate && (new Date(t.dueDate).getFullYear()===day.getFullYear() && new Date(t.dueDate).getMonth()===day.getMonth() && new Date(t.dueDate).getDate()===day.getDate())) return true;
-    if (t.startDate && (new Date(t.startDate).getFullYear()===day.getFullYear() && new Date(t.startDate).getMonth()===day.getMonth() && new Date(t.startDate).getDate()===day.getDate())) return true;
+    if (t.dueDate   && sameLocalDay(t.dueDate,   day)) return true;
+    if (t.startDate && sameLocalDay(t.startDate, day)) return true;
     return false;
   });
 }
 
-// ── Day detail modal ──────────────────────────────────────────────────────────
+// ── DayModal ──────────────────────────────────────────────────────────────────
 
 interface DayModalProps {
-  day: Date | null;
-  tasks: Task[];
+  day:          Date | null;
+  tasks:        Task[];
   appointments?: any[];
-  onClose: () => void;
+  onClose:      () => void;
 }
 
 function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
   if (!day) return null;
 
-  const dayTasks      = getTasksForDay(tasks, day);
-  const dayAppts      = appointments.filter((a: any) => a.date && new Date(a.date).getFullYear()===day.getFullYear() && new Date(a.date).getMonth()===day.getMonth() && new Date(a.date).getDate()===day.getDate());
-  const hasItems      = dayTasks.length > 0 || dayAppts.length > 0;
-
-  const label = format(day, "EEEE d 'de' MMMM", { locale: es });
+  const dayTasks = getTasksForDay(tasks, day);
+  const dayAppts = appointments.filter((a: any) =>
+    a.date && sameLocalDay(a.date, day)
+  );
+  const hasItems = dayTasks.length > 0 || dayAppts.length > 0;
+  const label    = format(day, "EEEE d 'de' MMMM", { locale: es });
 
   return (
     <Dialog open={!!day} onOpenChange={(o) => !o && onClose()}>
@@ -171,7 +101,7 @@ function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
         {!hasItems ? (
           <div className="py-12 flex flex-col items-center gap-3 text-center">
             <Calendar className="w-10 h-10 text-white/15" />
-            <p className="text-white/40 text-sm">No hay tareas con vencimiento este día.</p>
+            <p className="text-white/40 text-sm">No hay elementos este día.</p>
           </div>
         ) : (
           <div className="space-y-4 mt-1">
@@ -205,6 +135,26 @@ function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
                 })}
               </div>
             )}
+
+            {dayAppts.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Videollamadas</p>
+                {dayAppts.map((apt: any) => (
+                  <div key={apt.id} className="rounded-lg border border-green-500/20 bg-green-500/[0.04] p-3">
+                    <div className="flex items-center gap-2">
+                      <Video className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                      <p className="text-sm font-medium text-white">{apt.name}</p>
+                      <span className="ml-auto text-[10px] bg-green-500/20 text-green-300 rounded-full px-2 py-0.5">
+                        {apt.status === 'confirmed' ? 'Confirmada' : apt.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-white/35 mt-1 pl-5">
+                      {format(new Date(apt.date), 'HH:mm', { locale: es })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </DialogContent>
@@ -212,12 +162,12 @@ function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
   );
 }
 
-// ── Calendar grid ─────────────────────────────────────────────────────────────
+// ── PortalCalendar ────────────────────────────────────────────────────────────
 
 interface CalendarProps {
-  tasks: Task[];
+  tasks:        Task[];
   appointments?: any[];
-  onSelectDay: (day: Date) => void;
+  onSelectDay:  (day: Date) => void;
 }
 
 function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps) {
@@ -227,7 +177,7 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
     const monthStart = startOfMonth(currentMonth);
     const monthEnd   = endOfMonth(currentMonth);
     const calStart   = startOfWeek(monthStart, { weekStartsOn: 1 });
-    const calEnd     = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    const calEnd     = endOfWeek(monthEnd,     { weekStartsOn: 1 });
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
 
@@ -235,7 +185,6 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">{monthLabel}</h2>
         <div className="flex items-center gap-1">
@@ -257,27 +206,16 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
         </div>
       </div>
 
-      {/* Day names */}
       <div className="grid grid-cols-7 gap-1">
         {DAY_NAMES.map((name) => (
           <div key={name} className="text-center text-[11px] font-medium text-white/30 py-2">{name}</div>
         ))}
       </div>
 
-      {/* Cells */}
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
           const dayTasks       = getTasksForDay(tasks, day);
-          const dayAppts       = appointments.filter((a: any) => {
-            try {
-              if (!a.date) return false;
-              const d = new Date(a.date);
-              // Comparar solo año/mes/día ignorando timezone
-              return d.getFullYear() === day.getFullYear() &&
-                     d.getMonth()    === day.getMonth() &&
-                     d.getDate()     === day.getDate();
-            } catch { return false; }
-          });
+          const dayAppts       = appointments.filter((a: any) => a.date && sameLocalDay(a.date, day));
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const today          = isToday(day);
           const hasItems       = dayTasks.length > 0 || dayAppts.length > 0;
@@ -288,8 +226,7 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
               type="button"
               onClick={() => { if (isCurrentMonth) onSelectDay(day); }}
               className={`
-                relative flex flex-col items-center justify-center min-h-[52px] md:min-h-[64px] rounded-lg transition-all
-                border border-transparent
+                relative flex flex-col items-center justify-center min-h-[52px] md:min-h-[64px] rounded-lg transition-all border border-transparent
                 ${isCurrentMonth ? 'text-white/80' : 'text-white/15 cursor-default'}
                 ${today ? 'border-brand/40 bg-brand/[0.06]' : ''}
                 ${isCurrentMonth && !today ? 'hover:bg-white/[0.03] hover:border-white/[0.06]' : ''}
@@ -303,7 +240,7 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
                 <div className="flex items-center gap-0.5 mt-0.5 flex-wrap justify-center max-w-[40px]">
                   {dayTasks.slice(0, 3).map((t, i) => (
                     <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${
-                      t.status === 'completed' ? 'bg-green-400' : 'bg-amber-400'
+                      t.status === 'completed' || t.status === 'approved' ? 'bg-green-400' : 'bg-amber-400'
                     }`} />
                   ))}
                   {dayAppts.slice(0, 2).map((_a, i) => (
@@ -321,7 +258,6 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
         })}
       </div>
 
-      {/* Legend */}
       <div className="flex items-center gap-4 pt-1 border-t border-white/[0.04]">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
@@ -331,12 +267,16 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
           <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
           <span className="text-[11px] text-white/30">Completadas</span>
         </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />
+          <span className="text-[11px] text-white/30">Reuniones</span>
+        </div>
       </div>
     </div>
   );
 }
 
-// ── Task cards ────────────────────────────────────────────────────────────────
+// ── TaskCard ──────────────────────────────────────────────────────────────────
 
 function TaskCard({ task }: { task: Task }) {
   const [expanded, setExpanded] = useState(false);
@@ -352,7 +292,6 @@ function TaskCard({ task }: { task: Task }) {
       className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
       onClick={() => setExpanded(e => !e)}
     >
-      {/* Header siempre visible */}
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -376,7 +315,6 @@ function TaskCard({ task }: { task: Task }) {
         )}
       </div>
 
-      {/* Detalle expandido */}
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
           {task.description && (
@@ -413,8 +351,7 @@ function TaskCard({ task }: { task: Task }) {
   );
 }
 
-
-// ── Activity cards ────────────────────────────────────────────────────────────
+// ── ActivityCard ──────────────────────────────────────────────────────────────
 
 const activityStatusConfig: Record<string, { label: string; color: string }> = {
   pending:     { label: 'Pendiente',   color: 'bg-amber-500/15 text-amber-300 border-amber-500/20' },
@@ -430,7 +367,6 @@ function ActivityCard({ activity }: { activity: Activity }) {
       className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
       onClick={() => setExpanded(e => !e)}
     >
-      {/* Header siempre visible */}
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -452,7 +388,6 @@ function ActivityCard({ activity }: { activity: Activity }) {
         )}
       </div>
 
-      {/* Detalle expandido */}
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
           {activity.description && (
@@ -484,21 +419,21 @@ function ActivityCard({ activity }: { activity: Activity }) {
   );
 }
 
+// ── MeetingCard ───────────────────────────────────────────────────────────────
 
-
-// ── Meeting cards ─────────────────────────────────────────────────────────────
-
-const meetingStatusConfig = {
-  pending:   { label: 'Programada',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20' },
-  completed: { label: 'Realizada',   color: 'bg-green-500/15 text-green-300 border-green-500/20' },
-  cancelled: { label: 'Cancelada',   color: 'bg-red-500/15 text-red-300 border-red-500/20' },
+const meetingStatusConfig: Record<string, { label: string; color: string }> = {
+  pending:   { label: 'Programada', color: 'bg-blue-500/15 text-blue-300 border-blue-500/20' },
+  confirmed: { label: 'Confirmada', color: 'bg-green-500/15 text-green-300 border-green-500/20' },
+  completed: { label: 'Realizada',  color: 'bg-green-500/15 text-green-300 border-green-500/20' },
+  cancelled: { label: 'Cancelada',  color: 'bg-red-500/15 text-red-300 border-red-500/20' },
 };
 
-function MeetingCard({ appointment }) {
+function MeetingCard({ appointment }: { appointment: any }) {
   const [expanded, setExpanded] = useState(false);
   const status = appointment.status || 'pending';
-  const cfg = meetingStatusConfig[status] ?? meetingStatusConfig.pending;
+  const cfg    = meetingStatusConfig[status] ?? meetingStatusConfig.pending;
   const isPast = new Date(appointment.date) < new Date();
+
   return (
     <div
       className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
@@ -518,11 +453,10 @@ function MeetingCard({ appointment }) {
           </div>
         </div>
         {!expanded && (
-          <p className="text-[11px] text-white/35 pl-6">
-            {fmtDate(appointment.date)}{appointment.time ? ' · ' + appointment.time : ''}
-          </p>
+          <p className="text-[11px] text-white/35 pl-6">{fmtDate(appointment.date)}</p>
         )}
       </div>
+
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
           <div className="grid grid-cols-2 gap-2">
@@ -530,19 +464,19 @@ function MeetingCard({ appointment }) {
               <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Fecha</p>
               <p className="text-xs text-white/70 font-medium">{fmtDate(appointment.date)}</p>
             </div>
-            {appointment.time && (
-              <div className="bg-white/[0.03] rounded-lg p-2.5">
-                <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Hora</p>
-                <p className="text-xs text-white/70 font-medium">{appointment.time}</p>
-              </div>
-            )}
+            <div className="bg-white/[0.03] rounded-lg p-2.5">
+              <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Hora</p>
+              <p className="text-xs text-white/70 font-medium">
+                {format(new Date(appointment.date), 'HH:mm', { locale: es })}
+              </p>
+            </div>
           </div>
-          {appointment.description && (
-            <p className="text-xs text-white/60 leading-relaxed">{appointment.description}</p>
+          {appointment.notes && (
+            <p className="text-xs text-white/60 leading-relaxed">{appointment.notes}</p>
           )}
-          {appointment.link && (
+          {appointment.meetUrl && (
             <a
-              href={appointment.link}
+              href={appointment.meetUrl}
               target="_blank"
               rel="noopener noreferrer"
               onClick={e => e.stopPropagation()}
@@ -558,7 +492,7 @@ function MeetingCard({ appointment }) {
   );
 }
 
-// ── Progress bar ──────────────────────────────────────────────────────────────
+// ── ProgressBar ───────────────────────────────────────────────────────────────
 
 function ProgressBar({ total, completed }: { total: number; completed: number }) {
   const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -579,78 +513,121 @@ function ProgressBar({ total, completed }: { total: number; completed: number })
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── ProjectTimeline ───────────────────────────────────────────────────────────
 
+function ProjectTimeline({ tasks, appointments }: { tasks: Task[]; appointments: any[] }) {
+  const now = new Date();
+  const events = [
+    ...tasks.filter(t => t.dueDate).map(t => ({
+      id: t.id, date: new Date(t.dueDate!), title: t.title,
+      type: 'task', status: t.status,
+      isPast: new Date(t.dueDate!) < now,
+    })),
+    ...appointments.map(a => ({
+      id: a.id, date: new Date(a.date), title: 'Videollamada: ' + a.name,
+      type: 'appointment', status: a.status,
+      isPast: new Date(a.date) < now,
+    })),
+  ].sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 8);
+
+  if (events.length === 0) return null;
+
+  const pendingEvents = events.filter(e => !e.isPast && e.status !== 'completed' && e.status !== 'approved');
+
+  return (
+    <div className="glass-card rounded-2xl p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="w-1.5 h-5 rounded-full bg-brand" />
+        <h3 className="text-sm font-semibold text-white">Timeline del proyecto</h3>
+      </div>
+      <div className="relative">
+        <div className="absolute left-3.5 top-2 bottom-2 w-px bg-white/[0.06]" />
+        <div className="space-y-1">
+          {events.map((event, i) => {
+            const isCompleted = event.status === 'completed' || event.status === 'approved' || (event.type === 'appointment' && event.isPast);
+            const isNext      = !isCompleted && pendingEvents[0]?.id === event.id;
+            return (
+              <div key={event.id} className="flex items-start gap-4 pl-1">
+                <div className="relative z-10 mt-1.5 shrink-0">
+                  {isCompleted ? (
+                    <div className="w-5 h-5 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center">
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                    </div>
+                  ) : isNext ? (
+                    <div className="w-5 h-5 rounded-full bg-brand/20 border border-brand/60 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+                    </div>
+                  ) : event.type === 'appointment' ? (
+                    <div className="w-5 h-5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                      <Video className="w-2.5 h-2.5 text-green-400" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-white/[0.04] border border-white/[0.10] flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                    </div>
+                  )}
+                </div>
+                <div className={`flex-1 ${i === events.length - 1 ? 'pb-0' : 'pb-4'}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className={`text-sm leading-tight ${isCompleted ? 'text-white/40 line-through' : isNext ? 'text-white font-medium' : 'text-white/70'}`}>
+                      {event.title}
+                    </p>
+                    {isNext && <span className="text-[10px] bg-brand/20 text-brand-light px-2 py-0.5 rounded-full shrink-0">Siguiente</span>}
+                  </div>
+                  <p className={`text-[11px] mt-0.5 ${isCompleted ? 'text-white/25' : 'text-white/40'}`}>
+                    {format(event.date, "d 'de' MMM yyyy", { locale: es })}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 interface ClientSummary { id: string; name: string; company: string; email: string; }
 
-
 export default function ClientPortalContent() {
   const { data: session } = useSession();
-  const router = useRouter();
-  const currentUserRole = (session?.user as { role?: string })?.role ?? 'CLIENT';
+  const router            = useRouter();
+  const currentUserRole   = (session?.user as { role?: string })?.role ?? 'CLIENT';
+  const isManager         = MANAGER_ROLES.includes(currentUserRole as any);
 
-  const isManager = MANAGER_ROLES.includes(currentUserRole as any);
+  // ── Estado UI ────────────────────────────────────────────────────────────
+  const [previewClientId, setPreviewClientId] = useState<string>('');
+  const [clients,         setClients]         = useState<ClientSummary[]>([]);
+  const [selectedDay,     setSelectedDay]     = useState<Date | null>(null);
+  const [meetingOpen,     setMeetingOpen]     = useState(false);
+  const [meetingTeam,     setMeetingTeam]     = useState<TeamUser[]>([]);
+  const [requestOpen,     setRequestOpen]     = useState(false);
+  const [portalTaskOpen,  setPortalTaskOpen]  = useState(false);
+  const [requestDate,     setRequestDate]     = useState('');
+  const [requestNotes,    setRequestNotes]    = useState('');
+  const [requestSaving,   setRequestSaving]   = useState(false);
+  const [activeTab,       setActiveTab]       = useState<'all' | 'tasks'>('all');
 
-  // Admin preview: list of clients + selected clientId
-  const [clients,          setClients]          = useState<ClientSummary[]>([]);
-  const [previewClientId,  setPreviewClientId]  = useState<string>('');
+  // ── Data layer (hook limpio) ─────────────────────────────────────────────
+  const {
+    client, deliverables, appointments, activities,
+    loading, error, noClient, refetch,
+  } = useClientPortal({ isManager, previewClientId });
 
-  const [data,     setData]     = useState<ClientPortalData | null>(null);
-  const [appointments, setAppointments] = useState<any[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState<string | null>(null);
-  const [noClient, setNoClient] = useState(false);
-  const [selectedDay,      setSelectedDay]      = useState<Date | null>(null);
-  const [meetingOpen,      setMeetingOpen]      = useState(false);
-  const [meetingTeam,      setMeetingTeam]      = useState<TeamUser[]>([]);
-  const [requestOpen,      setRequestOpen]      = useState(false);
-  const [portalTaskOpen,   setPortalTaskOpen]   = useState(false);
-  const [requestDate,      setRequestDate]      = useState('');
-  const [requestNotes,     setRequestNotes]     = useState('');
-  const [requestSaving,    setRequestSaving]    = useState(false);
-  const [activeTab,        setActiveTab]        = useState<'all' | 'tasks'>('all');
-  const [portalTab,        setPortalTab]        = useState<'resumen' | 'tareas' | 'calendario' | 'actividades' | 'reuniones' | 'chat'>('resumen');
+  // Las tareas siguen siendo Task[] para compatibilidad con componentes existentes
+  const tasks = deliverables as unknown as Task[];
 
-  // Load client list for admin/PM selector
+  // ── Efectos auxiliares ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isManager) return;
     fetch('/api/clients')
       .then((r) => r.ok ? r.json() : null)
-      .then((d) => {
-        if (d?.clients) setClients(d.clients);
-      })
+      .then((d) => { if (d?.clients) setClients(d.clients); })
       .catch(() => {});
   }, [isManager]);
 
-  useEffect(() => {
-    // Managers need a clientId selected before fetching
-    if (isManager && !previewClientId) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setNoClient(false);
-    setData(null);
-
-    const url = isManager
-      ? `/api/client-portal?clientId=${previewClientId}`
-      : '/api/client-portal';
-
-    fetch(url)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.client === null) { setNoClient(true); return; }
-        if (d.error)           { setError(d.error); return; }
-        setData(d);
-      })
-      .catch(() => setError('Error al cargar el portal. Intenta nuevamente.'))
-      .finally(() => setLoading(false));
-  }, [isManager, previewClientId]);
-
-  // Cargar equipo para modal de reunión
   useEffect(() => {
     if (!isManager) return;
     fetch('/api/team-members')
@@ -659,7 +636,7 @@ export default function ClientPortalContent() {
       .catch(() => {});
   }, [isManager]);
 
-  // Admin selector header (always visible for managers)
+  // ── Admin selector bar ───────────────────────────────────────────────────
   const AdminSelectorBar = isManager ? (
     <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4">
       <Eye className="w-4 h-4 text-amber-400 shrink-0" />
@@ -682,6 +659,7 @@ export default function ClientPortalContent() {
     </div>
   ) : null;
 
+  // ── Guards ───────────────────────────────────────────────────────────────
   if (isManager && !previewClientId) {
     return (
       <div className="space-y-4">
@@ -738,22 +716,18 @@ export default function ClientPortalContent() {
     );
   }
 
-  if (!data) return null;
+  if (!client) return null;
 
-  const { client, tasks, activities = [], appointments: portalAppointments = [] } = data;
-
-  // Redirect CLIENT users without assigned PM to waiting screen
   if (!isManager && !client.assignedManagerId) {
     router.replace('/dashboard/waiting-assignment');
     return null;
   }
 
+  // ── Datos derivados ──────────────────────────────────────────────────────
   const assignedManager = client.assignedManager;
 
-  const teamMembersMap = new Map();
-  // Backend ya filtra por rol — tasks solo contiene lo permitido
-  // Excluir ADMIN y PM del equipo visible al cliente
   const EXCLUDED_ROLES = ['ADMIN'];
+  const teamMembersMap = new Map();
   tasks.forEach((t) => {
     if (t.assignedUser && t.assignedUser.id !== assignedManager?.id && !EXCLUDED_ROLES.includes((t.assignedUser as any).role)) {
       const u = t.assignedUser;
@@ -763,19 +737,12 @@ export default function ClientPortalContent() {
       if (u.id !== assignedManager?.id && !EXCLUDED_ROLES.includes((u as any).role)) teamMembersMap.set(u.id, u);
     }
   });
-  const teamMembers = [...teamMembersMap.values()];
-
-  const effectiveAppointments = portalAppointments;
+  const teamMembers    = [...teamMembersMap.values()];
   const totalItems     = tasks.length;
-  const completedItems = tasks.filter((t) => t.status === 'completed').length;
+  const completedItems = tasks.filter((t) => t.status === 'completed' || t.status === 'approved').length;
+  const displayedTasks = activeTab === 'tasks' ? tasks.filter((t) => t.status !== 'completed' && t.status !== 'approved') : tasks;
 
-  // Backend ya garantiza visibilidad correcta por rol
-  const portalVisibleTasks = tasks;
-  const displayedTasks =
-    activeTab === 'tasks'
-      ? tasks.filter((t) => t.status !== 'completed')
-      : tasks;
-
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
       {AdminSelectorBar}
@@ -789,38 +756,30 @@ export default function ClientPortalContent() {
             </div>
             <div className="min-w-0">
               <h1 className="text-xl font-bold text-white truncate">{client.name}</h1>
-              {client.company && (
-                <p className="text-sm text-white/50 truncate">{client.company}</p>
-              )}
+              {client.company && <p className="text-sm text-white/50 truncate">{client.company}</p>}
               <p className="text-xs text-white/30">{client.email}</p>
             </div>
           </div>
 
-          {/* Assigned manager + WhatsApp */}
-           <div className="flex items-center gap-3 flex-wrap shrink-0">
-            {isManager && client && (
+          <div className="flex items-center gap-3 flex-wrap shrink-0">
+            {isManager && (
               <ReportButton clientId={client.id} clientName={client.name} clientEmail={client.email} />
             )}
-            {client.assignedManager && (
+            {assignedManager && (
               <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl px-4 py-2.5">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={client.assignedManager.image || undefined} />
+                  <AvatarImage src={assignedManager.image || undefined} />
                   <AvatarFallback className="text-[10px] font-medium"
-                    style={{
-                      backgroundColor: (client.assignedManager.color || '#7c3aed') + '33',
-                      color: client.assignedManager.color || '#7c3aed',
-                    }}>
-                    {initials(client.assignedManager.name, client.assignedManager.email)}
+                    style={{ backgroundColor: (assignedManager.color || '#7c3aed') + '33', color: assignedManager.color || '#7c3aed' }}>
+                    {initials(assignedManager.name, assignedManager.email)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="mr-2">
                   <p className="text-[10px] text-white/30 font-medium uppercase tracking-wider">Tu PM</p>
-                  <p className="text-sm text-white/80 font-medium">
-                    {client.assignedManager.name || client.assignedManager.email}
-                  </p>
+                  <p className="text-sm text-white/80 font-medium">{assignedManager.name || assignedManager.email}</p>
                 </div>
                 <a
-                  href={`https://wa.me/521063469?text=Hola ${encodeURIComponent(client.assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
+                  href={`https://wa.me/521063469?text=Hola ${encodeURIComponent(assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
                   target="_blank" rel="noopener noreferrer" title="WhatsApp PM"
                   className="flex items-center gap-1.5 rounded-lg bg-green-500/15 hover:bg-green-500/25 border border-green-500/20 px-2.5 py-1.5 text-green-400 text-xs font-medium transition-colors"
                 >
@@ -832,14 +791,12 @@ export default function ClientPortalContent() {
           </div>
         </div>
 
-        {/* Progress */}
         {totalItems > 0 && <ProgressBar total={totalItems} completed={completedItems} />}
 
-        {/* Quick stats */}
         <div className="grid grid-cols-2 gap-3 pt-1">
           <div className="text-center">
             <p className="text-2xl font-bold text-white">{tasks.length}</p>
-            <p className="text-[11px] text-white/35">Tareas</p>
+            <p className="text-[11px] text-white/35">Entregas</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-green-400">{completedItems}</p>
@@ -847,12 +804,9 @@ export default function ClientPortalContent() {
           </div>
         </div>
 
-        {/* Personal Asignado + Reporte */}
         {(assignedManager || teamMembers.length > 0) && (
           <div className="pt-1 border-t border-white/[0.04] space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider">Personal Asignado</p>
-            </div>
+            <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider">Personal Asignado</p>
             <div className="flex flex-wrap gap-3">
               {assignedManager && (
                 <div className="flex items-center gap-2.5 bg-white/[0.03] rounded-xl px-3 py-2">
@@ -865,9 +819,7 @@ export default function ClientPortalContent() {
                   </Avatar>
                   <div>
                     <p className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">PM</p>
-                    <p className="text-xs text-white/80 font-medium leading-tight">
-                      {assignedManager.name || assignedManager.email}
-                    </p>
+                    <p className="text-xs text-white/80 font-medium leading-tight">{assignedManager.name || assignedManager.email}</p>
                   </div>
                 </div>
               )}
@@ -882,9 +834,7 @@ export default function ClientPortalContent() {
                   </Avatar>
                   <div>
                     <p className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">Equipo</p>
-                    <p className="text-xs text-white/80 font-medium leading-tight">
-                      {member.name || member.email}
-                    </p>
+                    <p className="text-xs text-white/80 font-medium leading-tight">{member.name || member.email}</p>
                   </div>
                 </div>
               ))}
@@ -893,7 +843,7 @@ export default function ClientPortalContent() {
         )}
       </div>
 
-      {/* Calendario SIEMPRE visible */}
+      {/* Calendario */}
       <div className="glass-card rounded-2xl p-5">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-white">Calendario</p>
@@ -905,10 +855,10 @@ export default function ClientPortalContent() {
             </button>
           )}
         </div>
-        <PortalCalendar tasks={portalVisibleTasks} appointments={effectiveAppointments} onSelectDay={setSelectedDay} />
+        <PortalCalendar tasks={tasks} appointments={appointments} onSelectDay={setSelectedDay} />
       </div>
 
-      {/* Chat + Tareas lado a lado */}
+      {/* Chat + Tareas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass-card rounded-2xl p-5">
           <ChatContent room={client.id} title="Chat con tu equipo" subtitle="Habla en tiempo real con tu Project Manager" />
@@ -917,23 +867,14 @@ export default function ClientPortalContent() {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-5 rounded-full bg-brand" />
-              <h3 className="text-sm font-semibold text-white">Tareas</h3>
+              <h3 className="text-sm font-semibold text-white">Entregas</h3>
             </div>
             <div className="flex items-center gap-1.5">
-              {isManager && (
-                <button type="button" onClick={() => setPortalTaskOpen(true)}
-                  className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
-                  <Plus className="w-3 h-3" />
-                  Entrega
-                </button>
-              )}
-              {!isManager && (
-                <button type="button" onClick={() => setPortalTaskOpen(true)}
-                  className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
-                  <Plus className="w-3 h-3" />
-                  Solicitar tarea
-                </button>
-              )}
+              <button type="button" onClick={() => setPortalTaskOpen(true)}
+                className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
+                <Plus className="w-3 h-3" />
+                {isManager ? 'Nueva entrega' : 'Solicitar tarea'}
+              </button>
               {(['all', 'tasks'] as const).map((tab) => (
                 <button key={tab} type="button" onClick={() => setActiveTab(tab)}
                   className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${activeTab === tab ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white'}`}>
@@ -945,7 +886,7 @@ export default function ClientPortalContent() {
           {displayedTasks.length === 0 ? (
             <div className="py-10 flex flex-col items-center gap-2 text-center">
               <CheckSquare className="w-8 h-8 text-white/15" />
-              <p className="text-white/35 text-sm">No hay tareas.</p>
+              <p className="text-white/35 text-sm">No hay entregas.</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
@@ -959,18 +900,17 @@ export default function ClientPortalContent() {
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-5 rounded-full bg-green-500" />
                 <h3 className="text-sm font-semibold text-white">Reuniones</h3>
-                {effectiveAppointments.length > 0 && (
-                  <span className="text-[10px] bg-green-500/15 text-green-300 border border-green-500/20 rounded-full px-2 py-0.5">{effectiveAppointments.length}</span>
+                {appointments.length > 0 && (
+                  <span className="text-[10px] bg-green-500/15 text-green-300 border border-green-500/20 rounded-full px-2 py-0.5">{appointments.length}</span>
                 )}
               </div>
-              {isManager && (
+              {isManager ? (
                 <button type="button" onClick={() => setMeetingOpen(true)}
                   className="flex items-center gap-1 text-[11px] text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md px-2 py-1 transition-colors">
                   <Plus className="w-3 h-3" />
                   Agendar
                 </button>
-              )}
-              {!isManager && (
+              ) : (
                 <button type="button" onClick={() => setRequestOpen(true)}
                   className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
                   <Plus className="w-3 h-3" />
@@ -978,45 +918,44 @@ export default function ClientPortalContent() {
                 </button>
               )}
             </div>
-            {effectiveAppointments.length === 0 ? (
+            {appointments.length === 0 ? (
               <div className="py-8 flex flex-col items-center gap-2 text-center">
                 <Video className="w-7 h-7 text-white/15" />
                 <p className="text-white/35 text-sm">No hay reuniones programadas.</p>
               </div>
             ) : (
               <div className="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
-                {effectiveAppointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} />)}
+                {appointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} />)}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Resumen — Timeline + Actividades recientes */}
+      {/* Timeline + Actividades */}
       <div className="space-y-4">
-        <ProjectTimeline tasks={portalVisibleTasks} appointments={effectiveAppointments} />
+        <ProjectTimeline tasks={tasks} appointments={appointments} />
         {!isManager && activities.length > 0 && (
           <div className="glass-card rounded-2xl p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-5 rounded-full bg-brand" />
-                <h3 className="text-sm font-semibold text-white">Actualizaciones recientes</h3>
-              </div>
-              {activities.length > 3 && (
-                <button onClick={() => setPortalTab('actividades')} className="text-xs text-brand-light hover:text-white transition-colors">
-                  Ver todas →
-                </button>
-              )}
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-5 rounded-full bg-brand" />
+              <h3 className="text-sm font-semibold text-white">Actualizaciones recientes</h3>
             </div>
             <div className="space-y-3">
-              {activities.slice(0, 3).map((a) => <ActivityCard key={a.id} activity={a} />)}
+              {activities.slice(0, 3).map((a) => <ActivityCard key={a.id} activity={a as unknown as Activity} />)}
             </div>
           </div>
         )}
       </div>
 
-      <DayModal day={selectedDay} tasks={tasks} appointments={effectiveAppointments} onClose={() => setSelectedDay(null)} />
-      {/* TaskForm — PM crea entrega, cliente solicita tarea */}
+      {/* Modales */}
+      <DayModal
+        day={selectedDay}
+        tasks={tasks}
+        appointments={appointments}
+        onClose={() => setSelectedDay(null)}
+      />
+
       <TaskForm
         open={portalTaskOpen}
         onOpenChange={setPortalTaskOpen}
@@ -1025,11 +964,10 @@ export default function ClientPortalContent() {
         initialClientId={client?.id ?? null}
         onSuccess={() => {
           setPortalTaskOpen(false);
-          const url = isManager ? `/api/client-portal?clientId=${previewClientId ?? ''}` : '/api/client-portal';
-          fetch(url).then(r => r.json()).then(d => { if (d.tasks || d.client) setData(d); }).catch(() => {});
+          refetch();
         }}
       />
-      {/* Modal solicitud reunión — solo para clientes */}
+
       <Dialog open={requestOpen} onOpenChange={setRequestOpen}>
         <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-sm">
           <DialogHeader>
@@ -1044,7 +982,7 @@ export default function ClientPortalContent() {
             setRequestSaving(true);
             try {
               const session_email = (session?.user as any)?.email ?? '';
-              const session_name  = (session?.user as any)?.name ?? 'Cliente';
+              const session_name  = (session?.user as any)?.name  ?? 'Cliente';
               const res = await fetch('/api/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1060,7 +998,13 @@ export default function ClientPortalContent() {
               setRequestOpen(false);
               setRequestDate('');
               setRequestNotes('');
-            } catch (err) { console.error('[solicitar reunion]', err); alert('Error al enviar la solicitud. Intenta de nuevo.'); } finally { setRequestSaving(false); }
+              refetch();
+            } catch (err) {
+              console.error('[solicitar reunion]', err);
+              alert('Error al enviar la solicitud. Intenta de nuevo.');
+            } finally {
+              setRequestSaving(false);
+            }
           }} className="space-y-4 mt-2">
             <div className="space-y-1.5">
               <Label className="text-white/70 text-xs">Fecha y hora propuesta *</Label>
@@ -1093,11 +1037,7 @@ export default function ClientPortalContent() {
           initialClientEmail={client?.email}
           onSaved={() => {
             setMeetingOpen(false);
-            const url = isManager ? `/api/client-portal?clientId=${previewClientId ?? ''}` : '/api/client-portal';
-            fetch(url).then(r => r.json()).then(d => { 
-              console.log('[portal refresh]', d?.appointments?.length, 'appointments');
-              if (d.client) setData(d); 
-            }).catch(() => {});
+            refetch();
           }}
         />
       )}
