@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Loader2, CalendarIcon, X } from 'lucide-react';
+import { Loader2, CalendarIcon, X, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -28,6 +28,17 @@ interface InternalUser {
   email: string;
   role: string;
   color: string;
+}
+
+interface TaskTemplate {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  priority: string;
+  visibility: string;
+  estimatedDays: number;
+  subtasks: { title: string; description: string; visibility: string }[];
 }
 
 interface TaskFormProps {
@@ -61,6 +72,8 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   const [refType, setRefType]             = useState('generic');
   const [users, setUsers]                 = useState<InternalUser[]>([]);
   const [clients, setClients]             = useState<{ id: string; name: string; company: string }[]>([]);
+  const [templates,          setTemplates]          = useState<TaskTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
 
   useEffect(() => {
     if (task) {
@@ -84,8 +97,25 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       setAssigneeIds([]); setClientId(initialClientId ?? '');
     }
     setStartOpen(false); setDueOpen(false);
+    setSelectedTemplateId('');
     prevClientId.current = null;
   }, [task, open]);
+
+  function applyTemplate(templateId: string) {
+    const tpl = templates.find(t => t.id === templateId);
+    if (!tpl) return;
+    setTitle(tpl.title);
+    setDescription(tpl.description);
+    setPriority(tpl.priority);
+    if (tpl.visibility) setVisibility(tpl.visibility);
+    if (tpl.estimatedDays && !dueDate) {
+      const d = new Date();
+      d.setDate(d.getDate() + tpl.estimatedDays);
+      setDueDate(d);
+    }
+    setSelectedTemplateId(templateId);
+    toast.success('Template aplicado — ajusta los campos según necesites');
+  }
 
   function toggleAssignee(id: string) {
     setAssigneeIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
@@ -108,6 +138,10 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       fetch('/api/clients')
         .then((r) => r.json())
         .then((d) => setClients(d.clients ?? []))
+        .catch(() => {});
+      fetch('/api/task-templates')
+        .then(r => r.json())
+        .then(d => setTemplates(d.templates ?? []))
         .catch(() => {});
     }
   }, [isManager, open]);
@@ -178,6 +212,31 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       <DialogContent className="bg-[#15151c] border-white/[0.06] text-white sm:max-w-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">{isEditing ? 'Editar Tarea' : 'Nueva Tarea'}</DialogTitle>
+          {isManager && !isEditing && templates.length > 0 && (
+            <div className="space-y-1.5 pt-2 pb-3 border-b border-white/[0.06]">
+              <Label className="text-white/50 text-xs flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3" />
+                Usar template <span className="text-white/30">(opcional)</span>
+              </Label>
+              <Select value={selectedTemplateId || 'none'} onValueChange={(v) => {
+                if (v === 'none') { setSelectedTemplateId(''); return; }
+                applyTemplate(v);
+              }}>
+                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm h-9 focus:ring-brand">
+                  <SelectValue placeholder="Selecciona un template..." />
+                </SelectTrigger>
+                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                  <SelectItem value="none" className="text-white/40 focus:bg-white/[0.06]">Sin template</SelectItem>
+                  {templates.map((tpl) => (
+                    <SelectItem key={tpl.id} value={tpl.id} className="focus:bg-white/[0.06]">
+                      <span className="text-white/80">{tpl.title}</span>
+                      <span className="text-[10px] text-white/30 ml-2 capitalize">{tpl.category}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <DialogDescription className="text-white/40">
             {isEditing ? 'Modifica los detalles de la tarea' : 'Completa los campos para crear una nueva tarea'}
           </DialogDescription>
