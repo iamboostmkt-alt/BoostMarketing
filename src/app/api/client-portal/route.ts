@@ -10,7 +10,7 @@ import { AccessControl } from '@/core/access/access-control';
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
 const taskUserInclude = {
-  select: { id: true, name: true, email: true, color: true, image: true },
+  select: { id: true, name: true, email: true, color: true, image: true, role: true },
 } as const;
 
 export async function GET(req: NextRequest) {

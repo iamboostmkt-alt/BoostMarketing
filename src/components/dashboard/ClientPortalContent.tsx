@@ -262,7 +262,7 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
           const dayTasks       = getTasksForDay(tasks, day);
-          const dayAppts       = appointments.filter((a: any) => a.date && isSameDay(new Date(a.date), day));
+          const dayAppts       = appointments.filter((a: any) => { try { return a.date && isSameDay(new Date(a.date), day); } catch { return false; } });
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const today          = isToday(day);
           const hasItems       = dayTasks.length > 0 || dayAppts.length > 0;
@@ -998,20 +998,18 @@ export default function ClientPortalContent() {
       </div>
 
       <DayModal day={selectedDay} tasks={tasks} onClose={() => setSelectedDay(null)} />
-      {/* TaskForm para PM — crear entrega/tarea client_visible */}
-      {isManager && (
-        <TaskForm
-          open={portalTaskOpen}
-          onOpenChange={setPortalTaskOpen}
-          isManager={isManager}
-          initialDate={null}
-          onSuccess={() => {
-            setPortalTaskOpen(false);
-            const url = `/api/client-portal?clientId=${previewClientId ?? ''}`;
-            fetch(url).then(r => r.json()).then(d => { if (d.tasks) setData(d); }).catch(() => {});
-          }}
-        />
-      )}
+      {/* TaskForm — PM crea entrega, cliente solicita tarea */}
+      <TaskForm
+        open={portalTaskOpen}
+        onOpenChange={setPortalTaskOpen}
+        isManager={isManager}
+        initialDate={null}
+        onSuccess={() => {
+          setPortalTaskOpen(false);
+          const url = isManager ? `/api/client-portal?clientId=${previewClientId ?? ''}` : '/api/client-portal';
+          fetch(url).then(r => r.json()).then(d => { if (d.tasks || d.client) setData(d); }).catch(() => {});
+        }}
+      />
       {/* Modal solicitud reunión — solo para clientes */}
       <Dialog open={requestOpen} onOpenChange={setRequestOpen}>
         <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-sm">
@@ -1028,7 +1026,7 @@ export default function ClientPortalContent() {
             try {
               const session_email = (session?.user as any)?.email ?? '';
               const session_name  = (session?.user as any)?.name ?? 'Cliente';
-              await fetch('/api/appointments', {
+              const res = await fetch('/api/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1039,10 +1037,11 @@ export default function ClientPortalContent() {
                   status: 'pending',
                 }),
               });
+              if (!res.ok) throw new Error('Error al enviar solicitud');
               setRequestOpen(false);
               setRequestDate('');
               setRequestNotes('');
-            } catch { /* silent */ } finally { setRequestSaving(false); }
+            } catch (err) { console.error('[solicitar reunion]', err); alert('Error al enviar la solicitud. Intenta de nuevo.'); } finally { setRequestSaving(false); }
           }} className="space-y-4 mt-2">
             <div className="space-y-1.5">
               <Label className="text-white/70 text-xs">Fecha y hora propuesta *</Label>
