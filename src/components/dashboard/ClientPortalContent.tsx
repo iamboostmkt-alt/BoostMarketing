@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Calendar, CheckSquare, Clock,
   CheckCircle2, Loader2, AlertCircle, User, Building2, Eye, MessageCircle, Video, Plus,
-  ChevronDown, Flag, Pencil, Trash2,
+  ChevronDown, Flag, Pencil, Trash2, Bell,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -378,7 +378,7 @@ function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () 
   };
   return (
     <div
-      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
+      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
@@ -471,7 +471,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   const cfg = activityStatusConfig[activity.status] ?? activityStatusConfig.pending;
   return (
     <div
-      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
+      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
@@ -535,7 +535,7 @@ const meetingStatusConfig: Record<string, { label: string; color: string }> = {
   cancelled: { label: 'Cancelada',  color: 'bg-red-500/15 text-red-300 border-red-500/20' },
 };
 
-function MeetingCard({ appointment, isManager = false, onDelete, onEdit }: { appointment: any; isManager?: boolean; onDelete?: (id: string) => void; onEdit?: (apt: any) => void }) {
+function MeetingCard({ appointment, isManager = false, onDelete, onEdit, onRemind }: { appointment: any; isManager?: boolean; onDelete?: (id: string) => void; onEdit?: (apt: any) => void; onRemind?: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const status = appointment.status || 'pending';
   const cfg    = meetingStatusConfig[status] ?? meetingStatusConfig.pending;
@@ -543,7 +543,7 @@ function MeetingCard({ appointment, isManager = false, onDelete, onEdit }: { app
 
   return (
     <div
-      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
+      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
@@ -600,6 +600,12 @@ function MeetingCard({ appointment, isManager = false, onDelete, onEdit }: { app
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
                 <Pencil className="w-3 h-3" />
                 Editar
+              </button>
+              <button type="button"
+                onClick={() => onRemind?.(appointment.id)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 hover:text-blue-300 transition-colors">
+                <Bell className="w-3 h-3" />
+                Recordatorio
               </button>
               <button type="button"
                 onClick={() => { if (confirm("¿Eliminar " + appointment.name + "?")) onDelete?.(appointment.id); }}
@@ -763,6 +769,18 @@ export default function ClientPortalContent() {
         toast.success('Entrega eliminada');
       } else { alert('Error al eliminar'); }
     } catch { alert('Error de red'); }
+  }
+
+  async function handleRemindAppt(id: string) {
+    try {
+      const res = await fetch('/api/appointments/remind', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointmentId: id }),
+      });
+      if (res.ok) { toast.success('Recordatorio enviado al cliente'); }
+      else { toast.error('Error al enviar recordatorio'); }
+    } catch { toast.error('Error de red'); }
   }
 
   async function handleDeleteAppt(id: string) {
