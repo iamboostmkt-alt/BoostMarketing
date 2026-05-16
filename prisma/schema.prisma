@@ -148,7 +148,7 @@ model Task {
   status         String    @default("pending")
   priority       String    @default("medium")
   visibility     String    @default("internal")
-  references     Json?      @default("[]") @map("task_references")
+  references     Json?     @default("[]") @map("task_references")
   startDate      DateTime? @map("start_date")
   dueDate        DateTime? @map("due_date")
 
@@ -160,7 +160,7 @@ model Task {
   assignedUser  User?              @relation("AssignedTasks", fields: [assignedUserId], references: [id], onDelete: SetNull)
   client        Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
   assignedUsers TaskAssignedUser[]
-  attachments    TaskAttachment[]
+  attachments   TaskAttachment[]
 
   @@map("tasks")
 }
@@ -175,6 +175,7 @@ model Contact {
   status  String @default("lead")
   value   Float  @default(0)
   notes   String @default("")
+  source    String   @default("manual") // landing_video | landing_register | manual
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -449,12 +450,12 @@ model TeamMember {
 }
 
 model AppointmentAssignedUser {
-  id            String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  appointmentId String   @map("appointment_id")
-  userId        String   @map("user_id")
+  appointmentId String @map("appointment_id")
+  userId        String @map("user_id")
 
-  createdAt     DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
@@ -465,27 +466,30 @@ model AppointmentAssignedUser {
 }
 
 model Settings {
-  id          String   @id @default("global")
-  logoUrl     String?  @map("logo_url")
-  brandName   String   @default("BoostMarketing") @map("brand_name")
-  brandColor  String   @default("#7c3aed") @map("brand_color")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String   @id @default("global")
+  logoUrl    String?  @map("logo_url")
+  brandName  String   @default("BoostMarketing") @map("brand_name")
+  brandColor String   @default("#7c3aed") @map("brand_color")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
   @@map("settings")
 }
+
 model TaskAttachment {
-  id        String    @id @default(cuid())
-  taskId    String    @map("task_id")
-  userId    String    @map("user_id")
-  fileName  String    @map("file_name")
-  fileUrl   String    @map("file_url")
-  fileType  String    @map("file_type")
-  fileSize  Int       @map("file_size")
-  isInternal Boolean  @default(false) @map("is_internal")
-  status    String    @default("active")
-  expiresAt DateTime? @map("expires_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  taskId     String    @map("task_id")
+  userId     String    @map("user_id")
+  fileName   String    @map("file_name")
+  fileUrl    String    @map("file_url")
+  fileType   String    @map("file_type")
+  fileSize   Int       @map("file_size")
+  isInternal Boolean   @default(false) @map("is_internal")
+  status     String    @default("active")
+  expiresAt  DateTime? @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  task       Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("task_attachments")
 }
