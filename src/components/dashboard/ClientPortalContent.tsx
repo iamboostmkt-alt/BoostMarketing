@@ -33,6 +33,7 @@ import type { Task, Activity } from '@/lib/types';
 // ── Nuevo data layer del portal ──────────────────────────────────────────────
 import { useClientPortal } from '@/hooks/client-portal/useClientPortal';
 import { useClientCalendar, sameLocalDay } from '@/hooks/client-portal/useClientCalendar';
+import TaskFeedbackButtons from '@/components/client-portal/TaskFeedbackButtons';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -290,7 +291,7 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEvents }:
 
 // ── TaskCard ──────────────────────────────────────────────────────────────────
 
-function TaskCard({ task }: { task: Task }) {
+function TaskCard({ task, onFeedback }: { task: Task; onFeedback?: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const cfg = taskStatusConfig[task.status] ?? taskStatusConfig.pending;
   const priorityColor: Record<string, string> = {
@@ -356,6 +357,14 @@ function TaskCard({ task }: { task: Task }) {
                 Asignado a <span className="text-white/70 font-medium">{task.assignedUser.name || task.assignedUser.email}</span>
               </span>
             </div>
+          )}
+          {onFeedback && (
+            <TaskFeedbackButtons
+              taskId={task.id}
+              taskTitle={task.title}
+              deliverableStatus={(task as any).deliverableStatus}
+              onSuccess={onFeedback}
+            />
           )}
         </div>
       )}
@@ -909,7 +918,7 @@ export default function ClientPortalContent() {
             </div>
           ) : (
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
-              {displayedTasks.map((task) => <TaskCard key={task.id} task={task} />)}
+              {displayedTasks.map((task) => <TaskCard key={task.id} task={task} onFeedback={!isManager ? refetch : undefined} />)}
             </div>
           )}
 

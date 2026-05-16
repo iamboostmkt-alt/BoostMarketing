@@ -55,9 +55,18 @@ export async function POST(req: NextRequest) {
     if (type === 'rejected')           newStatus = 'pending';
     if (type === 'changes_requested')  newStatus = 'in_progress';
 
+    const deliverableStatusMap: Record<string, string> = {
+      approved:          'approved',
+      rejected:          'client_review',
+      changes_requested: 'changes_requested',
+    };
+
     await db.task.update({
       where: { id: taskId },
-      data:  { status: newStatus },
+      data:  {
+        status:            newStatus,
+        deliverableStatus: deliverableStatusMap[type] ?? null,
+      },
     });
 
     // Si rechazó o pidió cambios → crear change_request interna asignada al PM
