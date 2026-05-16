@@ -210,10 +210,11 @@ function DayModal({ day, tasks, onClose }: DayModalProps) {
 
 interface CalendarProps {
   tasks: Task[];
+  appointments?: any[];
   onSelectDay: (day: Date) => void;
 }
 
-function PortalCalendar({ tasks, onSelectDay }: CalendarProps) {
+function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const days = useMemo(() => {
@@ -261,9 +262,10 @@ function PortalCalendar({ tasks, onSelectDay }: CalendarProps) {
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
           const dayTasks       = getTasksForDay(tasks, day);
+          const dayAppts       = appointments.filter((a: any) => a.date && isSameDay(new Date(a.date), day));
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const today          = isToday(day);
-          const hasItems       = dayTasks.length > 0;
+          const hasItems       = dayTasks.length > 0 || dayAppts.length > 0;
 
           return (
             <button
@@ -732,13 +734,15 @@ export default function ClientPortalContent() {
 
   const teamMembersMap = new Map();
   // Backend ya filtra por rol — tasks solo contiene lo permitido
+  // Excluir ADMIN y PM del equipo visible al cliente
+  const EXCLUDED_ROLES = ['ADMIN'];
   tasks.forEach((t) => {
-    if (t.assignedUser && t.assignedUser.id !== assignedManager?.id) {
+    if (t.assignedUser && t.assignedUser.id !== assignedManager?.id && !EXCLUDED_ROLES.includes((t.assignedUser as any).role)) {
       const u = t.assignedUser;
       teamMembersMap.set(u.id, { id: u.id, name: u.name, email: u.email, color: u.color, image: u.image ?? null });
     }
     for (const u of t.assignedUsers ?? []) {
-      if (u.id !== assignedManager?.id) teamMembersMap.set(u.id, u);
+      if (u.id !== assignedManager?.id && !EXCLUDED_ROLES.includes((u as any).role)) teamMembersMap.set(u.id, u);
     }
   });
   const teamMembers = [...teamMembersMap.values()];
@@ -883,7 +887,7 @@ export default function ClientPortalContent() {
             </button>
           )}
         </div>
-        <PortalCalendar tasks={portalVisibleTasks} onSelectDay={setSelectedDay} />
+        <PortalCalendar tasks={portalVisibleTasks} appointments={effectiveAppointments} onSelectDay={setSelectedDay} />
       </div>
 
       {/* Chat + Tareas lado a lado */}
