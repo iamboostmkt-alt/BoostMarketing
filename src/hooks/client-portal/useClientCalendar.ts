@@ -85,7 +85,11 @@ export function useClientCalendar({
   }, [deliverables, appointments]);
 
   const getDayEvents = useMemo(
-    () => (day: Date) => allEvents.filter((e) => sameLocalDay(e.date, day)),
+    () => (day: Date) => {
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const dayStr = `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`;
+      return allEvents.filter((e) => e.date === dayStr);
+    },
     [allEvents]
   );
 
