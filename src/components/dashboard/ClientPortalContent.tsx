@@ -33,6 +33,7 @@ import type { Task, Activity } from '@/lib/types';
 // ── Nuevo data layer del portal ──────────────────────────────────────────────
 import { useClientPortal } from '@/hooks/client-portal/useClientPortal';
 import { useClientCalendar, sameLocalDay } from '@/hooks/client-portal/useClientCalendar';
+import { toast } from 'sonner';
 import TaskFeedbackButtons from '@/components/client-portal/TaskFeedbackButtons';
 import PortalAppointmentEditModal from '@/components/client-portal/PortalAppointmentEditModal';
 
@@ -292,7 +293,7 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEvents }:
 
 // ── TaskCard ──────────────────────────────────────────────────────────────────
 
-function TaskCard({ task, onFeedback }: { task: Task; onFeedback?: () => void }) {
+function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () => void; onDelete?: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const cfg = taskStatusConfig[task.status] ?? taskStatusConfig.pending;
   const priorityColor: Record<string, string> = {
@@ -357,6 +358,16 @@ function TaskCard({ task, onFeedback }: { task: Task; onFeedback?: () => void })
               <span className="text-xs text-white/50">
                 Asignado a <span className="text-white/70 font-medium">{task.assignedUser.name || task.assignedUser.email}</span>
               </span>
+            </div>
+          )}
+          {onDelete && (
+            <div className="pt-2 border-t border-white/[0.04] mt-1" onClick={e => e.stopPropagation()}>
+              <button type="button"
+                onClick={() => { if (confirm('¿Eliminar "' + task.title + '"?')) onDelete(task.id); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 transition-colors">
+                <Trash2 className="w-3 h-3" />
+                Eliminar entrega
+              </button>
             </div>
           )}
           {onFeedback && (
@@ -653,18 +664,41 @@ export default function ClientPortalContent() {
 
   // ── Data layer (hook limpio) ─────────────────────────────────────────────
   const {
-    client, deliverables, appointments, activities,
+    client, deliverables, appointments: rawAppointments, activities,
     loading, error, noClient, refetch,
   } = useClientPortal({ isManager, previewClientId });
 
+  // Estado local de appointments para updates sin refetch
+  const [localAppointments, setLocalAppointments] = useState<any[]>([]);
+  useEffect(() => { setLocalAppointments(rawAppointments); }, [rawAppointments]);
+  const appointments = localAppointments;
+
+  // Estado local de deliverables para updates sin refetch
+  const [localDeliverables, setLocalDeliverables] = useState<any[]>([]);
+  useEffect(() => { setLocalDeliverables(deliverables); }, [deliverables]);
+
   // Las tareas siguen siendo Task[] para compatibilidad con componentes existentes
-  const tasks = deliverables as unknown as Task[];
+  const tasks = localDeliverables as unknown as Task[];
 
   // Calendario cliente — usa hook con timezone fix y colores por tipo
+  async function handleDeleteTask(id: string) {
+    try {
+      const res = await fetch(`/api/tasks?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setLocalDeliverables(prev => prev.filter((t: any) => t.id !== id));
+        toast.success('Entrega eliminada');
+      } else { alert('Error al eliminar'); }
+    } catch { alert('Error de red'); }
+  }
+
   async function handleDeleteAppt(id: string) {
     try {
       const res = await fetch(`/api/appointments?id=${id}`, { method: 'DELETE' });
-      if (res.ok) { refetch(); } else { alert('Error al eliminar'); }
+      if (res.ok) {
+        // Actualizar local sin refetch para evitar flash de loading
+        setLocalAppointments(prev => prev.filter(a => a.id !== id));
+        toast.success('Videollamada eliminada');
+      } else { alert('Error al eliminar'); }
     } catch { alert('Error de red'); }
   }
 
@@ -947,7 +981,7 @@ export default function ClientPortalContent() {
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
               {displayedTasks.map((task) => (
                 <div key={task.id} className="relative group/taskwrap">
-                  <TaskCard task={task} onFeedback={!isManager ? refetch : undefined} />
+                  <TaskCard task={task} onFeedback={!isManager ? refetch : undefined} onDelete={isManager ? handleDeleteTask : undefined} />
                   {isManager && (
                     <button type="button"
                       onClick={() => { setEditingTask(task as any); setPortalTaskOpen(true); }}
