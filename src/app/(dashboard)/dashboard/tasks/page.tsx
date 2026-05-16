@@ -139,8 +139,15 @@ function TasksContent() {
       const res = await fetch(`/api/tasks?id=${deleteTask.id}`, { method: 'DELETE' });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
       toast.success('Tarea eliminada');
+      const id = deleteTask.id;
       setDeleteTask(null);
-      fetchAll();
+      // Actualizar estado local sin setLoading para evitar flash de recarga
+      setMyTasks(prev => prev.filter(t => t.id !== id));
+      setAllTasks(prev => prev.filter(t => t.id !== id));
+      setClientsWithTasks(prev => prev.map(c => ({
+        ...c,
+        tasks: c.tasks.filter((t: any) => t.id !== id),
+      })));
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error al eliminar');
     } finally { setDeleting(false); }
