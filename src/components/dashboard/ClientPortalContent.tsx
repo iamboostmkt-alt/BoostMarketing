@@ -739,6 +739,10 @@ export default function ClientPortalContent() {
   const [requestNotes,    setRequestNotes]    = useState('');
   const [requestSaving,   setRequestSaving]   = useState(false);
   const [activeTab,       setActiveTab]       = useState<'all' | 'tasks'>('all');
+  const [selectMode,      setSelectMode]      = useState(false);
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
+  const [selectedApptIds, setSelectedApptIds] = useState<Set<string>>(new Set());
+  const [deletingMultiple, setDeletingMultiple] = useState(false);
   const [editingAppt,     setEditingAppt]     = useState<any>(null);
   const [editingTask,     setEditingTask]     = useState<any>(null);
   const [apptEditOpen,    setApptEditOpen]    = useState(false);
@@ -762,6 +766,29 @@ export default function ClientPortalContent() {
   const tasks = localDeliverables as unknown as Task[];
 
   // Calendario cliente — usa hook con timezone fix y colores por tipo
+  async function handleDeleteMultiple() {
+    if (selectedTaskIds.size === 0 && selectedApptIds.size === 0) return;
+    if (!confirm(`¿Eliminar ${selectedTaskIds.size + selectedApptIds.size} elemento(s) seleccionado(s)?`)) return;
+    setDeletingMultiple(true);
+    try {
+      await Promise.all([
+        ...[...selectedTaskIds].map(id =>
+          fetch(`/api/tasks?id=${id}`, { method: 'DELETE' })
+        ),
+        ...[...selectedApptIds].map(id =>
+          fetch(`/api/appointments?id=${id}`, { method: 'DELETE' })
+        ),
+      ]);
+      setLocalDeliverables(prev => prev.filter((t: any) => !selectedTaskIds.has(t.id)));
+      setLocalAppointments(prev => prev.filter((a: any) => !selectedApptIds.has(a.id)));
+      setSelectedTaskIds(new Set());
+      setSelectedApptIds(new Set());
+      setSelectMode(false);
+      toast.success('Elementos eliminados');
+    } catch { toast.error('Error al eliminar'); }
+    finally { setDeletingMultiple(false); }
+  }
+
   async function handleDeleteTask(id: string) {
     try {
       const res = await fetch(`/api/tasks?id=${id}`, { method: 'DELETE' });
@@ -1057,6 +1084,12 @@ export default function ClientPortalContent() {
                 <Plus className="w-3 h-3" />
                 {isManager ? 'Nueva entrega' : 'Solicitar tarea'}
               </button>
+              {isManager && displayedTasks.length >= 5 && (
+                <button type="button" onClick={() => { setSelectMode(v => !v); setSelectedTaskIds(new Set()); setSelectedApptIds(new Set()); }}
+                  className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${selectMode ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:text-white'}`}>
+                  {selectMode ? 'Cancelar' : 'Seleccionar'}
+                </button>
+              )}
               {(['all', 'tasks'] as const).map((tab) => (
                 <button key={tab} type="button" onClick={() => setActiveTab(tab)}
                   className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${activeTab === tab ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white'}`}>
@@ -1098,11 +1131,19 @@ export default function ClientPortalContent() {
                 )}
               </div>
               {isManager ? (
-                <button type="button" onClick={() => setMeetingOpen(true)}
-                  className="flex items-center gap-1 text-[11px] text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md px-2 py-1 transition-colors">
-                  <Plus className="w-3 h-3" />
-                  Agendar
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button type="button" onClick={() => setMeetingOpen(true)}
+                    className="flex items-center gap-1 text-[11px] text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md px-2 py-1 transition-colors">
+                    <Plus className="w-3 h-3" />
+                    Agendar
+                  </button>
+                  {appointments.length >= 5 && (
+                    <button type="button" onClick={() => { setSelectMode(v => !v); setSelectedTaskIds(new Set()); setSelectedApptIds(new Set()); }}
+                      className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${selectMode ? 'bg-green-500/20 border-green-500/40 text-green-300' : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:text-white'}`}>
+                      {selectMode ? 'Cancelar' : 'Seleccionar'}
+                    </button>
+                  )}
+                </div>
               ) : (
                 <button type="button" onClick={() => setRequestOpen(true)}
                   className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
@@ -1229,6 +1270,24 @@ export default function ClientPortalContent() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Barra selección múltiple */}
+      {selectMode && isManager && (selectedTaskIds.size > 0 || selectedApptIds.size > 0) && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#15151c] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl">
+          <span className="text-sm text-white/70">
+            {selectedTaskIds.size + selectedApptIds.size} seleccionado{selectedTaskIds.size + selectedApptIds.size !== 1 ? 's' : ''}
+          </span>
+          <button type="button" disabled={deletingMultiple} onClick={handleDeleteMultiple}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 transition-colors disabled:opacity-50">
+            <Trash2 className="w-4 h-4" />
+            {deletingMultiple ? 'Eliminando...' : 'Eliminar'}
+          </button>
+          <button type="button" onClick={() => { setSelectMode(false); setSelectedTaskIds(new Set()); setSelectedApptIds(new Set()); }}
+            className="text-sm text-white/40 hover:text-white transition-colors">
+            Cancelar
+          </button>
+        </div>
+      )}
 
       <PortalAppointmentEditModal
         open={apptEditOpen}
