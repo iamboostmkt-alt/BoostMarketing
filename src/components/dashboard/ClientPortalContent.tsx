@@ -378,7 +378,7 @@ function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () 
   };
   return (
     <div
-      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
+      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
@@ -471,7 +471,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   const cfg = activityStatusConfig[activity.status] ?? activityStatusConfig.pending;
   return (
     <div
-      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
+      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
@@ -543,7 +543,7 @@ function MeetingCard({ appointment, isManager = false, onDelete, onEdit, onRemin
 
   return (
     <div
-      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
+      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="p-4 space-y-2">
