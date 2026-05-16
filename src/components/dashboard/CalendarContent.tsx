@@ -545,45 +545,24 @@ export default function CalendarContent() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      let tasksUrl = '/api/tasks?scope=mine';
-      if (calView === 'all' && isAdmin)    tasksUrl = '/api/tasks?scope=all';
-      else if (calView === 'team' && isManager) tasksUrl = '/api/tasks?scope=all';
-      else if (calView === 'clients')      tasksUrl = '/api/tasks?scope=clients-with-tasks';
-      else if (calView === 'deliveries')   tasksUrl = isAdmin ? '/api/tasks?scope=all&has_due=1' : '/api/tasks?scope=mine&has_due=1';
+      // Endpoint unificado — 1 fetch en lugar de 4
+      let scope = 'mine';
+      if (calView === 'all' && isAdmin)         scope = 'all';
+      else if (calView === 'team' && isManager) scope = 'all';
+      else if (calView === 'clients')           scope = 'clients-with-tasks';
+      else if (calView === 'deliveries')        scope = isAdmin ? 'all' : 'mine';
 
-      const tasksRes = await fetch(tasksUrl);
-      if (tasksRes.ok) {
-        const data = await tasksRes.json();
-        if (calView === 'clients') {
-          const clients = data.clients ?? [];
-          const allTasks = clients.flatMap((c: any) =>
-            (c.tasks ?? []).map((t: any) => ({ ...t, clientId: t.clientId ?? c.id }))
-          );
-          setTasks(allTasks);
-        } else {
-          setTasks(data.tasks || []);
-        }
-      }
-
-      const actRes = await fetch('/api/activities');
-      if (actRes.ok) {
-        const actData = await actRes.json();
-        setActivities(actData.activities || []);
-      }
-
-      if (!isClient) {
-        const appRes = await fetch('/api/appointments');
-        if (appRes.ok) {
-          const appData = await appRes.json();
-          setAppointments(appData.appointments || []);
-        }
-        const meetRes = await fetch('/api/meetings');
-        if (meetRes.ok) {
-          const meetData = await meetRes.json();
-          setAppointments(prev => {
-            const prevAppts = prev.filter((a: any) => !a.email?.endsWith('@internal.boost'));
-            return [...prevAppts, ...(meetData.meetings || [])];
-          });
+      const res = await fetch(`/api/calendar?scope=${scope}`);
+      if (res.ok) {
+        const data = await res.json();
+        setTasks(data.tasks || []);
+        setActivities(data.activities || []);
+        if (!isClient) {
+          const allAppointments = [
+            ...(data.appointments || []),
+            ...(data.meetings     || []),
+          ];
+          setAppointments(allAppointments);
         }
       }
     } finally {

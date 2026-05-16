@@ -82,6 +82,7 @@ model User {
   activityLogs           ActivityLog[]
   tasks                  Task[]                    @relation("OwnedTasks")
   assignedTasks          Task[]                    @relation("AssignedTasks")
+  taskTemplates          TaskTemplate[]
   contacts               Contact[]
   clients                Client[]
   assignedActivities     Activity[]                @relation("AssignedActivities")
@@ -154,13 +155,18 @@ model Task {
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  deletedAt    DateTime? @map("deleted_at")
+  parentTaskId String?   @map("parent_task_id")
+  templateId   String?   @map("template_id")
 
   user          User               @relation("OwnedTasks", fields: [userId], references: [id], onDelete: Cascade)
   assignedUser  User?              @relation("AssignedTasks", fields: [assignedUserId], references: [id], onDelete: SetNull)
   client        Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
   assignedUsers TaskAssignedUser[]
   attachments   TaskAttachment[]
+  subtasks      Task[]            @relation("TaskSubtasks")
+  parentTask    Task?             @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  template      TaskTemplate?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
 
   @@map("tasks")
 }
@@ -492,4 +498,24 @@ model TaskAttachment {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("task_attachments")
+}
+
+model TaskTemplate {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  title       String
+  description String   @default("")
+  category    String   @default("general") // reel | campaign | branding | design | content | general
+  visibility  String   @default("internal")
+  priority    String   @default("medium")
+  subtasks    Json     @default("[]") // [{title, description, visibility}]
+  estimatedDays Int    @default(0) @map("estimated_days")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@map("task_templates")
 }

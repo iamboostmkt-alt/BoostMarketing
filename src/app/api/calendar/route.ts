@@ -1,0 +1,137 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { getSessionUser } from '@/core/auth/get-session-user';
+import { AccessControl } from '@/core/access/access-control';
+import { normalizeTaskStatus } from '@/lib/task-status';
+
+export async function GET(req: NextRequest) {
+  try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+
+    const { searchParams } = new URL(req.url);
+    const scope    = searchParams.get('scope') || 'mine';
+    const clientId = searchParams.get('clientId');
+
+    const isAdmin   = user.role === 'ADMIN';
+    const isPM      = user.role === 'PROJECT_MANAGER';
+    const isManager = isAdmin || isPM;
+    const isClient  = user.role === 'CLIENT';
+
+    const userInclude = {
+      select: { id: true, name: true, email: true, color: true, image: true },
+    };
+
+    // ── TASKS ──────────────────────────────────────────────
+    let taskWhere: any = {};
+
+    if (isClient) {
+      const clientRecord = await db.client.findFirst({
+        where: { email: { equals: user.email, mode: 'insensitive' } },
+        select: { id: true },
+      });
+      taskWhere = clientRecord
+        ? { clientId: clientRecord.id, visibility: 'client_visible', deletedAt: null }
+        : { id: 'none' };
+    } else if (scope === 'all' && isManager) {
+      taskWhere = { deletedAt: null };
+    } else if (scope === 'clients-with-tasks' && isManager) {
+      taskWhere = { clientId: { not: null }, deletedAt: null };
+    } else if (clientId && isManager) {
+      taskWhere = { clientId, deletedAt: null };
+    } else {
+      taskWhere = {
+        deletedAt: null,
+        OR: [
+          { userId: user.id },
+          { assignedUserId: user.id },
+          { assignedUsers: { some: { userId: user.id } } },
+        ],
+      };
+    }
+
+    const rawTasks = await db.task.findMany({
+      where: taskWhere,
+      include: {
+        assignedUser:  userInclude,
+        assignedUsers: { include: { user: userInclude } },
+        client:        { select: { id: true, name: true, company: true, assignedManagerId: true } },
+        subtasks:      { select: { id: true, title: true, status: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const tasks = rawTasks
+      .map(t => ({
+        ...t,
+        status:        normalizeTaskStatus(t.status),
+        assignedUsers: t.assignedUsers.map((au: any) => au.user ? au.user : au),
+      }))
+      .filter(t => AccessControl.canViewTask(user, t));
+
+    // ── APPOINTMENTS ───────────────────────────────────────
+    let appointments: any[] = [];
+    let meetings: any[]     = [];
+
+    if (!isClient) {
+      const apptInclude = {
+        assignedUsers: {
+          include: { user: userInclude },
+        },
+      };
+
+      if (isManager) {
+        appointments = await db.appointment.findMany({
+          where:   { NOT: { email: { endsWith: '@internal.boost' } } },
+          include: apptInclude,
+          orderBy: { date: 'asc' },
+        });
+        meetings = await db.appointment.findMany({
+          where:   { email: { endsWith: '@internal.boost' } },
+          include: apptInclude,
+          orderBy: { date: 'asc' },
+        });
+      } else {
+        // Team: solo donde está asignado
+        appointments = await db.appointment.findMany({
+          where: {
+            NOT: { email: { endsWith: '@internal.boost' } },
+            assignedUsers: { some: { userId: user.id } },
+          },
+          include: apptInclude,
+          orderBy: { date: 'asc' },
+        });
+        meetings = await db.appointment.findMany({
+          where: {
+            email: { endsWith: '@internal.boost' },
+            assignedUsers: { some: { userId: user.id } },
+          },
+          include: apptInclude,
+          orderBy: { date: 'asc' },
+        });
+      }
+    }
+
+    // ── ACTIVITIES ─────────────────────────────────────────
+    const activityWhere: any = isClient
+      ? { visibleToClient: true }
+      : isManager
+        ? {}
+        : { assignedUserId: user.id };
+
+    const activities = await db.activity.findMany({
+      where:   activityWhere,
+      include: {
+        createdBy:    userInclude,
+        assignedUser: userInclude,
+      },
+      orderBy: { createdAt: 'desc' },
+      take:    100,
+    });
+
+    return NextResponse.json({ tasks, appointments, meetings, activities });
+  } catch (error) {
+    console.error('[calendar GET]', error);
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+  }
+}
