@@ -162,7 +162,11 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
         name, email: clientEmail || email, phone, date: dateISO, notes, status, meetUrl, assignedUserIds,
       };
       if (appointment) body.id = appointment.id;
-      const apiUrl = appointment ? '/api/appointments' : '/api/meetings';
+      // Si tiene cliente asignado usar /api/appointments (filtra por email en portal)
+      // Si es reunión interna usar /api/meetings
+      const apiUrl = appointment
+        ? '/api/appointments'
+        : (clientEmail ? '/api/appointments' : '/api/meetings');
       const res = await fetch(apiUrl, {
         method,
         headers: { 'Content-Type': 'application/json' },

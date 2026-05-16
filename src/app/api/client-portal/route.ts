@@ -55,6 +55,13 @@ export async function GET(req: NextRequest) {
           assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
         },
       });
+      // Solo ADMIN o PM asignado pueden ver este portal
+      if (client && role !== 'ADMIN') {
+        const isAssignedPM = client.assignedManagerId === userId;
+        if (!isAssignedPM) {
+          return NextResponse.json({ error: 'No tienes acceso al portal de este cliente.' }, { status: 403 });
+        }
+      }
     } else {
       // CLIENT: find by their email
       client = await db.client.findFirst({

@@ -83,6 +83,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       setAssigneeIds([]); setClientId('');
     }
     setStartOpen(false); setDueOpen(false);
+    prevClientId.current = null;
   }, [task, open]);
 
   function toggleAssignee(id: string) {
@@ -110,14 +111,20 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
     }
   }, [isManager, open]);
 
-  // Cuando cambia clientId: mostrar todos los usuarios y sugerir visibilidad
+  // Ref para saber si el clientId cambió por acción del usuario (no por carga inicial)
+  const prevClientId = React.useRef<string | null>(null);
   useEffect(() => {
     if (allUsers.length === 0) return;
     setUsers(allUsers);
-    // Al asignar cliente, sugerir client_visible automáticamente
-    if (clientId) {
-      setVisibility('client_visible');
+    // Solo ajustar visibilidad si el clientId cambió después de la carga inicial
+    if (prevClientId.current !== null && prevClientId.current !== clientId) {
+      if (clientId) {
+        setVisibility('client_visible');
+      } else {
+        setVisibility('internal');
+      }
     }
+    prevClientId.current = clientId;
   }, [clientId, allUsers]);
 
   function toggleStart() { setStartOpen((p) => !p); setDueOpen(false); }

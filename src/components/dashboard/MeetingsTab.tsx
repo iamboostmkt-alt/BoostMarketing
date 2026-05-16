@@ -65,10 +65,12 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     setSaving(true);
     try {
       const body = { name, date: new Date(date).toISOString(), notes, meetUrl, assignedUserIds: assigned, ...(clientEmail ? { email: clientEmail } : {}) };
-      const url = '/api/meetings';
+      // Reunión con cliente → /api/appointments; interna → /api/meetings
+      const url = clientEmail ? '/api/appointments' : '/api/meetings';
+      const patchUrl = '/api/appointments';
       const res = isEdit
-        ? await fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: meeting!.id, ...body }) })
-        : await fetch(url, { method: 'POST',  headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        ? await fetch(patchUrl, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: meeting!.id, ...body }) })
+        : await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       toast.success(isEdit ? 'Reunion actualizada.' : 'Reunion creada.');
