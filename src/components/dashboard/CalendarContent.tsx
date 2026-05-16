@@ -1,6 +1,7 @@
 'use client';
  
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { MANAGER_ROLES } from '@/core/constants/roles';
 import { useSession } from 'next-auth/react';
 import {
   CalendarDays, Plus, CheckSquare, Clock, Video, Pencil, Trash2,
@@ -32,7 +33,6 @@ import {
   statusColors, statusLabels, priorityColors, priorityLabels,
 } from '@/lib/theme-maps';
  
-const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
  
 function dayLabel(day: Date): string {
   try {

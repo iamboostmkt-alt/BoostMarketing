@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { MANAGER_ROLES } from '@/core/constants/roles';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
@@ -560,7 +561,6 @@ function ProgressBar({ total, completed }: { total: number; completed: number })
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
 interface ClientSummary { id: string; name: string; company: string; email: string; }
 
@@ -570,7 +570,7 @@ export default function ClientPortalContent() {
   const router = useRouter();
   const currentUserRole = (session?.user as { role?: string })?.role ?? 'CLIENT';
 
-  const isManager = MANAGER_ROLES.includes(currentUserRole);
+  const isManager = MANAGER_ROLES.includes(currentUserRole as any);
 
   // Admin preview: list of clients + selected clientId
   const [clients,          setClients]          = useState<ClientSummary[]>([]);
@@ -732,9 +732,8 @@ export default function ClientPortalContent() {
   const assignedManager = client.assignedManager;
 
   const teamMembersMap = new Map();
-  // Equipo visible: solo de tareas client_visible (cliente no ve equipo de tareas internas)
-  const tasksForTeam = isManager ? tasks : tasks.filter((t) => t.visibility === 'client_visible');
-  tasksForTeam.forEach((t) => {
+  // Backend ya filtra por rol — tasks solo contiene lo permitido
+  tasks.forEach((t) => {
     if (t.assignedUser && t.assignedUser.id !== assignedManager?.id) {
       const u = t.assignedUser;
       teamMembersMap.set(u.id, { id: u.id, name: u.name, email: u.email, color: u.color, image: u.image ?? null });
@@ -745,21 +744,16 @@ export default function ClientPortalContent() {
   });
   const teamMembers = [...teamMembersMap.values()];
 
-
   const effectiveAppointments = portalAppointments.length > 0 ? portalAppointments : appointments;
   const totalItems     = tasks.length;
   const completedItems = tasks.filter((t) => t.status === 'completed').length;
 
-  // En portal: cliente y PM ven solo client_visible (managers ven todo en dashboard, no aquí)
-  const visibleTasks = tasks.filter((t) =>
-    isManager ? true : t.visibility === 'client_visible'
-  );
-  // Para mostrar en el portal del cliente, siempre filtrar client_visible
-  const portalVisibleTasks = tasks.filter((t) => t.visibility === 'client_visible');
+  // Backend ya garantiza visibilidad correcta por rol
+  const portalVisibleTasks = tasks;
   const displayedTasks =
     activeTab === 'tasks'
-      ? portalVisibleTasks.filter((t) => t.status !== 'completed')
-      : portalVisibleTasks;
+      ? tasks.filter((t) => t.status !== 'completed')
+      : tasks;
 
   return (
     <div className="space-y-6">
