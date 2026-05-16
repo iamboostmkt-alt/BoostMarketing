@@ -110,11 +110,14 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
     }
   }, [isManager, open]);
 
-  // Cuando cambia clientId, mostrar SIEMPRE todos los usuarios (no filtrar por cliente)
-  // El PM debe poder asignar cualquier miembro del equipo independientemente del cliente
+  // Cuando cambia clientId: mostrar todos los usuarios y sugerir visibilidad
   useEffect(() => {
     if (allUsers.length === 0) return;
     setUsers(allUsers);
+    // Al asignar cliente, sugerir client_visible automáticamente
+    if (clientId) {
+      setVisibility('client_visible');
+    }
   }, [clientId, allUsers]);
 
   function toggleStart() { setStartOpen((p) => !p); setDueOpen(false); }

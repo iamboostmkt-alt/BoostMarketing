@@ -869,7 +869,17 @@ export default function ClientPortalContent() {
 
       {/* Calendario SIEMPRE visible */}
       <div className="glass-card rounded-2xl p-5">
-        <PortalCalendar tasks={tasks} onSelectDay={setSelectedDay} />
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold text-white">Calendario</p>
+          {isManager && (
+            <button type="button" onClick={() => setMeetingOpen(true)}
+              className="flex items-center gap-1 text-[11px] text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md px-2 py-1 transition-colors">
+              <Plus className="w-3 h-3" />
+              Agendar reunión
+            </button>
+          )}
+        </div>
+        <PortalCalendar tasks={visibleTasks} onSelectDay={setSelectedDay} />
       </div>
 
       {/* Chat + Tareas lado a lado */}

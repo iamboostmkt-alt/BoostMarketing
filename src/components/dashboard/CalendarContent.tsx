@@ -99,6 +99,8 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
   const [meetUrl,         setMeetUrl]        = useState('');
   const [assignedUserIds, setAssignedIds]    = useState<string[]>([]);
   const [teamUsers,       setTeamUsers]      = useState<InternalUser[]>([]);
+  const [clients,         setClients]        = useState<{id:string;name:string;email:string;company:string}[]>([]);
+  const [clientEmail,     setClientEmail]    = useState('');
   const [saving,          setSaving]         = useState(false);
   const [deleting,        setDeleting]       = useState(false);
 
@@ -113,6 +115,10 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
           setTeamUsers(internal);
         })
         .catch(() => {});
+      fetch('/api/clients')
+        .then((r) => r.json())
+        .then((d) => setClients(d.clients ?? []))
+        .catch(() => {});
     }
   }, [open]);
 
@@ -124,6 +130,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
       setNotes((appointment as any).notes ?? '');
       setStatus(appointment.status ?? 'pending');
       setMeetUrl((appointment as any).meetUrl ?? '');
+      setClientEmail((appointment as any).email ?? '');
       const ids = ((appointment as any).assignedUsers ?? []).map((a: any) => a.user?.id ?? a.userId ?? a.id);
       setAssignedIds(ids.filter(Boolean));
       try {
@@ -137,7 +144,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
     } else if (open && !appointment) {
       setName(''); setEmail(''); setPhone('');
       if (initialDate) { const pad = (n: number) => String(n).padStart(2,'0'); const d = initialDate; setDate(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T10:00'); } else { setDate(''); }
-      setNotes(''); setStatus('pending'); setMeetUrl(''); setAssignedIds([]);
+      setNotes(''); setStatus('pending'); setMeetUrl(''); setAssignedIds([]); setClientEmail('');
     }
   }, [open, appointment]);
 
@@ -152,7 +159,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
       const dateISO = date ? new Date(date).toISOString() : date;
       const method = appointment ? 'PATCH' : 'POST';
       const body: Record<string, unknown> = {
-        name, email, phone, date: dateISO, notes, status, meetUrl, assignedUserIds,
+        name, email: clientEmail || email, phone, date: dateISO, notes, status, meetUrl, assignedUserIds,
       };
       if (appointment) body.id = appointment.id;
       const apiUrl = appointment ? '/api/appointments' : '/api/meetings';
@@ -206,6 +213,18 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
               placeholder="Titulo de la reunion"
               className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
+          {clients.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Cliente (opcional)</Label>
+              <select value={clientEmail} onChange={(e) => setClientEmail(e.target.value)}
+                className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+                <option value="">Sin cliente</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.email}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Telefono</Label>
             <Input value={phone} onChange={(e) => setPhone(e.target.value)}
