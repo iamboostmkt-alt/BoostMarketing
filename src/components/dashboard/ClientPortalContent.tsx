@@ -757,7 +757,7 @@ export default function ClientPortalContent() {
   }
 
   const { getDayEvents } = useClientCalendar({
-    deliverables: deliverables as any[],
+    deliverables: localDeliverables as any[],
     appointments: appointments as any[],
     selectedDay:  selectedDay ?? new Date(),
   });
