@@ -37,9 +37,10 @@ interface TaskFormProps {
   isManager?: boolean;
   onSuccess?: () => void;
   initialDate?: Date | null;
+  initialClientId?: string | null;
 }
 
-export default function TaskForm({ open, onOpenChange, task, isManager = false, onSuccess, initialDate }: TaskFormProps) {
+export default function TaskForm({ open, onOpenChange, task, isManager = false, onSuccess, initialDate, initialClientId }: TaskFormProps) {
   const isEditing = !!task;
 
   const [loading, setLoading]             = useState(false);
@@ -80,7 +81,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       setTitle(''); setDescription(''); setStatus('pending'); setPriority('medium');
       setStartDate(initialDate ?? undefined);
       setDueDate(initialDate ?? undefined);
-      setAssigneeIds([]); setClientId('');
+      setAssigneeIds([]); setClientId(initialClientId ?? '');
     }
     setStartOpen(false); setDueOpen(false);
     prevClientId.current = null;
@@ -141,7 +142,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         startDate: startDate?.toISOString() ?? null,
         dueDate:   dueDate?.toISOString()   ?? null,
         assignedUserIds: isManager ? assignedUserIds : undefined,
-        clientId:        isManager ? (clientId || null) : undefined,
+        clientId:        isManager ? (clientId || null) : (initialClientId || null),
         visibility:      isManager ? visibility : undefined,
         ...(isEditing ? { id: task!.id } : {}),
       };

@@ -1004,6 +1004,7 @@ export default function ClientPortalContent() {
         onOpenChange={setPortalTaskOpen}
         isManager={isManager}
         initialDate={null}
+        initialClientId={client?.id ?? null}
         onSuccess={() => {
           setPortalTaskOpen(false);
           const url = isManager ? `/api/client-portal?clientId=${previewClientId ?? ''}` : '/api/client-portal';
@@ -1074,8 +1075,8 @@ export default function ClientPortalContent() {
           initialClientEmail={client?.email}
           onSaved={() => {
             setMeetingOpen(false);
-            const clientEmailParam = client?.email ? `&clientEmail=${encodeURIComponent(client.email)}` : '';
-            fetch(`/api/appointments?upcoming=1${clientEmailParam}`).then(r => r.json()).then(ad => setAppointments(ad.appointments || [])).catch(() => {});
+            const url = isManager ? `/api/client-portal?clientId=${previewClientId ?? ''}` : '/api/client-portal';
+            fetch(url).then(r => r.json()).then(d => { if (d.client) setData(d); }).catch(() => {});
           }}
         />
       )}
