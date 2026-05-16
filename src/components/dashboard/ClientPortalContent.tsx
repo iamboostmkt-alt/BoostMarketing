@@ -78,13 +78,19 @@ function getTasksForDay(tasks: Task[], day: Date): Task[] {
 // ── DayModal ──────────────────────────────────────────────────────────────────
 
 interface DayModalProps {
-  day:          Date | null;
-  tasks:        Task[];
+  day:           Date | null;
+  tasks:         Task[];
   appointments?: any[];
-  onClose:      () => void;
+  isManager?:    boolean;
+  onClose:       () => void;
+  onDeleteTask?: (id: string) => void;
+  onDeleteAppt?: (id: string) => void;
+  onEditAppt?:   (apt: any) => void;
+  onEditTask?:   (task: any) => void;
+  onFeedback?:   () => void;
 }
 
-function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
+function DayModal({ day, tasks, appointments = [], isManager = false, onClose, onDeleteTask, onDeleteAppt, onEditAppt, onEditTask, onFeedback }: DayModalProps) {
   if (!day) return null;
 
   const dayTasks = getTasksForDay(tasks, day);
@@ -110,9 +116,9 @@ function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
           <div className="space-y-4 mt-1">
             {dayTasks.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Tareas</p>
+                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Entregas ({dayTasks.length})</p>
                 {dayTasks.map((task) => {
-                  const cfg = taskStatusConfig[task.status] ?? taskStatusConfig.pending;
+                  const cfg = taskStatusConfig[(task as any).deliverableStatus ?? task.status] ?? taskStatusConfig.pending;
                   return (
                     <div key={task.id} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 space-y-2">
                       <div className="flex items-start justify-between gap-2">
@@ -124,8 +130,17 @@ function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
                       {task.description && (
                         <p className="text-xs text-white/40 line-clamp-2">{task.description}</p>
                       )}
-                      <div className="flex items-center gap-3 text-[11px] text-white/35">
+                      <div className="flex items-center gap-3 text-[11px] text-white/35 flex-wrap">
                         {task.dueDate && <span>Vence: {fmtDate(task.dueDate)}</span>}
+                        {task.priority && (
+                          <span className={`font-medium ${
+                            task.priority === 'urgent' ? 'text-red-400' :
+                            task.priority === 'high'   ? 'text-orange-400' :
+                            task.priority === 'medium' ? 'text-blue-400' : 'text-emerald-400'
+                          }`}>
+                            {task.priority === 'urgent' ? 'Urgente' : task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Media' : 'Baja'}
+                          </span>
+                        )}
                         {task.assignedUser && (
                           <span className="flex items-center gap-1">
                             <User className="h-3 w-3" />
@@ -133,6 +148,26 @@ function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
                           </span>
                         )}
                       </div>
+                      {isManager && (
+                        <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
+                          <button type="button" onClick={() => { onEditTask?.(task); onClose(); }}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
+                            <Pencil className="w-3 h-3" /> Editar
+                          </button>
+                          <button type="button" onClick={() => { if (confirm('¿Eliminar "' + task.title + '"?')) { onDeleteTask?.(task.id); } }}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 transition-colors">
+                            <Trash2 className="w-3 h-3" /> Eliminar
+                          </button>
+                        </div>
+                      )}
+                      {!isManager && onFeedback && (
+                        <TaskFeedbackButtons
+                          taskId={task.id}
+                          taskTitle={task.title}
+                          deliverableStatus={(task as any).deliverableStatus}
+                          onSuccess={() => { onFeedback(); onClose(); }}
+                        />
+                      )}
                     </div>
                   );
                 })}
@@ -141,9 +176,9 @@ function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
 
             {dayAppts.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Videollamadas</p>
+                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Videollamadas ({dayAppts.length})</p>
                 {dayAppts.map((apt: any) => (
-                  <div key={apt.id} className="rounded-lg border border-green-500/20 bg-green-500/[0.04] p-3">
+                  <div key={apt.id} className="rounded-lg border border-green-500/20 bg-green-500/[0.04] p-3 space-y-2">
                     <div className="flex items-center gap-2">
                       <Video className="w-3.5 h-3.5 text-green-400 shrink-0" />
                       <p className="text-sm font-medium text-white">{apt.name}</p>
@@ -151,9 +186,28 @@ function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
                         {apt.status === 'confirmed' ? 'Confirmada' : apt.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-white/35 mt-1 pl-5">
-                      {format(new Date(apt.date), 'HH:mm', { locale: es })}
-                    </p>
+                    <div className="flex items-center gap-3 text-[11px] text-white/35 pl-5">
+                      <span>{format(new Date(apt.date), 'HH:mm', { locale: es })}</span>
+                      {apt.notes && <span className="truncate">{apt.notes}</span>}
+                    </div>
+                    {apt.meetUrl && (
+                      <a href={apt.meetUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 ml-5 text-[11px] text-green-400 hover:text-green-300 transition-colors w-fit">
+                        <Video className="w-3 h-3" /> Unirse a la reunión
+                      </a>
+                    )}
+                    {isManager && (
+                      <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
+                        <button type="button" onClick={() => { onEditAppt?.(apt); onClose(); }}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
+                          <Pencil className="w-3 h-3" /> Editar
+                        </button>
+                        <button type="button" onClick={() => { if (confirm('¿Eliminar "' + apt.name + '"?')) { onDeleteAppt?.(apt.id); onClose(); } }}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 transition-colors">
+                          <Trash2 className="w-3 h-3" /> Eliminar
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1053,7 +1107,13 @@ export default function ClientPortalContent() {
         day={selectedDay}
         tasks={tasks}
         appointments={appointments}
+        isManager={isManager}
         onClose={() => setSelectedDay(null)}
+        onDeleteTask={(id) => { handleDeleteTask(id); setSelectedDay(null); }}
+        onDeleteAppt={(id) => { handleDeleteAppt(id); setSelectedDay(null); }}
+        onEditAppt={(apt) => { setEditingAppt(apt); setApptEditOpen(true); }}
+        onEditTask={(task) => { setEditingTask(task); setPortalTaskOpen(true); }}
+        onFeedback={refetch}
       />
 
       <TaskForm
