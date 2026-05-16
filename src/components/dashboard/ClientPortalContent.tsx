@@ -1129,7 +1129,7 @@ export default function ClientPortalContent() {
         onClose={() => setSelectedDay(null)}
         onDeleteTask={(id) => { handleDeleteTask(id); setSelectedDay(null); }}
         onDeleteAppt={(id) => { handleDeleteAppt(id); setSelectedDay(null); }}
-        onEditAppt={(apt) => { setEditingAppt(apt); setApptEditOpen(true); }}
+        onEditAppt={(apt) => { if (apt) { setEditingAppt(apt); setApptEditOpen(true); } else { setMeetingOpen(true); } }}
         onEditTask={(task) => { setEditingTask(task); setPortalTaskOpen(true); }}
         onFeedback={refetchSilent}
       />
@@ -1138,7 +1138,7 @@ export default function ClientPortalContent() {
         open={portalTaskOpen}
         onOpenChange={(v) => { setPortalTaskOpen(v); if (!v) setEditingTask(null); }}
         isManager={isManager}
-        initialDate={null}
+        initialDate={editingTask ? null : (selectedDay ?? null)}
         initialClientId={client?.id ?? null}
         task={editingTask}
         onSuccess={() => {
