@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
     }
 
     const rawTasks = await db.task.findMany({
-      where: { clientId: client.id, deletedAt: null },
+      where: { clientId: client.id, deletedAt: null, isDeliverable: true },
       include: {
         user:          taskUserInclude,
         assignedUser:  taskUserInclude,

@@ -230,6 +230,8 @@ export async function POST(req: NextRequest) {
       assignedUserId: isManager ? assignedUserId || null : null,
       clientId:       resolvedClientId,
       visibility:     resolvedVisibility,
+      isDeliverable:  isClient ? true : (isManager && resolvedClientId ? true : false),
+      deliverableStatus: isClient ? 'draft' : (isManager && resolvedClientId ? 'client_review' : null),
       references:     Array.isArray(references) ? references : [],
       assignedUsers: { create: finalAssignedIds.map((uid: string) => ({ userId: uid })) },
     },

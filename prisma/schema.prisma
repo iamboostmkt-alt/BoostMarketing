@@ -170,6 +170,9 @@ model Task {
   template      TaskTemplate?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
   feedback      TaskFeedback[]
 
+  isDeliverable     Boolean  @default(false) @map("is_deliverable")
+  deliverableStatus String?  @map("deliverable_status")
+
   @@map("tasks")
 }
 
