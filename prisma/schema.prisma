@@ -83,6 +83,7 @@ model User {
   tasks                  Task[]                    @relation("OwnedTasks")
   assignedTasks          Task[]                    @relation("AssignedTasks")
   taskTemplates          TaskTemplate[]
+  taskFeedback           TaskFeedback[]
   contacts               Contact[]
   clients                Client[]
   assignedActivities     Activity[]                @relation("AssignedActivities")
@@ -167,6 +168,7 @@ model Task {
   subtasks      Task[]            @relation("TaskSubtasks")
   parentTask    Task?             @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
   template      TaskTemplate?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  feedback      TaskFeedback[]
 
   @@map("tasks")
 }
@@ -518,4 +520,18 @@ model TaskTemplate {
   tasks Task[]
 
   @@map("task_templates")
+}
+
+model TaskFeedback {
+  id        String   @id @default(cuid())
+  taskId    String   @map("task_id")
+  userId    String   @map("user_id")
+  type      String   // approved | rejected | changes_requested
+  message   String   @default("")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("task_feedback")
 }
