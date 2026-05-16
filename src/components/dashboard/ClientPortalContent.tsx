@@ -26,6 +26,7 @@ import {
 import { es } from 'date-fns/locale';
 import ChatContent from '@/components/dashboard/ChatContent';
 import { MeetingDialog, TeamUser } from '@/components/dashboard/MeetingsTab';
+import TaskForm from '@/components/dashboard/TaskForm';
 import { ReportButton } from '@/components/dashboard/ReportButton';
 import type { ClientPortalData, Task, TaskAssignee, Activity } from '@/lib/types';
 
@@ -584,6 +585,7 @@ export default function ClientPortalContent() {
   const [meetingOpen,      setMeetingOpen]      = useState(false);
   const [meetingTeam,      setMeetingTeam]      = useState<TeamUser[]>([]);
   const [requestOpen,      setRequestOpen]      = useState(false);
+  const [portalTaskOpen,   setPortalTaskOpen]   = useState(false);
   const [requestDate,      setRequestDate]      = useState('');
   const [requestNotes,     setRequestNotes]     = useState('');
   const [requestSaving,    setRequestSaving]    = useState(false);
@@ -903,6 +905,13 @@ export default function ClientPortalContent() {
               <h3 className="text-sm font-semibold text-white">Tareas</h3>
             </div>
             <div className="flex items-center gap-1.5">
+              {isManager && (
+                <button type="button" onClick={() => setPortalTaskOpen(true)}
+                  className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
+                  <Plus className="w-3 h-3" />
+                  Entrega
+                </button>
+              )}
               {(['all', 'tasks'] as const).map((tab) => (
                 <button key={tab} type="button" onClick={() => setActiveTab(tab)}
                   className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${activeTab === tab ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white'}`}>
@@ -985,6 +994,20 @@ export default function ClientPortalContent() {
       </div>
 
       <DayModal day={selectedDay} tasks={tasks} onClose={() => setSelectedDay(null)} />
+      {/* TaskForm para PM — crear entrega/tarea client_visible */}
+      {isManager && (
+        <TaskForm
+          open={portalTaskOpen}
+          onOpenChange={setPortalTaskOpen}
+          isManager={isManager}
+          initialDate={null}
+          onSuccess={() => {
+            setPortalTaskOpen(false);
+            const url = `/api/client-portal?clientId=${previewClientId ?? ''}`;
+            fetch(url).then(r => r.json()).then(d => { if (d.tasks) setData(d); }).catch(() => {});
+          }}
+        />
+      )}
       {/* Modal solicitud reunión — solo para clientes */}
       <Dialog open={requestOpen} onOpenChange={setRequestOpen}>
         <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-sm">
