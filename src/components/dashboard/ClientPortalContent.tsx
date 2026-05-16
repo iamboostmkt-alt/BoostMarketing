@@ -165,12 +165,13 @@ function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
 // ── PortalCalendar ────────────────────────────────────────────────────────────
 
 interface CalendarProps {
-  tasks:        Task[];
+  tasks:         Task[];
   appointments?: any[];
-  onSelectDay:  (day: Date) => void;
+  onSelectDay:   (day: Date) => void;
+  getDayEvents?: (day: Date) => import('@/lib/client-portal/types').PortalCalendarEvent[];
 }
 
-function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps) {
+function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEvents }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const days = useMemo(() => {
@@ -216,9 +217,10 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
         {days.map((day) => {
           const dayTasks       = getTasksForDay(tasks, day);
           const dayAppts       = appointments.filter((a: any) => a.date && sameLocalDay(a.date, day));
+          const calEvents      = getDayEvents ? getDayEvents(day) : [];
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const today          = isToday(day);
-          const hasItems       = dayTasks.length > 0 || dayAppts.length > 0;
+          const hasItems       = (getDayEvents ? calEvents.length > 0 : dayTasks.length > 0 || dayAppts.length > 0);
 
           return (
             <button
@@ -238,18 +240,28 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
 
               {hasItems && isCurrentMonth && (
                 <div className="flex items-center gap-0.5 mt-0.5 flex-wrap justify-center max-w-[40px]">
-                  {dayTasks.slice(0, 3).map((t, i) => (
-                    <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${
-                      t.status === 'completed' || t.status === 'approved' ? 'bg-green-400' : 'bg-amber-400'
-                    }`} />
-                  ))}
-                  {dayAppts.slice(0, 2).map((_a, i) => (
-                    <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                  ))}
-                  {(dayTasks.length + dayAppts.length) > 5 && (
-                    <span className="text-[8px] text-white/30">
-                      +{dayTasks.length + dayAppts.length - 5}
-                    </span>
+                  {getDayEvents
+                    ? calEvents.slice(0, 5).map((e, i) => (
+                        <span key={i} className={`w-1.5 h-1.5 rounded-full ${
+                          e.color === 'green'  ? 'bg-green-400'  :
+                          e.color === 'blue'   ? 'bg-blue-400'   :
+                          e.color === 'purple' ? 'bg-purple-400' :
+                          'bg-amber-400'
+                        }`} />
+                      ))
+                    : <>
+                        {dayTasks.slice(0, 3).map((t, i) => (
+                          <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${
+                            t.status === 'completed' || (t as any).deliverableStatus === 'approved' ? 'bg-green-400' : 'bg-amber-400'
+                          }`} />
+                        ))}
+                        {dayAppts.slice(0, 2).map((_a, i) => (
+                          <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                        ))}
+                      </>
+                  }
+                  {calEvents.length > 5 && (
+                    <span className="text-[8px] text-white/30">+{calEvents.length - 5}</span>
                   )}
                 </div>
               )}
@@ -619,6 +631,13 @@ export default function ClientPortalContent() {
   // Las tareas siguen siendo Task[] para compatibilidad con componentes existentes
   const tasks = deliverables as unknown as Task[];
 
+  // Calendario cliente — usa hook con timezone fix y colores por tipo
+  const { getDayEvents } = useClientCalendar({
+    deliverables: deliverables as any[],
+    appointments: appointments as any[],
+    selectedDay:  selectedDay ?? new Date(),
+  });
+
   // ── Efectos auxiliares ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isManager) return;
@@ -855,7 +874,7 @@ export default function ClientPortalContent() {
             </button>
           )}
         </div>
-        <PortalCalendar tasks={tasks} appointments={appointments} onSelectDay={setSelectedDay} />
+        <PortalCalendar tasks={tasks} appointments={appointments} onSelectDay={setSelectedDay} getDayEvents={getDayEvents} />
       </div>
 
       {/* Chat + Tareas */}
