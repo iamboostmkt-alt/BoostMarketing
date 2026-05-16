@@ -721,7 +721,7 @@ export default function ClientPortalContent() {
   // ── Estado UI ────────────────────────────────────────────────────────────
   const [previewClientId, setPreviewClientId] = useState<string>('');
   const [clients,         setClients]         = useState<ClientSummary[]>([]);
-  const [selectedDay,     setSelectedDay]     = useState<Date | null>(null);
+  const [selectedDay,     setSelectedDay]     = useState<Date | null>(new Date());
   const [meetingOpen,     setMeetingOpen]     = useState(false);
   const [meetingTeam,     setMeetingTeam]     = useState<TeamUser[]>([]);
   const [requestOpen,     setRequestOpen]     = useState(false);
@@ -1097,7 +1097,7 @@ export default function ClientPortalContent() {
               </div>
             ) : (
               <div className="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
-                {appointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} isManager={isManager} onDelete={handleDeleteAppt} onEdit={(apt) => { setEditingAppt(apt); setApptEditOpen(true); }} />)}
+                {appointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} isManager={isManager} onDelete={handleDeleteAppt} onEdit={(apt) => { if (apt) { setEditingAppt(apt); setApptEditOpen(true); } }} />)}
               </div>
             )}
           </div>
@@ -1223,6 +1223,7 @@ export default function ClientPortalContent() {
           onOpenChange={setMeetingOpen}
           teamUsers={meetingTeam}
           initialClientEmail={client?.email}
+          initialDate={selectedDay ?? undefined}
           onSaved={() => {
             setMeetingOpen(false);
             refetchSilent();

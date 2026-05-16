@@ -32,9 +32,10 @@ interface MeetDialogProps {
   onSaved: () => void;
   clients?: { id: string; name: string; email: string; company: string }[];
   initialClientEmail?: string;
+  initialDate?: Date;
 }
 
-export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved, clients = [], initialClientEmail }: MeetDialogProps) {
+export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved, clients = [], initialClientEmail, initialDate }: MeetDialogProps) {
   const isEdit = !!meeting;
   const [name,        setName]        = useState('');
   const [date,        setDate]        = useState('');
@@ -47,7 +48,14 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   useEffect(() => {
     if (open) {
       setName(meeting?.name ?? '');
-      setDate(meeting?.date ? new Date(meeting.date).toISOString().slice(0, 16) : '');
+      if (meeting?.date) {
+        setDate(new Date(meeting.date).toISOString().slice(0, 16));
+      } else if (initialDate) {
+        const pad = (n: number) => String(n).padStart(2, '0');
+        setDate(`${initialDate.getFullYear()}-${pad(initialDate.getMonth()+1)}-${pad(initialDate.getDate())}T10:00`);
+      } else {
+        setDate('');
+      }
       setNotes(meeting?.notes ?? '');
       setMeetUrl(meeting?.meetUrl ?? '');
       setAssigned((meeting?.assignedUsers ?? []).map((au: any) => au.user?.id ?? au.userId));
