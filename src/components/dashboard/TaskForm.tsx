@@ -226,7 +226,10 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           {isManager && (
             <div className="space-y-2">
               <Label className="text-white/70 text-sm">Visibilidad</Label>
-              <Select value={visibility} onValueChange={setVisibility}>
+              <Select value={visibility} onValueChange={(v) => {
+                setVisibility(v);
+                if (v === 'internal') setClientId('');
+              }}>
                 <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-[#1c1c27] border-white/[0.08]">
                   <SelectItem value="internal" className="text-white/80 focus:text-white focus:bg-white/[0.06]">Interno</SelectItem>
