@@ -922,8 +922,8 @@ export default function ClientPortalContent() {
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-5 rounded-full bg-green-500" />
                 <h3 className="text-sm font-semibold text-white">Reuniones</h3>
-                {appointments.length > 0 && (
-                  <span className="text-[10px] bg-green-500/15 text-green-300 border border-green-500/20 rounded-full px-2 py-0.5">{appointments.length}</span>
+                {effectiveAppointments.length > 0 && (
+                  <span className="text-[10px] bg-green-500/15 text-green-300 border border-green-500/20 rounded-full px-2 py-0.5">{effectiveAppointments.length}</span>
                 )}
               </div>
               {isManager && (
@@ -934,14 +934,14 @@ export default function ClientPortalContent() {
                 </button>
               )}
             </div>
-            {appointments.length === 0 ? (
+            {effectiveAppointments.length === 0 ? (
               <div className="py-8 flex flex-col items-center gap-2 text-center">
                 <Video className="w-7 h-7 text-white/15" />
                 <p className="text-white/35 text-sm">No hay reuniones programadas.</p>
               </div>
             ) : (
               <div className="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
-                {appointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} />)}
+                {effectiveAppointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} />)}
               </div>
             )}
           </div>
@@ -950,7 +950,7 @@ export default function ClientPortalContent() {
 
       {/* Resumen — Timeline + Actividades recientes */}
       <div className="space-y-4">
-        <ProjectTimeline tasks={tasks} appointments={appointments} />
+        <ProjectTimeline tasks={portalVisibleTasks} appointments={effectiveAppointments} />
         {!isManager && activities.length > 0 && (
           <div className="glass-card rounded-2xl p-5 space-y-3">
             <div className="flex items-center justify-between">
