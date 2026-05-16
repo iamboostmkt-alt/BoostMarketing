@@ -71,6 +71,8 @@ function getTasksForDay(tasks: Task[], day: Date): Task[] {
   return tasks.filter((t) => {
     if (t.dueDate   && sameLocalDay(t.dueDate,   day)) return true;
     if (t.startDate && sameLocalDay(t.startDate, day)) return true;
+    // Fallback: si no tiene fecha, usar createdAt para que aparezca en el día de creación
+    if (!t.dueDate && !t.startDate && t.createdAt && sameLocalDay(t.createdAt, day)) return true;
     return false;
   });
 }

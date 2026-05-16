@@ -54,18 +54,21 @@ export function useClientCalendar({
     const events: PortalCalendarEvent[] = [];
 
     for (const d of deliverables) {
-      if (!d.dueDate) continue;
+      const dateSource = d.dueDate || d.createdAt;
+      if (!dateSource) continue;
       events.push({
         id:     d.id,
         type:   'deliverable',
         title:  d.title,
-        date:   toLocalDateString(d.dueDate),
+        date:   toLocalDateString(dateSource),
         status: d.status,
         color:  d.status === 'completed' || d.status === 'approved'
           ? 'green'
-          : d.status === 'client_review'
+          : (d as any).deliverableStatus === 'client_review'
             ? 'purple'
-            : 'amber',
+            : (d as any).deliverableStatus === 'changes_requested'
+              ? 'amber'
+              : 'amber',
       });
     }
 
