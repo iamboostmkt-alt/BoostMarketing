@@ -623,7 +623,6 @@ export default function ClientPortalContent() {
       .then((r) => r.json())
       .then((d) => {
         if (d.client === null) { setNoClient(true); return; }
-        fetch('/api/appointments?upcoming=1').then(r => r.json()).then(ad => setAppointments(ad.appointments || [])).catch(() => {});
         if (d.error)           { setError(d.error); return; }
         setData(d);
       })
@@ -744,7 +743,7 @@ export default function ClientPortalContent() {
   });
   const teamMembers = [...teamMembersMap.values()];
 
-  const effectiveAppointments = portalAppointments.length > 0 ? portalAppointments : appointments;
+  const effectiveAppointments = portalAppointments;
   const totalItems     = tasks.length;
   const completedItems = tasks.filter((t) => t.status === 'completed').length;
 
@@ -904,6 +903,13 @@ export default function ClientPortalContent() {
                   className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
                   <Plus className="w-3 h-3" />
                   Entrega
+                </button>
+              )}
+              {!isManager && (
+                <button type="button" onClick={() => setPortalTaskOpen(true)}
+                  className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
+                  <Plus className="w-3 h-3" />
+                  Solicitar tarea
                 </button>
               )}
               {(['all', 'tasks'] as const).map((tab) => (
