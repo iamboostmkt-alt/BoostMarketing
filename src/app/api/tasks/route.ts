@@ -211,6 +211,14 @@ export async function POST(req: NextRequest) {
     ? [...new Set([userId, ...assignedUserIds])]
     : [userId];
 
+  // Clientes pueden crear tareas vinculadas a su propio clientId
+  const isClient = (session.user as any).role === 'CLIENT';
+  let resolvedClientId = isManager ? (clientId || null) : null;
+  if (isClient && clientId) resolvedClientId = clientId;
+  const resolvedVisibility = isManager
+    ? (visibility || "internal")
+    : isClient ? "client_visible" : "internal";
+
   const task = await db.task.create({
     data: {
       userId,
@@ -220,8 +228,8 @@ export async function POST(req: NextRequest) {
       dueDate:     dueDate     ? new Date(dueDate) : null,
       startDate:   body.startDate ? new Date(body.startDate) : null,
       assignedUserId: isManager ? assignedUserId || null : null,
-      clientId:       isManager ? clientId       || null : null,
-      visibility:     isManager ? (visibility || "internal") : "internal",
+      clientId:       resolvedClientId,
+      visibility:     resolvedVisibility,
       references:     Array.isArray(references) ? references : [],
       assignedUsers: { create: finalAssignedIds.map((uid: string) => ({ userId: uid })) },
     },
