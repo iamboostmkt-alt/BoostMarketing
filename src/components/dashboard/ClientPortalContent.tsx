@@ -266,7 +266,16 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
           const dayTasks       = getTasksForDay(tasks, day);
-          const dayAppts       = appointments.filter((a: any) => { try { return a.date && isSameDay(new Date(a.date), day); } catch { return false; } });
+          const dayAppts       = appointments.filter((a: any) => {
+            try {
+              if (!a.date) return false;
+              const d = new Date(a.date);
+              // Comparar solo año/mes/día ignorando timezone
+              return d.getFullYear() === day.getFullYear() &&
+                     d.getMonth()    === day.getMonth() &&
+                     d.getDate()     === day.getDate();
+            } catch { return false; }
+          });
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const today          = isToday(day);
           const hasItems       = dayTasks.length > 0 || dayAppts.length > 0;
