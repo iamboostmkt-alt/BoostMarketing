@@ -1,34 +1,48 @@
-export type PermissionKey =
-  | 'canViewDashboard'
-  | 'canEditTasks'
-  | 'canAssignTasks'
-  | 'canAssignClients'
-  | 'canManageUsers'
-  | 'canViewFinancials'
-  | 'canEditCalendar'
-  | 'canViewCRM'
-  | 'canManageCRM'
-  | 'canViewAnalytics'
-  | 'canEditProjects';
+// ─── PERMISOS CENTRALIZADOS — BoostMarketing CRM ───────────────────────────
+// Fuente única de verdad para roles y acceso en todos los endpoints
+// Importar desde aquí, nunca redefinir en cada archivo
 
-export type Permissions = Record<string, boolean>;
+export const ROLES = {
+  ADMIN:           'ADMIN',
+  PROJECT_MANAGER: 'PROJECT_MANAGER',
+  TEAM_MEMBER:     'TEAM_MEMBER',
+  DESIGNER:        'DESIGNER',
+  MARKETING:       'MARKETING',
+  SALES_REP:       'SALES_REP',
+  CLIENT:          'CLIENT',
+  UNASSIGNED:      'UNASSIGNED',
+} as const;
 
-// Raw check — does the permission JSON grant this key?
-export function hasPermission(
-  permissions: Permissions | null | undefined,
-  key: PermissionKey | string,
-): boolean {
-  if (!permissions || typeof permissions !== 'object') return false;
-  return permissions[key] === true;
+export type AppRole = typeof ROLES[keyof typeof ROLES];
+
+export const MANAGER_ROLES: AppRole[]          = ['ADMIN', 'PROJECT_MANAGER'];
+export const INTERNAL_ROLES: AppRole[]         = ['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'DESIGNER', 'MARKETING', 'SALES_REP'];
+export const ACTIVITY_MANAGER_ROLES: AppRole[] = ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'];
+
+export const isAdmin    = (r: string) => r === 'ADMIN';
+export const isPM       = (r: string) => r === 'PROJECT_MANAGER';
+export const isManager  = (r: string) => MANAGER_ROLES.includes(r as AppRole);
+export const isInternal = (r: string) => INTERNAL_ROLES.includes(r as AppRole);
+export const isClient   = (r: string) => r === 'CLIENT';
+
+export const VISIBILITY = {
+  INTERNAL:       'internal',
+  CLIENT_VISIBLE: 'client_visible',
+  TEAM_ONLY:      'team_only',
+  MANAGEMENT:     'management',
+} as const;
+
+export type Visibility = typeof VISIBILITY[keyof typeof VISIBILITY];
+
+export function defaultVisibility(hasClient: boolean): Visibility {
+  return hasClient ? VISIBILITY.CLIENT_VISIBLE : VISIBILITY.INTERNAL;
 }
 
-// Full check — ADMIN and PROJECT_MANAGER bypass all custom permission gates.
-// For everyone else, the custom role permissions JSON is authoritative.
-export function canDo(
-  role: string | null | undefined,
-  permissions: Permissions | null | undefined,
-  key: PermissionKey | string,
+export function canAccessClientPortal(
+  role: string, userId: string,
+  assignedManagerId: string | null
 ): boolean {
-  if (role === 'ADMIN' || role === 'PROJECT_MANAGER') return true;
-  return hasPermission(permissions, key);
+  if (isAdmin(role)) return true;
+  if (isPM(role))    return assignedManagerId === userId;
+  return false;
 }

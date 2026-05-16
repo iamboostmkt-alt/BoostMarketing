@@ -141,7 +141,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         startDate: startDate?.toISOString() ?? null,
         dueDate:   dueDate?.toISOString()   ?? null,
         assignedUserIds: isManager ? assignedUserIds : undefined,
-        clientId:        isManager && clientId ? clientId : undefined,
+        clientId:        isManager ? (clientId || null) : undefined,
         visibility:      isManager ? visibility : undefined,
         ...(isEditing ? { id: task!.id } : {}),
       };
