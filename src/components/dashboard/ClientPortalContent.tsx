@@ -730,6 +730,7 @@ export default function ClientPortalContent() {
   const [previewClientId, setPreviewClientId] = useState<string>('');
   const [clients,         setClients]         = useState<ClientSummary[]>([]);
   const [selectedDay,     setSelectedDay]     = useState<Date | null>(null);
+  const [formDate,        setFormDate]        = useState<Date | null>(null);
   const [meetingOpen,     setMeetingOpen]     = useState(false);
   const [meetingTeam,     setMeetingTeam]     = useState<TeamUser[]>([]);
   const [requestOpen,     setRequestOpen]     = useState(false);
@@ -1036,7 +1037,7 @@ export default function ClientPortalContent() {
             </button>
           )}
         </div>
-        <PortalCalendar tasks={tasks} appointments={appointments} onSelectDay={setSelectedDay} getDayEvents={getDayEvents} />
+        <PortalCalendar tasks={tasks} appointments={appointments} onSelectDay={(day) => { setSelectedDay(day); setFormDate(day); }} getDayEvents={getDayEvents} />
       </div>
 
       {/* Chat + Tareas */}
@@ -1087,7 +1088,7 @@ export default function ClientPortalContent() {
           )}
 
           {/* Reuniones */}
-          <div className="pt-3 border-t border-white/[0.04] space-y-3">
+          <div className="pt-3 border-t border-white/[0.04] space-y-3 bg-green-500/[0.02] rounded-xl p-3 -mx-1">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-5 rounded-full bg-green-500" />
@@ -1158,7 +1159,7 @@ export default function ClientPortalContent() {
         open={portalTaskOpen}
         onOpenChange={(v) => { setPortalTaskOpen(v); if (!v) setEditingTask(null); }}
         isManager={isManager}
-        initialDate={editingTask ? null : (selectedDay ?? new Date())}
+        initialDate={editingTask ? null : (formDate ?? new Date())}
         initialClientId={client?.id ?? null}
         task={editingTask}
         onSuccess={() => {
@@ -1243,7 +1244,7 @@ export default function ClientPortalContent() {
           onOpenChange={setMeetingOpen}
           teamUsers={meetingTeam}
           initialClientEmail={client?.email}
-          initialDate={selectedDay ?? new Date()}
+          initialDate={formDate ?? new Date()}
           onSaved={() => {
             setMeetingOpen(false);
             refetchSilent();
