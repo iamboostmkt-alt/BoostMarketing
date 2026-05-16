@@ -136,7 +136,11 @@ function fmtDate(iso: string | null | undefined) {
 }
 
 function getTasksForDay(tasks: Task[], day: Date): Task[] {
-  return tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day));
+  return tasks.filter((t) => {
+    if (t.dueDate && isSameDay(new Date(t.dueDate), day)) return true;
+    if (t.startDate && isSameDay(new Date(t.startDate), day)) return true;
+    return false;
+  });
 }
 
 // ── Day detail modal ──────────────────────────────────────────────────────────
@@ -286,14 +290,17 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay }: CalendarProps
 
               {hasItems && isCurrentMonth && (
                 <div className="flex items-center gap-0.5 mt-0.5 flex-wrap justify-center max-w-[40px]">
-                  {dayTasks.slice(0, 4).map((t, i) => (
+                  {dayTasks.slice(0, 3).map((t, i) => (
                     <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${
                       t.status === 'completed' ? 'bg-green-400' : 'bg-amber-400'
                     }`} />
                   ))}
-                  {dayTasks.length > 4 && (
+                  {dayAppts.slice(0, 2).map((_a, i) => (
+                    <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                  ))}
+                  {(dayTasks.length + dayAppts.length) > 5 && (
                     <span className="text-[8px] text-white/30">
-                      +{dayTasks.length - 4}
+                      +{dayTasks.length + dayAppts.length - 5}
                     </span>
                   )}
                 </div>
