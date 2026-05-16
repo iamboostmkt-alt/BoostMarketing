@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
           description:   message || `El cliente solicitó cambios en: ${task.title}`,
           priority:      'high',
           visibility:    'internal',
+          isDeliverable: false,
           clientId:      task.clientId,
           parentTaskId:  task.id,
           assignedUsers: { create: [{ userId: pmId }] },

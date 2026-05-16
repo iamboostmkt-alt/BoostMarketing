@@ -33,14 +33,14 @@ export function useClientPortal({
   const [error,        setError]        = useState<string | null>(null);
   const [noClient,     setNoClient]     = useState(false);
 
-  const fetchPortal = useCallback(async () => {
+  const fetchPortal = useCallback(async (silent = false) => {
     // Managers necesitan clientId seleccionado antes de hacer fetch
     if (isManager && !previewClientId) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
     setNoClient(false);
 
@@ -85,5 +85,6 @@ export function useClientPortal({
     error,
     noClient,
     refetch: fetchPortal,
+    refetchSilent: () => fetchPortal(true),
   };
 }

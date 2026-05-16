@@ -719,7 +719,7 @@ export default function ClientPortalContent() {
   // ── Data layer (hook limpio) ─────────────────────────────────────────────
   const {
     client, deliverables, appointments: rawAppointments, activities,
-    loading, error, noClient, refetch,
+    loading, error, noClient, refetch, refetchSilent,
   } = useClientPortal({ isManager, previewClientId });
 
   // Estado local de appointments para updates sin refetch
@@ -1035,7 +1035,7 @@ export default function ClientPortalContent() {
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
               {displayedTasks.map((task) => (
                 <div key={task.id} className="relative group/taskwrap">
-                  <TaskCard task={task} onFeedback={!isManager ? refetch : undefined} onDelete={isManager ? handleDeleteTask : undefined} />
+                  <TaskCard task={task} onFeedback={!isManager ? refetchSilent : undefined} onDelete={isManager ? handleDeleteTask : undefined} />
                   {isManager && (
                     <button type="button"
                       onClick={() => { setEditingTask(task as any); setPortalTaskOpen(true); }}
@@ -1113,7 +1113,7 @@ export default function ClientPortalContent() {
         onDeleteAppt={(id) => { handleDeleteAppt(id); setSelectedDay(null); }}
         onEditAppt={(apt) => { setEditingAppt(apt); setApptEditOpen(true); }}
         onEditTask={(task) => { setEditingTask(task); setPortalTaskOpen(true); }}
-        onFeedback={refetch}
+        onFeedback={refetchSilent}
       />
 
       <TaskForm
@@ -1126,7 +1126,7 @@ export default function ClientPortalContent() {
         onSuccess={() => {
           setPortalTaskOpen(false);
           setEditingTask(null);
-          refetch();
+          refetchSilent();
         }}
       />
 
@@ -1160,7 +1160,7 @@ export default function ClientPortalContent() {
               setRequestOpen(false);
               setRequestDate('');
               setRequestNotes('');
-              refetch();
+              refetchSilent();
             } catch (err) {
               console.error('[solicitar reunion]', err);
               alert('Error al enviar la solicitud. Intenta de nuevo.');
@@ -1195,8 +1195,8 @@ export default function ClientPortalContent() {
         open={apptEditOpen}
         onOpenChange={setApptEditOpen}
         appointment={editingAppt}
-        onSaved={() => { setApptEditOpen(false); refetch(); }}
-        onDeleted={() => { setApptEditOpen(false); refetch(); }}
+        onSaved={() => { setApptEditOpen(false); refetchSilent(); }}
+        onDeleted={() => { setApptEditOpen(false); refetchSilent(); }}
       />
 
       {isManager && (
@@ -1207,7 +1207,7 @@ export default function ClientPortalContent() {
           initialClientEmail={client?.email}
           onSaved={() => {
             setMeetingOpen(false);
-            refetch();
+            refetchSilent();
           }}
         />
       )}

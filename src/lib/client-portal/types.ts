@@ -129,5 +129,6 @@ export interface ClientPortalState {
   loading:      boolean;
   error:        string | null;
   noClient:     boolean;
-  refetch:      () => void;
+  refetch:         () => void;
+  refetchSilent:   () => void;
 }
