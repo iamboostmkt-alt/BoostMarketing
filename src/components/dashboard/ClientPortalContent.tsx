@@ -137,8 +137,8 @@ function fmtDate(iso: string | null | undefined) {
 
 function getTasksForDay(tasks: Task[], day: Date): Task[] {
   return tasks.filter((t) => {
-    if (t.dueDate && isSameDay(new Date(t.dueDate), day)) return true;
-    if (t.startDate && isSameDay(new Date(t.startDate), day)) return true;
+    if (t.dueDate && (new Date(t.dueDate).getFullYear()===day.getFullYear() && new Date(t.dueDate).getMonth()===day.getMonth() && new Date(t.dueDate).getDate()===day.getDate())) return true;
+    if (t.startDate && (new Date(t.startDate).getFullYear()===day.getFullYear() && new Date(t.startDate).getMonth()===day.getMonth() && new Date(t.startDate).getDate()===day.getDate())) return true;
     return false;
   });
 }
@@ -148,14 +148,16 @@ function getTasksForDay(tasks: Task[], day: Date): Task[] {
 interface DayModalProps {
   day: Date | null;
   tasks: Task[];
+  appointments?: any[];
   onClose: () => void;
 }
 
-function DayModal({ day, tasks, onClose }: DayModalProps) {
+function DayModal({ day, tasks, appointments = [], onClose }: DayModalProps) {
   if (!day) return null;
 
   const dayTasks      = getTasksForDay(tasks, day);
-  const hasItems      = dayTasks.length > 0;
+  const dayAppts      = appointments.filter((a: any) => a.date && new Date(a.date).getFullYear()===day.getFullYear() && new Date(a.date).getMonth()===day.getMonth() && new Date(a.date).getDate()===day.getDate());
+  const hasItems      = dayTasks.length > 0 || dayAppts.length > 0;
 
   const label = format(day, "EEEE d 'de' MMMM", { locale: es });
 
@@ -1013,7 +1015,7 @@ export default function ClientPortalContent() {
         )}
       </div>
 
-      <DayModal day={selectedDay} tasks={tasks} onClose={() => setSelectedDay(null)} />
+      <DayModal day={selectedDay} tasks={tasks} appointments={effectiveAppointments} onClose={() => setSelectedDay(null)} />
       {/* TaskForm — PM crea entrega, cliente solicita tarea */}
       <TaskForm
         open={portalTaskOpen}
