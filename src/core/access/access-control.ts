@@ -31,11 +31,13 @@ export class AccessControl {
     return false;
   }
 
-  static canAccessClientPortal(user: UserContext, clientId: string): boolean {
+  static canAccessClientPortal(user: UserContext, clientId: string, client?: { assignedManagerId?: string | null }): boolean {
     if (user.role === "ADMIN") return true;
 
     if (user.role === "PROJECT_MANAGER") {
-      return user.assignedManagerId === clientId || user.id === clientId;
+      // El cliente ya viene cargado desde la DB en el route — verificamos assignedManagerId directamente
+      if (client) return client.assignedManagerId === user.id;
+      return false;
     }
 
     if (user.role === "CLIENT") {

@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       });
 
       // AccessControl reemplaza el check manual de PM asignado
-      if (client && !AccessControl.canAccessClientPortal(user, clientId)) {
+      if (client && !AccessControl.canAccessClientPortal(user, clientId, client)) {
         return NextResponse.json({ error: 'No tienes acceso al portal de este cliente.' }, { status: 403 });
       }
     } else {
