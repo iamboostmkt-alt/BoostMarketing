@@ -1076,7 +1076,10 @@ export default function ClientPortalContent() {
           onSaved={() => {
             setMeetingOpen(false);
             const url = isManager ? `/api/client-portal?clientId=${previewClientId ?? ''}` : '/api/client-portal';
-            fetch(url).then(r => r.json()).then(d => { if (d.client) setData(d); }).catch(() => {});
+            fetch(url).then(r => r.json()).then(d => { 
+              console.log('[portal refresh]', d?.appointments?.length, 'appointments');
+              if (d.client) setData(d); 
+            }).catch(() => {});
           }}
         />
       )}
