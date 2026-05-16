@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -581,6 +583,10 @@ export default function ClientPortalContent() {
   const [selectedDay,      setSelectedDay]      = useState<Date | null>(null);
   const [meetingOpen,      setMeetingOpen]      = useState(false);
   const [meetingTeam,      setMeetingTeam]      = useState<TeamUser[]>([]);
+  const [requestOpen,      setRequestOpen]      = useState(false);
+  const [requestDate,      setRequestDate]      = useState('');
+  const [requestNotes,     setRequestNotes]     = useState('');
+  const [requestSaving,    setRequestSaving]    = useState(false);
   const [activeTab,        setActiveTab]        = useState<'all' | 'tasks'>('all');
   const [portalTab,        setPortalTab]        = useState<'resumen' | 'tareas' | 'calendario' | 'actividades' | 'reuniones' | 'chat'>('resumen');
 
@@ -933,6 +939,13 @@ export default function ClientPortalContent() {
                   Agendar
                 </button>
               )}
+              {!isManager && (
+                <button type="button" onClick={() => setRequestOpen(true)}
+                  className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
+                  <Plus className="w-3 h-3" />
+                  Solicitar reunión
+                </button>
+              )}
             </div>
             {effectiveAppointments.length === 0 ? (
               <div className="py-8 flex flex-col items-center gap-2 text-center">
@@ -972,6 +985,61 @@ export default function ClientPortalContent() {
       </div>
 
       <DayModal day={selectedDay} tasks={tasks} onClose={() => setSelectedDay(null)} />
+      {/* Modal solicitud reunión — solo para clientes */}
+      <Dialog open={requestOpen} onOpenChange={setRequestOpen}>
+        <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white text-base">
+              <Video className="h-4 w-4 text-green-400" />
+              Solicitar reunión
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            if (!requestDate) return;
+            setRequestSaving(true);
+            try {
+              const session_email = (session?.user as any)?.email ?? '';
+              const session_name  = (session?.user as any)?.name ?? 'Cliente';
+              await fetch('/api/appointments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name:   `Solicitud: ${session_name}`,
+                  email:  session_email,
+                  date:   new Date(requestDate).toISOString(),
+                  notes:  requestNotes,
+                  status: 'pending',
+                }),
+              });
+              setRequestOpen(false);
+              setRequestDate('');
+              setRequestNotes('');
+            } catch { /* silent */ } finally { setRequestSaving(false); }
+          }} className="space-y-4 mt-2">
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Fecha y hora propuesta *</Label>
+              <Input type="datetime-local" value={requestDate} onChange={e => setRequestDate(e.target.value)} required
+                className="bg-white/[0.04] border-white/[0.08] text-white focus-visible:ring-brand [color-scheme:dark]" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Motivo / notas</Label>
+              <textarea value={requestNotes} onChange={e => setRequestNotes(e.target.value)} rows={3}
+                placeholder="¿De qué quieres hablar?"
+                className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none placeholder:text-white/25" />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button type="button" variant="outline" onClick={() => setRequestOpen(false)}
+                className="flex-1 border-white/[0.08] text-white/60 hover:text-white">Cancelar</Button>
+              <Button type="submit" disabled={requestSaving || !requestDate}
+                className="flex-1 bg-brand hover:bg-brand-dark text-white">
+                {requestSaving ? 'Enviando...' : 'Enviar solicitud'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {isManager && (
         <MeetingDialog
           open={meetingOpen}
