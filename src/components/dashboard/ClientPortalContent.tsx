@@ -713,7 +713,7 @@ export default function ClientPortalContent() {
 
   if (!data) return null;
 
-  const { client, tasks, activities = [] } = data;
+  const { client, tasks, activities = [], appointments: portalAppointments = [] } = data;
 
   // Redirect CLIENT users without assigned PM to waiting screen
   if (!isManager && !client.assignedManagerId) {
@@ -738,17 +738,20 @@ export default function ClientPortalContent() {
   const teamMembers = [...teamMembersMap.values()];
 
 
+  const effectiveAppointments = portalAppointments.length > 0 ? portalAppointments : appointments;
   const totalItems     = tasks.length;
   const completedItems = tasks.filter((t) => t.status === 'completed').length;
 
-  // Cliente solo ve tareas client_visible; managers ven todas
-  const visibleTasks = isManager
-    ? tasks
-    : tasks.filter((t) => t.visibility === 'client_visible');
+  // En portal: cliente y PM ven solo client_visible (managers ven todo en dashboard, no aquí)
+  const visibleTasks = tasks.filter((t) =>
+    isManager ? true : t.visibility === 'client_visible'
+  );
+  // Para mostrar en el portal del cliente, siempre filtrar client_visible
+  const portalVisibleTasks = tasks.filter((t) => t.visibility === 'client_visible');
   const displayedTasks =
     activeTab === 'tasks'
-      ? visibleTasks.filter((t) => t.status !== 'completed')
-      : visibleTasks;
+      ? portalVisibleTasks.filter((t) => t.status !== 'completed')
+      : portalVisibleTasks;
 
   return (
     <div className="space-y-6">
@@ -879,7 +882,7 @@ export default function ClientPortalContent() {
             </button>
           )}
         </div>
-        <PortalCalendar tasks={visibleTasks} onSelectDay={setSelectedDay} />
+        <PortalCalendar tasks={portalVisibleTasks} onSelectDay={setSelectedDay} />
       </div>
 
       {/* Chat + Tareas lado a lado */}

@@ -131,7 +131,21 @@ export async function GET(req: NextRequest) {
       take: 50,
     });
 
-    return NextResponse.json({ client, activities, tasks: shapedTasks });
+    // Reuniones vinculadas al cliente por email
+    const appointments = await db.appointment.findMany({
+      where: {
+        email: { equals: client.email, mode: 'insensitive' },
+        date:  { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // últimos 30 días + futuras
+      },
+      orderBy: { date: 'asc' },
+      include: {
+        assignedUsers: {
+          include: { user: { select: { id: true, name: true, email: true, color: true, image: true } } },
+        },
+      },
+    });
+
+    return NextResponse.json({ client, activities, tasks: shapedTasks, appointments });
   } catch (error) {
     log.err('/api/client-portal GET', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });

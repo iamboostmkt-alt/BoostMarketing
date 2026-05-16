@@ -84,6 +84,7 @@ export interface ClientPortalData {
   client: Client;
   activities: Activity[];
   tasks: Task[];
+  appointments?: Appointment[];
 }
 
 export interface Contact {

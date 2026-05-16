@@ -34,6 +34,9 @@ export async function POST(req: NextRequest) {
   if (!name || !date) return NextResponse.json({ error: "Nombre y fecha requeridos." }, { status: 400 });
   const parsed = new Date(date);
   if (isNaN(parsed.getTime())) return NextResponse.json({ error: "Fecha invalida." }, { status: 400 });
+  // Auto-asignar al creador
+  const creatorId = (session.user as any).id;
+  const allMeetingIds = [...new Set([creatorId, ...(assignedUserIds ?? [])])] as string[];
   const meeting = await db.appointment.create({
     data: {
       name: name.trim(),
@@ -43,9 +46,7 @@ export async function POST(req: NextRequest) {
       notes: (notes ?? "").trim(),
       meetUrl: (meetUrl ?? "").trim(),
       status: (status as string) || "pending",
-      ...(assignedUserIds?.length > 0 && {
-        assignedUsers: { create: (assignedUserIds as string[]).map((uid) => ({ userId: uid })) },
-      }),
+      assignedUsers: { create: allMeetingIds.map((uid: string) => ({ userId: uid })) },
     },
     include,
   });
