@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/types';
 import { taskStatuses, priorityLabels } from '@/lib/theme-maps';
 import { normalizeTaskStatus } from '@/lib/task-status';
+import TemplateManagerModal from '@/components/dashboard/TemplateManagerModal';
 
 interface InternalUser {
   id: string;
@@ -74,6 +75,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   const [clients, setClients]             = useState<{ id: string; name: string; company: string }[]>([]);
   const [templates,          setTemplates]          = useState<TaskTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -208,16 +210,23 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   );
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#15151c] border-white/[0.06] text-white sm:max-w-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">{isEditing ? 'Editar Tarea' : 'Nueva Tarea'}</DialogTitle>
           {isManager && !isEditing && templates.length > 0 && (
             <div className="space-y-1.5 pt-2 pb-3 border-b border-white/[0.06]">
-              <Label className="text-white/50 text-xs flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3" />
-                Usar template <span className="text-white/30">(opcional)</span>
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-white/50 text-xs flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3" />
+                  Usar template <span className="text-white/30">(opcional)</span>
+                </Label>
+                <button type="button" onClick={() => setTemplateManagerOpen(true)}
+                  className="text-[11px] text-white/30 hover:text-brand-light transition-colors">
+                  Gestionar →
+                </button>
+              </div>
               <Select value={selectedTemplateId || 'none'} onValueChange={(v) => {
                 if (v === 'none') { setSelectedTemplateId(''); return; }
                 applyTemplate(v);
@@ -422,5 +431,13 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         </form>
       </DialogContent>
     </Dialog>
+    <TemplateManagerModal
+      open={templateManagerOpen}
+      onOpenChange={(v) => {
+        setTemplateManagerOpen(v);
+        if (!v) fetch('/api/task-templates').then(r => r.json()).then(d => setTemplates(d.templates ?? [])).catch(() => {});
+      }}
+    />
+    </>
   );
 }
