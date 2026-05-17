@@ -29,7 +29,7 @@ export default function SettingsContent() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/settings')
+    fetch('/api/cms/settings')
       .then(r => r.json())
       .then(d => {
         if (d.settings) {
@@ -45,7 +45,7 @@ export default function SettingsContent() {
   async function handleSave() {
     setSaving(true);
     try {
-      await fetch('/api/settings', {
+      await fetch('/api/cms/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ logoUrl, brandName, brandColor }),
