@@ -55,15 +55,14 @@ export function ReportButton({ clientId, clientName, clientEmail, month, year }:
       <DropdownMenuTrigger asChild>
         <Button variant='outline' size='sm'
           className='gap-2 border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10'
-          disabled={loading !== null}>
-          {loading ? <Loader2 className='w-4 h-4 animate-spin' /> : <FileText className='w-4 h-4' />}
+          ><FileText className='w-4 h-4' />
           Reporte
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='bg-[#15151c] border-white/[0.06] text-white' align='end'>
         <DropdownMenuItem
           className='gap-2 text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer'
-          onClick={handlePDF} disabled={loading !== null}>
+          onClick={handlePDF}>
           <Download className='w-4 h-4' /> Ver / Imprimir PDF
         </DropdownMenuItem>
         <DropdownMenuItem
