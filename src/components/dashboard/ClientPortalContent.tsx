@@ -1220,9 +1220,8 @@ export default function ClientPortalContent() {
         </div>
       </div>
 
-      {/* Timeline + Actividades */}
+      {/* Actividades */}
       <div className="space-y-4">
-        <ProjectTimeline tasks={tasks} appointments={appointments} milestones={milestones} isManager={isManager} onAddMilestone={() => setMilestoneOpen(true)} />
         {!isManager && activities.length > 0 && (
           <div className="glass-card rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2">
@@ -1416,7 +1415,7 @@ export default function ClientPortalContent() {
                 <select value={milestoneForm.responsibleId} onChange={e => setMilestoneForm(f => ({...f, responsibleId: e.target.value}))}
                   className="w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
                   <option value="">Sin asignar</option>
-                  {meetingTeam.map((u: any) => (
+                  {meetingTeam.filter((u: any) => ['ADMIN','PROJECT_MANAGER'].includes(u.role)).map((u: any) => (
                     <option key={u.id} value={u.id}>{u.name || u.email}</option>
                   ))}
                 </select>
