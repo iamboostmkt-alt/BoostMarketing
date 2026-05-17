@@ -27,12 +27,7 @@ export function ReportButton({ clientId, clientName, clientEmail, month, year }:
   const reportUrl = '/api/reports/monthly?clientId=' + clientId + '&month=' + m + '&year=' + y;
 
   const handlePDF = () => {
-    setLoading('pdf');
-    const win = window.open(reportUrl, '_blank', 'noopener,noreferrer');
-    setTimeout(() => {
-      setLoading(null);
-      if (!win) toast.error('Activa las ventanas emergentes para ver el reporte.');
-    }, 600);
+    window.open(reportUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleEmail = async () => {
