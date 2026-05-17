@@ -62,6 +62,8 @@ export interface Task {
   assignedUser?: { id: string; name: string | null; email: string; color: string; image?: string | null } | null;
   assignedUsers?: TaskAssignee[];
   client?: { id: string; name: string; company: string } | null;
+  isDeliverable?: boolean;
+  deliverableStatus?: string | null;
 }
 
 export interface ActivityComment {
@@ -252,6 +254,8 @@ export interface Activity {
   assignedUsers?: ActivityAssignee[];
   createdBy?: ActivityAssignee;
   client?: { id: string; name: string; company: string } | null;
+  isDeliverable?: boolean;
+  deliverableStatus?: string | null;
 }
 
 export interface Milestone {

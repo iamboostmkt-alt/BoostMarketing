@@ -307,6 +307,18 @@ export async function PUT(req: NextRequest) {
     include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },
   });
 
+  // Log de cambio de status para deliverables
+  if (task.isDeliverable && status && existing.status !== task.status) {
+    await db.deliverableLog.create({
+      data: {
+        taskId: id,
+        status: task.status,
+        note: '',
+        createdBy: userName,
+      },
+    }).catch(() => {});
+  }
+
   if (status && existing.status !== task.status) {
     const notifyIds = new Set<string>();
     if (task.clientId) {

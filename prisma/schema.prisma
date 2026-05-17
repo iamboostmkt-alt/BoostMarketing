@@ -169,6 +169,7 @@ model Task {
   parentTask    Task?             @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
   template      TaskTemplate?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
   feedback      TaskFeedback[]
+  deliverableLogs DeliverableLog[]
 
   isDeliverable     Boolean  @default(false) @map("is_deliverable")
   deliverableStatus String?  @map("deliverable_status")
@@ -551,4 +552,15 @@ model Milestone {
   updatedAt   DateTime @updatedAt @map("updated_at")
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
   @@map("milestones")
+}
+
+model DeliverableLog {
+  id        String   @id @default(cuid())
+  taskId    String   @map("task_id")
+  status    String
+  note      String   @default("")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  @@map("deliverable_logs")
 }

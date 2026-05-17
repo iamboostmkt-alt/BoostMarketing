@@ -28,6 +28,7 @@ import ChatContent from '@/components/dashboard/ChatContent';
 import { MeetingDialog, TeamUser } from '@/components/dashboard/MeetingsTab';
 import TaskForm from '@/components/dashboard/TaskForm';
 import { ReportButton } from '@/components/dashboard/ReportButton';
+import { DeliverableHistory } from '@/components/client-portal/DeliverableHistory';
 import type { Task, Activity } from '@/lib/types';
 
 // ── Nuevo data layer del portal ──────────────────────────────────────────────
@@ -443,6 +444,9 @@ function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () 
                 Eliminar entrega
               </button>
             </div>
+          )}
+          {task.isDeliverable && expanded && (
+            <DeliverableHistory taskId={task.id} />
           )}
           {onFeedback && (
             <TaskFeedbackButtons
