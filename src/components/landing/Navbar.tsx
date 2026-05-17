@@ -28,14 +28,15 @@ interface NavbarProps {
 export default function Navbar({ agencyName = 'BoostMarketing', logoUrl }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const LogoMark = () =>
-    isImageSrc(logoUrl) ? (
-      <Image src={logoUrl!} alt={agencyName} width={32} height={32} className="h-8 w-8 rounded-lg object-contain" />
-    ) : (
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand">
+  const LogoMark = () => (
+    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand overflow-hidden shrink-0">
+      {isImageSrc(logoUrl) ? (
+        <Image src={logoUrl!} alt={agencyName} width={24} height={24} className="w-3/4 h-3/4 object-contain" />
+      ) : (
         <Zap className="h-4 w-4 text-white" />
-      </div>
-    )
+      )}
+    </div>
+  )
 
   const AgencyName = () => {
     const parts = agencyName.match(/^(Boost)(Marketing)$/)
