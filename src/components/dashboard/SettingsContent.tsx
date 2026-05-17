@@ -17,7 +17,7 @@ export default function SettingsContent() {
   const { startUpload, isUploading } = useUploadThing('imageUploader', {
     onClientUploadComplete: (res) => {
       if (res?.[0]?.url) {
-        const url = res[0].url;
+        const url = (res[0].ufsUrl ?? res[0].url);
         setLogoUrl(url);
         setPreview(url);
         // Auto-guardar inmediatamente

@@ -37,7 +37,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const { startUpload } = useUploadThing("imageUploader", {
-    onClientUploadComplete: (res) => { if (res?.[0]?.url) { setLogoUrl(res[0].url); setLogoPreview(res[0].url); } },
+    onClientUploadComplete: (res) => { if (res?.[0]?.url) { setLogoUrl((res[0].ufsUrl ?? res[0].url)); setLogoPreview((res[0].ufsUrl ?? res[0].url)); } },
     onUploadError: (err) => { toast.error("Error: " + err.message); },
   });
   const [imageUrl, setImageUrl] = useState<string | null>(null);
