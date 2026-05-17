@@ -215,7 +215,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       <DialogContent className="bg-[#15151c] border-white/[0.06] text-white sm:max-w-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">{isEditing ? 'Editar Tarea' : 'Nueva Tarea'}</DialogTitle>
-          {isManager && !isEditing && templates.length > 0 && (
+          {isManager && !isEditing && (
             <div className="space-y-1.5 pt-2 pb-3 border-b border-white/[0.06]">
               <div className="flex items-center justify-between">
                 <Label className="text-white/50 text-xs flex items-center gap-1.5">
