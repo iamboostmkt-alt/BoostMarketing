@@ -14,6 +14,7 @@ import type {
   PortalActivity,
   PortalClient,
 } from '@/lib/client-portal/types';
+import type { Milestone } from '@/lib/types';
 
 interface UseClientPortalOptions {
   /** Para managers que previewean el portal de un cliente específico */
@@ -29,6 +30,7 @@ export function useClientPortal({
   const [deliverables, setDeliverables] = useState<PortalDeliverable[]>([]);
   const [appointments, setAppointments] = useState<PortalAppointment[]>([]);
   const [activities,   setActivities]   = useState<PortalActivity[]>([]);
+  const [milestones,   setMilestones]   = useState<Milestone[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState<string | null>(null);
   const [noClient,     setNoClient]     = useState(false);
@@ -65,6 +67,15 @@ export function useClientPortal({
       setDeliverables(rawDeliverables);
       setAppointments(data.appointments ?? []);
       setActivities(data.activities   ?? []);
+      // Fetch milestones separado
+      if (data.client) {
+        const clientId = (data.client as any).id;
+        const mRes = await fetch('/api/milestones?clientId=' + clientId);
+        if (mRes.ok) {
+          const mData = await mRes.json();
+          setMilestones(mData.milestones ?? []);
+        }
+      }
     } catch {
       setError('Error de red. Intenta nuevamente.');
     } finally {
@@ -85,6 +96,7 @@ export function useClientPortal({
     error,
     noClient,
     refetch: fetchPortal,
+    milestones,
     refetchSilent: () => fetchPortal(true),
   };
 }

@@ -253,3 +253,14 @@ export interface Activity {
   createdBy?: ActivityAssignee;
   client?: { id: string; name: string; company: string } | null;
 }
+
+export interface Milestone {
+  id: string;
+  clientId: string;
+  title: string;
+  description: string;
+  date: string;
+  status: string; // pending | completed | cancelled
+  createdAt: string;
+  updatedAt: string;
+}

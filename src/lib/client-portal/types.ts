@@ -126,6 +126,7 @@ export interface ClientPortalState {
   deliverables: PortalDeliverable[];
   appointments: PortalAppointment[];
   activities:   PortalActivity[];
+  milestones:   import('@/lib/types').Milestone[];
   loading:      boolean;
   error:        string | null;
   noClient:     boolean;

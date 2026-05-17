@@ -644,7 +644,7 @@ function ProgressBar({ total, completed }: { total: number; completed: number })
 
 // ── ProjectTimeline ───────────────────────────────────────────────────────────
 
-function ProjectTimeline({ tasks, appointments }: { tasks: Task[]; appointments: any[] }) {
+function ProjectTimeline({ tasks, appointments, milestones = [], isManager = false, onAddMilestone }: { tasks: Task[]; appointments: any[]; milestones?: any[]; isManager?: boolean; onAddMilestone?: () => void }) {
   const now = new Date();
   const events = [
     ...tasks.filter(t => t.dueDate).map(t => ({
@@ -657,7 +657,12 @@ function ProjectTimeline({ tasks, appointments }: { tasks: Task[]; appointments:
       type: 'appointment', status: a.status,
       isPast: new Date(a.date) < now,
     })),
-  ].sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 8);
+    ...milestones.map(m => ({
+      id: m.id, date: new Date(m.date), title: '🏁 ' + m.title,
+      type: 'milestone', status: m.status,
+      isPast: new Date(m.date) < now,
+    })),
+  ].sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 12);
 
   if (events.length === 0) return null;
 
@@ -665,9 +670,17 @@ function ProjectTimeline({ tasks, appointments }: { tasks: Task[]; appointments:
 
   return (
     <div className="glass-card rounded-2xl p-5 space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="w-1.5 h-5 rounded-full bg-brand" />
-        <h3 className="text-sm font-semibold text-white">Timeline del proyecto</h3>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-5 rounded-full bg-brand" />
+          <h3 className="text-sm font-semibold text-white">Timeline del proyecto</h3>
+        </div>
+        {isManager && onAddMilestone && (
+          <button type="button" onClick={onAddMilestone}
+            className="flex items-center gap-1 text-[11px] text-yellow-400 hover:text-yellow-300 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-md px-2 py-1 transition-colors">
+            <Plus className="w-3 h-3" />Milestone
+          </button>
+        )}
       </div>
       <div className="relative">
         <div className="absolute left-3.5 top-2 bottom-2 w-px bg-white/[0.06]" />
@@ -685,6 +698,10 @@ function ProjectTimeline({ tasks, appointments }: { tasks: Task[]; appointments:
                   ) : isNext ? (
                     <div className="w-5 h-5 rounded-full bg-brand/20 border border-brand/60 flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+                    </div>
+                  ) : event.type === 'milestone' ? (
+                    <div className="w-5 h-5 rounded-full bg-yellow-500/20 border border-yellow-500/40 flex items-center justify-center">
+                      <span className="text-[8px]">🏁</span>
                     </div>
                   ) : event.type === 'appointment' ? (
                     <div className="w-5 h-5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
@@ -746,11 +763,13 @@ export default function ClientPortalContent() {
   const [editingAppt,     setEditingAppt]     = useState<any>(null);
   const [editingTask,     setEditingTask]     = useState<any>(null);
   const [apptEditOpen,    setApptEditOpen]    = useState(false);
+  const [milestoneOpen,  setMilestoneOpen]  = useState(false);
+  const [milestoneForm,  setMilestoneForm]  = useState({ title: "", description: "", date: "" });
 
   // ── Data layer (hook limpio) ─────────────────────────────────────────────
   const {
     client, deliverables, appointments: rawAppointments, activities,
-    loading, error, noClient, refetch, refetchSilent,
+    loading, error, noClient, refetch, refetchSilent, milestones,
   } = useClientPortal({ isManager, previewClientId });
 
   // Estado local de appointments para updates sin refetch
@@ -1192,7 +1211,7 @@ export default function ClientPortalContent() {
 
       {/* Timeline + Actividades */}
       <div className="space-y-4">
-        <ProjectTimeline tasks={tasks} appointments={appointments} />
+        <ProjectTimeline tasks={tasks} appointments={appointments} milestones={milestones} isManager={isManager} onAddMilestone={() => setMilestoneOpen(true)} />
         {!isManager && activities.length > 0 && (
           <div className="glass-card rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2">
@@ -1335,6 +1354,25 @@ export default function ClientPortalContent() {
             refetchSilent();
           }}
         />
+      )}
+      {/* Modal crear milestone */}
+      {milestoneOpen && isManager && client && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setMilestoneOpen(false)}>
+          <div className="bg-[#15151c] border border-white/[0.08] rounded-2xl p-6 w-full max-w-md mx-4 space-y-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-white">Nuevo milestone</h3>
+            <input type="text" placeholder="Título" value={milestoneForm.title} onChange={e => setMilestoneForm(f => ({...f, title: e.target.value}))}
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50" />
+            <input type="text" placeholder="Descripción (opcional)" value={milestoneForm.description} onChange={e => setMilestoneForm(f => ({...f, description: e.target.value}))}
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50" />
+            <input type="date" value={milestoneForm.date} onChange={e => setMilestoneForm(f => ({...f, date: e.target.value}))}
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50" />
+            <div className="flex gap-2 justify-end">
+              <button type="button" onClick={() => setMilestoneOpen(false)} className="px-4 py-2 text-sm text-white/40 hover:text-white transition-colors">Cancelar</button>
+              <button type="button" onClick={async () => { if (!milestoneForm.title || !milestoneForm.date) return; await fetch("/api/milestones", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId: client.id, ...milestoneForm }) }); setMilestoneOpen(false); setMilestoneForm({ title: "", description: "", date: "" }); refetchSilent(); }}
+                className="px-4 py-2 text-sm bg-brand hover:bg-brand-dark text-white rounded-lg transition-colors">Guardar</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
