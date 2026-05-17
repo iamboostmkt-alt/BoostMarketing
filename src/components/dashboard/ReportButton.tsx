@@ -60,10 +60,11 @@ export function ReportButton({ clientId, clientName, clientEmail, month, year }:
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='bg-[#15151c] border-white/[0.06] text-white' align='end'>
-        <DropdownMenuItem
-          className='gap-2 text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer'
-          onClick={handlePDF}>
-          <Download className='w-4 h-4' /> Ver / Imprimir PDF
+        <DropdownMenuItem asChild>
+          <a href={reportUrl} target='_blank' rel='noopener noreferrer'
+            className='gap-2 text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer flex items-center px-2 py-1.5 text-sm'>
+            <Download className='w-4 h-4' /> Ver / Imprimir PDF
+          </a>
         </DropdownMenuItem>
         <DropdownMenuItem
           className='gap-2 text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer'
