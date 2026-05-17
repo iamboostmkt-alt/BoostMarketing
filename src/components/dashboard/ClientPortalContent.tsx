@@ -768,6 +768,12 @@ export default function ClientPortalContent() {
   const [editingTask,     setEditingTask]     = useState<any>(null);
   const [apptEditOpen,    setApptEditOpen]    = useState(false);
   const [milestoneOpen,  setMilestoneOpen]  = useState(false);
+  const [agencyWhatsapp, setAgencyWhatsapp] = useState("521063469");
+  useEffect(() => {
+    fetch("/api/cms/settings").then(r => r.json()).then(d => {
+      if (d.settings?.whatsapp) setAgencyWhatsapp(d.settings.whatsapp);
+    }).catch(() => {});
+  }, []);
   const [milestoneForm,  setMilestoneForm]  = useState({
     title: "", description: "", date: "", type: "other",
     status: "upcoming", progress: 0, responsibleId: "",
@@ -1015,7 +1021,7 @@ export default function ClientPortalContent() {
                   <p className="text-sm text-white/80 font-medium">{assignedManager.name || assignedManager.email}</p>
                 </div>
                 <a
-                  href={`https://wa.me/521063469?text=Hola ${encodeURIComponent(assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
+                  href={`https://wa.me/${agencyWhatsapp}?text=Hola ${encodeURIComponent(assignedManager.name || 'PM')}, soy ${encodeURIComponent(client.name)}.`}
                   target="_blank" rel="noopener noreferrer" title="WhatsApp PM"
                   className="flex items-center gap-1.5 rounded-lg bg-green-500/15 hover:bg-green-500/25 border border-green-500/20 px-2.5 py-1.5 text-green-400 text-xs font-medium transition-colors"
                 >
