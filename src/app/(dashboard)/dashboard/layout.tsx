@@ -9,6 +9,7 @@ import TopNav from '@/components/dashboard/TopNav';
 import CommandPalette from '@/components/dashboard/CommandPalette';
 import ErrorBoundary from '@/components/dashboard/ErrorBoundary';
 import { AuthProvider } from '@/context/AuthContext';
+import { BrandingProvider } from '@/context/BrandingContext';
 import { RealtimeProvider } from '@/providers/RealtimeProvider';
 
 function ForbiddenBanner() {
@@ -37,6 +38,7 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthProvider>
+      <BrandingProvider>
       <RealtimeProvider>
       <TooltipProvider delayDuration={0}>
         <SidebarProvider>
@@ -70,6 +72,7 @@ export default function DashboardLayout({
         </SidebarProvider>
       </TooltipProvider>
       </RealtimeProvider>
+      </BrandingProvider>
     </AuthProvider>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { Zap } from 'lucide-react';
+import { useBranding } from '@/context/BrandingContext';
 
 interface LogoBrandProps {
   size?: 'sm' | 'md' | 'lg';
@@ -8,18 +8,7 @@ interface LogoBrandProps {
 }
 
 export function LogoBrand({ size = 'md', showName = true }: LogoBrandProps) {
-  const [logoUrl, setLogoUrl] = useState<string>('');
-  const [agencyName, setAgencyName] = useState('BoostMarketing');
-
-  useEffect(() => {
-    fetch('/api/cms/settings')
-      .then(r => r.json())
-      .then(d => {
-        if (d.settings?.logoUrl) setLogoUrl(d.settings.logoUrl);
-        if (d.settings?.agencyName) setAgencyName(d.settings.agencyName);
-      })
-      .catch(() => {});
-  }, []);
+  const { logoUrl, agencyName } = useBranding();
 
   const sizeMap = {
     sm: { box: 'w-8 h-8 rounded-lg', icon: 'w-4 h-4', text: 'text-base' },
