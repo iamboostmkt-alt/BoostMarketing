@@ -392,6 +392,25 @@ export async function PUT(req: NextRequest) {
     }
   }
 
+  // Auto-recalcular progreso del milestone si la tarea está vinculada
+  const taskMilestoneId = (task as any).milestoneId ?? (existing as any).milestoneId;
+  if (taskMilestoneId && status !== undefined) {
+    const linkedTasks = await db.task.findMany({
+      where: { milestoneId: taskMilestoneId, archivedAt: null },
+      select: { status: true, deliverableStatus: true },
+    });
+    if (linkedTasks.length > 0) {
+      const completed = linkedTasks.filter((t: any) =>
+        t.status === "completed" || t.status === "approved" || t.deliverableStatus === "approved"
+      ).length;
+      const progress = Math.round((completed / linkedTasks.length) * 100);
+      await db.milestone.update({
+        where: { id: taskMilestoneId },
+        data: { progress, ...(progress === 100 && { status: "completed" }) },
+      }).catch(() => {});
+    }
+  }
+
   return NextResponse.json({ task: flattenTask(task) });
 }
 
