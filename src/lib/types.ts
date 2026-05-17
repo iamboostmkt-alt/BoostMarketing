@@ -264,7 +264,13 @@ export interface Milestone {
   title: string;
   description: string;
   date: string;
-  status: string; // pending | completed | cancelled
+  status: string; // upcoming | in_progress | review | completed | delayed
+  type: string;
+  progress: number;
+  responsibleId: string | null;
+  visibleToClient: boolean;
+  comments: string;
   createdAt: string;
   updatedAt: string;
+  responsible?: { id: string; name: string | null; email: string; color: string; image: string | null } | null;
 }

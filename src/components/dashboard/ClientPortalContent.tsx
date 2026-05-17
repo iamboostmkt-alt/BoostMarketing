@@ -217,22 +217,39 @@ function DayModal({ day, tasks, appointments = [], isManager = false, onClose, o
             )}
           </div>
         )}
-        {isManager && (
-          <div className="flex gap-2 pt-2 border-t border-white/[0.06] mt-2">
-            <button type="button"
-              onClick={() => { onEditTask?.(null); onClose(); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand/15 hover:bg-brand/25 border border-brand/25 text-brand-light transition-colors">
-              <Plus className="w-3.5 h-3.5" />
-              Nueva entrega
-            </button>
-            <button type="button"
-              onClick={() => { onEditAppt?.(null); onClose(); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/15 hover:bg-green-500/25 border border-green-500/25 text-green-300 transition-colors">
-              <Video className="w-3.5 h-3.5" />
-              Agendar reunión
-            </button>
-          </div>
-        )}
+        <div className="flex gap-2 pt-2 border-t border-white/[0.06] mt-2 flex-wrap">
+          {isManager ? (
+            <>
+              <button type="button"
+                onClick={() => { onEditTask?.(null); onClose(); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand/15 hover:bg-brand/25 border border-brand/25 text-brand-light transition-colors">
+                <Plus className="w-3.5 h-3.5" />
+                Nueva entrega
+              </button>
+              <button type="button"
+                onClick={() => { onEditAppt?.(null); onClose(); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/15 hover:bg-green-500/25 border border-green-500/25 text-green-300 transition-colors">
+                <Video className="w-3.5 h-3.5" />
+                Agendar reunión
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button"
+                onClick={() => { onEditTask?.(null); onClose(); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand/15 hover:bg-brand/25 border border-brand/25 text-brand-light transition-colors">
+                <Plus className="w-3.5 h-3.5" />
+                Solicitar tarea
+              </button>
+              <button type="button"
+                onClick={() => { onEditAppt?.(null); onClose(); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/15 hover:bg-green-500/25 border border-green-500/25 text-green-300 transition-colors">
+                <Video className="w-3.5 h-3.5" />
+                Solicitar reunión
+              </button>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -648,7 +665,7 @@ function ProgressBar({ total, completed }: { total: number; completed: number })
 
 // ── ProjectTimeline ───────────────────────────────────────────────────────────
 
-function ProjectTimeline({ tasks, appointments, milestones = [], isManager = false, onAddMilestone }: { tasks: Task[]; appointments: any[]; milestones?: any[]; isManager?: boolean; onAddMilestone?: () => void }) {
+function ProjectTimeline({ tasks, appointments, milestones = [], isManager = false, onAddMilestone, onEditMilestone, onDeleteMilestone }: { tasks: Task[]; appointments: any[]; milestones?: any[]; isManager?: boolean; onAddMilestone?: () => void; onEditMilestone?: (id: string) => void; onDeleteMilestone?: (id: string) => void }) {
   const now = new Date();
   const events = [
     ...tasks.filter(t => t.dueDate).map(t => ({
@@ -727,6 +744,18 @@ function ProjectTimeline({ tasks, appointments, milestones = [], isManager = fal
                   <p className={`text-[11px] mt-0.5 ${isCompleted ? 'text-white/25' : 'text-white/40'}`}>
                     {format(event.date, "d 'de' MMM yyyy", { locale: es })}
                   </p>
+                  {isManager && event.type === 'milestone' && (
+                    <div className="flex gap-1.5 mt-1.5">
+                      <button type="button" onClick={() => onEditMilestone?.(event.id)}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-white/40 hover:text-white transition-colors">
+                        <Pencil className="w-2.5 h-2.5" /> Editar
+                      </button>
+                      <button type="button" onClick={() => onDeleteMilestone?.(event.id)}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 transition-colors">
+                        <Trash2 className="w-2.5 h-2.5" /> Eliminar
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -768,6 +797,7 @@ export default function ClientPortalContent() {
   const [editingTask,     setEditingTask]     = useState<any>(null);
   const [apptEditOpen,    setApptEditOpen]    = useState(false);
   const [milestoneOpen,  setMilestoneOpen]  = useState(false);
+  const [editingMilestone, setEditingMilestone] = useState<any>(null);
   const [agencyWhatsapp, setAgencyWhatsapp] = useState("521063469");
   useEffect(() => {
     fetch("/api/cms/settings").then(r => r.json()).then(d => {
@@ -820,6 +850,25 @@ export default function ClientPortalContent() {
       toast.success('Elementos eliminados');
     } catch { toast.error('Error al eliminar'); }
     finally { setDeletingMultiple(false); }
+  }
+
+  async function handleDeleteMilestone(id: string) {
+    if (!confirm('¿Eliminar este milestone?')) return;
+    await fetch('/api/milestones?id=' + id, { method: 'DELETE' });
+    refetch();
+  }
+
+  function handleEditMilestone(id: string) {
+    const m = milestones.find((m: any) => m.id === id);
+    if (!m) return;
+    setEditingMilestone(m);
+    setMilestoneForm({
+      title: m.title, description: m.description, date: m.date.slice(0, 10),
+      type: m.type || 'other', status: m.status || 'upcoming',
+      progress: m.progress || 0, responsibleId: m.responsibleId || '',
+      visibleToClient: m.visibleToClient ?? true, comments: m.comments || '',
+    });
+    setMilestoneOpen(true);
   }
 
   async function handleDeleteTask(id: string) {
@@ -1101,7 +1150,7 @@ export default function ClientPortalContent() {
       </div>
 
       {/* Timeline */}
-      <ProjectTimeline tasks={tasks} appointments={appointments} milestones={milestones} isManager={isManager} onAddMilestone={() => setMilestoneOpen(true)} />
+      <ProjectTimeline tasks={tasks} appointments={appointments} milestones={milestones} isManager={isManager} onAddMilestone={() => { setEditingMilestone(null); setMilestoneOpen(true); }} onEditMilestone={handleEditMilestone} onDeleteMilestone={handleDeleteMilestone} />
 
       {/* Chat + Tareas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -1375,7 +1424,7 @@ export default function ClientPortalContent() {
       {milestoneOpen && isManager && client && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setMilestoneOpen(false)}>
           <div className="bg-[#15151c] border border-white/[0.08] rounded-2xl p-6 w-full max-w-lg mx-4 space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-white">Nuevo milestone</h3>
+            <h3 className="text-base font-semibold text-white">{editingMilestone ? "Editar milestone" : "Nuevo milestone"}</h3>
             <div className="space-y-1">
               <p className="text-xs text-white/40">Nombre *</p>
               <input type="text" placeholder="Ej: Entrega de diseños finales" value={milestoneForm.title}
@@ -1457,11 +1506,19 @@ export default function ClientPortalContent() {
               <button type="button"
                 onClick={async () => {
                   if (!milestoneForm.title || !milestoneForm.date) return;
-                  await fetch("/api/milestones", {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ clientId: client.id, ...milestoneForm }),
-                  });
+                  if (editingMilestone) {
+                    await fetch("/api/milestones", {
+                      method: "PUT", headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ id: editingMilestone.id, ...milestoneForm }),
+                    });
+                  } else {
+                    await fetch("/api/milestones", {
+                      method: "POST", headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ clientId: client.id, ...milestoneForm }),
+                    });
+                  }
                   setMilestoneOpen(false);
+                  setEditingMilestone(null);
                   setMilestoneForm({ title: "", description: "", date: "", type: "other", status: "upcoming", progress: 0, responsibleId: "", visibleToClient: true, comments: "" });
                   refetch();
                 }}

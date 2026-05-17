@@ -214,7 +214,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#15151c] border-white/[0.06] text-white sm:max-w-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white">{isEditing ? 'Editar Tarea' : 'Nueva Tarea'}</DialogTitle>
+          <DialogTitle className="text-white">{isEditing ? 'Editar Tarea' : isManager ? 'Nueva Tarea' : 'Solicitar tarea'}</DialogTitle>
           {isManager && !isEditing && (
             <div className="space-y-1.5 pt-2 pb-3 border-b border-white/[0.06]">
               <div className="flex items-center justify-between">
@@ -266,6 +266,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:ring-brand resize-none" />
           </div>
 
+          {isManager && (
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label className="text-white/70 text-sm">Estado</Label>
@@ -290,6 +291,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               </Select>
             </div>
           </div>
+          )}
 
           {isManager && (
             <div className="space-y-2">
