@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LogoBrand } from '@/components/shared/LogoBrand';
 import { Zap, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 /**
@@ -81,11 +82,8 @@ export default function RegisterPage() {
     <div className="w-full max-w-md mx-auto px-4">
       <div className="glass-card rounded-2xl p-8">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-2xl font-bold text-white">BoostMarketing</span>
+        <div className="flex justify-center mb-8">
+          <LogoBrand size="lg" showName={true} />
         </div>
 
         {/* Title */}

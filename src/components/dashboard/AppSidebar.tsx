@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 import { useSidebar } from './SidebarContext';
+import { LogoBrand } from '@/components/shared/LogoBrand';
 
 type NavItem = {
   label: string;
@@ -76,16 +77,7 @@ export default function AppSidebar() {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand text-white">
-            <Zap className="w-5 h-5" />
-          </div>
-          {!collapsed && (
-            <span className="font-semibold text-white whitespace-nowrap overflow-hidden transition-all duration-200">
-              BoostMarketing
-            </span>
-          )}
-        </div>
+        <LogoBrand size="md" showName={!collapsed} />
       </div>
 
       {/* Navigation */}

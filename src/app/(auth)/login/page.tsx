@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
+import { LogoBrand } from '@/components/shared/LogoBrand';
 import { Zap, Mail, Lock, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -143,11 +144,8 @@ export default function LoginPage() {
           Volver al inicio
         </Link>
 
-        <div className="flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand text-white">
-            <Zap className="w-5 h-5" />
-          </div>
-          <span className="text-xl font-bold text-white">BoostMarketing</span>
+        <div className="mb-8">
+          <LogoBrand size="lg" showName={true} />
         </div>
 
         <div className="glass-card rounded-xl p-6 md:p-8">
