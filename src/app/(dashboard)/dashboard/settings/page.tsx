@@ -84,6 +84,11 @@ export default function SettingsPage() {
   const [savedBrand, setSavedBrand] = useState(false);
 
   useEffect(() => {
+    fetch('/api/cms/settings').then(r => r.json()).then(d => {
+      if (d.settings?.logoUrl) { setLogoUrl(d.settings.logoUrl); setLogoPreview(d.settings.logoUrl); }
+      if (d.settings?.agencyName) setBrandName(d.settings.agencyName);
+    }).catch(() => {});
+
     async function fetchProfile() {
       try {
         const res = await fetch('/api/auth/profile');
@@ -164,7 +169,7 @@ export default function SettingsPage() {
   async function handleSaveBrand() {
     setSavingBrand(true);
     try {
-      await fetch('/api/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logoUrl, brandName, brandColor }) });
+      await fetch('/api/cms/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logoUrl, agencyName: brandName }) });
       setSavedBrand(true); setTimeout(() => setSavedBrand(false), 2000);
       toast.success('Configuracion guardada');
     } finally { setSavingBrand(false); }
