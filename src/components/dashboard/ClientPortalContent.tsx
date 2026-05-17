@@ -1297,7 +1297,7 @@ export default function ClientPortalContent() {
 
       {/* Barra selección múltiple */}
       {selectMode && isManager && (selectedTaskIds.size > 0 || selectedApptIds.size > 0) && (
-        <div className="sticky bottom-4 z-50 flex items-center justify-center mt-4">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center">
           <div className="flex items-center gap-3 bg-[#15151c] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl">
           <span className="text-sm text-white/70">
             {selectedTaskIds.size + selectedApptIds.size} seleccionado{selectedTaskIds.size + selectedApptIds.size !== 1 ? 's' : ''}
