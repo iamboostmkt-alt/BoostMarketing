@@ -1,39 +1,27 @@
 'use client';
-
 import { useState } from 'react';
-import { FileText, Download, Mail, Loader2 } from 'lucide-react';
+import { FileText, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
 interface ReportButtonProps {
-  clientId:     string;
-  clientName?:  string;
+  clientId: string;
+  clientName?: string;
   clientEmail?: string;
-  month?:       number;
-  year?:        number;
+  month?: number;
+  year?: number;
 }
 
 export function ReportButton({ clientId, clientName, clientEmail, month, year }: ReportButtonProps) {
-  const [loading, setLoading] = useState<'pdf' | 'email' | null>(null);
-
+  const [loading, setLoading] = useState(false);
   const m = month ?? new Date().getMonth() + 1;
-  const y = year  ?? new Date().getFullYear();
+  const y = year ?? new Date().getFullYear();
   const reportUrl = '/api/reports/monthly?clientId=' + clientId + '&month=' + m + '&year=' + y;
-
-  const handlePDF = () => {
-    window.open(reportUrl, '_blank', 'noopener,noreferrer');
-  };
 
   const handleEmail = async () => {
     const email = prompt('Correo para enviar el reporte:', clientEmail || '');
     if (!email) return;
-    setLoading('email');
+    setLoading(true);
     try {
       const res = await fetch('/api/reports/monthly', {
         method: 'POST',
@@ -46,32 +34,23 @@ export function ReportButton({ clientId, clientName, clientEmail, month, year }:
     } catch {
       toast.error('Error de red al enviar el reporte.');
     } finally {
-      setLoading(null);
+      setLoading(false);
     }
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant='outline' size='sm'
-          className='gap-2 border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10'
-          ><FileText className='w-4 h-4' />
-          Reporte
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className='bg-[#15151c] border-white/[0.06] text-white' align='end'>
-        <DropdownMenuItem asChild>
-          <a href={reportUrl} target='_blank' rel='noopener noreferrer'
-            className='gap-2 text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer flex items-center px-2 py-1.5 text-sm'>
-            <Download className='w-4 h-4' /> Ver / Imprimir PDF
-          </a>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className='gap-2 text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer'
-          onClick={handleEmail} disabled={loading !== null}>
-          <Mail className='w-4 h-4' /> Enviar por email
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-2">
+      <a href={reportUrl} target="_blank" rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md border border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+        <FileText className="w-4 h-4" />
+        Reporte
+      </a>
+      <Button variant="outline" size="sm"
+        className="gap-2 border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10"
+        onClick={handleEmail}
+        disabled={loading}>
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+      </Button>
+    </div>
   );
 }
