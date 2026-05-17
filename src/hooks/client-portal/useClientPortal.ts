@@ -71,8 +71,10 @@ export function useClientPortal({
       if (data.client) {
         const clientId = (data.client as any).id;
         const mRes = await fetch('/api/milestones?clientId=' + clientId);
+        console.log('[milestones] status:', mRes.status);
         if (mRes.ok) {
           const mData = await mRes.json();
+          console.log('[milestones] data:', mData);
           setMilestones(mData.milestones ?? []);
         }
       }

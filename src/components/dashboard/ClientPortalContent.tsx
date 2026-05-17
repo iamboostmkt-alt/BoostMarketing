@@ -445,7 +445,7 @@ function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () 
               </button>
             </div>
           )}
-          {task.isDeliverable && expanded && (
+          {expanded && (
             <DeliverableHistory taskId={task.id} />
           )}
           {onFeedback && (
@@ -668,7 +668,7 @@ function ProjectTimeline({ tasks, appointments, milestones = [], isManager = fal
     })),
   ].sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 12);
 
-  if (events.length === 0) return null;
+  if (events.length === 0 && milestones.length === 0) return null;
 
   const pendingEvents = events.filter(e => !e.isPast && e.status !== 'completed' && e.status !== 'approved');
 
@@ -1372,7 +1372,7 @@ export default function ClientPortalContent() {
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50" />
             <div className="flex gap-2 justify-end">
               <button type="button" onClick={() => setMilestoneOpen(false)} className="px-4 py-2 text-sm text-white/40 hover:text-white transition-colors">Cancelar</button>
-              <button type="button" onClick={async () => { if (!milestoneForm.title || !milestoneForm.date) return; await fetch("/api/milestones", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId: client.id, ...milestoneForm }) }); setMilestoneOpen(false); setMilestoneForm({ title: "", description: "", date: "" }); refetchSilent(); }}
+              <button type="button" onClick={async () => { if (!milestoneForm.title || !milestoneForm.date) return; await fetch("/api/milestones", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId: client.id, ...milestoneForm }) }); setMilestoneOpen(false); setMilestoneForm({ title: "", description: "", date: "" }); refetch(); }}
                 className="px-4 py-2 text-sm bg-brand hover:bg-brand-dark text-white rounded-lg transition-colors">Guardar</button>
             </div>
           </div>
