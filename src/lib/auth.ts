@@ -25,11 +25,11 @@ async function sendMagicLinkEmail(params: {
     return;
   }
 
-  const html = `<p>Inicia sesiÃ³n:</p><p><a href="${url}">${url}</a></p>`;
+  const html = `<p>Inicia sesión:</p><p><a href="${url}">${url}</a></p>`;
 
   await sendMail(
     identifier,
-    "Tu enlace para iniciar sesiÃ³n",
+    "Tu enlace para iniciar sesión",
     html
   );
 
@@ -80,7 +80,7 @@ export const authOptions: NextAuthOptions = {
         const password = credentials?.password;
 
         if (!email || !password) {
-          throw new Error("Email y contraseÃ±a son obligatorios.");
+          throw new Error("Email y contraseña son obligatorios.");
         }
 
         const user = await db.user.findUnique({

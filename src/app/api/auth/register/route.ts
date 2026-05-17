@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       body = await req.json();
     } catch {
       return NextResponse.json(
-        { success: false, error: 'El cuerpo de la solicitud no es JSON vÃ¡lido' },
+        { success: false, error: 'El cuerpo de la solicitud no es JSON válido' },
         { status: 400 }
       );
     }
@@ -43,14 +43,14 @@ export async function POST(req: NextRequest) {
 
     if (!password || typeof password !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'La contraseÃ±a es requerida' },
+        { success: false, error: 'La contraseña es requerida' },
         { status: 400 }
       );
     }
 
     if (password.length < 6) {
       return NextResponse.json(
-        { success: false, error: 'La contraseÃ±a debe tener al menos 6 caracteres' },
+        { success: false, error: 'La contraseña debe tener al menos 6 caracteres' },
         { status: 400 }
       );
     }
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     const normalizedEmail = email.trim().toLowerCase();
     if (!emailRegex.test(normalizedEmail)) {
       return NextResponse.json(
-        { success: false, error: 'Email no vÃ¡lido' },
+        { success: false, error: 'Email no válido' },
         { status: 400 }
       );
     }

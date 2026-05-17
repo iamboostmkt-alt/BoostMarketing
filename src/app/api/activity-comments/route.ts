@@ -1,4 +1,4 @@
-﻿import { sendMail, templateNuevoComentario } from "@/lib/mailer";
+import { sendMail, templateNuevoComentario } from "@/lib/mailer";
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';

@@ -195,7 +195,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
 
   async function handleDelete() {
     if (!appointment) return;
-    if (!confirm('Ã‚Â¿Eliminar esta videollamada?')) return;
+    if (!confirm('¿Eliminar esta videollamada?')) return;
     setDeleting(true);
     try {
       const res = await fetch('/api/appointments?id=' + appointment.id, { method: 'DELETE' });
@@ -424,7 +424,7 @@ function DayModal({
                       <button type="button"
                         onClick={async (e) => {
                           e.stopPropagation();
-                          if (!confirm(`Ã‚Â¿Eliminar "${task.title}"?`)) return;
+                          if (!confirm(`¿Eliminar "${task.title}"?`)) return;
                           await onDeleteTask(task.id);
                         }}
                         className="shrink-0 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
@@ -457,7 +457,7 @@ function DayModal({
                     {isManager && (
                       <button type="button"
                         onClick={async () => {
-                          if (!confirm(`Ã‚Â¿Eliminar videollamada con ${apt.name}?`)) return;
+                          if (!confirm(`¿Eliminar videollamada con ${apt.name}?`)) return;
                           await onDeleteAppointment(apt.id);
 
                         }}
