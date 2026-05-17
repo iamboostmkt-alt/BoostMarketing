@@ -34,14 +34,15 @@ export async function GET(req: NextRequest) {
         ? { clientId: clientRecord.id, visibility: 'client_visible', deletedAt: null }
         : { id: 'none' };
     } else if (scope === 'all' && isManager) {
-      taskWhere = { deletedAt: null };
+      taskWhere = { deletedAt: null, archivedAt: null };
     } else if (scope === 'clients-with-tasks' && isManager) {
-      taskWhere = { clientId: { not: null }, deletedAt: null };
+      taskWhere = { clientId: { not: null }, deletedAt: null, archivedAt: null };
     } else if (clientId && isManager) {
-      taskWhere = { clientId, deletedAt: null };
+      taskWhere = { clientId, deletedAt: null, archivedAt: null };
     } else {
       taskWhere = {
         deletedAt: null,
+        archivedAt: null,
         OR: [
           { userId: user.id },
           { assignedUserId: user.id },
@@ -129,7 +130,27 @@ export async function GET(req: NextRequest) {
       take:    100,
     });
 
-    return NextResponse.json({ tasks, appointments, meetings, activities });
+    // ── MILESTONES ─────────────────────────────────────────
+    let milestones: any[] = [];
+    if (!isClient && isManager) {
+      milestones = await db.milestone.findMany({
+        where: scope === 'all' ? {} : {
+          client: {
+            OR: [
+              { assignedManagerId: user.id },
+              { assignedUsers: { some: { userId: user.id } } },
+            ],
+          },
+        },
+        include: {
+          client: { select: { id: true, name: true, company: true } },
+          responsible: { select: { id: true, name: true, email: true, color: true } },
+        },
+        orderBy: { date: 'asc' },
+      });
+    }
+
+    return NextResponse.json({ tasks, appointments, meetings, activities, milestones });
   } catch (error) {
     console.error('[calendar GET]', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });

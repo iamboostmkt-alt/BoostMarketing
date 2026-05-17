@@ -330,6 +330,7 @@ interface DayModalProps {
   tasks:               Task[];
   activities:          Activity[];
   appointments:        Appointment[];
+  milestones?:         any[];
   isManager:           boolean;
   onEditTask:          (t: Task) => void;
   onNewTask:           () => void;
@@ -340,7 +341,7 @@ interface DayModalProps {
 }
  
 function DayModal({
-  open, onClose, day, tasks, activities, appointments, isManager,
+  open, onClose, day, tasks, activities, appointments, milestones = [], isManager,
   onEditTask, onNewTask, onDeleteTask, onEditAppointment, onDeleteAppointment, onNewAppointment,
 }: DayModalProps) {
   const dayTasks = useMemo(
@@ -355,7 +356,11 @@ function DayModal({
     () => appointments.filter((a) => sameLocalDay(a.date, day)),
     [appointments, day]
   );
-  const total = dayTasks.length + dayActivities.length + dayAppointments.length;
+  const dayMilestones = useMemo(
+    () => milestones.filter((m) => { try { return isSameDay(new Date(m.date), day); } catch { return false; } }),
+    [milestones, day]
+  );
+  const total = dayTasks.length + dayActivities.length + dayAppointments.length + dayMilestones.length;
   const label = dayLabel(day);
  
   return (
@@ -486,6 +491,36 @@ function DayModal({
             </section>
           )}
  
+          {/* Milestones */}
+          {dayMilestones.length > 0 && (
+            <section className="space-y-2">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
+                <span className="text-yellow-400">🏁</span>
+                Milestones ({dayMilestones.length})
+              </div>
+              {dayMilestones.map((m) => (
+                <div key={m.id} className="bg-yellow-500/[0.06] border border-yellow-500/20 rounded-lg p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-white/90">{m.title}</p>
+                    <span className="text-[10px] bg-yellow-500/20 text-yellow-300 rounded-full px-2 py-0.5 shrink-0">
+                      {m.status === 'completed' ? 'Completado' : m.status === 'in_progress' ? 'En progreso' : m.status === 'delayed' ? 'Retrasado' : 'Próximo'}
+                    </span>
+                  </div>
+                  {m.description && <p className="text-xs text-white/35 mt-1">{m.description}</p>}
+                  {m.progress > 0 && (
+                    <div className="mt-2">
+                      <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                        <div className="h-full rounded-full bg-yellow-400/60" style={{ width: `${m.progress}%` }} />
+                      </div>
+                      <p className="text-[10px] text-white/30 mt-0.5">{m.progress}% completado</p>
+                    </div>
+                  )}
+                  {m.client && <p className="text-[10px] text-white/25 mt-1">{m.client.name}</p>}
+                </div>
+              ))}
+            </section>
+          )}
+
           {total === 0 && (
             <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
               <div className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center">
@@ -550,6 +585,7 @@ export default function CalendarContent() {
   const [apptEditOpen,       setApptEditOpen]       = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [apptInitialDate,    setApptInitialDate]    = useState<Date | null>(null);
+  const [milestones,         setMilestones]         = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -566,6 +602,7 @@ export default function CalendarContent() {
         const data = await res.json();
         setTasks(data.tasks || []);
         setActivities(data.activities || []);
+        setMilestones(data.milestones || []);
         if (!isClient) {
           const allAppointments = [
             ...(data.appointments || []),
@@ -776,6 +813,7 @@ export default function CalendarContent() {
             tasks={calView === "meetings" ? [] : calView === "deliveries" ? filteredTasks.filter(t => !!t.dueDate) : filteredTasks}
             activities={calView === "meetings" ? [] : activities}
             appointments={calView === "deliveries" ? [] : appointments}
+            milestones={milestones}
             selectedDay={selectedDay}
             onSelectDay={handleSelectDay}
           />
@@ -938,6 +976,7 @@ export default function CalendarContent() {
         tasks={tasks}
         activities={activities}
         appointments={appointments}
+        milestones={milestones}
         isManager={isManager}
         onEditTask={(t) => { setEditingTask(t); setTaskFormOpen(true); }}
         onNewTask={() => { setEditingTask(null); setTaskFormOpen(true); }}

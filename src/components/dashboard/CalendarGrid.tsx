@@ -15,6 +15,7 @@ interface CalendarGridProps {
   tasks:         Task[];
   activities?:   Activity[];
   appointments?: Appointment[];
+  milestones?:   any[];
   selectedDay:   Date | null;
   onSelectDay:   (day: Date) => void;
 }
@@ -54,6 +55,10 @@ function getAppointmentsForDay(appointments: Appointment[], day: Date): Appointm
   return appointments.filter((a) => { try { return isSameDay(new Date(a.date), day); } catch { return false; } });
 }
 
+function getMilestonesForDay(milestones: any[], day: Date): any[] {
+  return milestones.filter((m) => { try { return isSameDay(new Date(m.date), day); } catch { return false; } });
+}
+
 function getActivitiesForDay(activities: Activity[], day: Date): Activity[] {
   return activities.filter((a) => {
     try {
@@ -86,7 +91,7 @@ function getRangeBarProps(task: Task, day: Date, days: Date[]) {
   return { isStart, isEnd, roundLeft: isStart || isFirst, roundRight: isEnd || isLast };
 }
 
-export default function CalendarGrid({ tasks, activities = [], appointments = [], selectedDay, onSelectDay }: CalendarGridProps) {
+export default function CalendarGrid({ tasks, activities = [], appointments = [], milestones = [], selectedDay, onSelectDay }: CalendarGridProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const days = useMemo(() => {
@@ -134,6 +139,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
           const dayTasks        = getTasksForDay(tasks, day);
           const dayActivities   = getActivitiesForDay(activities, day);
           const dayAppointments = getAppointmentsForDay(appointments, day);
+          const dayMilestones   = getMilestonesForDay(milestones, day);
           const dayRangeTasks   = getRangeTasksForDay(rangeTasks, day);
           const isCurrentMonth  = isSameMonth(day, currentMonth);
           const isSelected      = selectedDay && isSameDay(day, selectedDay);
@@ -200,13 +206,17 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                 {dayActivities.slice(0, 1).map((_, i) => (
                   <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-violet-400/80" title="Actividad" />
                 ))}
-                {/* Appointment dot — green with video icon hint */}
+                {/* Appointment dot — green */}
                 {dayAppointments.slice(0, 1).map((_, i) => (
                   <span key={`ap${i}`} className="w-1.5 h-1.5 rounded-full bg-green-400" title="Videollamada" />
                 ))}
+                {/* Milestone dot — yellow */}
+                {dayMilestones.slice(0, 1).map((m, i) => (
+                  <span key={`m${i}`} className="w-1.5 h-1.5 rounded-full bg-yellow-400" title={m.title} />
+                ))}
                 {/* Overflow count */}
-                {(dayTasks.length + dayActivities.length + dayAppointments.length) > 4 && (
-                  <span className="text-[8px] text-white/30">+{dayTasks.length + dayActivities.length + dayAppointments.length - 4}</span>
+                {(dayTasks.length + dayActivities.length + dayAppointments.length + dayMilestones.length) > 4 && (
+                  <span className="text-[8px] text-white/30">+{dayTasks.length + dayActivities.length + dayAppointments.length + dayMilestones.length - 4}</span>
                 )}
               </div>
             </button>
