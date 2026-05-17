@@ -64,6 +64,10 @@ export interface Task {
   client?: { id: string; name: string; company: string } | null;
   isDeliverable?: boolean;
   deliverableStatus?: string | null;
+  milestoneId?: string | null;
+  archivedAt?: string | null;
+  phase?: string | null;
+  milestone?: { id: string; title: string; status: string } | null;
 }
 
 export interface ActivityComment {
@@ -256,6 +260,10 @@ export interface Activity {
   client?: { id: string; name: string; company: string } | null;
   isDeliverable?: boolean;
   deliverableStatus?: string | null;
+  milestoneId?: string | null;
+  archivedAt?: string | null;
+  phase?: string | null;
+  milestone?: { id: string; title: string; status: string } | null;
 }
 
 export interface Milestone {

@@ -789,6 +789,9 @@ export default function ClientPortalContent() {
   const [requestNotes,    setRequestNotes]    = useState('');
   const [requestSaving,   setRequestSaving]   = useState(false);
   const [activeTab,       setActiveTab]       = useState<'all' | 'tasks'>('all');
+  const [showArchived,    setShowArchived]    = useState(false);
+  const [archivedTasks,   setArchivedTasks]   = useState<any[]>([]);
+  const [loadingArchived, setLoadingArchived] = useState(false);
   const [selectMode,      setSelectMode]      = useState(false);
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [selectedApptIds, setSelectedApptIds] = useState<Set<string>>(new Set());
@@ -869,6 +872,19 @@ export default function ClientPortalContent() {
       visibleToClient: m.visibleToClient ?? true, comments: m.comments || '',
     });
     setMilestoneOpen(true);
+  }
+
+  async function handleLoadArchived() {
+    if (!client) return;
+    setLoadingArchived(true);
+    try {
+      const res = await fetch('/api/tasks/archive?clientId=' + client.id);
+      const data = await res.json();
+      setArchivedTasks(data.tasks ?? []);
+      setShowArchived(true);
+    } finally {
+      setLoadingArchived(false);
+    }
   }
 
   async function handleDeleteTask(id: string) {
@@ -1175,6 +1191,21 @@ export default function ClientPortalContent() {
                   {selectMode ? 'Cancelar' : 'Seleccionar'}
                 </button>
               )}
+              {isManager && tasks.some((t: any) => t.status === 'completed' || t.status === 'approved') && (
+                <button type="button"
+                  onClick={async () => {
+                    if (!confirm('¿Archivar todas las entregas completadas? No aparecerán en el portal.')) return;
+                    await fetch('/api/tasks/archive', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ clientId: client?.id }),
+                    });
+                    refetch();
+                  }}
+                  className="text-[11px] px-2 py-1 rounded-md border border-yellow-500/20 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors">
+                  Archivar completadas
+                </button>
+              )}
               {(['all', 'tasks'] as const).map((tab) => (
                 <button key={tab} type="button" onClick={() => setActiveTab(tab)}
                   className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${activeTab === tab ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white'}`}>
@@ -1202,6 +1233,44 @@ export default function ClientPortalContent() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Ver archivadas */}
+          {isManager && (
+            <div className="pt-2 border-t border-white/[0.04]">
+              <button type="button"
+                onClick={() => showArchived ? setShowArchived(false) : handleLoadArchived()}
+                className="text-[11px] text-white/30 hover:text-white/60 transition-colors">
+                {loadingArchived ? 'Cargando...' : showArchived ? 'Ocultar archivadas' : `Ver entregas archivadas`}
+              </button>
+              {showArchived && archivedTasks.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  <p className="text-[10px] text-white/25 uppercase tracking-wider">Archivadas ({archivedTasks.length})</p>
+                  {archivedTasks.map((task: any) => (
+                    <div key={task.id} className="rounded-lg border border-white/[0.04] bg-white/[0.01] p-3 opacity-50">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs text-white/50 line-through">{task.title}</p>
+                        <button type="button"
+                          onClick={async () => {
+                            await fetch('/api/tasks/archive?taskId=' + task.id, { method: 'DELETE' });
+                            handleLoadArchived();
+                            refetch();
+                          }}
+                          className="text-[10px] text-white/25 hover:text-white/60 transition-colors shrink-0">
+                          Restaurar
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-white/25 mt-1">
+                        Archivada: {task.archivedAt ? new Date(task.archivedAt).toLocaleDateString('es-MX') : '—'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showArchived && archivedTasks.length === 0 && (
+                <p className="text-xs text-white/25 mt-2">No hay entregas archivadas.</p>
+              )}
             </div>
           )}
 

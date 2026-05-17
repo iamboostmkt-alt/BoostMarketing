@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
 
     const tasks = await db.task.findMany({
       where: {
+        archivedAt: null,
         OR: [
           { userId },
           { assignedUserId: userId },
@@ -147,6 +148,7 @@ export async function GET(req: NextRequest) {
 
   if (scope === "all" && isManager) {
     const tasks = await db.task.findMany({
+      where: { archivedAt: null },
       include: {
         assignedUser:  userInclude,
         assignedUsers: { include: { user: userInclude } },
@@ -160,8 +162,9 @@ export async function GET(req: NextRequest) {
   // Fallback — mismo comportamiento que antes
   const tasks = await db.task.findMany({
     where: isClient
-      ? { assignedUserId: userId }
+      ? { assignedUserId: userId, archivedAt: null }
       : {
+          archivedAt: null,
           OR: [
             { userId },
             { assignedUserId: userId },
