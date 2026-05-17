@@ -47,6 +47,15 @@ export async function GET(req: NextRequest) {
     orderBy: { dueDate: "asc" },
   });
 
+  const appointments = await db.appointment.findMany({
+    where: {
+      email: client.email,
+      date: { gte: startDate, lte: endDate },
+      isInternal: false,
+    },
+    orderBy: { date: 'asc' },
+  });
+
   const activities = await db.activity.findMany({
     where: {
       clientId,
@@ -80,6 +89,23 @@ export async function GET(req: NextRequest) {
   const priorityLabel: Record<string, string> = {
     low: "Baja", medium: "Media", high: "Alta",
   };
+
+  const apptRows = appointments.map(a => `
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;font-size:13px;color:#111827">${a.name}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;font-size:12px;color:#6b7280;text-align:center">
+        ${new Date(a.date).toLocaleDateString("es-MX", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })}
+      </td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:center">
+        <span style="background:#d1fae520;color:#10b981;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600">
+          ${a.status === "confirmed" ? "Confirmada" : a.status === "cancelled" ? "Cancelada" : "Programada"}
+        </span>
+      </td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;font-size:12px;text-align:center">
+        ${a.meetUrl ? '<a href="' + a.meetUrl + '" style="color:#4f46e5">Meet</a>' : "—"}
+      </td>
+    </tr>
+  `).join("");
 
   const taskRows = tasks.map(t => `
     <tr>
@@ -218,6 +244,21 @@ export async function GET(req: NextRequest) {
     </table>
   </div>` : ""}
 
+  ${appointments.length > 0 ? `
+  <div class="section" style="border-top:1px solid #f3f4f6">
+    <h2><span>${appointments.length}</span> Reuniones</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th style="text-align:center">Fecha</th>
+          <th style="text-align:center">Estado</th>
+          <th style="text-align:center">Link</th>
+        </tr>
+      </thead>
+      <tbody>${apptRows}</tbody>
+    </table>
+  </div>` : ""}
   <!-- Footer -->
   <div class="footer">
     <p>BoostMarketing CRM &mdash; Reporte generado automaticamente</p>
