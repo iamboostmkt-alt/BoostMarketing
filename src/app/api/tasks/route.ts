@@ -260,7 +260,7 @@ export async function PUT(req: NextRequest) {
   const userName  = (session.user as any).name || "Un usuario";
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const body      = await req.json();
-  const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId, visibility, references } = body;
+  const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId, visibility, references, milestoneId, phase } = body;
 
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
@@ -305,6 +305,8 @@ export async function PUT(req: NextRequest) {
       ...(isManager && visibility !== undefined && { visibility }),
       ...(isManager && visibility === 'internal' && { isDeliverable: false, deliverableStatus: null }),
       ...(isManager && visibility === 'client_visible' && { isDeliverable: true }),
+      ...(milestoneId !== undefined && { milestoneId: milestoneId || null }),
+      ...(phase !== undefined && { phase }),
       ...(references !== undefined && { references: Array.isArray(references) ? references : [] }),
     },
     include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },

@@ -799,8 +799,9 @@ export default function ClientPortalContent() {
   const [editingAppt,     setEditingAppt]     = useState<any>(null);
   const [editingTask,     setEditingTask]     = useState<any>(null);
   const [apptEditOpen,    setApptEditOpen]    = useState(false);
-  const [milestoneOpen,  setMilestoneOpen]  = useState(false);
+  const [milestoneOpen,    setMilestoneOpen]    = useState(false);
   const [editingMilestone, setEditingMilestone] = useState<any>(null);
+  const [milestoneTaskIds, setMilestoneTaskIds] = useState<string[]>([]);
   const [agencyWhatsapp, setAgencyWhatsapp] = useState("521063469");
   useEffect(() => {
     fetch("/api/cms/settings").then(r => r.json()).then(d => {
@@ -871,6 +872,11 @@ export default function ClientPortalContent() {
       progress: m.progress || 0, responsibleId: m.responsibleId || '',
       visibleToClient: m.visibleToClient ?? true, comments: m.comments || '',
     });
+    // Pre-seleccionar tareas ya vinculadas
+    const linkedTaskIds = tasks
+      .filter((t: any) => t.milestoneId === id)
+      .map((t: any) => t.id);
+    setMilestoneTaskIds(linkedTaskIds);
     setMilestoneOpen(true);
   }
 
@@ -1569,25 +1575,69 @@ export default function ClientPortalContent() {
                 className="w-4 h-4 accent-brand" />
               <label htmlFor="visibleToClient" className="text-sm text-white/60">Visible para el cliente</label>
             </div>
+
+            {/* Tareas vinculadas */}
+            {tasks.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs text-white/40">Tareas vinculadas</p>
+                <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-2 max-h-36 overflow-y-auto space-y-1">
+                  {tasks.map((task: any) => {
+                    const checked = milestoneTaskIds.includes(task.id);
+                    return (
+                      <button key={task.id} type="button"
+                        onClick={() => setMilestoneTaskIds(prev =>
+                          checked ? prev.filter(id => id !== task.id) : [...prev, task.id]
+                        )}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-xs transition-colors ${checked ? 'bg-brand/20 text-white' : 'text-white/50 hover:bg-white/[0.04] hover:text-white'}`}>
+                        <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${checked ? 'border-brand bg-brand' : 'border-white/20'}`}>
+                          {checked && <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 6l3 3 5-6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </span>
+                        <span className="truncate flex-1">{task.title}</span>
+                        {task.milestoneId && task.milestoneId !== editingMilestone?.id && (
+                          <span className="text-[9px] text-white/25 shrink-0">vinculada</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {milestoneTaskIds.length > 0 && (
+                  <p className="text-[10px] text-white/30">{milestoneTaskIds.length} tarea{milestoneTaskIds.length !== 1 ? 's' : ''} seleccionada{milestoneTaskIds.length !== 1 ? 's' : ''}</p>
+                )}
+              </div>
+            )}
             <div className="flex gap-2 justify-end pt-2">
               <button type="button" onClick={() => setMilestoneOpen(false)}
                 className="px-4 py-2 text-sm text-white/40 hover:text-white transition-colors">Cancelar</button>
               <button type="button"
                 onClick={async () => {
                   if (!milestoneForm.title || !milestoneForm.date) return;
+                  let milestoneId = editingMilestone?.id;
                   if (editingMilestone) {
                     await fetch("/api/milestones", {
                       method: "PUT", headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ id: editingMilestone.id, ...milestoneForm }),
                     });
                   } else {
-                    await fetch("/api/milestones", {
+                    const mRes = await fetch("/api/milestones", {
                       method: "POST", headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ clientId: client.id, ...milestoneForm }),
                     });
+                    const mData = await mRes.json();
+                    milestoneId = mData.milestone?.id;
+                  }
+                  // Vincular tareas seleccionadas
+                  if (milestoneId && milestoneTaskIds.length > 0) {
+                    await Promise.all(milestoneTaskIds.map(taskId =>
+                      fetch('/api/tasks?id=' + taskId, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ milestoneId }),
+                      })
+                    ));
                   }
                   setMilestoneOpen(false);
                   setEditingMilestone(null);
+                  setMilestoneTaskIds([]);
                   setMilestoneForm({ title: "", description: "", date: "", type: "other", status: "upcoming", progress: 0, responsibleId: "", visibleToClient: true, comments: "" });
                   refetch();
                 }}
