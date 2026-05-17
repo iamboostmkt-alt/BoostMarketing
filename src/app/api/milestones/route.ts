@@ -3,6 +3,11 @@ import { db } from '@/lib/db';
 import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 
+const milestoneInclude = {
+  responsible: { select: { id: true, name: true, email: true, color: true, image: true } },
+  client:      { select: { id: true, name: true, company: true } },
+};
+
 export async function GET(req: NextRequest) {
   try {
     const user = await getSessionUser();
@@ -10,8 +15,13 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const clientId = searchParams.get('clientId');
     if (!clientId) return NextResponse.json({ error: 'clientId requerido' }, { status: 400 });
+    const isManager = MANAGER_ROLES.includes(user.role as any);
     const milestones = await db.milestone.findMany({
-      where: { clientId },
+      where: {
+        clientId,
+        ...(!isManager && { visibleToClient: true }),
+      },
+      include: milestoneInclude,
       orderBy: { date: 'asc' },
     });
     return NextResponse.json({ milestones });
@@ -26,11 +36,26 @@ export async function POST(req: NextRequest) {
     const user = await getSessionUser();
     if (!user || !MANAGER_ROLES.includes(user.role as any))
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    const { clientId, title, description, date, status } = await req.json();
+    const {
+      clientId, title, description, date, status, type,
+      progress, responsibleId, visibleToClient, comments,
+    } = await req.json();
     if (!clientId || !title || !date)
       return NextResponse.json({ error: 'clientId, title y date requeridos' }, { status: 400 });
     const milestone = await db.milestone.create({
-      data: { clientId, title, description: description || '', date: new Date(date), status: status || 'pending' },
+      data: {
+        clientId,
+        title,
+        description:     description     ?? '',
+        date:            new Date(date),
+        status:          status          ?? 'upcoming',
+        type:            type            ?? 'other',
+        progress:        progress        ?? 0,
+        responsibleId:   responsibleId   ?? null,
+        visibleToClient: visibleToClient ?? true,
+        comments:        comments        ?? '',
+      },
+      include: milestoneInclude,
     });
     return NextResponse.json({ milestone }, { status: 201 });
   } catch (error) {
@@ -44,16 +69,25 @@ export async function PUT(req: NextRequest) {
     const user = await getSessionUser();
     if (!user || !MANAGER_ROLES.includes(user.role as any))
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    const { id, title, description, date, status } = await req.json();
+    const {
+      id, title, description, date, status, type,
+      progress, responsibleId, visibleToClient, comments,
+    } = await req.json();
     if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 });
     const milestone = await db.milestone.update({
       where: { id },
       data: {
-        ...(title       !== undefined && { title }),
-        ...(description !== undefined && { description }),
-        ...(date        !== undefined && { date: new Date(date) }),
-        ...(status      !== undefined && { status }),
+        ...(title            !== undefined && { title }),
+        ...(description      !== undefined && { description }),
+        ...(date             !== undefined && { date: new Date(date) }),
+        ...(status           !== undefined && { status }),
+        ...(type             !== undefined && { type }),
+        ...(progress         !== undefined && { progress }),
+        ...(responsibleId    !== undefined && { responsibleId }),
+        ...(visibleToClient  !== undefined && { visibleToClient }),
+        ...(comments         !== undefined && { comments }),
       },
+      include: milestoneInclude,
     });
     return NextResponse.json({ milestone });
   } catch (error) {

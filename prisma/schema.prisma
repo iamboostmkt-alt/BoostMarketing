@@ -91,6 +91,7 @@ model User {
   activityAssignments    ActivityAssignedUser[]
   taskAssignments        TaskAssignedUser[]
   taskAttachments        TaskAttachment[]
+  responsibleMilestones  Milestone[]             @relation("MilestoneResponsible")
   clientAssignments      ClientAssignedUser[]
   customRole             CustomRole?               @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
   chatMessages           ChatMessage[]
@@ -542,15 +543,21 @@ model TaskFeedback {
 }
 
 model Milestone {
-  id          String   @id @default(cuid())
-  clientId    String   @map("client_id")
-  title       String
-  description String   @default("")
-  date        DateTime
-  status      String   @default("pending") // pending | completed | cancelled
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  clientId         String   @map("client_id")
+  title            String
+  description      String   @default("")
+  date             DateTime
+  status           String   @default("upcoming") // upcoming | in_progress | review | completed | delayed
+  type             String   @default("other") // inicio_proyecto | grabacion | entrega_diseno | revision_cliente | lanzamiento_campana | publicacion_contenido | entrega_final | reporte_mensual | other
+  progress         Int      @default(0) // 0-100
+  responsibleId    String?  @map("responsible_id")
+  visibleToClient  Boolean  @default(true) @map("visible_to_client")
+  comments         String   @default("")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  client      Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  responsible User?  @relation("MilestoneResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
   @@map("milestones")
 }
 

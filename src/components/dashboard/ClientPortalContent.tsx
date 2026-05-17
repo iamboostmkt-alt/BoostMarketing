@@ -768,7 +768,11 @@ export default function ClientPortalContent() {
   const [editingTask,     setEditingTask]     = useState<any>(null);
   const [apptEditOpen,    setApptEditOpen]    = useState(false);
   const [milestoneOpen,  setMilestoneOpen]  = useState(false);
-  const [milestoneForm,  setMilestoneForm]  = useState({ title: "", description: "", date: "" });
+  const [milestoneForm,  setMilestoneForm]  = useState({
+    title: "", description: "", date: "", type: "other",
+    status: "upcoming", progress: 0, responsibleId: "",
+    visibleToClient: true, comments: "",
+  });
 
   // ── Data layer (hook limpio) ─────────────────────────────────────────────
   const {
@@ -1090,6 +1094,9 @@ export default function ClientPortalContent() {
         <PortalCalendar tasks={tasks} appointments={appointments} onSelectDay={(day) => { setSelectedDay(day); setFormDate(day); }} getDayEvents={getDayEvents} />
       </div>
 
+      {/* Timeline */}
+      <ProjectTimeline tasks={tasks} appointments={appointments} milestones={milestones} isManager={isManager} onAddMilestone={() => setMilestoneOpen(true)} />
+
       {/* Chat + Tareas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass-card rounded-2xl p-5">
@@ -1362,18 +1369,100 @@ export default function ClientPortalContent() {
       {/* Modal crear milestone */}
       {milestoneOpen && isManager && client && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setMilestoneOpen(false)}>
-          <div className="bg-[#15151c] border border-white/[0.08] rounded-2xl p-6 w-full max-w-md mx-4 space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#15151c] border border-white/[0.08] rounded-2xl p-6 w-full max-w-lg mx-4 space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="text-base font-semibold text-white">Nuevo milestone</h3>
-            <input type="text" placeholder="Título" value={milestoneForm.title} onChange={e => setMilestoneForm(f => ({...f, title: e.target.value}))}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50" />
-            <input type="text" placeholder="Descripción (opcional)" value={milestoneForm.description} onChange={e => setMilestoneForm(f => ({...f, description: e.target.value}))}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50" />
-            <input type="date" value={milestoneForm.date} onChange={e => setMilestoneForm(f => ({...f, date: e.target.value}))}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50" />
-            <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setMilestoneOpen(false)} className="px-4 py-2 text-sm text-white/40 hover:text-white transition-colors">Cancelar</button>
-              <button type="button" onClick={async () => { if (!milestoneForm.title || !milestoneForm.date) return; await fetch("/api/milestones", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId: client.id, ...milestoneForm }) }); setMilestoneOpen(false); setMilestoneForm({ title: "", description: "", date: "" }); refetch(); }}
-                className="px-4 py-2 text-sm bg-brand hover:bg-brand-dark text-white rounded-lg transition-colors">Guardar</button>
+            <div className="space-y-1">
+              <p className="text-xs text-white/40">Nombre *</p>
+              <input type="text" placeholder="Ej: Entrega de diseños finales" value={milestoneForm.title}
+                onChange={e => setMilestoneForm(f => ({...f, title: e.target.value}))}
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <p className="text-xs text-white/40">Tipo</p>
+                <select value={milestoneForm.type} onChange={e => setMilestoneForm(f => ({...f, type: e.target.value}))}
+                  className="w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
+                  <option value="other">General</option>
+                  <option value="inicio_proyecto">Inicio proyecto</option>
+                  <option value="grabacion">Grabación</option>
+                  <option value="entrega_diseno">Entrega diseño</option>
+                  <option value="revision_cliente">Revisión cliente</option>
+                  <option value="lanzamiento_campana">Lanzamiento campaña</option>
+                  <option value="publicacion_contenido">Publicación contenido</option>
+                  <option value="entrega_final">Entrega final</option>
+                  <option value="reporte_mensual">Reporte mensual</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-white/40">Estado</p>
+                <select value={milestoneForm.status} onChange={e => setMilestoneForm(f => ({...f, status: e.target.value}))}
+                  className="w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
+                  <option value="upcoming">Próximo</option>
+                  <option value="in_progress">En progreso</option>
+                  <option value="review">En revisión</option>
+                  <option value="completed">Completado</option>
+                  <option value="delayed">Retrasado</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <p className="text-xs text-white/40">Fecha objetivo *</p>
+                <input type="date" value={milestoneForm.date} onChange={e => setMilestoneForm(f => ({...f, date: e.target.value}))}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50 [color-scheme:dark]" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-white/40">Responsable (PM)</p>
+                <select value={milestoneForm.responsibleId} onChange={e => setMilestoneForm(f => ({...f, responsibleId: e.target.value}))}
+                  className="w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
+                  <option value="">Sin asignar</option>
+                  {meetingTeam.map((u: any) => (
+                    <option key={u.id} value={u.id}>{u.name || u.email}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-white/40">Progreso: {milestoneForm.progress}%</p>
+              <input type="range" min="0" max="100" step="5" value={milestoneForm.progress}
+                onChange={e => setMilestoneForm(f => ({...f, progress: parseInt(e.target.value)}))}
+                className="w-full accent-brand" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-white/40">Descripción</p>
+              <textarea rows={2} placeholder="Descripción corta del milestone" value={milestoneForm.description}
+                onChange={e => setMilestoneForm(f => ({...f, description: e.target.value}))}
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50 resize-none" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-white/40">Comentarios / feedback</p>
+              <textarea rows={2} placeholder="Notas importantes para el cliente" value={milestoneForm.comments}
+                onChange={e => setMilestoneForm(f => ({...f, comments: e.target.value}))}
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50 resize-none" />
+            </div>
+            <div className="flex items-center gap-3">
+              <input type="checkbox" id="visibleToClient" checked={milestoneForm.visibleToClient}
+                onChange={e => setMilestoneForm(f => ({...f, visibleToClient: e.target.checked}))}
+                className="w-4 h-4 accent-brand" />
+              <label htmlFor="visibleToClient" className="text-sm text-white/60">Visible para el cliente</label>
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <button type="button" onClick={() => setMilestoneOpen(false)}
+                className="px-4 py-2 text-sm text-white/40 hover:text-white transition-colors">Cancelar</button>
+              <button type="button"
+                onClick={async () => {
+                  if (!milestoneForm.title || !milestoneForm.date) return;
+                  await fetch("/api/milestones", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ clientId: client.id, ...milestoneForm }),
+                  });
+                  setMilestoneOpen(false);
+                  setMilestoneForm({ title: "", description: "", date: "", type: "other", status: "upcoming", progress: 0, responsibleId: "", visibleToClient: true, comments: "" });
+                  refetch();
+                }}
+                className="px-4 py-2 text-sm bg-brand hover:bg-brand-dark text-white rounded-lg transition-colors">
+                Guardar milestone
+              </button>
             </div>
           </div>
         </div>
