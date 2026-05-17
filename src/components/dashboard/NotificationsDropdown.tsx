@@ -5,12 +5,7 @@ import { bus, RT_EVENTS } from "@/lib/event-bus";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { Bell, CheckSquare, Users, UserCircle, Info, Calendar, Check, ExternalLink, Activity, MessageSquare, AtSign, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Bell, CheckSquare, Users, UserCircle, Info, Calendar, Check, Activity, MessageSquare, AtSign, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Notification {
@@ -54,6 +49,7 @@ export function NotificationsDropdown() {
   const [loading,       setLoading]       = useState(true);
   const [open,          setOpen]          = useState(false);
   const fetchingRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = useCallback(async () => {
     if (fetchingRef.current) return;
@@ -78,21 +74,30 @@ export function NotificationsDropdown() {
 
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
-  // Polling cada 30s
   useEffect(() => {
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  // Refetch cuando se abre el dropdown
   useEffect(() => {
     if (open) fetchNotifications();
   }, [open, fetchNotifications]);
 
-  // Live updates via event bus
   useEffect(() => {
     return bus.on(RT_EVENTS.NOTIFICATION_NEW, () => fetchNotifications());
   }, [fetchNotifications]);
+
+  // Cerrar al click fuera
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -140,44 +145,48 @@ export function NotificationsDropdown() {
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild onClick={() => setOpen(v => !v)}>
-        <Button variant="ghost" size="icon"
-          className="relative text-white/60 hover:text-white hover:bg-white/[0.06]">
-          <Bell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-[10px] font-bold text-white">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 bg-[#15151c] border-white/[0.06] text-white z-[9999]" align="end" side="bottom" sideOffset={8} collisionPadding={{ top: 80, right: 16, bottom: 16, left: 16 }} onCloseAutoFocus={(e) => e.preventDefault()}>
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notificaciones</span>
-          <div className="flex gap-1">
-            {unreadCount > 0 && (
-              <Button variant="ghost" size="sm"
-                className="h-auto py-0.5 px-2 text-xs text-brand-light hover:text-brand-light hover:bg-white/[0.06]"
-                onClick={markAllAsRead}>
-                <Check className="w-3 h-3 mr-1" />
-                Leer todas
-              </Button>
-            )}
-            {notifications.some(n => n.read) && (
-              <Button variant="ghost" size="sm"
-                className="h-auto py-0.5 px-2 text-xs text-white/30 hover:text-red-400 hover:bg-white/[0.06]"
-                onClick={deleteRead}>
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            )}
+    <div ref={containerRef} className="relative">
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className="relative flex items-center justify-center w-9 h-9 rounded-md text-white/60 hover:text-white hover:bg-white/[0.06] transition-colors"
+      >
+        <Bell className="w-5 h-5" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-[10px] font-bold text-white">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-80 bg-[#15151c] border border-white/[0.06] rounded-xl shadow-2xl z-[9999] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+            <span className="text-sm font-semibold text-white">Notificaciones</span>
+            <div className="flex gap-1">
+              {unreadCount > 0 && (
+                <button type="button" onClick={markAllAsRead}
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-brand-light hover:bg-white/[0.06] transition-colors">
+                  <Check className="w-3 h-3" />
+                  Leer todas
+                </button>
+              )}
+              {notifications.some(n => n.read) && (
+                <button type="button" onClick={deleteRead}
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-white/30 hover:text-red-400 hover:bg-white/[0.06] transition-colors">
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/[0.06]" />
-        <ScrollArea className="max-h-72">
-          <DropdownMenuGroup>
+
+          {/* List */}
+          <ScrollArea className="max-h-72">
             {loading ? (
-              <div className="space-y-2 px-1.5 py-2">
+              <div className="space-y-2 px-3 py-3">
                 {[1,2,3].map(i => (
                   <div key={i} className="flex items-start gap-3 p-2">
                     <div className="w-4 h-4 rounded bg-white/[0.06] animate-pulse mt-0.5" />
@@ -194,34 +203,36 @@ export function NotificationsDropdown() {
                 <p className="text-sm text-white/40">No hay notificaciones</p>
               </div>
             ) : (
-              notifications.map(notification => {
-                const Icon  = typeIcons[notification.type] || Info;
-                const color = typeColors[notification.type] || "text-white/40";
-                return (
-                  <DropdownMenuItem key={notification.id}
-                    className={`flex items-start gap-3 p-3 cursor-pointer focus:bg-white/[0.04] ${!notification.read ? "bg-white/[0.02]" : ""}`}
-                    onClick={() => handleClick(notification)}>
-                    <div className="mt-0.5">
-                      <Icon className={`w-4 h-4 ${color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm leading-snug ${notification.read ? "text-white/50" : "text-white/90"}`}>
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-white/30 mt-1">
-                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: es })}
-                      </p>
-                    </div>
-                    {!notification.read && (
-                      <div className="mt-1.5 w-2 h-2 rounded-full bg-brand shrink-0" />
-                    )}
-                  </DropdownMenuItem>
-                );
-              })
+              <div className="py-1">
+                {notifications.map(notification => {
+                  const Icon  = typeIcons[notification.type] || Info;
+                  const color = typeColors[notification.type] || "text-white/40";
+                  return (
+                    <button key={notification.id} type="button"
+                      onClick={() => handleClick(notification)}
+                      className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors text-left ${!notification.read ? "bg-white/[0.02]" : ""}`}>
+                      <div className="mt-0.5 shrink-0">
+                        <Icon className={`w-4 h-4 ${color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm leading-snug ${notification.read ? "text-white/50" : "text-white/90"}`}>
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-white/30 mt-1">
+                          {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: es })}
+                        </p>
+                      </div>
+                      {!notification.read && (
+                        <div className="mt-1.5 w-2 h-2 rounded-full bg-brand shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             )}
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          </ScrollArea>
+        </div>
+      )}
+    </div>
   );
 }
