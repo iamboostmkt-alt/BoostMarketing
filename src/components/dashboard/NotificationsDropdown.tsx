@@ -141,7 +141,7 @@ export function NotificationsDropdown() {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild onClick={() => setOpen(v => !v)}>
         <Button variant="ghost" size="icon"
           className="relative text-white/60 hover:text-white hover:bg-white/[0.06]">
           <Bell className="w-5 h-5" />
