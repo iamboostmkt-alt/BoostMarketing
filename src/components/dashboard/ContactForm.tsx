@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Trash2, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -50,7 +50,8 @@ export default function ContactForm({
   const [value, setValue] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [deleting,   setDeleting]   = useState(false);
+  const [converting, setConverting] = useState(false);
 
   // Populate form when editing
   useEffect(() => {
@@ -126,6 +127,28 @@ export default function ContactForm({
       else { const d = await res.json(); toast.error(d.error || "Error al eliminar."); }
     } catch { toast.error("Error de red."); }
     finally { setDeleting(false); }
+  }
+
+  async function handleConvertToClient() {
+    if (!contact?.id) return;
+    if (!confirm(`¿Convertir a ${contact.name} en cliente activo? Se creará una cuenta de cliente.`)) return;
+    setConverting(true);
+    try {
+      const res = await fetch('/api/contacts/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contactId: contact.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al convertir');
+      toast.success('Cliente creado correctamente');
+      onOpenChange(false);
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err.message || 'Error al convertir');
+    } finally {
+      setConverting(false);
+    }
   }
 
   return (
@@ -260,11 +283,20 @@ export default function ContactForm({
 
           <DialogFooter className="pt-2">
             {isEditing && (
-              <Button type="button" variant="ghost" onClick={handleDelete} disabled={deleting || loading}
-                className="text-red-400 hover:text-red-300 hover:bg-red-400/10 mr-auto gap-1.5">
-                {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                Eliminar
-              </Button>
+              <div className="flex gap-2 mr-auto">
+                <Button type="button" variant="ghost" onClick={handleDelete} disabled={deleting || loading || converting}
+                  className="text-red-400 hover:text-red-300 hover:bg-red-400/10 gap-1.5">
+                  {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  Eliminar
+                </Button>
+                {(status === 'cliente' || status === 'activo') && (
+                  <Button type="button" variant="ghost" onClick={handleConvertToClient} disabled={converting || loading}
+                    className="text-green-400 hover:text-green-300 hover:bg-green-400/10 gap-1.5">
+                    {converting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserCheck className="w-3.5 h-3.5" />}
+                    Convertir a cliente
+                  </Button>
+                )}
+              </div>
             )}
             <Button
               type="button"
