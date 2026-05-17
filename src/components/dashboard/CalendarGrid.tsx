@@ -48,7 +48,13 @@ const rangeBorderColors: Record<string, string> = {
 };
 
 function getTasksForDay(tasks: Task[], day: Date): Task[] {
-  return tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), day));
+  return tasks.filter((t) =>
+    t.dueDate &&
+    isSameDay(new Date(t.dueDate), day) &&
+    t.status !== 'completed' &&
+    t.status !== 'approved' &&
+    (t as any).deliverableStatus !== 'approved'
+  );
 }
 
 function getAppointmentsForDay(appointments: Appointment[], day: Date): Appointment[] {
