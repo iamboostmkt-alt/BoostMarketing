@@ -221,6 +221,7 @@ model Client {
   tasks           Task[]
   assignedUsers   ClientAssignedUser[]
   milestones      Milestone[]
+  appointments    Appointment[]
 
   @@map("clients")
 }
@@ -364,6 +365,8 @@ model Appointment {
   meetingStartedAt DateTime? @map("meeting_started_at")
   meetingEndedAt   DateTime? @map("meeting_ended_at")
 
+  clientId    String?  @map("client_id")
+  client      Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
   assignedUsers AppointmentAssignedUser[]
 
   createdAt DateTime @default(now()) @map("created_at")

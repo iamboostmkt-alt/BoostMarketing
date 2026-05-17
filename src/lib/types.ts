@@ -189,9 +189,11 @@ export interface Appointment {
   date: string;
   notes: string;
   status: string;
+  clientId?: string | null;
   createdAt: string;
   updatedAt: string;
   meetUrl?: string;
+  client?: { id: string; name: string; company: string } | null;
   assignedUsers?: { user: { id: string; name: string | null; email: string; color: string; image: string | null } }[];
 }
 export interface TeamMember {

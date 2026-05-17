@@ -133,8 +133,11 @@ export async function GET(req: NextRequest) {
 
     const appointments = await db.appointment.findMany({
       where: {
-        email: { equals: client.email, mode: 'insensitive' },
-        date:  { gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
+        OR: [
+          { clientId: client.id },
+          { email: { equals: client.email, mode: 'insensitive' } },
+        ],
+        date: { gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
       },
       orderBy: { date: 'asc' },
       include: {

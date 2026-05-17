@@ -58,15 +58,22 @@ export async function POST(req: NextRequest) {
       ...(creatorId ? [creatorId] : []),
       ...(assignedUserIds ?? []),
     ])] as string[];
+    // Auto-vincular clientId si el email coincide con un cliente
+    const matchingClient = await db.client.findFirst({
+      where: { email: { equals: emailNorm, mode: 'insensitive' } },
+      select: { id: true },
+    });
+
     const appointment = await db.appointment.create({
       data: {
-        name:    nameTrim,
-        email:   emailNorm,
-        phone:   (phone ?? '').trim(),
-        date:    parsedDate,
-        notes:   (notes ?? '').trim(),
-        meetUrl: (meetUrl ?? '').trim(),
-        status:  'pending',
+        name:     nameTrim,
+        email:    emailNorm,
+        phone:    (phone ?? '').trim(),
+        date:     parsedDate,
+        notes:    (notes ?? '').trim(),
+        meetUrl:  (meetUrl ?? '').trim(),
+        status:   'pending',
+        clientId: matchingClient?.id ?? null,
         ...(allAssignedIds.length > 0 && {
           assignedUsers: {
             create: allAssignedIds.map((uid) => ({ userId: uid })),
