@@ -214,6 +214,7 @@ model Client {
   activities      Activity[]
   tasks           Task[]
   assignedUsers   ClientAssignedUser[]
+  milestones      Milestone[]
 
   @@map("clients")
 }
@@ -537,4 +538,17 @@ model TaskFeedback {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("task_feedback")
+}
+
+model Milestone {
+  id          String   @id @default(cuid())
+  clientId    String   @map("client_id")
+  title       String
+  description String   @default("")
+  date        DateTime
+  status      String   @default("pending") // pending | completed | cancelled
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  @@map("milestones")
 }
