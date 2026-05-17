@@ -63,6 +63,7 @@ import { getRoleLabel } from '@/lib/roles';
 import CMSContent from '@/components/dashboard/CMSContent';
 import CustomRoleDialog, { type CustomRole, ALL_PERMISSIONS } from '@/components/dashboard/CustomRoleDialog';
 import { statusColors, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
+import TemplateManagerModal from '@/components/dashboard/TemplateManagerModal';
 import MeetingsTab from '@/components/dashboard/MeetingsTab';
 import type { Appointment, Task } from '@/lib/types';
 
@@ -380,6 +381,7 @@ export default function AdminDashboardPage() {
   const [togglingUser, setTogglingUser] = useState<string | null>(null);
   const [userListView, setUserListView] = useState<'all' | 'prospects'>('all');
   const [activatingUser, setActivatingUser] = useState<string | null>(null);
+  const [templateModalOpen, setTemplateModalOpen] = useState(false);
 
   // Appointments state
   const [appointments,  setAppointments]  = useState<Appointment[]>([]);
@@ -999,6 +1001,9 @@ export default function AdminDashboardPage() {
                 className="border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06] h-7 w-7">
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
+              <Button size="sm" variant="outline" onClick={() => setTemplateModalOpen(true)} className="border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06] h-7 text-xs px-3 gap-1.5">
+                  <Plus className="h-3.5 w-3.5" />Templates
+                </Button>
               <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white gap-1.5 h-7 text-xs px-3">
                 <Link href="/dashboard/tasks?action=create">
                   <Plus className="h-3.5 w-3.5" />Nueva tarea
@@ -1299,6 +1304,7 @@ export default function AdminDashboardPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <TemplateManagerModal open={templateModalOpen} onOpenChange={setTemplateModalOpen} />
     </div>
   );
 }
