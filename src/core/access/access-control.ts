@@ -1,7 +1,6 @@
 import { UserContext } from "../auth/user-context";
 
 export class AccessControl {
-
   static canViewTask(user: UserContext, task: any): boolean {
     if (user.role === "ADMIN") return true;
 
@@ -14,11 +13,18 @@ export class AccessControl {
     }
 
     if (["TEAM_MEMBER", "DESIGNER", "MARKETING", "SALES_REP"].includes(user.role)) {
-      return (
+      // Asignación directa
+      if (
         task.assignedUsers?.some((u: any) => u.id === user.id) ||
         task.assignedUserId === user.id ||
         task.userId === user.id
-      );
+      ) return true;
+      // Acceso por ClientAssignedUser — el cliente tiene al usuario en su equipo
+      if (
+        task.clientId &&
+        task.client?.assignedUsers?.some((au: any) => au.userId === user.id)
+      ) return true;
+      return false;
     }
 
     if (user.role === "CLIENT") {
@@ -31,11 +37,14 @@ export class AccessControl {
     return false;
   }
 
-  static canAccessClientPortal(user: UserContext, clientId: string, client?: { assignedManagerId?: string | null }): boolean {
+  static canAccessClientPortal(
+    user: UserContext,
+    clientId: string,
+    client?: { assignedManagerId?: string | null; assignedUsers?: { userId: string }[] }
+  ): boolean {
     if (user.role === "ADMIN") return true;
 
     if (user.role === "PROJECT_MANAGER") {
-      // El cliente ya viene cargado desde la DB en el route — verificamos assignedManagerId directamente
       if (client) return client.assignedManagerId === user.id;
       return false;
     }

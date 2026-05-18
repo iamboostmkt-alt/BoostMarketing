@@ -32,7 +32,13 @@ function flattenTask(task: any) {
 function flattenTasks(tasks: any[]) { return tasks.map(flattenTask); }
 
 const clientInclude = {
-  select: { id: true, name: true, company: true, assignedManagerId: true },
+  select: {
+    id: true,
+    name: true,
+    company: true,
+    assignedManagerId: true,
+    assignedUsers: { select: { userId: true } },
+  },
 };
 
 export async function GET(req: NextRequest) {
