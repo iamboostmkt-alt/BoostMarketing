@@ -65,6 +65,7 @@ export interface Task {
   isDeliverable?: boolean;
   deliverableStatus?: string | null;
   milestoneId?: string | null;
+  parentTaskId?: string | null;
   archivedAt?: string | null;
   phase?: string | null;
   type?: string | null; // internal_task | deliverable | activity | review | change_request
@@ -265,6 +266,7 @@ export interface Activity {
   isDeliverable?: boolean;
   deliverableStatus?: string | null;
   milestoneId?: string | null;
+  parentTaskId?: string | null;
   archivedAt?: string | null;
   phase?: string | null;
   type?: string | null; // internal_task | deliverable | activity | review | change_request

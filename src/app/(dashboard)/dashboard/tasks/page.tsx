@@ -182,9 +182,9 @@ function TasksContent() {
         fetch('/api/tasks?scope=clients-with-tasks'),
         isManager ? fetch('/api/tasks?scope=all') : Promise.resolve(null),
       ]);
-      if (mineRes.ok)    { const d = await mineRes.json();    setMyTasks(d.tasks ?? []); }
+      if (mineRes.ok)    { const d = await mineRes.json();    setMyTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId)); }
       if (clientsRes.ok) { const d = await clientsRes.json(); setClientsWithTasks(d.clients ?? []); }
-      if (allRes?.ok)    { const d = await allRes.json();     setAllTasks(d.tasks ?? []); }
+      if (allRes?.ok)    { const d = await allRes.json();     setAllTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId)); }
     } catch { /* silent */ } finally { setLoading(false); }
   }, [isManager]);
 
