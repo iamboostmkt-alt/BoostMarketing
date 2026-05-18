@@ -726,7 +726,21 @@ export default function CalendarContent() {
   }
 
   const dayTasks = useMemo(
-    () => tasks.filter((t) => t.dueDate && sameLocalDay(t.dueDate, selectedDay)),
+    () => tasks.filter((t) =>
+      t.dueDate &&
+      sameLocalDay(t.dueDate, selectedDay) &&
+      t.status !== 'completed' &&
+      t.status !== 'approved' &&
+      (t as any).deliverableStatus !== 'approved'
+    ),
+    [tasks, selectedDay]
+  );
+  const dayCompletedTasksPanel = useMemo(
+    () => tasks.filter((t) =>
+      t.dueDate &&
+      sameLocalDay(t.dueDate, selectedDay) &&
+      (t.status === 'completed' || t.status === 'approved' || (t as any).deliverableStatus === 'approved')
+    ),
     [tasks, selectedDay]
   );
 
@@ -741,7 +755,13 @@ export default function CalendarContent() {
   );
 
   const filteredDayTasks = useMemo(
-    () => filteredTasks.filter((t) => t.dueDate && sameLocalDay(t.dueDate, selectedDay)),
+    () => filteredTasks.filter((t) =>
+      t.dueDate &&
+      sameLocalDay(t.dueDate, selectedDay) &&
+      t.status !== 'completed' &&
+      t.status !== 'approved' &&
+      (t as any).deliverableStatus !== 'approved'
+    ),
     [filteredTasks, selectedDay]
   );
 
@@ -942,6 +962,10 @@ export default function CalendarContent() {
                   </div>
                 ))}
               </div>
+            )}
+
+            {dayCompletedTasksPanel.length > 0 && (
+              <CompletedTasksSection tasks={dayCompletedTasksPanel} />
             )}
 
             {dayAppointments.length > 0 && (
