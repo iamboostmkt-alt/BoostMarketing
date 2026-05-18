@@ -161,6 +161,7 @@ function TasksContent() {
   const [loading, setLoading]               = useState(true);
   const [viewMode, setViewMode]             = useState<ViewMode>('list');
   const [formOpen, setFormOpen]             = useState(false);
+  const [parentTaskId, setParentTaskId]     = useState<string | null>(null);
   const [editingTask, setEditingTask]       = useState<Task | null>(null);
   const [deleteTask, setDeleteTask]         = useState<Task | null>(null);
   const [deleting, setDeleting]             = useState(false);
@@ -245,7 +246,7 @@ function TasksContent() {
     );
   }
 
-  const cardProps = { onEdit: handleEdit, onDelete: (t: Task) => setDeleteTask(t), onView: (t: Task) => setViewingTask(t), onMarkComplete: handleMarkComplete, onMarkPending: handleMarkPending };
+  const cardProps = { onEdit: handleEdit, onDelete: (t: Task) => setDeleteTask(t), onView: (t: Task) => setViewingTask(t), onMarkComplete: handleMarkComplete, onMarkPending: handleMarkPending, onAddSubtask: (t: Task) => { setParentTaskId(t.id); setEditingTask(null); setFormOpen(true); } };
 
   return (
     <div className="space-y-6">
@@ -355,7 +356,7 @@ function TasksContent() {
       )}
 
       {/* Modals */}
-      <TaskForm open={formOpen} onOpenChange={setFormOpen} task={editingTask} isManager={isManager} onSuccess={fetchAll} />
+      <TaskForm open={formOpen} onOpenChange={(v) => { setFormOpen(v); if (!v) setParentTaskId(null); }} task={editingTask} isManager={isManager} onSuccess={fetchAll} parentTaskId={parentTaskId} />
       <TaskDetailModal task={viewingTask} open={!!viewingTask} onClose={() => setViewingTask(null)} onEdit={handleEdit} isManager={isManager} />
       <AlertDialog open={!!deleteTask} onOpenChange={(open) => !open && setDeleteTask(null)}>
         <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
