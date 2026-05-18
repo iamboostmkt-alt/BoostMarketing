@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 import { useSession } from 'next-auth/react';
 import {
-  CalendarDays, Plus, CheckSquare, Clock, Video, Pencil, Trash2,
+  CalendarDays, Plus, CheckSquare, CheckCircle2, ChevronDown, Clock, Video, Pencil, Trash2,
   Sparkles,
 } from 'lucide-react';
 import {
@@ -323,6 +323,32 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
 }
  
 // Ã¢â€â‚¬Ã¢â€â‚¬ DayModal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+function CompletedTasksSection({ tasks }: { tasks: Task[] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-white/[0.06] rounded-lg overflow-hidden">
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-3 py-2 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+        <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/30 uppercase tracking-wider">
+          <CheckSquare className="w-3 h-3 text-green-400/50" />
+          Listas ({tasks.length})
+        </div>
+        <ChevronDown className={`w-3.5 h-3.5 text-white/20 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="space-y-1.5 p-2">
+          {tasks.map(t => (
+            <div key={t.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-white/[0.02]">
+              <CheckCircle2 className="w-3.5 h-3.5 text-green-400/60 shrink-0" />
+              <span className="text-xs text-white/40 line-through truncate">{t.title}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface DayModalProps {
   open:                boolean;
   onClose:             () => void;
@@ -345,7 +371,21 @@ function DayModal({
   onEditTask, onNewTask, onDeleteTask, onEditAppointment, onDeleteAppointment, onNewAppointment,
 }: DayModalProps) {
   const dayTasks = useMemo(
-    () => tasks.filter((t) => t.dueDate && sameLocalDay(t.dueDate, day)),
+    () => tasks.filter((t) =>
+      t.dueDate &&
+      sameLocalDay(t.dueDate, day) &&
+      t.status !== 'completed' &&
+      t.status !== 'approved' &&
+      (t as any).deliverableStatus !== 'approved'
+    ),
+    [tasks, day]
+  );
+  const dayCompletedTasks = useMemo(
+    () => tasks.filter((t) =>
+      t.dueDate &&
+      sameLocalDay(t.dueDate, day) &&
+      (t.status === 'completed' || t.status === 'approved' || (t as any).deliverableStatus === 'approved')
+    ),
     [tasks, day]
   );
   const dayActivities = useMemo(
@@ -438,6 +478,11 @@ function DayModal({
             </section>
           )}
  
+          {/* Tareas listas — colapsable */}
+          {dayCompletedTasks.length > 0 && (
+            <CompletedTasksSection tasks={dayCompletedTasks} />
+          )}
+
           {/* Videollamadas */}
           {dayAppointments.length > 0 && (
             <section className="space-y-2">
