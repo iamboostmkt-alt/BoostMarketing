@@ -331,11 +331,12 @@ function TasksContent() {
               </button>
               {expandedClient === client.id && (
                 <div className="p-3 space-y-2 border-t border-white/[0.04]">
-                  {viewMode === 'board' ? (
-                    <BoardView tasks={client.tasks} {...cardProps} />
-                  ) : (
-                    client.tasks.map((task) => <TaskCard key={task.id} task={task} {...cardProps} />)
-                  )}
+                  <MineTasksView
+                    tasks={client.tasks}
+                    viewMode={viewMode}
+                    cardProps={cardProps}
+                    onCreate={handleCreate}
+                  />
                 </div>
               )}
             </div>
@@ -345,22 +346,12 @@ function TasksContent() {
 
       {/* Tab: Todas (managers only) */}
       {activeTab === 'all' && isManager && (
-        <div>
-          {allTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
-                <LayoutGrid className="w-8 h-8 text-white/20" />
-              </div>
-              <h3 className="text-lg font-semibold text-white/70 mb-1">Sin tareas en el sistema</h3>
-            </div>
-          ) : viewMode === 'board' ? (
-            <BoardView tasks={allTasks} {...cardProps} />
-          ) : (
-            <div className="space-y-3">
-              {allTasks.map((task) => <TaskCard key={task.id} task={task} {...cardProps} />)}
-            </div>
-          )}
-        </div>
+        <MineTasksView
+          tasks={allTasks}
+          viewMode={viewMode}
+          cardProps={cardProps}
+          onCreate={handleCreate}
+        />
       )}
 
       {/* Modals */}
