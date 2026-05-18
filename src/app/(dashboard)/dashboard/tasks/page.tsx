@@ -40,13 +40,14 @@ const statusDotColors: Record<string, string> = {
   completed: 'bg-emerald-400',
 };
 
-function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPending }: {
+function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask }: {
   tasks: Task[];
   onEdit: (t: Task) => void;
   onDelete: (t: Task) => void;
   onView: (t: Task) => void;
   onMarkComplete: (t: Task) => Promise<void>;
   onMarkPending: (t: Task) => Promise<void>;
+  onAddSubtask: (t: Task) => void;
 }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -62,7 +63,8 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
             <div className="space-y-2 min-h-[80px] bg-white/[0.02] rounded-xl p-2 border border-white/[0.04]">
               {stageTasks.map((task) => (
                 <TaskCard key={task.id} task={task} onEdit={onEdit} onDelete={onDelete}
-                  onMarkComplete={onMarkComplete} onMarkPending={onMarkPending} />
+                  onMarkComplete={onMarkComplete} onMarkPending={onMarkPending}
+                  onAddSubtask={onAddSubtask} />
               ))}
               {stageTasks.length === 0 && (
                 <div className="flex items-center justify-center h-16 text-xs text-white/20">Sin tareas</div>

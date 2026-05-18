@@ -167,8 +167,35 @@ export async function GET(req: NextRequest) {
   }
 
   if (scope === "all" && isManager) {
+    // ADMIN ve todo — PM solo ve tareas de sus clientes asignados
+    let whereAll: any = { archivedAt: null };
+    if (!isAdmin) {
+      const managedClients = await db.client.findMany({
+        where: { assignedManagerId: userId },
+        select: { id: true },
+      });
+      const assignedClients = await db.clientAssignedUser.findMany({
+        where: { userId },
+        select: { clientId: true },
+      });
+      const allClientIds = [
+        ...new Set([
+          ...managedClients.map((c) => c.id),
+          ...assignedClients.map((c) => c.clientId),
+        ]),
+      ];
+      whereAll = {
+        archivedAt: null,
+        OR: [
+          { userId },
+          { assignedUserId: userId },
+          { assignedUsers: { some: { userId } } },
+          ...(allClientIds.length > 0 ? [{ clientId: { in: allClientIds } }] : []),
+        ],
+      };
+    }
     const tasks = await db.task.findMany({
-      where: { archivedAt: null },
+      where: whereAll,
       include: {
         assignedUser:  userInclude,
         assignedUsers: { include: { user: userInclude } },

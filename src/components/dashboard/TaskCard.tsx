@@ -16,6 +16,7 @@ interface TaskCardProps {
   onMarkComplete?: (task: Task) => void | Promise<void>;
   /** Marcar como pendiente (solo si la tarea está completada). */
   onMarkPending?: (task: Task) => void | Promise<void>;
+  onAddSubtask?: (parentTask: Task) => void;
 }
 
 const priorityDotColors: Record<string, string> = {
@@ -58,7 +59,7 @@ function resolveAssignees(task: Task): TaskAssignee[] {
   return [];
 }
 
-export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplete, onMarkPending }: TaskCardProps) {
+export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask }: TaskCardProps) {
   const overdue = isOverdue(task.dueDate) && task.status !== 'completed';
   const assignees = resolveAssignees(task);
 
