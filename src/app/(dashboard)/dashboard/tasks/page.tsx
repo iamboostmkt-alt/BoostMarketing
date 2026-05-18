@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   Plus, LayoutList, Columns3, CheckSquare, AlertTriangle,
-  User, Building2, LayoutGrid,
+  User, Building2, LayoutGrid, ChevronDown, CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -71,6 +71,79 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function MineTasksView({ tasks, viewMode, cardProps, onCreate }: {
+  tasks: Task[];
+  viewMode: ViewMode;
+  cardProps: any;
+  onCreate: () => void;
+}) {
+  const [showCompleted, setShowCompleted] = useState(false);
+  const activeTasks    = tasks.filter(t => t.status !== 'completed' && t.status !== 'approved');
+  const completedTasks = tasks.filter(t => t.status === 'completed' || t.status === 'approved');
+
+  if (tasks.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
+          <CheckSquare className="w-8 h-8 text-white/20" />
+        </div>
+        <h3 className="text-lg font-semibold text-white/70 mb-1">Sin tareas asignadas</h3>
+        <p className="text-sm text-white/40 mb-4">Crea una tarea para comenzar</p>
+        <Button onClick={onCreate} className="bg-brand hover:bg-brand-dark text-white gap-2">
+          <Plus className="w-4 h-4" /> Nueva Tarea
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Tareas activas */}
+      {viewMode === 'board' ? (
+        <BoardView tasks={activeTasks} {...cardProps} />
+      ) : (
+        <div className="space-y-3">
+          {activeTasks.map((task) => <TaskCard key={task.id} task={task} {...cardProps} />)}
+          {activeTasks.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <CheckCircle2 className="w-10 h-10 text-green-400/40 mb-2" />
+              <p className="text-sm text-white/40">Todas las tareas están completadas</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Sección Listas colapsable */}
+      {completedTasks.length > 0 && (
+        <div className="border border-white/[0.06] rounded-xl overflow-hidden">
+          <button type="button" onClick={() => setShowCompleted(v => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+            <div className="flex items-center gap-2 text-sm font-medium text-white/40">
+              <CheckCircle2 className="w-4 h-4 text-green-400/60" />
+              Listas ({completedTasks.length})
+            </div>
+            <ChevronDown className={`w-4 h-4 text-white/20 transition-transform ${showCompleted ? 'rotate-180' : ''}`} />
+          </button>
+          {showCompleted && (
+            <div className="space-y-2 p-3">
+              {completedTasks.map((task) => (
+                <div key={task.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.02] opacity-60">
+                  <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+                  <span className="text-sm text-white/50 line-through truncate flex-1">{task.title}</span>
+                  <button type="button" onClick={() => cardProps.onEdit(task)}
+                    className="text-[10px] text-white/25 hover:text-white/60 transition-colors shrink-0">
+                    Ver
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -223,26 +296,12 @@ function TasksContent() {
 
       {/* Tab: Mis Tareas */}
       {activeTab === 'mine' && (
-        <div>
-          {myTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
-                <CheckSquare className="w-8 h-8 text-white/20" />
-              </div>
-              <h3 className="text-lg font-semibold text-white/70 mb-1">Sin tareas asignadas</h3>
-              <p className="text-sm text-white/40 mb-4">Crea una tarea para comenzar</p>
-              <Button onClick={handleCreate} className="bg-brand hover:bg-brand-dark text-white gap-2">
-                <Plus className="w-4 h-4" /> Nueva Tarea
-              </Button>
-            </div>
-          ) : viewMode === 'board' ? (
-            <BoardView tasks={myTasks} {...cardProps} />
-          ) : (
-            <div className="space-y-3">
-              {myTasks.map((task) => <TaskCard key={task.id} task={task} {...cardProps} />)}
-            </div>
-          )}
-        </div>
+        <MineTasksView
+          tasks={myTasks}
+          viewMode={viewMode}
+          cardProps={cardProps}
+          onCreate={handleCreate}
+        />
       )}
 
       {/* Tab: Clientes */}
