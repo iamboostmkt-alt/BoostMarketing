@@ -177,6 +177,8 @@ model Task {
   milestoneId       String?  @map("milestone_id")
   archivedAt        DateTime? @map("archived_at")
   phase             String?  @default("general") // general | inicio | intermedio | avance | final
+  type              String   @default("internal_task") // internal_task | deliverable | activity | review | change_request
+  publishedAt       DateTime? @map("published_at")
   milestone         Milestone? @relation("MilestoneTasks", fields: [milestoneId], references: [id], onDelete: SetNull)
 
   @@map("tasks")

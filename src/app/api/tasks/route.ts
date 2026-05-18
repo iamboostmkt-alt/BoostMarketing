@@ -205,7 +205,7 @@ export async function POST(req: NextRequest) {
   const userId    = (session.user as any).id;
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const body      = await req.json();
-  const { title, description, priority, dueDate, assignedUserId: _assignedUserId, assignedUserIds, clientId, visibility, references } = body;
+  const { title, description, priority, dueDate, assignedUserId: _assignedUserId, assignedUserIds, clientId, visibility, references, type: taskType } = body;
   const assignedUserId = _assignedUserId || (Array.isArray(assignedUserIds) && assignedUserIds[0]) || null;
 
   if (!title) return NextResponse.json({ error: "Titulo requerido" }, { status: 400 });
@@ -233,6 +233,7 @@ export async function POST(req: NextRequest) {
       assignedUserId: isManager ? assignedUserId || null : null,
       clientId:       resolvedClientId,
       visibility:     resolvedVisibility,
+      type:           taskType || (resolvedVisibility === 'client_visible' ? 'deliverable' : 'internal_task'),
       isDeliverable:  isClient ? true : (isManager && resolvedClientId ? true : false),
       deliverableStatus: isClient ? 'draft' : (isManager && resolvedClientId ? 'client_review' : null),
       ...(resolvedClientId && { visibility: 'client_visible' }),
@@ -260,7 +261,7 @@ export async function PUT(req: NextRequest) {
   const userName  = (session.user as any).name || "Un usuario";
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const body      = await req.json();
-  const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId, visibility, references, milestoneId, phase } = body;
+  const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId, visibility, references, milestoneId, phase, type: taskType } = body;
 
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
@@ -307,6 +308,7 @@ export async function PUT(req: NextRequest) {
       ...(isManager && visibility === 'client_visible' && { isDeliverable: true }),
       ...(milestoneId !== undefined && { milestoneId: milestoneId || null }),
       ...(phase !== undefined && { phase }),
+      ...(taskType !== undefined && { type: taskType }),
       ...(references !== undefined && { references: Array.isArray(references) ? references : [] }),
     },
     include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },

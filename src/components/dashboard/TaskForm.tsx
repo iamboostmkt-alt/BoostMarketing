@@ -180,6 +180,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         assignedUserIds: isManager ? assignedUserIds : undefined,
         clientId:        isManager ? (clientId || null) : (initialClientId || null),
         visibility:      isManager ? visibility : undefined,
+        type: isManager ? (visibility === 'client_visible' ? 'deliverable' : 'internal_task') : 'deliverable',
         ...(isEditing ? { id: task!.id } : {}),
       };
       const res = await fetch('/api/tasks', {

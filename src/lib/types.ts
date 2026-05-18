@@ -67,6 +67,8 @@ export interface Task {
   milestoneId?: string | null;
   archivedAt?: string | null;
   phase?: string | null;
+  type?: string | null; // internal_task | deliverable | activity | review | change_request
+  publishedAt?: string | null;
   milestone?: { id: string; title: string; status: string } | null;
 }
 
@@ -265,6 +267,8 @@ export interface Activity {
   milestoneId?: string | null;
   archivedAt?: string | null;
   phase?: string | null;
+  type?: string | null; // internal_task | deliverable | activity | review | change_request
+  publishedAt?: string | null;
   milestone?: { id: string; title: string; status: string } | null;
 }
 

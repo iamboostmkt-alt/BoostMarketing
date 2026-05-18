@@ -34,15 +34,16 @@ export async function GET(req: NextRequest) {
         ? { clientId: clientRecord.id, visibility: 'client_visible', deletedAt: null }
         : { id: 'none' };
     } else if (scope === 'all' && isManager) {
-      taskWhere = { deletedAt: null, archivedAt: null };
+      taskWhere = { deletedAt: null, archivedAt: null, NOT: { type: 'internal_task' } };
     } else if (scope === 'clients-with-tasks' && isManager) {
-      taskWhere = { clientId: { not: null }, deletedAt: null, archivedAt: null };
+      taskWhere = { clientId: { not: null }, deletedAt: null, archivedAt: null, NOT: { type: 'internal_task' } };
     } else if (clientId && isManager) {
-      taskWhere = { clientId, deletedAt: null, archivedAt: null };
+      taskWhere = { clientId, deletedAt: null, archivedAt: null, NOT: { type: 'internal_task' } };
     } else {
       taskWhere = {
         deletedAt: null,
         archivedAt: null,
+        NOT: { type: 'internal_task' },
         OR: [
           { userId: user.id },
           { assignedUserId: user.id },
