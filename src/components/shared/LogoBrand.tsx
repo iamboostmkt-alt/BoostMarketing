@@ -23,7 +23,7 @@ export function LogoBrand({ size = 'md', showName = true }: LogoBrandProps) {
         {logoUrl ? (
           <img src={logoUrl} alt={agencyName} className="w-3/4 h-3/4 object-contain" />
         ) : (
-          <Zap className={s.icon} />
+          <span className={`font-bold text-white ${s.text}`}>{agencyName.slice(0,2).toUpperCase()}</span>
         )}
       </div>
       {showName && (

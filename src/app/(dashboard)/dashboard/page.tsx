@@ -535,11 +535,11 @@ export default function DashboardPage() {
           )}
         </div>
       )}
-      {/* Three column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Four column layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
         {/* Col 1: Tareas activas */}
-        <div className="glass-card rounded-xl flex flex-col">
+        <div className="glass-card rounded-xl flex flex-col md:col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
             <div className="flex items-center gap-2">
               <CheckSquare className="w-4 h-4 text-cyan-400" />
@@ -571,7 +571,61 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Col 2: Reuniones próximas */}
+        {/* Col 2: Equipo de trabajo */}
+        {isManager && (
+        <div className="glass-card rounded-xl flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-brand-light" />
+              <h3 className="text-sm font-semibold text-white">Equipo</h3>
+              <span className="text-[10px] bg-brand/15 text-brand-light px-1.5 py-0.5 rounded-full">
+                {teamUsers.length}
+              </span>
+            </div>
+          </div>
+          <div className="divide-y divide-white/[0.04] flex-1 overflow-y-auto max-h-[400px] custom-scrollbar">
+            {loadingTeam ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 p-3">
+                  <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                  <div className="flex-1 space-y-1.5"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/3" /></div>
+                </div>
+              ))
+            ) : teamUsers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <User className="w-8 h-8 text-white/20 mb-2" />
+                <p className="text-xs text-white/40">Sin equipo</p>
+              </div>
+            ) : (
+              teamUsers.map(u => {
+                const userTasks = teamTasks.filter(t =>
+                  t.assignedUserId === u.id ||
+                  t.assignedUsers?.some((au: any) => au.id === u.id)
+                );
+                const pending   = userTasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length;
+                const completed = userTasks.filter(t => t.status === 'completed' || t.status === 'approved').length;
+                return (
+                  <div key={u.id} className="flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                      style={{ backgroundColor: (u.color || '#7c3aed') + '33', color: u.color || '#7c3aed' }}>
+                      {(u.name || u.email).slice(0,2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-white/80 truncate">{u.name || u.email}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-amber-400">{pending} pendientes</span>
+                        <span className="text-[10px] text-green-400">{completed} listas</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+        )}
+
+        {/* Col 3: Reuniones próximas */}
         <div className="glass-card rounded-xl flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
             <div className="flex items-center gap-2">
