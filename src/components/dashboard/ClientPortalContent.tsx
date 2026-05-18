@@ -383,6 +383,38 @@ function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEvents }:
   );
 }
 
+// ── CompletedDeliverables ───────────────────────────────────────────────────────
+
+function CompletedDeliverables({ tasks }: { tasks: any[] }) {
+  const [open, setOpen] = useState(false);
+  if (tasks.length === 0) return null;
+  return (
+    <div className="border border-white/[0.06] rounded-xl overflow-hidden mt-2">
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+        <div className="flex items-center gap-2 text-xs font-medium text-white/35">
+          <CheckCircle2 className="w-3.5 h-3.5 text-green-400/50" />
+          Listas ({tasks.length})
+        </div>
+        <ChevronDown className="w-3.5 h-3.5 text-white/20" />
+      </button>
+      {open && (
+        <div className="space-y-1.5 p-3 border-t border-white/[0.04]">
+          {tasks.map((task: any) => (
+            <div key={task.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white/[0.02] opacity-60">
+              <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
+              <span className="text-xs text-white/45 line-through truncate flex-1">{task.title}</span>
+              {task.dueDate && (
+                <span className="text-[10px] text-white/25 shrink-0">{new Date(task.dueDate).toLocaleDateString('es-MX',{day:'numeric',month:'short'})}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── TaskCard ──────────────────────────────────────────────────────────────────
 
 function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () => void; onDelete?: (id: string) => void }) {
@@ -1053,7 +1085,8 @@ export default function ClientPortalContent() {
   const teamMembers    = [...teamMembersMap.values()];
   const totalItems     = tasks.length;
   const completedItems = tasks.filter((t) => t.status === 'completed' || t.status === 'approved').length;
-  const displayedTasks = activeTab === 'tasks' ? tasks.filter((t) => t.status !== 'completed' && t.status !== 'approved') : tasks;
+  const displayedTasks   = activeTab === 'tasks' ? tasks.filter((t) => t.status !== 'completed' && t.status !== 'approved') : tasks.filter((t) => t.status !== 'completed' && t.status !== 'approved');
+  const completedTasks   = tasks.filter((t) => t.status === 'completed' || t.status === 'approved' || (t as any).deliverableStatus === 'approved');
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -1279,6 +1312,9 @@ export default function ClientPortalContent() {
               )}
             </div>
           )}
+
+          {/* Sección Listas colapsable */}
+          <CompletedDeliverables tasks={completedTasks} />
 
           {/* Barra acción selección múltiple entregas */}
           {selectMode && isManager && selectedTaskIds.size > 0 && (
