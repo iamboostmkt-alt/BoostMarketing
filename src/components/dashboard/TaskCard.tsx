@@ -196,7 +196,7 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
         </div>
       </div>
       {/* Subtareas */}
-      {onAddSubtask && (
+      {true && (
         <div className="mt-3 border-t border-white/[0.04] pt-3">
           <div className="flex items-center justify-between">
             <button
