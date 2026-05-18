@@ -1414,7 +1414,7 @@ export default function ClientPortalContent() {
         onClose={() => setSelectedDay(null)}
         onDeleteTask={(id) => { handleDeleteTask(id); setSelectedDay(null); }}
         onDeleteAppt={(id) => { handleDeleteAppt(id); setSelectedDay(null); }}
-        onEditAppt={(apt) => { if (apt) { setEditingAppt(apt); setApptEditOpen(true); } else { if (isManager) { setMeetingOpen(true); } else { if (selectedDay) { const d = new Date(selectedDay); d.setHours(10,0,0,0); setRequestDate(d.toISOString().slice(0,16)); } setRequestOpen(true); } } }}
+        onEditAppt={(apt) => { if (apt) { setEditingAppt(apt); setApptEditOpen(true); } else { if (isManager) { setMeetingOpen(true); } else { if (selectedDay) { const d = new Date(selectedDay); d.setHours(10,0,0,0); setRequestDate(d.toISOString().slice(0,16)); setRequestOpen(true); } } } }}
         onEditTask={(task) => { setEditingTask(task); if (!task && selectedDay) setFormDate(selectedDay); setPortalTaskOpen(true); }}
         onFeedback={refetchSilent}
       />
