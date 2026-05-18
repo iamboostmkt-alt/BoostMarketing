@@ -223,7 +223,8 @@ export default function ClientsPage() {
     prospect:   clients.filter((c) => segment(c) === 'prospect').length,
     unassigned: clients.filter((c) => segment(c) === 'unassigned').length,
     assigned:   clients.filter((c) => segment(c) === 'assigned').length,
-  }), [clients]);
+    leads:      leads.length,
+  }), [clients, leads]);
 
   const handleEdit = (client: Client) => { setEditingClient(client); setFormOpen(true); };
   const handleCreate = () => { setEditingClient(null); setFormOpen(true); };
