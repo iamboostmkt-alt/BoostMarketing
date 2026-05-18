@@ -230,9 +230,9 @@ function TasksContent() {
   function handleCreate() { setEditingTask(null); setFormOpen(true); }
 
   const tabs = [
-    { id: 'mine' as TabId,    label: 'Mis Tareas',        icon: User,        count: myTasks.length },
-    { id: 'clients' as TabId, label: 'Clientes',          icon: Building2,   count: clientsWithTasks.reduce((a, c) => a + c.tasks.length, 0) },
-    ...(isManager ? [{ id: 'all' as TabId, label: 'Todas', icon: LayoutGrid, count: allTasks.length }] : []),
+    { id: 'mine' as TabId,    label: 'Mis Tareas',        icon: User,        count: myTasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length },
+    { id: 'clients' as TabId, label: 'Clientes',          icon: Building2,   count: clientsWithTasks.reduce((a, c) => a + c.tasks.filter((t: any) => t.status !== 'completed' && t.status !== 'approved').length, 0) },
+    ...(isManager ? [{ id: 'all' as TabId, label: 'Todas', icon: LayoutGrid, count: allTasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length }] : []),
   ];
 
   if (loading) {
