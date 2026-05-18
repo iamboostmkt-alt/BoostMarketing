@@ -12,7 +12,17 @@ export class AccessControl {
       );
     }
 
-    if (["TEAM_MEMBER", "DESIGNER", "MARKETING", "SALES_REP"].includes(user.role)) {
+    if (user.role === "SALES_REP") {
+      // SALES_REP ve tareas que creó + tareas asignadas + tareas de clientes que creó
+      return (
+        task.userId === user.id ||
+        task.assignedUserId === user.id ||
+        task.assignedUsers?.some((u: any) => u.id === user.id) ||
+        (task.clientId && task.client?.userId === user.id)
+      );
+    }
+
+    if (["TEAM_MEMBER", "DESIGNER", "MARKETING"].includes(user.role)) {
       // Asignación directa
       if (
         task.assignedUsers?.some((u: any) => u.id === user.id) ||
