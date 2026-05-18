@@ -1075,7 +1075,7 @@ export default function ClientPortalContent() {
   // ── Datos derivados ──────────────────────────────────────────────────────
   const assignedManager = client.assignedManager;
 
-  const EXCLUDED_ROLES = ['ADMIN'];
+  const EXCLUDED_ROLES = ['ADMIN', 'TEAM_MEMBER', 'DESIGNER', 'MARKETING', 'SALES_REP'];
   const teamMembersMap = new Map();
   tasks.forEach((t) => {
     if (t.assignedUser && t.assignedUser.id !== assignedManager?.id && !EXCLUDED_ROLES.includes((t.assignedUser as any).role)) {
