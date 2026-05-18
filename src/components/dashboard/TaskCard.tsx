@@ -62,6 +62,22 @@ function resolveAssignees(task: Task): TaskAssignee[] {
 export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask }: TaskCardProps) {
   const overdue = isOverdue(task.dueDate) && task.status !== 'completed';
   const assignees = resolveAssignees(task);
+  const [subtasksOpen, setSubtasksOpen] = useState(false);
+  const [subtasks, setSubtasks] = useState<Task[]>([]);
+  const [loadingSubtasks, setLoadingSubtasks] = useState(false);
+
+  useEffect(() => {
+    if (!subtasksOpen) return;
+    setLoadingSubtasks(true);
+    fetch(`/api/tasks?parentId=${task.id}`)
+      .then(r => r.json())
+      .then(d => setSubtasks(d.tasks || []))
+      .finally(() => setLoadingSubtasks(false));
+  }, [subtasksOpen, task.id]);
+
+  const completedCount = subtasks.filter(s => s.status === 'completed').length;
+  const totalCount = subtasks.length;
+  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't trigger view if clicking on action buttons
@@ -179,6 +195,50 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
           </div>
         </div>
       </div>
+      {/* Subtareas */}
+      {onAddSubtask && (
+        <div className="mt-3 border-t border-white/[0.04] pt-3">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={(e) => { e.stopPropagation(); setSubtasksOpen(!subtasksOpen); }}
+              className="flex items-center gap-1.5 text-[11px] text-white/40 hover:text-white/70 transition-colors"
+            >
+              {subtasksOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              Subtareas
+              {totalCount > 0 && <span className="text-white/30">{completedCount}/{totalCount}</span>}
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onAddSubtask(task); }}
+              className="flex items-center gap-1 text-[11px] text-white/30 hover:text-white/60 transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+              Agregar
+            </button>
+          </div>
+          {subtasksOpen && (
+            <div className="mt-2 space-y-1">
+              {totalCount > 0 && (
+                <div className="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden mb-2">
+                  <div className="h-full bg-emerald-500/70 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                </div>
+              )}
+              {loadingSubtasks && <p className="text-[11px] text-white/30 py-1">Cargando...</p>}
+              {!loadingSubtasks && subtasks.map(sub => (
+                <div key={sub.id} className="flex items-center gap-2 py-1 px-2 rounded-lg bg-white/[0.02]">
+                  <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${sub.status === 'completed' ? 'bg-emerald-400' : 'bg-white/20'}`} />
+                  <span className={`text-[11px] flex-1 truncate ${sub.status === 'completed' ? 'text-white/30 line-through' : 'text-white/60'}`}>
+                    {sub.title}
+                  </span>
+                  <span className="text-[10px] text-white/20">{statusLabels[sub.status] || sub.status}</span>
+                </div>
+              ))}
+              {!loadingSubtasks && subtasks.length === 0 && (
+                <p className="text-[11px] text-white/20 py-1 px-2">Sin subtareas</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
