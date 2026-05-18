@@ -133,9 +133,10 @@ export default function ClientsPage() {
   const fetchLeads = useCallback(async () => {
     setLoadingLeads(true);
     try {
-      const res = await fetch('/api/appointments?status=pending&public=true');
+      const res = await fetch('/api/appointments?status=pending');
       if (res.ok) {
         const data = await res.json();
+        // Solo leads sin cliente vinculado
         setLeads((data.appointments || []).filter((a: any) => !a.clientId));
       }
     } catch {}
