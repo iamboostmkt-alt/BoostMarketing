@@ -30,11 +30,15 @@ export interface PortalClient {
 // ── Entregable (Task con visibility=client_visible, visto por el cliente) ────
 
 export type DeliverableStatus =
+  | 'draft'
   | 'pending'
   | 'in_progress'
-  | 'client_review'   // listo para que el cliente lo revise
+  | 'internal_review'
+  | 'client_review'       // listo para que el cliente lo revise
   | 'changes_requested'
   | 'approved'
+  | 'scheduled'
+  | 'published'
   | 'completed';
 
 export interface PortalDeliverable {

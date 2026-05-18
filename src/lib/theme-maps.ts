@@ -1,37 +1,53 @@
 export const statusColors: Record<string, string> = {
-  pending: 'status-pending',
-  in_progress: 'status-editing',
-  editing: 'status-editing',
-  review: 'status-review',
-  completed: 'status-completed',
-  lead: 'status-lead',
-  prospect: 'status-prospect',
-  negotiation: 'status-negotiation',
-  won: 'status-won',
-  lost: 'status-lost',
-  active: 'status-active',
-  inactive: 'status-inactive',
-  // New CRM pipeline stages
-  cliente: 'status-won',
-  activo: 'status-active',
+  // Task workflow
+  draft:               'status-draft',
+  pending:             'status-pending',
+  in_progress:         'status-editing',
+  editing:             'status-editing',
+  internal_review:     'status-internal-review',
+  client_review:       'status-client-review',
+  changes_requested:   'status-changes',
+  approved:            'status-approved',
+  scheduled:           'status-scheduled',
+  published:           'status-published',
+  review:              'status-review',
+  completed:           'status-completed',
+  // CRM
+  lead:                'status-lead',
+  prospect:            'status-prospect',
+  negotiation:         'status-negotiation',
+  won:                 'status-won',
+  lost:                'status-lost',
+  active:              'status-active',
+  inactive:            'status-inactive',
+  cliente:             'status-won',
+  activo:              'status-active',
 };
 
 export const statusLabels: Record<string, string> = {
-  pending: 'Pendiente',
-  in_progress: 'En progreso',
-  editing: 'En progreso',
-  review: 'En progreso',
-  completed: 'Completado',
-  lead: 'Lead',
-  prospect: 'Prospecto',
-  negotiation: 'Negociación',
-  won: 'Ganado',
-  lost: 'Perdido',
-  active: 'Activo',
-  inactive: 'Inactivo',
-  // New CRM pipeline stages
-  cliente: 'Cliente',
-  activo: 'Activo',
+  // Task workflow
+  draft:               'Borrador',
+  pending:             'Pendiente',
+  in_progress:         'En progreso',
+  editing:             'En progreso',
+  internal_review:     'Revisión interna',
+  client_review:       'En revisión',
+  changes_requested:   'Cambios pedidos',
+  approved:            'Aprobado',
+  scheduled:           'Programado',
+  published:           'Publicado',
+  review:              'En progreso',
+  completed:           'Completado',
+  // CRM
+  lead:                'Lead',
+  prospect:            'Prospecto',
+  negotiation:         'Negociación',
+  won:                 'Ganado',
+  lost:                'Perdido',
+  active:              'Activo',
+  inactive:            'Inactivo',
+  cliente:             'Cliente',
+  activo:              'Activo',
 };
 
 export const dotColors: Record<string, string> = {
@@ -72,9 +88,16 @@ export const legacyStageMigration: Record<string, string> = {
 };
 
 export const taskStatuses = [
-  { id: 'pending', label: 'Pendiente', color: 'status-pending' },
-  { id: 'in_progress', label: 'En progreso', color: 'status-editing' },
-  { id: 'completed', label: 'Completado', color: 'status-completed' },
+  { id: 'draft',              label: 'Borrador',          color: 'status-draft'             },
+  { id: 'pending',            label: 'Pendiente',         color: 'status-pending'           },
+  { id: 'in_progress',        label: 'En progreso',       color: 'status-editing'           },
+  { id: 'internal_review',    label: 'Revisión interna',  color: 'status-internal-review'   },
+  { id: 'client_review',      label: 'En revisión',       color: 'status-client-review'     },
+  { id: 'changes_requested',  label: 'Cambios pedidos',   color: 'status-changes'           },
+  { id: 'approved',           label: 'Aprobado',          color: 'status-approved'          },
+  { id: 'scheduled',          label: 'Programado',        color: 'status-scheduled'         },
+  { id: 'published',          label: 'Publicado',         color: 'status-published'         },
+  { id: 'completed',          label: 'Completado',        color: 'status-completed'         },
 ] as const;
 
 export const activityStatuses = [

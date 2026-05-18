@@ -47,14 +47,18 @@ const MONTH_NAMES = [
 ];
 
 const taskStatusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pending:          { label: 'Pendiente',    color: 'bg-amber-500/15 text-amber-300 border-amber-500/20',   icon: <Clock        className="h-3 w-3" /> },
-  in_progress:      { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
-  editing:          { label: 'En progreso',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
-  review:           { label: 'En revisión',  color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',     icon: <Clock        className="h-3 w-3" /> },
-  client_review:    { label: 'Por revisar',  color: 'bg-purple-500/15 text-purple-300 border-purple-500/20', icon: <Eye        className="h-3 w-3" /> },
-  changes_requested:{ label: 'Con cambios',  color: 'bg-orange-500/15 text-orange-300 border-orange-500/20', icon: <Clock      className="h-3 w-3" /> },
-  approved:         { label: 'Aprobado',     color: 'bg-green-500/15 text-green-300 border-green-500/20',  icon: <CheckCircle2 className="h-3 w-3" /> },
-  completed:        { label: 'Completado',   color: 'bg-green-500/15 text-green-300 border-green-500/20',  icon: <CheckCircle2 className="h-3 w-3" /> },
+  draft:             { label: 'Borrador',         color: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/20',       icon: <Clock        className="h-3 w-3" /> },
+  pending:           { label: 'Pendiente',         color: 'bg-amber-500/15 text-amber-300 border-amber-500/20',   icon: <Clock        className="h-3 w-3" /> },
+  in_progress:       { label: 'En producción',     color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',      icon: <Clock        className="h-3 w-3" /> },
+  editing:           { label: 'En producción',     color: 'bg-blue-500/15 text-blue-300 border-blue-500/20',      icon: <Clock        className="h-3 w-3" /> },
+  internal_review:   { label: 'Revisión interna',  color: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/20', icon: <Clock       className="h-3 w-3" /> },
+  review:            { label: 'En revisión',        color: 'bg-purple-500/15 text-purple-300 border-purple-500/20', icon: <Eye        className="h-3 w-3" /> },
+  client_review:     { label: 'Por revisar',        color: 'bg-purple-500/15 text-purple-300 border-purple-500/20', icon: <Eye        className="h-3 w-3" /> },
+  changes_requested: { label: 'Cambios pedidos',    color: 'bg-orange-500/15 text-orange-300 border-orange-500/20', icon: <Clock      className="h-3 w-3" /> },
+  approved:          { label: 'Aprobado',           color: 'bg-green-500/15 text-green-300 border-green-500/20',   icon: <CheckCircle2 className="h-3 w-3" /> },
+  scheduled:         { label: 'Programado',         color: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',      icon: <Clock        className="h-3 w-3" /> },
+  published:         { label: 'Publicado',          color: 'bg-teal-500/15 text-teal-300 border-teal-500/20',      icon: <CheckCircle2 className="h-3 w-3" /> },
+  completed:         { label: 'Completado',         color: 'bg-green-500/15 text-green-300 border-green-500/20',   icon: <CheckCircle2 className="h-3 w-3" /> },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
