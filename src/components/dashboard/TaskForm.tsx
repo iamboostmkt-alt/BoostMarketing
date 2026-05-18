@@ -55,6 +55,7 @@ interface TaskFormProps {
 
 export default function TaskForm({ open, onOpenChange, task, isManager = false, onSuccess, initialDate, initialClientId, parentTaskId }: TaskFormProps) {
   const isEditing = !!task;
+  const isSubtask = !!(parentTaskId || task?.parentTaskId);
 
   const [loading, setLoading]             = useState(false);
   const [title, setTitle]                 = useState('');
@@ -217,7 +218,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#15151c] border-white/[0.06] text-white sm:max-w-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white">{isEditing ? 'Editar Tarea' : parentTaskId ? 'Nueva Subtarea' : isManager ? 'Nueva Tarea' : 'Solicitar Entrega'}</DialogTitle>
+          <DialogTitle className="text-white">{isEditing ? 'Editar Tarea' : isSubtask ? 'Nueva Subtarea' : isManager ? 'Nueva Tarea' : 'Solicitar Entrega'}</DialogTitle>
           {isManager && !isEditing && (
             <div className="space-y-1.5 pt-2 pb-3 border-b border-white/[0.06]">
               <div className="flex items-center justify-between">
@@ -296,7 +297,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           </div>
           )}
 
-          {isManager && !parentTaskId && (
+          {isManager && !isSubtask && (
             <div className="space-y-2">
               <Label className="text-white/70 text-sm">Visibilidad</Label>
               <Select value={visibility} onValueChange={(v) => {
@@ -377,7 +378,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             </div>
           )}
 
-          {isManager && clients.length > 0 && !initialClientId && !parentTaskId && (
+          {isManager && clients.length > 0 && !initialClientId && !isSubtask && (
             <div className="space-y-2">
               <Label className="text-white/70 text-sm">Cuenta de cliente</Label>
               <Select value={clientId || 'none'} onValueChange={(v) => setClientId(v === 'none' ? '' : v)}>
