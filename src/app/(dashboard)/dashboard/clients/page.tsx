@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Plus, Search, Trash2, Pencil, Users, UserCheck,
-  UserCircle2, Briefcase, Star, Mail,
+  UserCircle2, Briefcase, Star, Mail, Video, Check, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -68,6 +68,15 @@ const TABS = [
     badge: 'bg-cyan-500/15 text-cyan-300',
     active:'bg-cyan-500/10 text-cyan-300 border-b-2 border-cyan-400',
   },
+  {
+    key:   'leads',
+    label: 'Leads',
+    icon:  Video,
+    color: 'text-green-400',
+    dot:   'bg-green-400',
+    badge: 'bg-green-500/15 text-green-300',
+    active:'bg-green-500/10 text-green-300 border-b-2 border-green-400',
+  },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -98,6 +107,9 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deleteTarget,  setDeleteTarget]  = useState<Client | null>(null);
   const [invitingId,    setInvitingId]    = useState<string | null>(null);
+  const [leads,         setLeads]         = useState<any[]>([]);
+  const [loadingLeads,  setLoadingLeads]  = useState(false);
+  const [actingLead,    setActingLead]    = useState<string | null>(null);
   const [deleting,      setDeleting]      = useState(false);
 
   async function handleInvite(client: Client) {
@@ -115,6 +127,62 @@ export default function ClientsPage() {
       toast.error(err.message);
     } finally {
       setInvitingId(null);
+    }
+  }
+
+  const fetchLeads = useCallback(async () => {
+    setLoadingLeads(true);
+    try {
+      const res = await fetch('/api/appointments?status=pending&public=true');
+      if (res.ok) {
+        const data = await res.json();
+        setLeads((data.appointments || []).filter((a: any) => !a.clientId));
+      }
+    } catch {}
+    finally { setLoadingLeads(false); }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'leads') fetchLeads();
+  }, [activeTab, fetchLeads]);
+
+  async function handleLeadAction(lead: any, action: 'confirm' | 'convert' | 'reject') {
+    setActingLead(lead.id);
+    try {
+      if (action === 'confirm') {
+        await fetch('/api/appointments', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: lead.id, status: 'confirmed' }),
+        });
+        toast.success('Cita confirmada');
+        fetchLeads();
+      } else if (action === 'reject') {
+        await fetch('/api/appointments', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: lead.id, status: 'cancelled' }),
+        });
+        toast.success('Lead rechazado');
+        fetchLeads();
+      } else if (action === 'convert') {
+        const res = await fetch('/api/contacts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: lead.name, email: lead.email,
+            phone: lead.phone || '', status: 'lead',
+            notes: lead.notes || '', source: 'landing_video',
+          }),
+        });
+        if (!res.ok) throw new Error('Error al convertir');
+        toast.success('Convertido a contacto en CRM');
+        fetchLeads();
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+    } finally {
+      setActingLead(null);
     }
   }
 
@@ -232,8 +300,51 @@ export default function ClientsPage() {
           })}
         </div>
 
+        {/* Panel Leads */}
+        {activeTab === 'leads' && (
+          <div className="space-y-3">
+            {loadingLeads ? (
+              <div className="flex justify-center py-12"><div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" /></div>
+            ) : leads.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                <Video className="w-10 h-10 text-white/15" />
+                <p className="text-white/40 text-sm">No hay leads pendientes</p>
+              </div>
+            ) : leads.map((lead) => (
+              <div key={lead.id} className="glass-card rounded-xl p-4 flex items-start justify-between gap-4">
+                <div className="space-y-1 min-w-0">
+                  <p className="text-sm font-semibold text-white">{lead.name}</p>
+                  <p className="text-xs text-white/50">{lead.email}</p>
+                  {lead.phone && <p className="text-xs text-white/40">{lead.phone}</p>}
+                  {lead.notes && <p className="text-xs text-white/40 line-clamp-2">{lead.notes}</p>}
+                  <p className="text-[11px] text-white/25">
+                    {new Date(lead.date).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button type="button" disabled={actingLead === lead.id}
+                    onClick={() => handleLeadAction(lead, 'confirm')}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs bg-green-500/15 hover:bg-green-500/25 border border-green-500/25 text-green-300 transition-colors disabled:opacity-50">
+                    <Check className="w-3.5 h-3.5" /> Confirmar
+                  </button>
+                  <button type="button" disabled={actingLead === lead.id}
+                    onClick={() => handleLeadAction(lead, 'convert')}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs bg-brand/15 hover:bg-brand/25 border border-brand/25 text-brand-light transition-colors disabled:opacity-50">
+                    <UserCheck className="w-3.5 h-3.5" /> Convertir
+                  </button>
+                  <button type="button" disabled={actingLead === lead.id}
+                    onClick={() => handleLeadAction(lead, 'reject')}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 transition-colors disabled:opacity-50">
+                    <X className="w-3.5 h-3.5" /> Rechazar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Table */}
-        <Table>
+        {activeTab !== 'leads' && <Table>
           <TableHeader>
             <TableRow className="border-white/[0.06] hover:bg-transparent">
               <TableHead className="text-white/50">Nombre</TableHead>
@@ -356,7 +467,7 @@ export default function ClientsPage() {
               })
             )}
           </TableBody>
-        </Table>
+        </Table>}
       </div>
 
       <ClientForm
