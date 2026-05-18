@@ -50,9 +50,10 @@ interface TaskFormProps {
   onSuccess?: () => void;
   initialDate?: Date | null;
   initialClientId?: string | null;
+  parentTaskId?: string | null;
 }
 
-export default function TaskForm({ open, onOpenChange, task, isManager = false, onSuccess, initialDate, initialClientId }: TaskFormProps) {
+export default function TaskForm({ open, onOpenChange, task, isManager = false, onSuccess, initialDate, initialClientId, parentTaskId }: TaskFormProps) {
   const isEditing = !!task;
 
   const [loading, setLoading]             = useState(false);

@@ -1,6 +1,7 @@
 'use client';
 
-import { Calendar, CheckCircle2, Pencil, RotateCcw, Trash2 } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronDown, ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import type { Task, TaskAssignee } from '@/lib/types';
 import { statusColors, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';

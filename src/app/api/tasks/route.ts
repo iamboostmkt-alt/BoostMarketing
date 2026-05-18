@@ -146,6 +146,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ clients: result.filter((c) => c.tasks.length > 0) });
   }
 
+  const parentId = req.nextUrl.searchParams.get("parentId");
+  if (parentId) {
+    const subtasks = await db.task.findMany({
+      where: { parentTaskId: parentId, archivedAt: null },
+      include: {
+        assignedUser:  userInclude,
+        assignedUsers: { include: { user: userInclude } },
+        client:        clientInclude,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    return NextResponse.json({ tasks: flattenTasks(subtasks) });
+  }
+
   if (scope === "all" && isManager) {
     const tasks = await db.task.findMany({
       where: { archivedAt: null },
@@ -205,7 +219,7 @@ export async function POST(req: NextRequest) {
   const userId    = (session.user as any).id;
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const body      = await req.json();
-  const { title, description, priority, dueDate, assignedUserId: _assignedUserId, assignedUserIds, clientId, visibility, references, type: taskType } = body;
+  const { title, description, priority, dueDate, assignedUserId: _assignedUserId, assignedUserIds, clientId, visibility, references, type: taskType, parentTaskId, milestoneId } = body;
   const assignedUserId = _assignedUserId || (Array.isArray(assignedUserIds) && assignedUserIds[0]) || null;
 
   if (!title) return NextResponse.json({ error: "Titulo requerido" }, { status: 400 });
@@ -238,6 +252,8 @@ export async function POST(req: NextRequest) {
       deliverableStatus: isClient ? 'draft' : (isManager && resolvedClientId ? 'client_review' : null),
       ...(resolvedClientId && { visibility: 'client_visible' }),
       references:     Array.isArray(references) ? references : [],
+      parentTaskId:   parentTaskId || null,
+      milestoneId:    milestoneId  || null,
       assignedUsers: { create: finalAssignedIds.map((uid: string) => ({ userId: uid })) },
     },
     include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },
