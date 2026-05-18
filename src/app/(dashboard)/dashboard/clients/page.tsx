@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Plus, Search, Trash2, Pencil, Users, UserCheck,
-  UserCircle2, Briefcase, Star,
+  UserCircle2, Briefcase, Star, Mail,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -97,7 +97,26 @@ export default function ClientsPage() {
   const [formOpen,      setFormOpen]      = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deleteTarget,  setDeleteTarget]  = useState<Client | null>(null);
+  const [invitingId,    setInvitingId]    = useState<string | null>(null);
   const [deleting,      setDeleting]      = useState(false);
+
+  async function handleInvite(client: Client) {
+    setInvitingId(client.id);
+    try {
+      const res = await fetch('/api/clients/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: client.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al enviar invitación');
+      toast.success(`Invitación enviada a ${client.email}`);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setInvitingId(null);
+    }
+  }
 
   const fetchClients = useCallback(async () => {
     try {
@@ -313,6 +332,13 @@ export default function ClientsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon"
+                          className="h-8 w-8 text-white/30 hover:text-brand-light hover:bg-brand/10"
+                          title="Invitar al portal"
+                          disabled={invitingId === client.id}
+                          onClick={() => handleInvite(client)}>
+                          <Mail className="w-4 h-4" />
+                        </Button>
                         <Button variant="ghost" size="icon"
                           className="h-8 w-8 text-white/30 hover:text-white hover:bg-white/[0.06]"
                           onClick={() => handleEdit(client)}>
