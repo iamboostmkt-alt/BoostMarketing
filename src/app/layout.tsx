@@ -47,6 +47,19 @@ export default async function RootLayout({
         )}
       </head>
       <body className={`${inter.variable} ${mono.variable} antialiased bg-background text-foreground`}>
+        {/* Inject branding into localStorage before React hydrates — eliminates logo flash */}
+        {settings?.logoUrl && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                try {
+                  localStorage.setItem('brand_logoUrl', ${JSON.stringify(settings.logoUrl)});
+                  localStorage.setItem('brand_agencyName', ${JSON.stringify(settings.agencyName || 'BoostMarketing')});
+                } catch(e) {}
+              `,
+            }}
+          />
+        )}
         {children}
         <Toaster />
       </body>
