@@ -208,7 +208,7 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
               {totalCount > 0 && <span className="text-white/30">{completedCount}/{totalCount}</span>}
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); onAddSubtask(task); }}
+              onClick={(e) => { e.stopPropagation(); onAddSubtask?.(task); }}
               className="flex items-center gap-1 text-[11px] text-white/30 hover:text-white/60 transition-colors"
             >
               <Plus className="w-3 h-3" />
