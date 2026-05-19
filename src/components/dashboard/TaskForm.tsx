@@ -78,6 +78,8 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   const [templates,          setTemplates]          = useState<TaskTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
+  const [pendingSubtasks, setPendingSubtasks] = useState<string[]>([]);
+  const [subtaskInput, setSubtaskInput]       = useState('');
 
   useEffect(() => {
     if (task) {
@@ -191,10 +193,33 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(body),
       });
+      const resData = await res.json();
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Error al guardar la tarea');
+        throw new Error(resData.error || 'Error al guardar la tarea');
       }
+      if (!isEditing && !isSubtask && pendingSubtasks.length > 0) {
+        const newTaskId = resData?.id ?? resData?.task?.id;
+        if (newTaskId) {
+          await Promise.all(
+            pendingSubtasks.map((subTitle) =>
+              fetch('/api/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  title: subTitle,
+                  parentTaskId: newTaskId,
+                  clientId: clientId || null,
+                  status: 'pending',
+                  visibility: 'internal',
+                  type: 'internal_task',
+                }),
+              })
+            )
+          );
+        }
+      }
+      setPendingSubtasks([]);
+      setSubtaskInput('');
       toast.success(isEditing ? 'Tarea actualizada' : 'Tarea creada');
       onOpenChange(false);
       onSuccess?.();
@@ -345,6 +370,64 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               </div>
             )}
           </div>
+
+          {!isSubtask && !isEditing && (
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-white/[0.08]" />
+                <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/30">
+                  Subtareas
+                </span>
+                <div className="h-px flex-1 bg-white/[0.08]" />
+              </div>
+              {pendingSubtasks.length > 0 && (
+                <ul className="space-y-1.5">
+                  {pendingSubtasks.map((sub, idx) => (
+                    <li key={idx} className="flex items-center gap-2 rounded-lg bg-white/[0.03] border border-white/[0.08] px-3 py-2">
+                      <span className="text-white/20 text-xs select-none">↳</span>
+                      <span className="flex-1 text-sm text-white/70 truncate">{sub}</span>
+                      <button
+                        type="button"
+                        onClick={() => setPendingSubtasks((prev) => prev.filter((_, i) => i !== idx))}
+                        className="text-white/25 hover:text-red-400/80 transition-colors text-xs leading-none"
+                      >✕</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={subtaskInput}
+                  onChange={(e) => setSubtaskInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const val = subtaskInput.trim();
+                      if (!val) return;
+                      setPendingSubtasks((prev) => [...prev, val]);
+                      setSubtaskInput('');
+                    }
+                  }}
+                  placeholder="Agregar subtarea..."
+                  className="flex-1 rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const val = subtaskInput.trim();
+                    if (!val) return;
+                    setPendingSubtasks((prev) => [...prev, val]);
+                    setSubtaskInput('');
+                  }}
+                  className="rounded-lg border border-violet-500/30 bg-violet-600/10 px-3 py-2 text-sm font-medium text-violet-300/80 hover:bg-violet-600/20 hover:border-violet-400/40 hover:text-violet-200 transition-all flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <span className="text-base leading-none">+</span>
+                  Agregar subtarea
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Asignar usuarios - solo managers */}
           {isManager && users.length > 0 && (
