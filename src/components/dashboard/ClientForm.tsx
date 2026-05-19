@@ -87,6 +87,18 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
         assignedManagerId: assignedManagerId || null,
         assignedUserIds,
       };
+      // Validar contraseña si se pidió acceso al portal
+      if (createUser && !userPassword) {
+        toast.error('La contraseña es requerida para crear acceso al portal');
+        setLoading(false);
+        return;
+      }
+      if (createUser && userPassword.length < 6) {
+        toast.error('La contraseña debe tener al menos 6 caracteres');
+        setLoading(false);
+        return;
+      }
+
       // Crear usuario del sistema si se solicitó
       if (createUser && userPassword && !client) {
         setCreatingUser(true);
@@ -272,6 +284,7 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
                       onChange={e => setUserPassword(e.target.value)}
                       placeholder="Mín. 6 caracteres"
                       minLength={6}
+                      required={createUser}
                       className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:ring-brand"
                     />
                     <p className="text-[10px] text-white/25">
