@@ -148,7 +148,7 @@ function DayModal({ day, tasks, appointments = [], isManager = false, onClose, o
                             {task.priority === 'urgent' ? 'Urgente' : task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Media' : 'Baja'}
                           </span>
                         )}
-                        {task.assignedUser && (
+                        {task.assignedUser && isManager && (
                           <span className="flex items-center gap-1">
                             <User className="h-3 w-3" />
                             {task.assignedUser.name || task.assignedUser.email}
@@ -480,14 +480,7 @@ function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () 
               </div>
             )}
           </div>
-          {task.assignedUser && (
-            <div className="flex items-center gap-2 pt-1">
-              <User className="h-3.5 w-3.5 text-white/30" />
-              <span className="text-xs text-white/50">
-                Asignado a <span className="text-white/70 font-medium">{task.assignedUser.name || task.assignedUser.email}</span>
-              </span>
-            </div>
-          )}
+
           {onDelete && (
             <div className="pt-2 border-t border-white/[0.04] mt-1" onClick={e => e.stopPropagation()}>
               <button type="button"
