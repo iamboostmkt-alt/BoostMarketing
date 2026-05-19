@@ -265,6 +265,24 @@ export async function POST(req: NextRequest) {
   const isClient = (session.user as any).role === 'CLIENT';
   let resolvedClientId = isManager ? (clientId || null) : null;
   if (isClient && clientId) resolvedClientId = clientId;
+
+  // Si es subtarea, heredar clientId del padre si no se especificó
+  if (parentTaskId && !resolvedClientId) {
+    const parentTask = await db.task.findUnique({
+      where: { id: parentTaskId },
+      select: { clientId: true },
+    });
+    if (parentTask?.clientId) resolvedClientId = parentTask.clientId;
+  }
+
+  // Si es subtarea, heredar clientId del padre si no se especificó
+  if (parentTaskId && !resolvedClientId) {
+    const parentTask = await db.task.findUnique({
+      where: { id: parentTaskId },
+      select: { clientId: true },
+    });
+    if (parentTask?.clientId) resolvedClientId = parentTask.clientId;
+  }
   const resolvedVisibility = isManager
     ? (visibility || "internal")
     : isClient ? "client_visible" : "internal";
@@ -283,7 +301,6 @@ export async function POST(req: NextRequest) {
       type:           taskType || (resolvedVisibility === 'client_visible' ? 'deliverable' : 'internal_task'),
       isDeliverable:  isClient ? true : (isManager && resolvedClientId ? true : false),
       deliverableStatus: isClient ? 'draft' : (isManager && resolvedClientId ? 'client_review' : null),
-      ...(resolvedClientId && { visibility: 'client_visible' }),
       references:     Array.isArray(references) ? references : [],
       parentTaskId:   parentTaskId || null,
       milestoneId:    milestoneId  || null,

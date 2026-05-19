@@ -11,6 +11,7 @@ import UserAvatarStack from '@/components/dashboard/UserAvatarStack';
 import { useUploadThing } from '@/lib/uploadthing';
 import type { Task, TaskAssignee, ActivityAssignee } from '@/lib/types';
 import { statusColors, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
+import TaskForm from '@/components/dashboard/TaskForm';
 
 interface Attachment {
   id: string;
@@ -71,6 +72,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [subtasks, setSubtasks] = useState<Task[]>([]);
   const [subtasksOpen, setSubtasksOpen] = useState(false);
+  const [newSubtaskOpen, setNewSubtaskOpen] = useState(false);
 
   useEffect(() => {
     if (!subtasksOpen || !task) return;
@@ -315,7 +317,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
                     <p className="text-[11px] text-white/20 text-center py-2">Sin subtareas</p>
                   ) : (
                     subtasks.map((sub) => (
-                      <div key={sub.id} className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                      <div key={sub.id} className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors group/sub">
                         <span className="text-white/20 text-xs shrink-0">↳</span>
                         <span className={`flex-1 text-xs ${sub.status === 'completed' ? 'text-white/30 line-through' : 'text-white/70'}`}>
                           {sub.title}
@@ -327,9 +329,29 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
                         }`}>
                           {sub.status === 'completed' ? 'Lista' : sub.status === 'in_progress' ? 'En progreso' : 'Pendiente'}
                         </span>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!confirm(`¿Eliminar subtarea "${sub.title}"?`)) return;
+                            await fetch(`/api/tasks?id=${sub.id}`, { method: 'DELETE' });
+                            setSubtasks(prev => prev.filter(s => s.id !== sub.id));
+                          }}
+                          className="opacity-0 group-hover/sub:opacity-100 p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all ml-1 shrink-0"
+                          title="Eliminar subtarea"
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
                       </div>
                     ))
                   )}
+                  <button
+                    type="button"
+                    onClick={() => setNewSubtaskOpen(true)}
+                    className="w-full flex items-center justify-center gap-1.5 mt-2 py-1.5 rounded-lg border border-dashed border-violet-500/30 text-violet-300/60 hover:text-violet-300 hover:border-violet-400/50 hover:bg-violet-500/5 transition-all text-xs"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    Agregar subtarea
+                  </button>
                 </div>
               )}
             </div>
@@ -358,6 +380,38 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* TaskForm para nueva subtarea */}
+      {task && (
+        <TaskForm
+          open={newSubtaskOpen}
+          onOpenChange={setNewSubtaskOpen}
+          parentTaskId={task.id}
+          initialClientId={task.clientId ?? null}
+          isManager={isManager}
+          onSuccess={() => {
+            // Recargar subtareas
+            fetch(`/api/tasks?parentId=${task.id}`)
+              .then(r => r.json())
+              .then(d => setSubtasks(d.tasks || []));
+          }}
+        />
+      )}
+
+      {task && (
+        <TaskForm
+          open={newSubtaskOpen}
+          onOpenChange={setNewSubtaskOpen}
+          parentTaskId={task.id}
+          initialClientId={task.clientId ?? null}
+          isManager={isManager}
+          onSuccess={() => {
+            fetch(`/api/tasks?parentId=${task.id}`)
+              .then(r => r.json())
+              .then(d => setSubtasks(d.tasks || []));
+          }}
+        />
+      )}
 
       {/* Lightbox */}
       {lightbox && (
