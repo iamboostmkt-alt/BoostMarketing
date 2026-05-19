@@ -69,6 +69,15 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [subtasks, setSubtasks] = useState<Task[]>([]);
+  const [subtasksOpen, setSubtasksOpen] = useState(false);
+
+  useEffect(() => {
+    if (!subtasksOpen || !task) return;
+    fetch(`/api/tasks?parentId=${task.id}`)
+      .then(r => r.json())
+      .then(d => setSubtasks(d.tasks || []));
+  }, [subtasksOpen, task?.id]);
   const [reminding, setReminding] = useState(false);
 
   async function handleRemind() {

@@ -197,7 +197,8 @@ export default function CalendarContent() {
   const dayTasks = useMemo(
     () => tasks.filter((t) =>
       t.dueDate &&
-      sameLocalDay(t.dueDate, selectedDay) &&
+      (sameLocalDay(t.dueDate, selectedDay) || (t.startDate && sameLocalDay(t.startDate, selectedDay)) ||
+        (t.startDate && t.dueDate && new Date(t.startDate) <= selectedDay && selectedDay <= new Date(t.dueDate))) &&
       t.status !== 'completed' &&
       t.status !== 'approved' &&
       (t as any).deliverableStatus !== 'approved'
@@ -226,7 +227,8 @@ export default function CalendarContent() {
   const filteredDayTasks = useMemo(
     () => filteredTasks.filter((t) =>
       t.dueDate &&
-      sameLocalDay(t.dueDate, selectedDay) &&
+      (sameLocalDay(t.dueDate, selectedDay) || (t.startDate && sameLocalDay(t.startDate, selectedDay)) ||
+        (t.startDate && t.dueDate && new Date(t.startDate) <= selectedDay && selectedDay <= new Date(t.dueDate))) &&
       t.status !== 'completed' &&
       t.status !== 'approved' &&
       (t as any).deliverableStatus !== 'approved'

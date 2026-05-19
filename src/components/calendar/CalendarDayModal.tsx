@@ -93,7 +93,8 @@ function DayModal({
   const dayTasks = useMemo(
     () => tasks.filter((t) =>
       t.dueDate &&
-      sameLocalDay(t.dueDate, day) &&
+      (sameLocalDay(t.dueDate, day) || (t.startDate && sameLocalDay(t.startDate, day)) ||
+        (t.startDate && t.dueDate && new Date(t.startDate) <= day && day <= new Date(t.dueDate))) &&
       t.status !== 'completed' &&
       t.status !== 'approved' &&
       (t as any).deliverableStatus !== 'approved'
