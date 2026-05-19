@@ -229,7 +229,15 @@ function TasksContent() {
     } finally { setDeleting(false); }
   }
 
-  function handleEdit(task: Task) { setEditingTask(task); setFormOpen(true); }
+  function handleEdit(task: Task) {
+    // Equipo solo puede editar sus propias tareas creadas por ellos
+    if (!isManager && (task as any).userId !== (session?.user as any)?.id) {
+      setViewingTask(task); // abrir en modo vista
+      return;
+    }
+    setEditingTask(task);
+    setFormOpen(true);
+  }
   function handleCreate() { setEditingTask(null); setFormOpen(true); }
 
   const tabs = [
