@@ -101,6 +101,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       setStartDate(initialDate ?? undefined);
       setDueDate(initialDate ?? undefined);
       setAssigneeIds([]); setClientId(initialClientId ?? '');
+      setPendingSubtasks([]); setSubtaskInput('');
     }
     setStartOpen(false); setDueOpen(false);
     setSelectedTemplateId('');

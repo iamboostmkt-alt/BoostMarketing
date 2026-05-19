@@ -73,6 +73,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
   const [subtasks, setSubtasks] = useState<Task[]>([]);
   const [subtasksOpen, setSubtasksOpen] = useState(false);
   const [newSubtaskOpen, setNewSubtaskOpen] = useState(false);
+  const [editingSubtask, setEditingSubtask] = useState<Task | null>(null);
 
   useEffect(() => {
     if (!subtasksOpen || !task) return;
@@ -317,30 +318,43 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
                     <p className="text-[11px] text-white/20 text-center py-2">Sin subtareas</p>
                   ) : (
                     subtasks.map((sub) => (
-                      <div key={sub.id} className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors group/sub">
-                        <span className="text-white/20 text-xs shrink-0">↳</span>
-                        <span className={`flex-1 text-xs ${sub.status === 'completed' ? 'text-white/30 line-through' : 'text-white/70'}`}>
-                          {sub.title}
-                        </span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ${
-                          sub.status === 'completed' ? 'bg-green-500/15 text-green-300' :
-                          sub.status === 'in_progress' ? 'bg-blue-500/15 text-blue-300' :
-                          'bg-white/[0.06] text-white/30'
-                        }`}>
-                          {sub.status === 'completed' ? 'Lista' : sub.status === 'in_progress' ? 'En progreso' : 'Pendiente'}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (!confirm(`¿Eliminar subtarea "${sub.title}"?`)) return;
-                            await fetch(`/api/tasks?id=${sub.id}`, { method: 'DELETE' });
-                            setSubtasks(prev => prev.filter(s => s.id !== sub.id));
-                          }}
-                          className="opacity-0 group-hover/sub:opacity-100 p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all ml-1 shrink-0"
-                          title="Eliminar subtarea"
-                        >
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
+                      <div key={sub.id} className="rounded-lg bg-white/[0.02] border border-white/[0.04] overflow-hidden group/sub">
+                        {/* Fila principal */}
+                        <div className="flex items-center gap-2.5 py-1.5 px-2">
+                          <span className="text-white/20 text-xs shrink-0">↳</span>
+                          <span className={`flex-1 text-xs font-medium ${sub.status === 'completed' ? 'text-white/30 line-through' : 'text-white/70'}`}>
+                            {sub.title}
+                          </span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ${
+                            sub.status === 'completed' ? 'bg-green-500/15 text-green-300' :
+                            sub.status === 'in_progress' ? 'bg-blue-500/15 text-blue-300' :
+                            'bg-white/[0.06] text-white/30'
+                          }`}>
+                            {sub.status === 'completed' ? 'Lista' : sub.status === 'in_progress' ? 'En progreso' : 'Pendiente'}
+                          </span>
+                          {/* Botón editar */}
+                          <button
+                            type="button"
+                            onClick={() => { setEditingSubtask(sub); setNewSubtaskOpen(true); }}
+                            className="p-1 rounded text-white/20 hover:text-violet-400 hover:bg-violet-500/10 transition-all shrink-0"
+                            title="Editar subtarea"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                          </button>
+                          {/* Botón eliminar */}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (!confirm(`¿Eliminar subtarea "${sub.title}"?`)) return;
+                              await fetch(`/api/tasks?id=${sub.id}`, { method: 'DELETE' });
+                              setSubtasks(prev => prev.filter(s => s.id !== sub.id));
+                            }}
+                            className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                            title="Eliminar subtarea"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}
@@ -385,30 +399,16 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
       {task && (
         <TaskForm
           open={newSubtaskOpen}
-          onOpenChange={setNewSubtaskOpen}
-          parentTaskId={task.id}
-          initialClientId={task.clientId ?? null}
-          isManager={isManager}
-          onSuccess={() => {
-            // Recargar subtareas
-            fetch(`/api/tasks?parentId=${task.id}`)
-              .then(r => r.json())
-              .then(d => setSubtasks(d.tasks || []));
-          }}
-        />
-      )}
-
-      {task && (
-        <TaskForm
-          open={newSubtaskOpen}
-          onOpenChange={setNewSubtaskOpen}
-          parentTaskId={task.id}
+          onOpenChange={(v) => { setNewSubtaskOpen(v); if (!v) setEditingSubtask(null); }}
+          parentTaskId={editingSubtask ? undefined : task.id}
+          task={editingSubtask}
           initialClientId={task.clientId ?? null}
           isManager={isManager}
           onSuccess={() => {
             fetch(`/api/tasks?parentId=${task.id}`)
               .then(r => r.json())
               .then(d => setSubtasks(d.tasks || []));
+            setEditingSubtask(null);
           }}
         />
       )}
