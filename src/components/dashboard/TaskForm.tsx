@@ -440,6 +440,30 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                       {sub.expanded && (
                         <div className="px-3 py-3 space-y-2.5 bg-white/[0.01] border-t border-white/[0.06]">
 
+                          {/* Nombre */}
+                          <div>
+                            <label className="text-[10px] text-white/30 mb-1 block">Nombre</label>
+                            <input
+                              type="text"
+                              value={sub.title}
+                              onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, title: e.target.value } : s))}
+                              placeholder="Nombre de la subtarea"
+                              className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all"
+                            />
+                          </div>
+
+                          {/* Detalles */}
+                          <div>
+                            <label className="text-[10px] text-white/30 mb-1 block">Detalles</label>
+                            <textarea
+                              value={sub.description || ''}
+                              onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, description: e.target.value } : s))}
+                              placeholder="Descripción opcional..."
+                              rows={2}
+                              className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 text-xs text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all resize-none"
+                            />
+                          </div>
+
                           {/* Estado y Prioridad */}
                           <div className="grid grid-cols-2 gap-2">
                             <select value={sub.status}
