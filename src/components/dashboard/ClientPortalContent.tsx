@@ -1069,9 +1069,13 @@ export default function ClientPortalContent() {
   const assignedManager = client.assignedManager;
 
   // Equipo directo del cliente — solo usuarios explícitamente asignados via ClientAssignedUser
+  const VISIBLE_ROLES_TO_CLIENT = ['PROJECT_MANAGER'];
   const teamMembers = ((client as any).assignedUsers ?? [])
     .map((au: any) => au.user ?? au)
-    .filter((u: any) => u.id !== assignedManager?.id);
+    .filter((u: any) =>
+      u.id !== assignedManager?.id &&
+      VISIBLE_ROLES_TO_CLIENT.includes(u.role)
+    );
   const totalItems     = tasks.length;
   const completedItems = tasks.filter((t) => t.status === 'completed' || t.status === 'approved').length;
   const displayedTasks   = activeTab === 'tasks' ? tasks.filter((t) => t.status !== 'completed' && t.status !== 'approved') : tasks.filter((t) => t.status !== 'completed' && t.status !== 'approved');
