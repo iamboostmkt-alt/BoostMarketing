@@ -410,7 +410,7 @@ export default function CalendarContent() {
                       {task.description && (
                         <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
                       )}
-                      <div className="flex items-center gap-3 mt-2.5 pl-1">
+                      <div className="flex items-center gap-3 mt-2.5 pl-1 flex-wrap">
                         <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>
                           {priorityLabels[task.priority] || task.priority}
                         </span>
@@ -419,6 +419,11 @@ export default function CalendarContent() {
                             <Clock className="w-2.5 h-2.5" />
                             {format(new Date(task.dueDate), 'HH:mm')}
                           </div>
+                        )}
+                        {(task as any).client?.name && (
+                          <span className="text-[10px] text-white/30 bg-white/[0.04] px-1.5 py-0.5 rounded-full">
+                            {(task as any).client.name}
+                          </span>
                         )}
                         {task.assignedUser && <TaskAvatar u={task.assignedUser} />}
                       </div>
