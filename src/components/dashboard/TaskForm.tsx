@@ -106,6 +106,26 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       setVisibility(task.visibility || 'internal');
       setReferences(Array.isArray(task.references) ? task.references : []);
       setClientId(task.clientId ?? '');
+      // Cargar subtareas existentes en edición
+      if (!task.parentTaskId) {
+        fetch(`/api/tasks?parentId=${task.id}`)
+          .then(r => r.json())
+          .then(d => {
+            const subs = (d.tasks || []).map((s: any) => ({
+              id: s.id,
+              title: s.title,
+              status: s.status || 'pending',
+              priority: s.priority || 'medium',
+              startDate: s.startDate ? new Date(s.startDate).toISOString().split('T')[0] : '',
+              dueDate: s.dueDate ? new Date(s.dueDate).toISOString().split('T')[0] : '',
+              assignedUserIds: (s.assignedUsers || []).map((u: any) => u.id),
+              expanded: false,
+              existingId: s.id,
+            }));
+            setPendingSubtasks(subs);
+          })
+          .catch(() => {});
+      }
     } else {
       setTitle(''); setDescription(''); setStatus('pending'); setPriority('medium');
       setStartDate(initialDate ?? undefined);
@@ -386,7 +406,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             )}
           </div>
 
-          {!isSubtask && !isEditing && (
+          {!isSubtask && (
             <div className="space-y-2 pt-1">
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-white/[0.08]" />
@@ -489,38 +509,40 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 </ul>
               )}
 
-              {/* Input nueva subtarea */}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={subtaskInput}
-                  onChange={(e) => setSubtaskInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
+              {/* Input nueva subtarea — solo en creación */}
+              {!isEditing && (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={subtaskInput}
+                    onChange={(e) => setSubtaskInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const val = subtaskInput.trim();
+                        if (!val) return;
+                        setPendingSubtasks((prev) => [...prev, { id: Math.random().toString(36).slice(2), title: val, status: 'pending', priority: 'medium', assignedUserIds: [], expanded: true }]);
+                        setSubtaskInput('');
+                      }
+                    }}
+                    placeholder="Agregar subtarea..."
+                    className="flex-1 rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
                       const val = subtaskInput.trim();
                       if (!val) return;
                       setPendingSubtasks((prev) => [...prev, { id: Math.random().toString(36).slice(2), title: val, status: 'pending', priority: 'medium', assignedUserIds: [], expanded: true }]);
                       setSubtaskInput('');
-                    }
-                  }}
-                  placeholder="Agregar subtarea..."
-                  className="flex-1 rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const val = subtaskInput.trim();
-                    if (!val) return;
-                    setPendingSubtasks((prev) => [...prev, { id: Math.random().toString(36).slice(2), title: val, status: 'pending', priority: 'medium', assignedUserIds: [], expanded: true }]);
-                    setSubtaskInput('');
-                  }}
-                  className="rounded-lg border border-violet-500/30 bg-violet-600/10 px-3 py-2 text-sm font-medium text-violet-300/80 hover:bg-violet-600/20 hover:border-violet-400/40 hover:text-violet-200 transition-all flex items-center gap-1.5 whitespace-nowrap"
-                >
-                  <span className="text-base leading-none">+</span>
-                  Agregar subtarea
-                </button>
-              </div>
+                    }}
+                    className="rounded-lg border border-violet-500/30 bg-violet-600/10 px-3 py-2 text-sm font-medium text-violet-300/80 hover:bg-violet-600/20 hover:border-violet-400/40 hover:text-violet-200 transition-all flex items-center gap-1.5 whitespace-nowrap"
+                  >
+                    <span className="text-base leading-none">+</span>
+                    Agregar subtarea
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
