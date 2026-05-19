@@ -278,17 +278,11 @@ export async function POST(req: NextRequest) {
     if (parentTask?.clientId) resolvedClientId = parentTask.clientId;
   }
 
-  // Si es subtarea, heredar clientId del padre si no se especificó
-  if (parentTaskId && !resolvedClientId) {
-    const parentTask = await db.task.findUnique({
-      where: { id: parentTaskId },
-      select: { clientId: true },
-    });
-    if (parentTask?.clientId) resolvedClientId = parentTask.clientId;
-  }
-  const resolvedVisibility = isManager
-    ? (visibility || "internal")
-    : isClient ? "client_visible" : "internal";
+  const resolvedVisibility = parentTaskId
+    ? "internal"
+    : isManager
+      ? (visibility || "internal")
+      : isClient ? "client_visible" : "internal";
 
   const task = await db.task.create({
     data: {
@@ -301,9 +295,9 @@ export async function POST(req: NextRequest) {
       assignedUserId: isManager ? assignedUserId || null : null,
       clientId:       resolvedClientId,
       visibility:     resolvedVisibility,
-      type:           taskType || (resolvedVisibility === 'client_visible' ? 'deliverable' : 'internal_task'),
-      isDeliverable:  isClient ? true : (isManager && resolvedClientId ? true : false),
-      deliverableStatus: isClient ? 'draft' : (isManager && resolvedClientId ? 'client_review' : null),
+      type:           parentTaskId ? 'internal_task' : (taskType || (resolvedVisibility === 'client_visible' ? 'deliverable' : 'internal_task')),
+      isDeliverable:  parentTaskId ? false : (isClient ? true : (isManager && resolvedClientId ? true : false)),
+      deliverableStatus: parentTaskId ? null : (isClient ? 'draft' : (isManager && resolvedClientId ? 'client_review' : null)),
       references:     Array.isArray(references) ? references : [],
       parentTaskId:   parentTaskId || null,
       milestoneId:    milestoneId  || null,

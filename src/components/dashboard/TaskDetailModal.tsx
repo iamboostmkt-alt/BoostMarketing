@@ -75,6 +75,15 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
   const [newSubtaskOpen, setNewSubtaskOpen] = useState(false);
   const [editingSubtask, setEditingSubtask] = useState<Task | null>(null);
 
+  // Cargar subtareas al abrir el modal
+  useEffect(() => {
+    if (!open || !task) return;
+    fetch(`/api/tasks?parentId=${task.id}`)
+      .then(r => r.json())
+      .then(d => setSubtasks(d.tasks || []));
+  }, [open, task?.id]);
+
+  // También recargar al expandir (por si hay cambios)
   useEffect(() => {
     if (!subtasksOpen || !task) return;
     fetch(`/api/tasks?parentId=${task.id}`)
@@ -308,7 +317,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
               >
                 <div className="flex items-center gap-2 text-[11px] font-medium text-white/40 uppercase tracking-wider">
                   <CheckSquare className="w-3 h-3 text-violet-400/60" />
-                  Subtareas{subtasks.length > 0 && ` (${subtasks.length})`}
+                  Subtareas{subtasks.length > 0 && ` (${subtasks.length})`}{subtasks.length === 0 && ' —'}
                 </div>
                 <svg className={`w-3.5 h-3.5 text-white/20 transition-transform ${subtasksOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
               </button>
