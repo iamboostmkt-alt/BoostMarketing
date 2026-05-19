@@ -314,3 +314,80 @@ export function templateRecordatorioVideollamada(params: { name: string; dateStr
     <p style="color:rgba(255,255,255,0.3);font-size:13px;text-align:center;">Si tienes alguna pregunta, responde a este correo.</p>`;
   return b ? emailLayout(content, b) : content;
 }
+
+
+// ─── NUEVOS TEMPLATES IMPORTANTES ──────────────────────────
+
+export function templateNuevoClienteAsignado(pmName: string, clientName: string, clientEmail: string, b?: Branding) {
+  const color = b?.brandColor || '#7c3aed';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">🏢 Nuevo cliente asignado</h2>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:#18181b;">${pmName}</strong>, se te ha asignado un nuevo cliente.</p>
+    ${infoBox(`
+      <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">${clientName}</p>
+      <p style="margin:0;color:#6b7280;font-size:14px;">📧 ${clientEmail}</p>
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/clients`, 'Ver cliente', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
+export function templateBienvenidaCliente(clientName: string, pmName: string, pmEmail: string, portalUrl: string, tempPassword?: string, b?: Branding) {
+  const color = b?.brandColor || '#7c3aed';
+  const brandName = b?.brandName || 'BoostMarketing';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:22px;">👋 Bienvenido/a, ${clientName}!</h2>
+    <p style="color:#6b7280;margin:0 0 20px;">Tu cuenta en <strong style="color:#18181b;">${brandName}</strong> ha sido creada. Tu Project Manager asignado es <strong style="color:#18181b;">${pmName}</strong>.</p>
+    ${tempPassword ? infoBox(`
+      <p style="margin:0 0 4px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Contraseña temporal</p>
+      <p style="margin:0;font-family:monospace;font-size:20px;font-weight:700;color:#18181b;letter-spacing:3px;">${tempPassword}</p>
+      <p style="margin:8px 0 0;color:#9ca3af;font-size:12px;">Cámbiala al ingresar por primera vez.</p>
+    `, color) : ''}
+    ${btn(portalUrl, 'Acceder a mi portal →', color)}
+    <p style="color:#9ca3af;font-size:13px;text-align:center;">¿Dudas? Escríbele a tu PM: <a href="mailto:${pmEmail}" style="color:${color};">${pmEmail}</a></p>`;
+  return b ? emailLayout(content, b) : content;
+}
+
+export function templateSubtareaCompletada(parentTitle: string, subtaskTitle: string, completedBy: string, b?: Branding) {
+  const color = '#10b981';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">✅ Subtarea completada</h2>
+    <p style="color:#6b7280;margin:0 0 20px;"><strong style="color:#18181b;">${completedBy}</strong> completó una subtarea</p>
+    ${infoBox(`
+      <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Tarea padre</p>
+      <p style="margin:0 0 8px;color:#18181b;font-weight:600;">${parentTitle}</p>
+      <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Subtarea completada</p>
+      <p style="margin:0;color:${color};font-weight:600;">↳ ${subtaskTitle}</p>
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver tarea', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
+export function templateMilestoneCompletado(milestoneTitle: string, clientName: string, b?: Branding) {
+  const color = '#f59e0b';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">🏁 Milestone completado</h2>
+    <p style="color:#6b7280;margin:0 0 20px;">Un hito del proyecto ha sido alcanzado</p>
+    ${infoBox(`
+      <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Cliente</p>
+      <p style="margin:0 0 8px;color:#18181b;font-weight:600;">${clientName}</p>
+      <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Milestone</p>
+      <p style="margin:0;color:${color};font-weight:700;font-size:18px;">🏆 ${milestoneTitle}</p>
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/clients`, 'Ver proyecto', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
+export function templateEntregaListaParaRevisar(taskTitle: string, clientName: string, assigneeName: string, b?: Branding) {
+  const color = '#8b5cf6';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">📤 Entrega lista para revisar</h2>
+    <p style="color:#6b7280;margin:0 0 20px;"><strong style="color:#18181b;">${assigneeName}</strong> envió una entrega a revisión</p>
+    ${infoBox(`
+      <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Cliente</p>
+      <p style="margin:0 0 8px;color:#18181b;font-weight:600;">${clientName}</p>
+      <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Entrega</p>
+      <p style="margin:0;color:#18181b;font-weight:600;">${taskTitle}</p>
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Revisar entrega', color)}`;
+  return b ? emailLayout(content, b) : content;
+}

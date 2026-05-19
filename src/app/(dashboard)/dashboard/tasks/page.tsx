@@ -230,10 +230,15 @@ function TasksContent() {
   }
 
   function handleEdit(task: Task) {
-    // Equipo solo puede editar sus propias tareas creadas por ellos
-    if (!isManager && (task as any).userId !== (session?.user as any)?.id) {
-      setViewingTask(task); // abrir en modo vista
-      return;
+    if (!isManager) {
+      const currentUserId = (session?.user as any)?.id;
+      const taskCreatorId = (task as any).userId;
+      // Solo puede editar si él la creó
+      const canEdit = taskCreatorId === currentUserId;
+      if (!canEdit) {
+        setViewingTask(task); // solo ver
+        return;
+      }
     }
     setEditingTask(task);
     setFormOpen(true);
@@ -256,7 +261,17 @@ function TasksContent() {
     );
   }
 
-  const cardProps = { onEdit: handleEdit, onDelete: (t: Task) => setDeleteTask(t), onView: (t: Task) => setViewingTask(t), onMarkComplete: handleMarkComplete, onMarkPending: handleMarkPending, onAddSubtask: (t: Task) => { setParentTaskId(t.id); setEditingTask(null); setFormOpen(true); } };
+  const currentUserId = (session?.user as any)?.id;
+  const cardProps = {
+    onEdit: handleEdit,
+    onDelete: (t: Task) => setDeleteTask(t),
+    onView: (t: Task) => setViewingTask(t),
+    onMarkComplete: handleMarkComplete,
+    onMarkPending: handleMarkPending,
+    onAddSubtask: (t: Task) => { setParentTaskId(t.id); setEditingTask(null); setFormOpen(true); },
+    hideEdit: !isManager ? true : false,
+    canEdit: (t: Task) => isManager || (t as any).userId === currentUserId,
+  };
 
   return (
     <div className="space-y-6">

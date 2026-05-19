@@ -17,6 +17,9 @@ interface TaskCardProps {
   /** Marcar como pendiente (solo si la tarea está completada). */
   onMarkPending?: (task: Task) => void | Promise<void>;
   onAddSubtask?: (parentTask: Task) => void;
+  onRequestDelivery?: (task: Task) => void | Promise<void>;
+  isManager?: boolean;
+  canEdit?: (task: Task) => boolean;
 }
 
 const priorityDotColors: Record<string, string> = {
@@ -59,7 +62,7 @@ function resolveAssignees(task: Task): TaskAssignee[] {
   return [];
 }
 
-export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask }: TaskCardProps) {
+export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask, onRequestDelivery, isManager = true, canEdit }: TaskCardProps) {
   const overdue = isOverdue(task.dueDate) && task.status !== 'completed';
   const assignees = resolveAssignees(task);
   const [subtasksOpen, setSubtasksOpen] = useState(false);
@@ -115,14 +118,16 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
 
             {/* Actions */}
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0 text-white/30 hover:text-white hover:bg-white/[0.06]"
-                onClick={(e) => { e.stopPropagation(); onEdit(task); }}
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </Button>
+              {(!canEdit || canEdit(task)) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-white/30 hover:text-white hover:bg-white/[0.06]"
+                  onClick={(e) => { e.stopPropagation(); onEdit(task); }}
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"

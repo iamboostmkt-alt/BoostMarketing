@@ -2,6 +2,8 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { sendMail, templateBienvenida } from '@/lib/mailer';
+import { getBranding } from '@/lib/branding';
 
 const MANAGE_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'];
 
@@ -174,6 +176,27 @@ export async function POST(req: NextRequest) {
     });
 
     const fresh = await db.client.findUnique({ where: { id: client.id }, select: clientSelect });
+
+    // Notificar al PM asignado que tiene un nuevo cliente
+    if (resolvedManagerId) {
+      try {
+        const pm = await db.user.findUnique({
+          where: { id: resolvedManagerId },
+          select: { email: true, name: true },
+        });
+        if (pm?.email) {
+          const branding = await getBranding();
+          await sendMail(
+            pm.email,
+            `Nuevo cliente asignado: ${name}`,
+            templateBienvenida(`${pm.name || 'PM'} — se te asignó el cliente ${name} (${email})`, branding)
+          );
+        }
+      } catch (e) {
+        console.error('[clients POST] email PM error:', e);
+      }
+    }
+
     return NextResponse.json({ client: formatClient(fresh as unknown as Record<string, unknown>) }, { status: 201 });
   } catch (error) {
     console.error('[clients POST]', error);
