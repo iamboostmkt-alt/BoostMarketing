@@ -72,6 +72,42 @@ export async function GET(req: NextRequest) {
       }))
       .filter(t => AccessControl.canViewTask(user, t));
 
+    // ── SUBTAREAS en calendario ────────────────────────────
+    // Admin y PM ven todas las subtareas
+    // Equipo ve solo sus subtareas asignadas
+    let subtaskEvents: any[] = [];
+    if (!isClient) {
+      const subtaskWhere: any = isManager
+        ? { parentTaskId: { not: null }, archivedAt: null, dueDate: { not: null } }
+        : {
+            parentTaskId: { not: null },
+            archivedAt: null,
+            dueDate: { not: null },
+            OR: [
+              { userId: user.id },
+              { assignedUserId: user.id },
+              { assignedUsers: { some: { userId: user.id } } },
+            ],
+          };
+
+      const rawSubtasks = await db.task.findMany({
+        where: subtaskWhere,
+        include: {
+          assignedUser:  userInclude,
+          assignedUsers: { include: { user: userInclude } },
+          client:        { select: { id: true, name: true, company: true, assignedManagerId: true } },
+        },
+        orderBy: { dueDate: 'asc' },
+      });
+
+      subtaskEvents = rawSubtasks.map(t => ({
+        ...t,
+        status:        normalizeTaskStatus(t.status),
+        assignedUsers: t.assignedUsers.map((au: any) => au.user ? au.user : au),
+        isSubtask:     true,
+      }));
+    }
+
     // ── APPOINTMENTS ───────────────────────────────────────
     let appointments: any[] = [];
     let meetings: any[]     = [];
@@ -152,7 +188,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ tasks, appointments, meetings, activities, milestones });
+    return NextResponse.json({ tasks: [...tasks, ...subtaskEvents], appointments, meetings, activities, milestones });
   } catch (error) {
     console.error('[calendar GET]', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });

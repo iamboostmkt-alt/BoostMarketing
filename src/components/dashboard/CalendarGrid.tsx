@@ -206,7 +206,9 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
               <div className="relative z-10 flex items-center gap-0.5 mt-auto flex-wrap justify-center w-full pt-0.5">
                 {/* Task dots by priority */}
                 {dayTasks.slice(0, 2).map((task, i) => (
-                  <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${taskDotColors[task.priority] || 'bg-white/30'}`} title={task.title} />
+                  (task as any).isSubtask
+                    ? <span key={`t${i}`} className="w-1.5 h-1.5 rounded-full bg-violet-400/60 ring-1 ring-violet-400/30" title={`↳ ${task.title}`} />
+                    : <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${taskDotColors[task.priority] || 'bg-white/30'}`} title={task.title} />
                 ))}
                 {/* Activity dot — brand color */}
                 {dayActivities.slice(0, 1).map((_, i) => (
