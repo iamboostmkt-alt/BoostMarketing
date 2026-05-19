@@ -185,6 +185,38 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                 {format(day, 'd')}
               </span>
 
+              {/* Task title chips */}
+              <div className="w-full space-y-px px-0.5 mb-0.5">
+                {dayTasks.slice(0, 2).map((task, i) => (
+                  <div
+                    key={`chip-${task.id}-${i}`}
+                    className={`w-full truncate text-[9px] font-medium px-1 py-0.5 rounded leading-tight ${
+                      (task as any).isSubtask
+                        ? 'bg-violet-500/15 text-violet-300/80'
+                        : task.priority === 'urgent' ? 'bg-red-500/20 text-red-300/90'
+                        : task.priority === 'high'   ? 'bg-orange-500/15 text-orange-300/80'
+                        : 'bg-white/[0.06] text-white/60'
+                    }`}
+                    title={`${(task as any).isSubtask ? 'subtarea: ' : ''}${task.title}`}
+                  >
+                    {(task as any).isSubtask && <span className="opacity-60">↳ </span>}
+                    {task.title}
+                  </div>
+                ))}
+                {dayAppointments.slice(0, 1).map((apt, i) => (
+                  <div key={`aptchip-${i}`}
+                    className="w-full truncate text-[9px] font-medium px-1 py-0.5 rounded leading-tight bg-green-500/15 text-green-300/80"
+                    title={apt.name}>
+                    {apt.name}
+                  </div>
+                ))}
+                {(dayTasks.length + dayAppointments.length) > 3 && (
+                  <div className="text-[9px] text-white/30 px-1">
+                    +{dayTasks.length + dayAppointments.length - 3} mas
+                  </div>
+                )}
+              </div>
+
               {/* Range task bars */}
               <div className="w-full space-y-px">
                 {dayRangeTasks.slice(0, 2).map((task, i) => {
@@ -204,27 +236,14 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
 
               {/* Bottom indicators */}
               <div className="relative z-10 flex items-center gap-0.5 mt-auto flex-wrap justify-center w-full pt-0.5">
-                {/* Task dots by priority */}
-                {dayTasks.slice(0, 2).map((task, i) => (
-                  (task as any).isSubtask
-                    ? <span key={`t${i}`} className="w-1.5 h-1.5 rounded-full bg-violet-400/60 ring-1 ring-violet-400/30" title={`↳ ${task.title}${(task as any).client?.name ? ' · ' + (task as any).client.name : ''}`} />
-                    : <span key={`t${i}`} className={`w-1.5 h-1.5 rounded-full ${taskDotColors[task.priority] || 'bg-white/30'}`} title={`${task.title}${(task as any).client?.name ? ' · ' + (task as any).client.name : ''}`} />
-                ))}
-                {/* Activity dot — brand color */}
                 {dayActivities.slice(0, 1).map((_, i) => (
                   <span key={`a${i}`} className="w-1.5 h-1.5 rounded-full bg-violet-400/80" title="Actividad" />
                 ))}
-                {/* Appointment dot — green */}
-                {dayAppointments.slice(0, 1).map((_, i) => (
-                  <span key={`ap${i}`} className="w-1.5 h-1.5 rounded-full bg-green-400" title="Videollamada" />
-                ))}
-                {/* Milestone dot — yellow */}
                 {dayMilestones.slice(0, 1).map((m, i) => (
                   <span key={`m${i}`} className="w-1.5 h-1.5 rounded-full bg-yellow-400" title={m.title} />
                 ))}
-                {/* Overflow count */}
-                {(dayTasks.length + dayActivities.length + dayAppointments.length + dayMilestones.length) > 4 && (
-                  <span className="text-[8px] text-white/30">+{dayTasks.length + dayActivities.length + dayAppointments.length + dayMilestones.length - 4}</span>
+                {urgentTask && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" title="Urgente" />
                 )}
               </div>
             </button>
