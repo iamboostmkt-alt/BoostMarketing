@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
  
 import TaskForm from '@/components/dashboard/TaskForm';
+import TaskDetailModal from '@/components/dashboard/TaskDetailModal';
 import CalendarGrid from '@/components/dashboard/CalendarGrid';
 import type { Task, Activity, Appointment } from '@/lib/types';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
@@ -96,6 +97,8 @@ export default function CalendarContent() {
   const [dayModalOpen, setDayModalOpen] = useState(false);
   const [taskFormOpen, setTaskFormOpen] = useState(false);
   const [editingTask,        setEditingTask]        = useState<Task | null>(null);
+  const [detailTask,         setDetailTask]         = useState<Task | null>(null);
+  const [detailOpen,         setDetailOpen]         = useState(false);
   const [apptEditOpen,       setApptEditOpen]       = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [apptInitialDate,    setApptInitialDate]    = useState<Date | null>(null);
@@ -395,7 +398,7 @@ export default function CalendarContent() {
                         task.priority === "medium" ? "bg-amber-400" :
                         "bg-emerald-400"}`} />
                     <button type="button" className="w-full text-left"
-                      onClick={() => { setEditingTask(task); setTaskFormOpen(true); }}>
+                      onClick={() => { setDetailTask(task); setDetailOpen(true); }}>
                       <div className="flex items-start gap-2.5">
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${statusColors[task.status] || 'status-pending'}`}>
                           {statusLabels[task.status] || task.status}
@@ -518,7 +521,7 @@ export default function CalendarContent() {
         appointments={appointments}
         milestones={milestones}
         isManager={isManager}
-        onEditTask={(t) => { setEditingTask(t); setTaskFormOpen(true); }}
+        onEditTask={(t) => { setDetailTask(t); setDetailOpen(true); }}
         onNewTask={() => { setEditingTask(null); setTaskFormOpen(true); }}
         onNewAppointment={() => { setEditingAppointment(null); setApptInitialDate(selectedDay); setApptEditOpen(true); }}
         onDeleteTask={handleDeleteTask}
@@ -542,6 +545,14 @@ export default function CalendarContent() {
         onSaved={fetchData}
         onDeleted={(id) => setAppointments(prev => prev.filter(a => a.id !== id))}
         initialDate={apptInitialDate}
+      />
+
+      <TaskDetailModal
+        task={detailTask}
+        open={detailOpen}
+        onClose={() => setDetailOpen(false)}
+        onEdit={(t) => { setDetailOpen(false); setEditingTask(t); setTaskFormOpen(true); }}
+        isManager={isManager}
       />
     </div>
   );
