@@ -257,9 +257,12 @@ export async function POST(req: NextRequest) {
 
   if (!title) return NextResponse.json({ error: "Titulo requerido" }, { status: 400 });
 
-  const finalAssignedIds = isManager && Array.isArray(assignedUserIds)
+  // Para subtareas: si assignedUserIds viene vacío, no forzar al creador
+  const finalAssignedIds = isManager && Array.isArray(assignedUserIds) && assignedUserIds.length > 0
     ? [...new Set([userId, ...assignedUserIds])]
-    : [userId];
+    : parentTaskId
+      ? (Array.isArray(assignedUserIds) && assignedUserIds.length > 0 ? assignedUserIds : [userId])
+      : [userId];
 
   // Clientes pueden crear tareas vinculadas a su propio clientId
   const isClient = (session.user as any).role === 'CLIENT';

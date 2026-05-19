@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Loader2, CalendarIcon, X, Sparkles } from 'lucide-react';
@@ -411,14 +411,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                       {/* Campos expandibles */}
                       {sub.expanded && (
                         <div className="px-3 py-3 space-y-2.5 bg-white/[0.01] border-t border-white/[0.06]">
-                          {/* Título */}
-                          <input
-                            type="text"
-                            value={sub.title}
-                            onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, title: e.target.value } : s))}
-                            placeholder="Título de la subtarea"
-                            className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all"
-                          />
+
                           {/* Estado y Prioridad */}
                           <div className="grid grid-cols-2 gap-2">
                             <select value={sub.status}
@@ -477,6 +470,14 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                               </div>
                             </div>
                           )}
+                          {/* Botón Listo */}
+                          <button
+                            type="button"
+                            onClick={() => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, expanded: false } : s))}
+                            className="w-full mt-1 py-1.5 rounded-lg bg-violet-600/15 border border-violet-500/30 text-violet-300/80 hover:bg-violet-600/25 text-xs font-medium transition-all"
+                          >
+                            ✓ Listo
+                          </button>
                         </div>
                       )}
                     </li>
@@ -495,7 +496,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                       e.preventDefault();
                       const val = subtaskInput.trim();
                       if (!val) return;
-                      setPendingSubtasks((prev) => [...prev, { id: crypto.randomUUID(), title: val, status: 'pending', priority: 'medium', assignedUserIds: [], expanded: true }]);
+                      setPendingSubtasks((prev) => [...prev, { id: Math.random().toString(36).slice(2), title: val, status: 'pending', priority: 'medium', assignedUserIds: [], expanded: true }]);
                       setSubtaskInput('');
                     }
                   }}
@@ -507,7 +508,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                   onClick={() => {
                     const val = subtaskInput.trim();
                     if (!val) return;
-                    setPendingSubtasks((prev) => [...prev, { id: crypto.randomUUID(), title: val, status: 'pending', priority: 'medium', assignedUserIds: [], expanded: true }]);
+                    setPendingSubtasks((prev) => [...prev, { id: Math.random().toString(36).slice(2), title: val, status: 'pending', priority: 'medium', assignedUserIds: [], expanded: true }]);
                     setSubtaskInput('');
                   }}
                   className="rounded-lg border border-violet-500/30 bg-violet-600/10 px-3 py-2 text-sm font-medium text-violet-300/80 hover:bg-violet-600/20 hover:border-violet-400/40 hover:text-violet-200 transition-all flex items-center gap-1.5 whitespace-nowrap"
