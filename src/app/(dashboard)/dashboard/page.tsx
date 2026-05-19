@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Users,
-  CheckSquare,
+  CheckSquare, CheckCircle2,
   UserCircle,
   DollarSign,
   Plus,
@@ -147,10 +147,11 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/tasks?limit=5').then((r) => r.ok ? r.json() : null).then((d) => {
+    const url = isManager ? '/api/tasks?limit=5' : '/api/tasks?scope=mine';
+    fetch(url).then((r) => r.ok ? r.json() : null).then((d) => {
       if (d) setTasks(d.tasks || d || []);
     }).finally(() => setLoadingTasks(false));
-  }, []);
+  }, [isManager]);
 
   // ── Fetch team data (admin/PM only) ──────────────────────────────────────
   useEffect(() => {
@@ -168,9 +169,8 @@ export default function DashboardPage() {
     }).finally(() => setLoadingTeam(false));
   }, [isManager]);
 
-  // Fetch upcoming meetings
+  // Fetch upcoming meetings — todos los roles
   useEffect(() => {
-    if (!isManager) { setLoadingMeetings(false); return; }
     Promise.all([
       fetch('/api/appointments?upcoming=1').then(r => r.ok ? r.json() : null),
       fetch('/api/meetings').then(r => r.ok ? r.json() : null),
@@ -179,7 +179,7 @@ export default function DashboardPage() {
       const m = (meets?.meetings || []).filter((x: any) => new Date(x.date) >= new Date());
       setMeetings([...a, ...m].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     }).finally(() => setLoadingMeetings(false));
-  }, [isManager]);
+  }, []);
 
   async function handleDeleteMeeting(id: string) {
     if (!confirm('¿Eliminar esta videollamada?')) return;
@@ -610,6 +610,117 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        </div>
+      )}
+
+      {/* ── Dashboard Equipo de Trabajo ── */}
+      {!isManager && (
+        <div className="space-y-6">
+
+          {/* Mis tareas activas */}
+          <div className="glass-card rounded-xl">
+            <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <CheckSquare className="w-4 h-4 text-violet-400" />
+                <h3 className="text-sm font-semibold text-white">Mis Tareas</h3>
+                <span className="text-[10px] bg-violet-500/15 text-violet-300 px-1.5 py-0.5 rounded-full">
+                  {tasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length}
+                </span>
+              </div>
+              <Link href="/dashboard/tasks">
+                <Button variant="ghost" size="sm" className="text-white/40 hover:text-white hover:bg-white/[0.06] text-xs h-7">
+                  Ver todas
+                </Button>
+              </Link>
+            </div>
+            <div className="divide-y divide-white/[0.04] max-h-[350px] overflow-y-auto custom-scrollbar">
+              {loadingTasks ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3">
+                    <Skeleton className="h-3 w-3 rounded shrink-0" />
+                    <div className="flex-1 space-y-1.5"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/3" /></div>
+                  </div>
+                ))
+              ) : tasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <CheckSquare className="w-8 h-8 text-white/20 mb-2" />
+                  <p className="text-xs text-white/40">Sin tareas activas 🎉</p>
+                </div>
+              ) : (
+                <RecentTasksList tasks={tasks.filter(t => t.status !== 'completed' && t.status !== 'approved')} />
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Próximas reuniones */}
+            <div className="glass-card rounded-xl">
+              <div className="flex items-center gap-2 p-4 border-b border-white/[0.06]">
+                <Video className="w-4 h-4 text-green-400" />
+                <h3 className="text-sm font-semibold text-white">Próximas Reuniones</h3>
+              </div>
+              <div className="p-4 space-y-3">
+                {loadingMeetings ? (
+                  Array.from({ length: 2 }).map((_, i) => (
+                    <div key={i} className="flex gap-3"><Skeleton className="h-10 w-10 rounded-lg" /><div className="flex-1 space-y-1.5"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/2" /></div></div>
+                  ))
+                ) : meetings.length === 0 ? (
+                  <p className="text-xs text-white/30 text-center py-6">Sin reuniones próximas</p>
+                ) : (
+                  meetings.filter((m: any) => new Date(m.date) >= new Date()).slice(0, 5).map((m: any) => (
+                    <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                      <div className="w-10 h-10 rounded-lg bg-green-500/10 flex flex-col items-center justify-center shrink-0">
+                        <p className="text-sm font-bold text-green-300 leading-none">{new Date(m.date).getDate()}</p>
+                        <p className="text-[9px] text-green-400/60 uppercase">{new Date(m.date).toLocaleDateString('es-MX', { month: 'short' })}</p>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white/90 truncate">{m.name || m.title}</p>
+                        <p className="text-xs text-white/40">{new Date(m.date).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                      {m.meetLink && (
+                        <a href={m.meetLink} target="_blank" rel="noopener noreferrer"
+                          className="shrink-0 text-[10px] px-2 py-1 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-300 hover:bg-sky-500/20 transition-all">
+                          Unirse
+                        </a>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Tareas completadas recientemente */}
+            <div className="glass-card rounded-xl">
+              <div className="flex items-center gap-2 p-4 border-b border-white/[0.06]">
+                <CheckCircle2 className="w-4 h-4 text-green-400" />
+                <h3 className="text-sm font-semibold text-white">Completadas Recientemente</h3>
+              </div>
+              <div className="divide-y divide-white/[0.04] max-h-[280px] overflow-y-auto custom-scrollbar">
+                {loadingTasks ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3">
+                      <Skeleton className="h-3 w-3 rounded-full shrink-0" />
+                      <Skeleton className="h-3 flex-1" />
+                    </div>
+                  ))
+                ) : tasks.filter(t => t.status === 'completed' || t.status === 'approved').length === 0 ? (
+                  <p className="text-xs text-white/30 text-center py-6">Aún no hay tareas completadas</p>
+                ) : (
+                  tasks.filter(t => t.status === 'completed' || t.status === 'approved').slice(0, 10).map(t => (
+                    <div key={t.id} className="flex items-center gap-3 px-4 py-2.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green-400/60 shrink-0" />
+                      <span className="flex-1 text-xs text-white/40 line-through truncate">{t.title}</span>
+                      {(t as any).client?.name && (
+                        <span className="text-[10px] text-white/20 shrink-0">{(t as any).client.name}</span>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+          </div>
         </div>
       )}
     </div>
