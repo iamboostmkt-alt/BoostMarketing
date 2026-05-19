@@ -490,6 +490,17 @@ export async function DELETE(req: NextRequest) {
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
+  // Borrar subtareas primero (con sus asignados)
+  const subtasks = await db.task.findMany({
+    where: { parentTaskId: id },
+    select: { id: true },
+  });
+  if (subtasks.length > 0) {
+    const subtaskIds = subtasks.map((s: { id: string }) => s.id);
+    await db.taskAssignedUser.deleteMany({ where: { taskId: { in: subtaskIds } } });
+    await db.task.deleteMany({ where: { parentTaskId: id } });
+  }
+
   await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
   await db.task.delete({ where: { id } });
   return NextResponse.json({ success: true });
