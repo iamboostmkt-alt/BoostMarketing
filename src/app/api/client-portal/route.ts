@@ -55,6 +55,11 @@ export async function GET(req: NextRequest) {
         where: { id: clientId },
         include: {
           assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
+          assignedUsers: {
+            include: {
+              user: { select: { id: true, name: true, email: true, color: true, image: true, role: true } },
+            },
+          },
         },
       });
 
@@ -67,6 +72,11 @@ export async function GET(req: NextRequest) {
         where: { email: { equals: userEmail, mode: 'insensitive' } },
         include: {
           assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
+          assignedUsers: {
+            include: {
+              user: { select: { id: true, name: true, email: true, color: true, image: true, role: true } },
+            },
+          },
         },
       });
     }

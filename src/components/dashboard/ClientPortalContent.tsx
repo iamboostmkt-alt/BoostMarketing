@@ -1068,18 +1068,10 @@ export default function ClientPortalContent() {
   // ── Datos derivados ──────────────────────────────────────────────────────
   const assignedManager = client.assignedManager;
 
-  const EXCLUDED_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'DESIGNER', 'MARKETING', 'SALES_REP'];
-  const teamMembersMap = new Map();
-  tasks.forEach((t) => {
-    if (t.assignedUser && t.assignedUser.id !== assignedManager?.id && !EXCLUDED_ROLES.includes((t.assignedUser as any).role)) {
-      const u = t.assignedUser;
-      teamMembersMap.set(u.id, { id: u.id, name: u.name, email: u.email, color: u.color, image: u.image ?? null });
-    }
-    for (const u of t.assignedUsers ?? []) {
-      if (u.id !== assignedManager?.id && !EXCLUDED_ROLES.includes((u as any).role)) teamMembersMap.set(u.id, u);
-    }
-  });
-  const teamMembers    = [...teamMembersMap.values()];
+  // Equipo directo del cliente — solo usuarios explícitamente asignados via ClientAssignedUser
+  const teamMembers = ((client as any).assignedUsers ?? [])
+    .map((au: any) => au.user ?? au)
+    .filter((u: any) => u.id !== assignedManager?.id);
   const totalItems     = tasks.length;
   const completedItems = tasks.filter((t) => t.status === 'completed' || t.status === 'approved').length;
   const displayedTasks   = activeTab === 'tasks' ? tasks.filter((t) => t.status !== 'completed' && t.status !== 'approved') : tasks.filter((t) => t.status !== 'completed' && t.status !== 'approved');
