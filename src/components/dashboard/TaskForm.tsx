@@ -78,7 +78,17 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   const [templates,          setTemplates]          = useState<TaskTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
-  const [pendingSubtasks, setPendingSubtasks] = useState<string[]>([]);
+  interface PendingSubtask {
+    id: string;
+    title: string;
+    status: string;
+    priority: string;
+    startDate?: string;
+    dueDate?: string;
+    assignedUserIds: string[];
+    expanded: boolean;
+  }
+  const [pendingSubtasks, setPendingSubtasks] = useState<PendingSubtask[]>([]);
   const [subtaskInput, setSubtaskInput]       = useState('');
 
   useEffect(() => {
@@ -373,7 +383,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           </div>
 
           {!isSubtask && !isEditing && (
-            <div className="space-y-3 pt-1">
+            <div className="space-y-2 pt-1">
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-white/[0.08]" />
                 <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/30">
@@ -381,21 +391,100 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 </span>
                 <div className="h-px flex-1 bg-white/[0.08]" />
               </div>
+
+              {/* Lista de subtareas pendientes */}
               {pendingSubtasks.length > 0 && (
                 <ul className="space-y-1.5">
                   {pendingSubtasks.map((sub, idx) => (
-                    <li key={idx} className="flex items-center gap-2 rounded-lg bg-white/[0.03] border border-white/[0.08] px-3 py-2">
-                      <span className="text-white/20 text-xs select-none">↳</span>
-                      <span className="flex-1 text-sm text-white/70 truncate">{sub}</span>
-                      <button
-                        type="button"
-                        onClick={() => setPendingSubtasks((prev) => prev.filter((_, i) => i !== idx))}
-                        className="text-white/25 hover:text-red-400/80 transition-colors text-xs leading-none"
-                      >✕</button>
+                    <li key={sub.id} className="rounded-lg border border-white/[0.08] overflow-hidden">
+                      {/* Fila colapsable */}
+                      <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] cursor-pointer hover:bg-white/[0.05] transition-colors"
+                        onClick={() => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, expanded: !s.expanded } : s))}>
+                        <span className="text-white/20 text-xs select-none">↳</span>
+                        <span className="flex-1 text-sm text-white/70 truncate">{sub.title}</span>
+                        <span className="text-[10px] text-white/30 shrink-0">{sub.expanded ? '▲' : '▼'}</span>
+                        <button type="button"
+                          onClick={(e) => { e.stopPropagation(); setPendingSubtasks(prev => prev.filter((_, i) => i !== idx)); }}
+                          className="text-white/25 hover:text-red-400/80 transition-colors text-xs leading-none ml-1 shrink-0">✕</button>
+                      </div>
+
+                      {/* Campos expandibles */}
+                      {sub.expanded && (
+                        <div className="px-3 py-3 space-y-2.5 bg-white/[0.01] border-t border-white/[0.06]">
+                          {/* Título */}
+                          <input
+                            type="text"
+                            value={sub.title}
+                            onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, title: e.target.value } : s))}
+                            placeholder="Título de la subtarea"
+                            className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all"
+                          />
+                          {/* Estado y Prioridad */}
+                          <div className="grid grid-cols-2 gap-2">
+                            <select value={sub.status}
+                              onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, status: e.target.value } : s))}
+                              className="rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40">
+                              <option value="pending">Pendiente</option>
+                              <option value="in_progress">En progreso</option>
+                              <option value="internal_review">En revisión</option>
+                              <option value="completed">Completada</option>
+                            </select>
+                            <select value={sub.priority}
+                              onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, priority: e.target.value } : s))}
+                              className="rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40">
+                              <option value="low">Baja</option>
+                              <option value="medium">Media</option>
+                              <option value="high">Alta</option>
+                              <option value="urgent">Urgente</option>
+                            </select>
+                          </div>
+                          {/* Fechas */}
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] text-white/30 mb-1 block">Inicio</label>
+                              <input type="date" value={sub.startDate || ''}
+                                onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, startDate: e.target.value } : s))}
+                                className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-white/30 mb-1 block">Límite</label>
+                              <input type="date" value={sub.dueDate || ''}
+                                onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, dueDate: e.target.value } : s))}
+                                className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
+                            </div>
+                          </div>
+                          {/* Asignar a */}
+                          {users.length > 0 && (
+                            <div>
+                              <label className="text-[10px] text-white/30 mb-1 block">Asignar a</label>
+                              <div className="flex flex-wrap gap-1">
+                                {users.map(u => {
+                                  const checked = sub.assignedUserIds.includes(u.id);
+                                  return (
+                                    <button key={u.id} type="button"
+                                      onClick={() => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? {
+                                        ...s,
+                                        assignedUserIds: checked
+                                          ? s.assignedUserIds.filter(id => id !== u.id)
+                                          : [...s.assignedUserIds, u.id]
+                                      } : s))}
+                                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${checked ? 'bg-brand/25 text-white border border-brand/40' : 'bg-white/[0.04] text-white/50 border border-white/[0.08] hover:text-white'}`}>
+                                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: u.color || '#7c3aed' }} />
+                                      {u.name || u.email}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>
               )}
+
+              {/* Input nueva subtarea */}
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -406,7 +495,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                       e.preventDefault();
                       const val = subtaskInput.trim();
                       if (!val) return;
-                      setPendingSubtasks((prev) => [...prev, val]);
+                      setPendingSubtasks((prev) => [...prev, { id: crypto.randomUUID(), title: val, status: 'pending', priority: 'medium', assignedUserIds: [], expanded: true }]);
                       setSubtaskInput('');
                     }
                   }}
@@ -418,7 +507,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                   onClick={() => {
                     const val = subtaskInput.trim();
                     if (!val) return;
-                    setPendingSubtasks((prev) => [...prev, val]);
+                    setPendingSubtasks((prev) => [...prev, { id: crypto.randomUUID(), title: val, status: 'pending', priority: 'medium', assignedUserIds: [], expanded: true }]);
                     setSubtaskInput('');
                   }}
                   className="rounded-lg border border-violet-500/30 bg-violet-600/10 px-3 py-2 text-sm font-medium text-violet-300/80 hover:bg-violet-600/20 hover:border-violet-400/40 hover:text-violet-200 transition-all flex items-center gap-1.5 whitespace-nowrap"
