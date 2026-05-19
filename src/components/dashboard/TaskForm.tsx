@@ -212,15 +212,19 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         const newTaskId = resData?.id ?? resData?.task?.id;
         if (newTaskId) {
           await Promise.all(
-            pendingSubtasks.map((subTitle) =>
+            pendingSubtasks.map((sub) =>
               fetch('/api/tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  title: subTitle,
+                  title: sub.title,
                   parentTaskId: newTaskId,
                   clientId: clientId || null,
-                  status: 'pending',
+                  status: sub.status || 'pending',
+                  priority: sub.priority || 'medium',
+                  startDate: sub.startDate || null,
+                  dueDate: sub.dueDate || null,
+                  assignedUserIds: sub.assignedUserIds || [],
                   visibility: 'internal',
                   type: 'internal_task',
                 }),
