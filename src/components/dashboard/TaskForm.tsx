@@ -81,12 +81,14 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   interface PendingSubtask {
     id: string;
     title: string;
+    description?: string;
     status: string;
     priority: string;
     startDate?: string;
     dueDate?: string;
     assignedUserIds: string[];
     expanded: boolean;
+    existingId?: string;
   }
   const [pendingSubtasks, setPendingSubtasks] = useState<PendingSubtask[]>([]);
   const [subtaskInput, setSubtaskInput]       = useState('');
@@ -114,6 +116,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             const subs = (d.tasks || []).map((s: any) => ({
               id: s.id,
               title: s.title,
+              description: s.description || '',
               status: s.status || 'pending',
               priority: s.priority || 'medium',
               startDate: s.startDate ? new Date(s.startDate).toISOString().split('T')[0] : '',
@@ -238,6 +241,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   title: sub.title,
+                  description: sub.description || '',
                   parentTaskId: newTaskId,
                   clientId: clientId || null,
                   status: sub.status || 'pending',
