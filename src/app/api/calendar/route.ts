@@ -78,16 +78,20 @@ export async function GET(req: NextRequest) {
     let subtaskEvents: any[] = [];
     if (!isClient) {
       const subtaskWhere: any = isManager
-        ? { parentTaskId: { not: null }, archivedAt: null, dueDate: { not: null } }
+        ? {
+            parentTaskId: { not: null },
+            archivedAt: null,
+            OR: [{ dueDate: { not: null } }, { startDate: { not: null } }],
+          }
         : {
             parentTaskId: { not: null },
             archivedAt: null,
-            dueDate: { not: null },
             OR: [
               { userId: user.id },
               { assignedUserId: user.id },
               { assignedUsers: { some: { userId: user.id } } },
             ],
+            AND: [{ OR: [{ dueDate: { not: null } }, { startDate: { not: null } }] }],
           };
 
       const rawSubtasks = await db.task.findMany({
@@ -102,6 +106,9 @@ export async function GET(req: NextRequest) {
 
       subtaskEvents = rawSubtasks.map(t => ({
         ...t,
+        // Si solo tiene startDate usar como dueDate y viceversa
+        dueDate:       t.dueDate ?? t.startDate,
+        startDate:     t.startDate ?? t.dueDate,
         status:        normalizeTaskStatus(t.status),
         assignedUsers: t.assignedUsers.map((au: any) => au.user ? au.user : au),
         isSubtask:     true,
