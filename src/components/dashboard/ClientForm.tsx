@@ -35,6 +35,9 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
   const [loading,           setLoading]           = useState(false);
   const [name,              setName]              = useState('');
   const [email,             setEmail]             = useState('');
+  const [createUser,        setCreateUser]        = useState(false);
+  const [userPassword,      setUserPassword]      = useState('');
+  const [creatingUser,      setCreatingUser]      = useState(false);
   const [company,           setCompany]           = useState('');
   const [phone,             setPhone]             = useState('');
   const [status,            setStatus]            = useState('active');
@@ -84,6 +87,28 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
         assignedManagerId: assignedManagerId || null,
         assignedUserIds,
       };
+      // Crear usuario del sistema si se solicitó
+      if (createUser && userPassword && !client) {
+        setCreatingUser(true);
+        try {
+          await fetch('/api/admin/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name,
+              email,
+              password: userPassword,
+              role: 'CLIENT',
+              color: '#7c3aed',
+            }),
+          });
+        } catch (e) {
+          console.error('Error creando usuario:', e);
+        } finally {
+          setCreatingUser(false);
+        }
+      }
+
       const res = await fetch('/api/clients', {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -218,6 +243,86 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
           )}
 
           <DialogFooter className="pt-2">
+            {/* Acceso al portal — solo al crear cliente nuevo */}
+            {!client && (
+              <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-white/70">Acceso al portal</p>
+                    <p className="text-xs text-white/30">Crear cuenta de usuario para este cliente</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCreateUser(v => !v)}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      createUser ? 'bg-violet-600' : 'bg-white/[0.08]'
+                    }`}
+                  >
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                      createUser ? 'translate-x-4' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
+                {createUser && (
+                  <div className="space-y-2">
+                    <Label className="text-white/60 text-xs">Contraseña temporal <span className="text-red-400">*</span></Label>
+                    <Input
+                      type="password"
+                      value={userPassword}
+                      onChange={e => setUserPassword(e.target.value)}
+                      placeholder="Mín. 6 caracteres"
+                      minLength={6}
+                      className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:ring-brand"
+                    />
+                    <p className="text-[10px] text-white/25">
+                      El cliente podrá acceder al portal con su email y esta contraseña.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Si ya es cliente existente — botón para crear usuario si no tiene */}
+            {client && (
+              <div className="pt-2 border-t border-white/[0.06]">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const pwd = prompt('Contraseña temporal para el cliente (mín. 6 caracteres):');
+                    if (!pwd || pwd.length < 6) return;
+                    setCreatingUser(true);
+                    try {
+                      const res = await fetch('/api/admin/users', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          name: client.name,
+                          email: client.email,
+                          password: pwd,
+                          role: 'CLIENT',
+                          color: '#7c3aed',
+                        }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || 'Error');
+                      alert('Usuario creado correctamente. El cliente ya puede acceder al portal.');
+                    } catch (e: any) {
+                      alert(e.message || 'Error al crear usuario');
+                    } finally {
+                      setCreatingUser(false);
+                    }
+                  }}
+                  disabled={creatingUser}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-violet-500/30 bg-violet-600/10 text-violet-300/80 hover:bg-violet-600/20 text-sm transition-all disabled:opacity-50"
+                >
+                  {creatingUser ? '⏳ Creando...' : '🔑 Crear acceso al portal'}
+                </button>
+                <p className="text-[10px] text-white/25 text-center mt-1">
+                  Solo si el cliente aún no tiene usuario en el sistema
+                </p>
+              </div>
+            )}
+
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
               className="border-white/[0.1] text-white/70 hover:text-white hover:bg-white/[0.06]">
               Cancelar
