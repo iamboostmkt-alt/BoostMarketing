@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
-import { sendMail } from '@/lib/mailer';
+import { sendMail, templateBienvenidaCliente } from '@/lib/mailer';
 import { getBranding, emailLayout } from '@/lib/branding';
 
 export async function POST(req: NextRequest) {
@@ -11,7 +11,35 @@ export async function POST(req: NextRequest) {
     if (!user || !MANAGER_ROLES.includes(user.role as any))
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-    const { clientId } = await req.json();
+    const body = await req.json();
+    const { clientId, clientName, clientEmail, tempPassword, assignedManagerId } = body;
+
+    // Modo directo: enviar bienvenida sin buscar en DB
+    if (!clientId && clientName && clientEmail) {
+      try {
+        let pmName = 'Tu Project Manager';
+        let pmEmail = '';
+        if (assignedManagerId) {
+          const pm = await db.user.findUnique({
+            where: { id: assignedManagerId },
+            select: { name: true, email: true },
+          });
+          if (pm) { pmName = pm.name || pmName; pmEmail = pm.email; }
+        }
+        const branding = await getBranding();
+        const portalUrl = `${process.env.NEXTAUTH_URL}/dashboard/client-portal`;
+        await sendMail(
+          clientEmail,
+          `Bienvenido/a a tu portal — ${pmName}`,
+          templateBienvenidaCliente(clientName, pmName, pmEmail, portalUrl, tempPassword, branding)
+        );
+        return NextResponse.json({ ok: true });
+      } catch (e) {
+        console.error('[invite direct]', e);
+        return NextResponse.json({ error: 'Error enviando email' }, { status: 500 });
+      }
+    }
+
     if (!clientId)
       return NextResponse.json({ error: 'clientId requerido' }, { status: 400 });
 

@@ -9,6 +9,7 @@ import {
   templateCambioEstado,
   templateTareaCompletada,
   templateTareaEditada,
+  templateEntregaListaParaRevisar,
 } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
 import { getSessionUser } from "@/core/auth/get-session-user";

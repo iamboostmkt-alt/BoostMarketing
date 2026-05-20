@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
+import { sendMail, templateMilestoneCompletado } from '@/lib/mailer';
+import { getBranding } from '@/lib/branding';
 
 const milestoneInclude = {
   responsible: { select: { id: true, name: true, email: true, color: true, image: true } },
@@ -89,7 +91,24 @@ export async function PUT(req: NextRequest) {
       },
       include: milestoneInclude,
     });
-    return NextResponse.json({ milestone });
+    // Email al PM/cliente si se completa el milestone
+      if (status === 'completed') {
+        try {
+          const full = await db.milestone.findUnique({
+            where: { id },
+            include: { client: { select: { name: true, assignedManager: { select: { email: true } } } } },
+          });
+          if (full?.client?.assignedManager?.email) {
+            const branding = await getBranding();
+            await sendMail(
+              full.client.assignedManager.email,
+              `Milestone completado: ${full.title}`,
+              templateMilestoneCompletado(full.title, full.client.name, branding)
+            );
+          }
+        } catch(e) { console.error('[EMAIL] milestone completed:', e); }
+      }
+      return NextResponse.json({ milestone });
   } catch (error) {
     console.error('[milestones PUT]', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });

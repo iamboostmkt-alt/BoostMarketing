@@ -103,7 +103,7 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
       if (createUser && userPassword && !client) {
         setCreatingUser(true);
         try {
-          await fetch('/api/admin/users', {
+          const userRes = await fetch('/api/admin/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -114,6 +114,19 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
               color: '#7c3aed',
             }),
           });
+          // Enviar email de bienvenida al cliente
+          if (userRes.ok) {
+            await fetch('/api/clients/invite', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                clientName: name,
+                clientEmail: email,
+                tempPassword: userPassword,
+                assignedManagerId,
+              }),
+            }).catch(() => {});
+          }
         } catch (e) {
           console.error('Error creando usuario:', e);
         } finally {
