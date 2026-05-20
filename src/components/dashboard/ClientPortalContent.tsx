@@ -1090,13 +1090,13 @@ export default function ClientPortalContent() {
       <div className="glass-card rounded-2xl p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className="w-14 h-14 rounded-2xl bg-brand/15 flex items-center justify-center shrink-0">
-              <Building2 className="w-7 h-7 text-brand-light" />
+            <div className="w-12 h-12 rounded-xl bg-brand/15 flex items-center justify-center shrink-0">
+              <Building2 className="w-5 h-5 text-brand-light" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl font-bold text-white truncate">{client.name}</h1>
-              {client.company && <p className="text-sm text-white/50 truncate">{client.company}</p>}
-              <p className="text-xs text-white/30">{client.email}</p>
+              <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-0.5">Portal</p>
+              <h1 className="text-lg font-medium text-white truncate">{client.name}</h1>
+              {client.company && <p className="text-xs text-white/40 truncate">{client.company}</p>}
             </div>
           </div>
 
@@ -1133,13 +1133,13 @@ export default function ClientPortalContent() {
         {totalItems > 0 && <ProgressBar total={totalItems} completed={completedItems} />}
 
         <div className="grid grid-cols-2 gap-3 pt-1">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-white">{tasks.length}</p>
-            <p className="text-[11px] text-white/35">Entregas</p>
+          <div className="bg-white/[0.03] rounded-xl p-3">
+            <p className="text-[10px] font-medium text-white/30 uppercase tracking-wide mb-1">Entregas</p>
+            <p className="text-2xl font-semibold text-white leading-none">{tasks.length}</p>
           </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-green-400">{completedItems}</p>
-            <p className="text-[11px] text-white/35">Completadas</p>
+          <div className="bg-white/[0.03] rounded-xl p-3">
+            <p className="text-[10px] font-medium text-white/30 uppercase tracking-wide mb-1">Completadas</p>
+            <p className="text-2xl font-semibold text-green-400 leading-none">{completedItems}</p>
           </div>
         </div>
 
@@ -1185,7 +1185,7 @@ export default function ClientPortalContent() {
       {/* Calendario */}
       <div className="glass-card rounded-2xl p-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-white">Calendario</p>
+          <p className="text-xs font-medium text-white/30 uppercase tracking-widest">Calendario</p>
           {isManager && (
             <button type="button" onClick={() => setMeetingOpen(true)}
               className="flex items-center gap-1 text-[11px] text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md px-2 py-1 transition-colors">
