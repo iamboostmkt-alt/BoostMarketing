@@ -6,9 +6,8 @@ import { es } from 'date-fns/locale';
 import { Loader2, CalendarIcon, X, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-  DialogDescription, DialogFooter,
-} from '@/components/ui/dialog';
+  Sheet, SheetContent,
+} from '@/components/ui/sheet';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -279,10 +278,12 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
 
   return (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#15151c] border-white/[0.06] text-white sm:max-w-lg max-h-[92vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-white">{isEditing ? 'Editar Tarea' : isSubtask ? 'Nueva Subtarea' : isManager ? 'Nueva Tarea' : 'Solicitar Entrega'}</DialogTitle>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="bg-[#15151c] border-l border-white/[0.06] text-white w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0">
+        <div className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
+          <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">
+            {isEditing ? 'Editar Tarea' : isSubtask ? 'Nueva Subtarea' : isManager ? 'Nueva Tarea' : 'Solicitar Entrega'}
+          </p>
           {isManager && !isEditing && (
             <div className="space-y-1.5 pt-2 pb-3 border-b border-white/[0.06]">
               <div className="flex items-center justify-between">
@@ -314,12 +315,12 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               </Select>
             </div>
           )}
-          <DialogDescription className="text-white/40">
+          <p className="text-sm text-white/40">
             {isEditing ? 'Modifica los detalles de la tarea' : 'Completa los campos para crear una nueva tarea'}
-          </DialogDescription>
-        </DialogHeader>
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="task-title" className="text-white/70 text-sm">Titulo <span className="text-red-400">*</span></Label>
             <Input id="task-title" value={title} onChange={(e) => setTitle(e.target.value)}
@@ -655,16 +656,16 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             </div>
           </div>}
 
-          <DialogFooter className="pt-2">
+          <div className="pt-2 flex items-center justify-end gap-2 border-t border-white/[0.06] mt-2">
             <Button variant="outline" type="button" onClick={() => onOpenChange(false)} className="border-white/[0.06]" disabled={loading}>Cancelar</Button>
             <Button type="submit" disabled={loading || !title.trim()} className="bg-brand hover:bg-brand-dark text-white gap-2">
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEditing ? 'Guardar Cambios' : 'Crear Tarea'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
     <TemplateManagerModal
       open={templateManagerOpen}
       onOpenChange={(v) => {
