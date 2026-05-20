@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import UserAvatarStack from '@/components/dashboard/UserAvatarStack';
@@ -170,16 +170,19 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-        <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg w-full max-h-[90vh] flex flex-col p-0 overflow-hidden">
+      <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+        <SheetContent
+          side="right"
+          className="bg-[#15151c] border-l border-white/[0.08] text-white w-full sm:max-w-lg flex flex-col p-0 overflow-hidden gap-0"
+        >
           {/* Header */}
-          <DialogHeader className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
+          <div className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
             <div className="flex items-start gap-3 pr-6">
               <div className="w-9 h-9 rounded-xl bg-brand/15 flex items-center justify-center shrink-0 mt-0.5">
                 <CheckSquare className="w-4 h-4 text-brand-light" />
               </div>
               <div className="flex-1 min-w-0">
-                <DialogTitle className="text-base font-semibold text-white leading-snug">{task.title}</DialogTitle>
+                <p className="text-base font-semibold text-white leading-snug">{task.title}</p>
                 <div className="flex flex-wrap items-center gap-2 mt-1.5">
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusCls}`}>{statusLbl}</span>
                   <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>{priorityLabels[task.priority] || task.priority}</span>
@@ -188,7 +191,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
                 </div>
               </div>
             </div>
-          </DialogHeader>
+          </div>
 
           {/* Body */}
           <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-5">
@@ -402,8 +405,8 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
               <X className="w-3.5 h-3.5 mr-1" />Cerrar
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       {/* TaskForm para nueva subtarea */}
       {task && (
