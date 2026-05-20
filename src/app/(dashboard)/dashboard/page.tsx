@@ -617,44 +617,44 @@ export default function DashboardPage() {
       {!isManager && (
         <div className="space-y-6">
 
-          {/* Mis tareas activas */}
-          <div className="glass-card rounded-xl">
-            <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-              <div className="flex items-center gap-2">
-                <CheckSquare className="w-4 h-4 text-violet-400" />
-                <h3 className="text-sm font-semibold text-white">Mis Tareas</h3>
-                <span className="text-[10px] bg-violet-500/15 text-violet-300 px-1.5 py-0.5 rounded-full">
-                  {tasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length}
-                </span>
-              </div>
-              <Link href="/dashboard/tasks">
-                <Button variant="ghost" size="sm" className="text-white/40 hover:text-white hover:bg-white/[0.06] text-xs h-7">
-                  Ver todas
-                </Button>
-              </Link>
-            </div>
-            <div className="divide-y divide-white/[0.04] max-h-[350px] overflow-y-auto custom-scrollbar">
-              {loadingTasks ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3">
-                    <Skeleton className="h-3 w-3 rounded shrink-0" />
-                    <div className="flex-1 space-y-1.5"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/3" /></div>
-                  </div>
-                ))
-              ) : tasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <CheckSquare className="w-8 h-8 text-white/20 mb-2" />
-                  <p className="text-xs text-white/40">Sin tareas activas 🎉</p>
-                </div>
-              ) : (
-                <RecentTasksList tasks={tasks.filter(t => t.status !== 'completed' && t.status !== 'approved')} />
-              )}
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {/* Próximas reuniones */}
+            {/* Col 1: Mis tareas activas */}
+            <div className="glass-card rounded-xl flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4 text-violet-400" />
+                  <h3 className="text-sm font-semibold text-white">Mis Tareas</h3>
+                  <span className="text-[10px] bg-violet-500/15 text-violet-300 px-1.5 py-0.5 rounded-full">
+                    {tasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length}
+                  </span>
+                </div>
+                <Link href="/dashboard/tasks">
+                  <Button variant="ghost" size="sm" className="text-white/40 hover:text-white hover:bg-white/[0.06] text-xs h-7">
+                    Ver todas
+                  </Button>
+                </Link>
+              </div>
+              <div className="divide-y divide-white/[0.04] flex-1 overflow-y-auto max-h-[400px] custom-scrollbar">
+                {loadingTasks ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3">
+                      <Skeleton className="h-3 w-3 rounded shrink-0" />
+                      <div className="flex-1 space-y-1.5"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/3" /></div>
+                    </div>
+                  ))
+                ) : tasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <CheckSquare className="w-8 h-8 text-white/20 mb-2" />
+                    <p className="text-xs text-white/40">Sin tareas activas 🎉</p>
+                  </div>
+                ) : (
+                  <RecentTasksList tasks={tasks.filter(t => t.status !== 'completed' && t.status !== 'approved')} />
+                )}
+              </div>
+            </div>
+
+            {/* Col 2: Próximas reuniones */}
             <div className="glass-card rounded-xl">
               <div className="flex items-center gap-2 p-4 border-b border-white/[0.06]">
                 <Video className="w-4 h-4 text-green-400" />
