@@ -118,7 +118,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
     <div className="space-y-4">
       {/* Navigation */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">{monthLabel}</h2>
+        <h2 className="text-sm font-medium text-white/70">{monthLabel}</h2>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]" onClick={() => setCurrentMonth(m => subMonths(m, 1))}>
             <ChevronLeft className="w-4 h-4" />
@@ -133,14 +133,14 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
       </div>
 
       {/* Day names */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7">
         {DAY_NAMES.map(name => (
-          <div key={name} className="text-center text-[11px] font-medium text-white/30 py-2">{name}</div>
+          <div key={name} className="text-center text-[11px] font-medium text-white/25 py-2 uppercase tracking-wide">{name}</div>
         ))}
       </div>
 
       {/* Calendar cells */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 border-t border-l border-white/[0.04]">
         {days.map((day, dayIdx) => {
           const dayTasks        = getTasksForDay(tasks, day);
           const dayActivities   = getActivitiesForDay(activities, day);
@@ -181,38 +181,45 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
               )}
 
               {/* Day number */}
-              <span className={`relative z-10 text-xs font-medium w-full text-center mb-0.5 ${today ? 'text-brand-light font-bold' : ''} ${isSelected ? 'text-white' : ''}`}>
-                {format(day, 'd')}
+              <span className={`relative z-10 text-xs w-full text-left mb-1 leading-none ${
+                today
+                  ? 'text-brand-light font-semibold'
+                  : isCurrentMonth
+                  ? 'text-white/50 font-normal'
+                  : 'text-white/15 font-normal'
+              } ${isSelected ? 'text-white font-medium' : ''}`}>
+                {today ? (
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand text-white text-[10px] font-medium">
+                    {format(day, 'd')}
+                  </span>
+                ) : format(day, 'd')}
               </span>
 
               {/* Task title chips */}
-              <div className="w-full space-y-px px-0.5 mb-0.5">
-                {dayTasks.slice(0, 2).map((task, i) => (
+              <div className="w-full space-y-px mb-0.5">
+                {dayTasks.slice(0, 1).map((task, i) => (
                   <div
                     key={`chip-${task.id}-${i}`}
-                    className={`w-full truncate text-[9px] font-medium px-1 py-0.5 rounded leading-tight ${
-                      (task as any).isSubtask
-                        ? 'bg-violet-500/15 text-violet-300/80'
-                        : task.priority === 'urgent' ? 'bg-red-500/20 text-red-300/90'
-                        : task.priority === 'high'   ? 'bg-orange-500/15 text-orange-300/80'
-                        : 'bg-white/[0.06] text-white/60'
+                    className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight ${
+                      task.priority === 'urgent' ? 'bg-red-500/20 text-red-300/90'
+                      : task.priority === 'high' ? 'bg-orange-500/15 text-orange-300/80'
+                      : 'bg-white/[0.06] text-white/55'
                     }`}
-                    title={`${(task as any).isSubtask ? 'subtarea: ' : ''}${task.title}`}
+                    title={task.title}
                   >
-                    {(task as any).isSubtask && <span className="opacity-60">↳ </span>}
                     {task.title}
                   </div>
                 ))}
                 {dayAppointments.slice(0, 1).map((apt, i) => (
                   <div key={`aptchip-${i}`}
-                    className="w-full truncate text-[9px] font-medium px-1 py-0.5 rounded leading-tight bg-green-500/15 text-green-300/80"
+                    className="w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight bg-green-500/15 text-green-300/80"
                     title={apt.name}>
                     {apt.name}
                   </div>
                 ))}
-                {(dayTasks.length + dayAppointments.length) > 3 && (
-                  <div className="text-[9px] text-white/30 px-1">
-                    +{dayTasks.length + dayAppointments.length - 3} mas
+                {(dayTasks.length + dayAppointments.length) > 2 && (
+                  <div className="text-[10px] text-white/25 px-1">
+                    +{dayTasks.length + dayAppointments.length - 2}
                   </div>
                 )}
               </div>
@@ -227,7 +234,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                   return (
                     <div
                       key={`range-${task.id}-${i}`}
-                      className={`h-1 ${color} ${roundLeft ? 'rounded-l-full' : '-ml-px'} ${roundRight ? 'rounded-r-full' : '-mr-px'}`}
+                      className={`h-1.5 ${color} ${roundLeft ? 'rounded-l-full ml-0.5' : '-ml-1'} ${roundRight ? 'rounded-r-full mr-0.5' : '-mr-1'}`}
                       title={task.title}
                     />
                   );

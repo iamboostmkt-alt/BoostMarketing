@@ -278,10 +278,8 @@ export default function CalendarContent() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Calendario</h1>
-          <p className="text-white/40 text-sm mt-1">
-            Haz clic en un dia para ver su detalle
-          </p>
+          <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Calendario</p>
+          <p className="text-white/40 text-sm">Haz clic en un día para ver su detalle</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           {/* Selector de cliente — solo en tabs clientes/entregas */}
