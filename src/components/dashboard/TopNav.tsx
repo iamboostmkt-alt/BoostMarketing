@@ -52,8 +52,8 @@ export default function TopNav() {
   };
 
   return (
-    <header className="h-16 border-b border-white/[0.06] bg-[#0b0b0f]/80 backdrop-blur-xl sticky top-0 z-30">
-      <div className="flex items-center h-full px-4 md:px-6 gap-4">
+    <header className="h-12 border-b border-white/[0.06] bg-[#0b0b0f]/80 backdrop-blur-xl sticky top-0 z-30">
+      <div className="flex items-center h-full px-4 md:px-6 gap-3">
 
         <Button
           variant="ghost"
@@ -65,17 +65,17 @@ export default function TopNav() {
         </Button>
 
         <div className="flex items-center gap-2 min-w-0">
-          <h1 className="text-lg font-semibold text-white truncate">{getPageTitle()}</h1>
+          <span className="text-sm font-medium text-white/50 truncate">{getPageTitle()}</span>
         </div>
 
-        <div className="flex-1 max-w-md mx-auto hidden sm:block">
+        <div className="flex-1 max-w-sm mx-auto hidden sm:block">
           <button
             onClick={() => setCommandOpen(true)}
-            className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-white/40 hover:text-white/60"
+            className="w-full flex items-center gap-2 h-7 px-3 rounded-md border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-white/30 hover:text-white/50"
           >
-            <Search className="w-4 h-4" />
-            <span className="text-sm flex-1 text-left">Buscar...</span>
-            <kbd className="hidden md:inline-flex items-center gap-0.5 h-5 px-1.5 rounded border border-white/[0.1] bg-white/[0.05] text-[10px] text-white/30 font-mono">
+            <Search className="w-3.5 h-3.5" />
+            <span className="text-xs flex-1 text-left">Buscar...</span>
+            <kbd className="hidden md:inline-flex items-center gap-0.5 h-4 px-1.5 rounded border border-white/[0.08] bg-white/[0.04] text-[10px] text-white/25 font-mono">
               ⌘K
             </kbd>
           </button>
