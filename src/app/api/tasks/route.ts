@@ -477,6 +477,34 @@ export async function PUT(req: NextRequest) {
     }
   }
 
+  // Auto-recalcular progreso del padre al completar subtarea
+  const taskParentId = (existing as any).parentTaskId;
+  if (taskParentId && status !== undefined) {
+    try {
+      const siblings = await db.task.findMany({
+        where: { parentTaskId: taskParentId, archivedAt: null },
+        select: { id: true, status: true },
+      });
+      if (siblings.length > 0) {
+        const completedSiblings = siblings.filter((s: any) =>
+          s.status === 'completed' || s.status === 'approved'
+        ).length;
+        const allDone = completedSiblings === siblings.length;
+        // Si todas las subtareas están completadas, marcar padre como completado
+        if (allDone) {
+          await db.task.update({
+            where: { id: taskParentId },
+            data: { status: 'completed' },
+          });
+        }
+        // Notificación interna de progreso (opcional)
+        console.log(`[SUBTASK] Parent ${taskParentId}: ${completedSiblings}/${siblings.length} subtasks done`);
+      }
+    } catch (e) {
+      console.error('[SUBTASK PROGRESS]', e);
+    }
+  }
+
   return NextResponse.json({ task: flattenTask(task) });
 }
 
