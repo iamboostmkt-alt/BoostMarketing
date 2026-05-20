@@ -91,7 +91,7 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
   return (
     <div
       onClick={handleCardClick}
-      className={`bg-[#15151c] border border-white/[0.06] rounded-xl p-4 hover:border-white/[0.1] transition-colors group ${
+      className={`bg-[#15151c] border border-white/[0.06] rounded-xl p-3 hover:border-white/[0.12] hover:bg-[#1a1a24] transition-all duration-150 group ${
         onView ? 'cursor-pointer' : ''
       }`}
     >
@@ -106,11 +106,11 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <h4 className="text-sm font-semibold text-white/90 truncate">
+              <h4 className="text-sm font-medium text-white/85 truncate leading-snug">
                 {task.title}
               </h4>
               {task.description && (
-                <p className="text-xs text-white/40 mt-1 line-clamp-2">
+                <p className="text-xs text-white/30 mt-0.5 truncate">
                   {task.description}
                 </p>
               )}
@@ -140,47 +140,41 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
           </div>
 
           {/* Footer: status + date + assignees */}
-          <div className="flex items-center gap-3 mt-3 flex-wrap">
+          <div className="flex items-center gap-3 mt-2.5 flex-wrap">
             {task.status !== 'completed' && onMarkComplete && (
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-7 gap-1 px-2 text-[11px] border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
+                className="h-6 gap-1 px-1.5 text-[11px] text-white/0 group-hover:text-emerald-400 hover:bg-emerald-500/10 transition-all duration-150"
                 onClick={(e) => {
                   e.stopPropagation();
                   void onMarkComplete(task);
                 }}
               >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Marcar como completada
+                <CheckCircle2 className="w-3 h-3" />
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">Completar</span>
               </Button>
             )}
             {task.status === 'completed' && onMarkPending && (
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-7 gap-1 px-2 text-[11px] border-slate-500/30 text-slate-300 hover:bg-slate-500/10 hover:text-white"
+                className="h-6 gap-1 px-1.5 text-[11px] text-white/0 group-hover:text-slate-400 hover:bg-slate-500/10 transition-all duration-150"
                 onClick={(e) => {
                   e.stopPropagation();
                   void onMarkPending(task);
                 }}
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Marcar como pendiente
+                <RotateCcw className="w-3 h-3" />
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">Reabrir</span>
               </Button>
             )}
             <span
               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${statusColors[task.status] || 'status-pending'}`}
             >
               {statusLabels[task.status] || task.status}
-            </span>
-
-            <span
-              className={`text-[11px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}
-            >
-              {priorityLabels[task.priority] || task.priority}
             </span>
 
             {task.dueDate && (
@@ -202,7 +196,7 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
       </div>
       {/* Subtareas */}
       {true && (
-        <div className="mt-3 border-t border-white/[0.04] pt-3">
+        <div className="mt-2.5 border-t border-white/[0.04] pt-2.5">
           <div className="flex items-center justify-between">
             <button
               onClick={(e) => { e.stopPropagation(); setSubtasksOpen(!subtasksOpen); }}
