@@ -278,12 +278,14 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome */}
-      <div>
-        <h2 className="text-2xl md:text-3xl font-bold text-white">
-          Bienvenido,{' '}
-          <span className="text-gradient-brand">{userName}</span>
-        </h2>
-        <p className="text-white/40 mt-1">Aquí tienes un resumen de tu actividad reciente.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Dashboard</p>
+          <h2 className="text-xl font-medium text-white">
+            Hola,{' '}
+            <span className="text-gradient-brand">{userName}</span>
+          </h2>
+        </div>
       </div>
 
       {/* Stats */}
@@ -291,23 +293,25 @@ export default function DashboardPage() {
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.label} className="glass-card rounded-xl p-5 hover:border-white/[0.1] transition-colors">
-              <div className="flex items-start justify-between">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${stat.bgColor}`}>
-                  <Icon className={`w-5 h-5 ${stat.color}`} />
-                </div>
-                <div className={`flex items-center gap-1 text-xs font-medium ${stat.up ? 'text-green-400' : 'text-red-400'}`}>
-                  {stat.up ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
-                  {stat.change}
-                </div>
-              </div>
-              <div className="mt-4">
-                {loadingStats ? (
-                  <Skeleton className="h-8 w-20 mb-1" />
-                ) : (
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
+            <div key={stat.label} className="glass-card rounded-xl p-5 hover:border-white/[0.1] transition-colors duration-200 group">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-medium text-white/35 uppercase tracking-wide">{stat.label}</p>
+                {stat.change && (
+                  <div className={`flex items-center gap-0.5 text-[11px] font-medium ${stat.up ? 'text-green-400/70' : 'text-red-400/70'}`}>
+                    {stat.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                    {stat.change}
+                  </div>
                 )}
-                <p className="text-sm text-white/40 mt-0.5">{stat.label}</p>
+              </div>
+              <div className="flex items-end justify-between">
+                {loadingStats ? (
+                  <Skeleton className="h-9 w-24" />
+                ) : (
+                  <p className="text-3xl font-semibold text-white leading-none">{stat.value}</p>
+                )}
+                <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${stat.bgColor} opacity-60 group-hover:opacity-100 transition-opacity duration-200`}>
+                  <Icon className={`w-4 h-4 ${stat.color}`} />
+                </div>
               </div>
             </div>
           );
@@ -335,7 +339,7 @@ export default function DashboardPage() {
 
       {/* ── Equipo + Reuniones + Tareas en grid 3 cols ── */}
       {isManager && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div>
         <div className="glass-card rounded-xl">
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-white/[0.06] flex-wrap gap-3">
