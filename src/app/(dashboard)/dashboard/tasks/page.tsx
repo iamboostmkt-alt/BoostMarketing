@@ -55,19 +55,21 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
         const stageTasks = tasks.filter((t) => t.status === stage.id);
         return (
           <div key={stage.id} className="space-y-2">
-            <div className="flex items-center gap-2 px-1">
-              <span className={`w-2 h-2 rounded-full ${statusDotColors[stage.id] || 'bg-white/30'}`} />
-              <span className="text-xs font-medium text-white/50">{stage.label}</span>
-              <span className="text-[10px] text-white/25 ml-auto">{stageTasks.length}</span>
+            <div className="flex items-center gap-2 px-2 py-1">
+              <span className={`w-1.5 h-1.5 rounded-full ${statusDotColors[stage.id] || 'bg-white/30'}`} />
+              <span className="text-xs font-medium text-white/40 uppercase tracking-wide">{stage.label}</span>
+              <span className="text-[10px] text-white/20 ml-auto bg-white/[0.06] px-1.5 py-0.5 rounded-full">{stageTasks.length}</span>
             </div>
-            <div className="space-y-2 min-h-[80px] bg-white/[0.02] rounded-xl p-2 border border-white/[0.04]">
+            <div className="space-y-2 min-h-[80px] rounded-xl p-1">
               {stageTasks.map((task) => (
                 <TaskCard key={task.id} task={task} onEdit={onEdit} onDelete={onDelete}
                   onMarkComplete={onMarkComplete} onMarkPending={onMarkPending}
                   onAddSubtask={onAddSubtask} />
               ))}
               {stageTasks.length === 0 && (
-                <div className="flex items-center justify-center h-16 text-xs text-white/20">Sin tareas</div>
+                <div className="flex items-center justify-center h-12 text-[11px] text-white/15 border border-dashed border-white/[0.04] rounded-lg">
+                  Vacío
+                </div>
               )}
             </div>
           </div>
@@ -278,8 +280,8 @@ function TasksContent() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Tareas</h1>
-          <p className="text-white/40 text-sm mt-1">{tabs.find(t => t.id === activeTab)?.count ?? 0} tareas</p>
+          <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Tareas</p>
+          <p className="text-white/40 text-sm">{tabs.find(t => t.id === activeTab)?.count ?? 0} tareas activas</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
