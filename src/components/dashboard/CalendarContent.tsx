@@ -558,6 +558,7 @@ export default function CalendarContent() {
         onClose={() => setDetailOpen(false)}
         onEdit={(t) => { setDetailOpen(false); setEditingTask(t); setTaskFormOpen(true); }}
         isManager={isManager}
+        currentUserId={userId}
       />
     </div>
   );

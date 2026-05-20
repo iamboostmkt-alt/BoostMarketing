@@ -29,6 +29,7 @@ interface TaskDetailModalProps {
   onClose:   () => void;
   onEdit?:   (t: Task) => void;
   isManager?: boolean;
+  currentUserId?: string;
 }
 
 function fmtDate(iso: string | null | undefined) {
@@ -65,7 +66,7 @@ function FileIcon({ type }: { type: string }) {
   return <FileText className="w-4 h-4 text-white/40" />;
 }
 
-export default function TaskDetailModal({ task, open, onClose, onEdit, isManager = false }: TaskDetailModalProps) {
+export default function TaskDetailModal({ task, open, onClose, onEdit, isManager = false, currentUserId }: TaskDetailModalProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -385,7 +386,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
 
           {/* Footer */}
           <div className="border-t border-white/[0.06] px-5 py-3 flex items-center gap-2 shrink-0 flex-wrap">
-            {onEdit && (
+            {onEdit && (isManager || (task as any).userId === currentUserId) && (
               <Button size="sm" variant="outline" onClick={() => onEdit(task)} className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-1.5 text-xs h-8">
                 <Pencil className="w-3.5 h-3.5" />Editar tarea
               </Button>
