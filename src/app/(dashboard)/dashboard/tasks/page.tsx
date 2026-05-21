@@ -82,7 +82,7 @@ const BOARD_GROUPS = [
   },
 ];
 
-function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask, onStatusChange }: {
+function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask, onStatusChange, isManager }: {
   tasks: Task[];
   onEdit: (t: Task) => void;
   onDelete: (t: Task) => void;
@@ -91,6 +91,7 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
   onMarkPending: (t: Task) => Promise<void>;
   onAddSubtask: (t: Task) => void;
   onStatusChange: (taskId: string, newStatus: string) => Promise<void>;
+  isManager?: boolean;
 }) {
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
@@ -103,10 +104,21 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
     await onStatusChange(draggableId, group.dropStatus);
   };
 
+  // F1: equipo ve internal_review en Listo, managers en Revisión
+  const resolvedGroups = BOARD_GROUPS.map(g => {
+    if (!isManager && g.id === 'done') {
+      return { ...g, statuses: [...g.statuses, 'internal_review'] };
+    }
+    if (!isManager && g.id === 'review') {
+      return { ...g, statuses: g.statuses.filter(s => s !== 'internal_review') };
+    }
+    return g;
+  });
+
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {BOARD_GROUPS.map((group) => {
+        {resolvedGroups.map((group) => {
           const groupTasks = tasks
             .filter(t => group.statuses.includes(t.status))
             .sort((a, b) => {
@@ -195,12 +207,13 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
   );
 }
 
-function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange }: {
+function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange, isManager }: {
   tasks: Task[];
   viewMode: ViewMode;
   cardProps: any;
   onCreate: () => void;
   onStatusChange: (taskId: string, newStatus: string) => Promise<void>;
+  isManager?: boolean;
 }) {
   const [showCompleted, setShowCompleted] = useState(false);
   const activeTasks    = tasks.filter(t => t.status !== 'completed' && t.status !== 'approved');
@@ -225,7 +238,7 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange }:
     <div className="space-y-4">
       {/* Tareas activas */}
       {viewMode === 'board' ? (
-        <BoardView tasks={activeTasks} {...cardProps} onStatusChange={onStatusChange} />
+        <BoardView tasks={activeTasks} {...cardProps} onStatusChange={onStatusChange} isManager={isManager} />
       ) : (
         <motion.div
           className="space-y-2"
@@ -323,9 +336,11 @@ function TasksContent() {
 
   async function handleMarkComplete(task: Task) {
     try {
-      const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: task.id, status: 'completed' }) });
+      // F1: equipo manda a internal_review, managers completan directo
+      const newStatus = isManager ? 'completed' : 'internal_review';
+      const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: task.id, status: newStatus }) });
       if (!res.ok) throw new Error();
-      toast.success('Tarea completada');
+      toast.success(isManager ? 'Tarea completada' : 'Tarea enviada a revisión');
       await fetchAll();
     } catch { toast.error('Error al completar'); }
   }
@@ -409,6 +424,7 @@ function TasksContent() {
     onMarkComplete: handleMarkComplete,
     onMarkPending: handleMarkPending,
     onAddSubtask: (t: Task) => { setParentTaskId(t.id); setEditingTask(null); setFormOpen(true); },
+    onStatusChange: handleStatusChange,
     hideEdit: !isManager ? true : false,
     canEdit: (t: Task) => isManager || (t as any).userId === currentUserId,
   };
@@ -471,6 +487,7 @@ function TasksContent() {
           cardProps={cardProps}
           onCreate={handleCreate}
           onStatusChange={handleStatusChange}
+          isManager={isManager}
         />
       )}
 
@@ -507,6 +524,7 @@ function TasksContent() {
                     cardProps={cardProps}
                     onCreate={handleCreate}
                     onStatusChange={handleStatusChange}
+                    isManager={isManager}
                   />
                 </div>
               )}
@@ -523,6 +541,7 @@ function TasksContent() {
           cardProps={cardProps}
           onCreate={handleCreate}
           onStatusChange={handleStatusChange}
+          isManager={isManager}
         />
       )}
 

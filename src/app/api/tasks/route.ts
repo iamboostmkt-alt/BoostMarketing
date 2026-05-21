@@ -435,6 +435,71 @@ export async function PUT(req: NextRequest) {
         sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName)).catch(console.error);
       }
     }
+
+    // F1 — Notificación inmediata al pasar a internal_review
+    if (task.status === "internal_review" && existing.status !== "internal_review") {
+      // Buscar PM del cliente
+      const clienteConPM = task.clientId
+        ? await db.client.findUnique({
+            where: { id: task.clientId },
+            select: { assignedManagerId: true, assignedManager: { select: { id: true, email: true, name: true } } },
+          })
+        : null;
+      const pm = clienteConPM?.assignedManager;
+      if (pm) {
+        await db.notification.create({
+          data: {
+            userId:  pm.id,
+            message: `⏳ Listo para revisar: "${task.title}"`,
+            type:    "task",
+            read:    false,
+            link:    "/dashboard/tasks",
+          },
+        });
+        if (pm.email) {
+          sendMail(pm.email, `⏳ Tarea lista para revisión: ${task.title}`,
+            `<div style="font-family:sans-serif;color:#e5e5e5;background:#0b0b0f;padding:32px;border-radius:12px">
+              <h2 style="color:#fff;margin:0 0 12px">Tarea lista para tu revisión</h2>
+              <p style="color:#a0a0b0">El equipo marcó como completada: <strong style="color:#fff">${task.title}</strong></p>
+              <a href="${process.env.NEXT_PUBLIC_APP_URL ?? ""}/dashboard/tasks" style="display:inline-block;margin-top:20px;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Revisar ahora</a>
+            </div>`
+          ).catch(console.error);
+        }
+      }
+    }
+
+    // F1 — Notificar al equipo cuando PM aprueba o pide cambios
+    if (
+      (task.status === "completed" || task.status === "changes_requested") &&
+      (existing.status === "internal_review")
+    ) {
+      const asignados = new Set<string>();
+      if (existing.assignedUser?.id) asignados.add(existing.assignedUser.id);
+      existing.assignedUsers?.forEach((au: any) => { if (au.user?.id) asignados.add(au.user.id); });
+      asignados.delete(userId);
+
+      const mensaje = task.status === "completed"
+        ? `✅ Tu tarea "${task.title}" fue aprobada`
+        : `🔄 Se pidieron cambios en "${task.title}"`;
+
+      for (const uid of asignados) {
+        await db.notification.create({
+          data: { userId: uid, message: mensaje, type: "task", read: false, link: "/dashboard/tasks" },
+        });
+      }
+      for (const email of emails) {
+        sendMail(
+          email,
+          task.status === "completed" ? `✅ Tarea aprobada: ${task.title}` : `🔄 Cambios solicitados: ${task.title}`,
+          `<div style="font-family:sans-serif;color:#e5e5e5;background:#0b0b0f;padding:32px;border-radius:12px">
+            <h2 style="color:#fff;margin:0 0 12px">${task.status === "completed" ? "✅ Tarea aprobada" : "🔄 Se solicitaron cambios"}</h2>
+            <p style="color:#a0a0b0">La tarea <strong style="color:#fff">${task.title}</strong> ${task.status === "completed" ? "fue aprobada por el PM." : "requiere cambios según el PM."}</p>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL ?? ""}/dashboard/tasks" style="display:inline-block;margin-top:20px;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Ver tarea</a>
+          </div>`
+        ).catch(console.error);
+      }
+    }
+
     return NextResponse.json({ task: flattenTask(task) });
   }
 

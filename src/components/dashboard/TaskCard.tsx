@@ -19,6 +19,7 @@ interface TaskCardProps {
   onMarkPending?: (task: Task) => void | Promise<void>;
   onAddSubtask?: (parentTask: Task) => void;
   onRequestDelivery?: (task: Task) => void | Promise<void>;
+  onStatusChange?: (taskId: string, newStatus: string) => void | Promise<void>;
   isManager?: boolean;
   canEdit?: (task: Task) => boolean;
 }
@@ -63,7 +64,7 @@ function resolveAssignees(task: Task): TaskAssignee[] {
   return [];
 }
 
-export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask, onRequestDelivery, isManager = true, canEdit }: TaskCardProps) {
+export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask, onRequestDelivery, onStatusChange, isManager = true, canEdit }: TaskCardProps) {
   const overdue = isOverdue(task.dueDate) && task.status !== 'completed';
   const assignees = resolveAssignees(task);
   const [subtasksOpen, setSubtasksOpen] = useState(false);
@@ -144,7 +145,31 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
 
           {/* Footer: status + date + assignees */}
           <div className="flex items-center gap-3 mt-2.5 flex-wrap">
-            {task.status !== 'completed' && onMarkComplete && (
+            {task.status === 'internal_review' && isManager && onStatusChange && (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 gap-1 px-1.5 text-[11px] text-emerald-400 hover:bg-emerald-500/10 transition-all duration-150"
+                  onClick={(e) => { e.stopPropagation(); void onStatusChange(task.id, 'completed'); }}
+                >
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>Aprobar</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 gap-1 px-1.5 text-[11px] text-amber-400 hover:bg-amber-500/10 transition-all duration-150"
+                  onClick={(e) => { e.stopPropagation(); void onStatusChange(task.id, 'changes_requested'); }}
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Cambios</span>
+                </Button>
+              </>
+            )}
+            {task.status !== 'completed' && task.status !== 'internal_review' && onMarkComplete && (
               <Button
                 type="button"
                 variant="ghost"
@@ -175,9 +200,15 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
               </Button>
             )}
             <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${statusColors[task.status] || 'status-pending'}`}
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                task.status === 'internal_review' && !isManager
+                  ? 'status-completed'
+                  : statusColors[task.status] || 'status-pending'
+              }`}
             >
-              {statusLabels[task.status] || task.status}
+              {task.status === 'internal_review' && !isManager
+                ? 'Completada'
+                : statusLabels[task.status] || task.status}
             </span>
 
             {task.dueDate && (
