@@ -255,19 +255,61 @@ export default function CalendarContent() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <Skeleton className="h-9 w-44 rounded-lg bg-white/[0.06]" />
-          <Skeleton className="h-9 w-32 rounded-lg bg-white/[0.06]" />
-        </div>
-        {/* Selector placeholder en skeleton */}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Skeleton className="h-[360px] w-full rounded-xl bg-white/[0.06]" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-3 w-20 rounded bg-white/[0.04]" />
+            <Skeleton className="h-4 w-36 rounded bg-white/[0.06]" />
           </div>
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full rounded-xl bg-white/[0.06]" />
-            ))}
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-28 rounded-lg bg-white/[0.04]" />
+            <Skeleton className="h-8 w-24 rounded-lg bg-white/[0.06]" />
+          </div>
+        </div>
+        <div className="flex gap-2 border-b border-white/[0.06]">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-9 w-24 rounded-t-lg bg-white/[0.04]" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-5 w-32 rounded bg-white/[0.06]" />
+              <div className="flex gap-1">
+                <Skeleton className="h-7 w-7 rounded-lg bg-white/[0.04]" />
+                <Skeleton className="h-7 w-10 rounded-lg bg-white/[0.04]" />
+                <Skeleton className="h-7 w-7 rounded-lg bg-white/[0.04]" />
+              </div>
+            </div>
+            <div className="grid grid-cols-7">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <Skeleton key={i} className="h-4 rounded bg-white/[0.03]" />
+              ))}
+            </div>
+            <div className="grid grid-cols-7">
+              {Array.from({ length: 35 }).map((_, i) => (
+                <div key={i} className="min-h-[72px] border-b border-r border-white/[0.03] p-1 space-y-1">
+                  <Skeleton className="h-3 w-4 rounded bg-white/[0.04]" />
+                  {i % 4 === 0 && <Skeleton className="h-2 w-full rounded bg-white/[0.03]" />}
+                  {i % 7 === 0 && <Skeleton className="h-2 w-3/4 rounded bg-white/[0.03]" />}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="bg-[#15151c] border border-white/[0.06] rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-white/[0.06] space-y-1.5">
+              <Skeleton className="h-4 w-24 rounded bg-white/[0.06]" />
+              <Skeleton className="h-3 w-16 rounded bg-white/[0.04]" />
+            </div>
+            <div className="p-4 space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-1.5 p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                  <div className="flex gap-2">
+                    <Skeleton className="h-4 w-16 rounded-full bg-white/[0.06]" />
+                    <Skeleton className="h-3 flex-1 rounded bg-white/[0.04]" />
+                  </div>
+                  <Skeleton className="h-2.5 w-2/3 rounded bg-white/[0.03]" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
