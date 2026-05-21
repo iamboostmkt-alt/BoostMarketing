@@ -113,7 +113,7 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
               {/* Column header */}
               <div className="flex items-center gap-2 px-2 py-1">
                 <span className={`w-1.5 h-1.5 rounded-full ${group.color}`} />
-                <span className="text-xs font-medium text-white/40 uppercase tracking-wide">
+                <span className="text-xs font-medium text-white/80 uppercase tracking-wide">
                   {group.label}
                 </span>
                 <span className="text-[10px] text-white/20 ml-auto bg-white/[0.06] px-1.5 py-0.5 rounded-full">
@@ -277,7 +277,7 @@ function TasksContent() {
   const [clientsWithTasks, setClientsWithTasks] = useState<ClientWithTasks[]>([]);
   const [allTasks, setAllTasks]             = useState<Task[]>([]);
   const [loading, setLoading]               = useState(true);
-  const [viewMode, setViewMode]             = useState<ViewMode>('list');
+  const [viewMode, setViewMode]             = useState<ViewMode>('board');
   const [formOpen, setFormOpen]             = useState(false);
   const [parentTaskId, setParentTaskId]     = useState<string | null>(null);
   const [editingTask, setEditingTask]       = useState<Task | null>(null);
