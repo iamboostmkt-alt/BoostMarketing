@@ -1,5 +1,6 @@
 'use client';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, CheckCircle2, ChevronDown, ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -89,11 +90,13 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
   };
 
   return (
-    <div
+    <motion.div
       onClick={handleCardClick}
-      className={`bg-[#15151c] border border-white/[0.06] rounded-xl p-3 hover:border-white/[0.12] hover:bg-[#1a1a24] transition-all duration-150 group ${
+      className={`bg-[#15151c] border border-white/[0.06] rounded-xl p-3 group ${
         onView ? 'cursor-pointer' : ''
       }`}
+      whileHover={{ y: -1, borderColor: 'rgba(255,255,255,0.12)' }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
     >
       <div className="flex items-start gap-3">
         {/* Priority dot */}
@@ -218,18 +221,29 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
             <div className="mt-2 space-y-1">
               {totalCount > 0 && (
                 <div className="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden mb-2">
-                  <div className="h-full bg-emerald-500/70 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                  <motion.div
+                    className="h-full bg-emerald-500/70 rounded-full origin-left"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: progress / 100 }}
+                    transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  />
                 </div>
               )}
               {loadingSubtasks && <p className="text-[11px] text-white/30 py-1">Cargando...</p>}
-              {!loadingSubtasks && subtasks.map(sub => (
-                <div key={sub.id} className="flex items-center gap-2 py-1 px-2 rounded-lg bg-white/[0.02]">
+              {!loadingSubtasks && subtasks.map((sub, i) => (
+                <motion.div
+                  key={sub.id}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: i * 0.05, ease: 'easeOut' }}
+                  className="flex items-center gap-2 py-1 px-2 rounded-lg bg-white/[0.02]"
+                >
                   <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${sub.status === 'completed' ? 'bg-emerald-400' : 'bg-white/20'}`} />
                   <span className={`text-[11px] flex-1 truncate ${sub.status === 'completed' ? 'text-white/30 line-through' : 'text-white/60'}`}>
                     {sub.title}
                   </span>
                   <span className="text-[10px] text-white/20">{statusLabels[sub.status] || sub.status}</span>
-                </div>
+                </motion.div>
               ))}
               {!loadingSubtasks && subtasks.length === 0 && (
                 <p className="text-[11px] text-white/20 py-1 px-2">Sin subtareas</p>
@@ -238,6 +252,6 @@ export default function TaskCard({ task, onEdit, onDelete, onView, onMarkComplet
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

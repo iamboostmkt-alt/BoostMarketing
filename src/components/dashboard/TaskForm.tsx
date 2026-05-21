@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import React, { useState, useEffect, useId } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';

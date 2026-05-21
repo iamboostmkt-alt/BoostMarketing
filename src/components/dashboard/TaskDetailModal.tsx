@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { motion } from 'framer-motion';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -194,7 +195,12 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-5">
+          <motion.div
+            className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-5"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut', delay: 0.1 }}
+          >
             {/* Meta */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div className="flex items-start gap-2 text-white/50">
@@ -385,7 +391,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
 
             {/* Created by */}
             {task.user && (<div className="text-[10px] text-white/30">Creada por {task.user.name || task.user.email}</div>)}
-          </div>
+          </motion.div>
 
           {/* Footer */}
           <div className="border-t border-white/[0.06] px-5 py-3 flex items-center gap-2 shrink-0 flex-wrap">
