@@ -43,6 +43,7 @@ import { PortalTaskCard } from '@/components/client-portal/PortalTaskCard';
 import { PortalMeetingCard } from '@/components/client-portal/PortalMeetingCard';
 import { PortalActivityCard } from '@/components/client-portal/PortalActivityCard';
 import { PortalDayModal } from '@/components/client-portal/PortalDayModal';
+import { CompletedDeliverables, ProgressBar } from '@/components/client-portal/PortalWidgets';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -99,58 +100,7 @@ interface CalendarProps {
 
 // ── CompletedDeliverables ───────────────────────────────────────────────────────
 
-function CompletedDeliverables({ tasks }: { tasks: any[] }) {
-  const [open, setOpen] = useState(false);
-  if (tasks.length === 0) return null;
-  return (
-    <div className="border border-white/[0.06] rounded-xl overflow-hidden mt-2">
-      <button type="button" onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-2.5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-        <div className="flex items-center gap-2 text-xs font-medium text-white/35">
-          <CheckCircle2 className="w-3.5 h-3.5 text-green-400/50" />
-          Listas ({tasks.length})
-        </div>
-        <ChevronDown className="w-3.5 h-3.5 text-white/20" />
-      </button>
-      {open && (
-        <div className="space-y-1.5 p-3 border-t border-white/[0.04]">
-          {tasks.map((task: any) => (
-            <div key={task.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white/[0.02] opacity-60">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
-              <span className="text-xs text-white/45 line-through truncate flex-1">{task.title}</span>
-              {task.dueDate && (
-                <span className="text-[10px] text-white/25 shrink-0">{new Date(task.dueDate).toLocaleDateString('es-MX',{day:'numeric',month:'short'})}</span>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── TaskCard ──────────────────────────────────────────────────────────────────
-
-// ── ProgressBar ───────────────────────────────────────────────────────────────
-
-function ProgressBar({ total, completed }: { total: number; completed: number }) {
-  const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between text-xs text-white/50">
-        <span>Progreso general</span>
-        <span className="font-semibold text-white/80">{pct}%</span>
-      </div>
-      <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-brand to-brand-light transition-all duration-700"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <p className="text-[11px] text-white/30">{completed} de {total} ítems completados</p>
-    </div>
-  );
-}
 
 // ── ProjectTimeline ───────────────────────────────────────────────────────────
 
