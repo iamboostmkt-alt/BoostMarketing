@@ -1,4 +1,5 @@
 {
+  "exclude": ["ui-ux-pro-max-skill"],
   "compilerOptions": {
     "target": "ES2017",
     "lib": [

@@ -23,6 +23,7 @@ import {
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -307,7 +308,15 @@ export default function DashboardPage() {
                 {loadingStats ? (
                   <Skeleton className="h-9 w-24" />
                 ) : (
-                  <p className="text-3xl font-semibold text-white leading-none">{stat.value}</p>
+                  <motion.p
+                    key={String(stat.value)}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="text-3xl font-semibold text-white leading-none"
+                  >
+                    {stat.value}
+                  </motion.p>
                 )}
                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${stat.bgColor} opacity-60 group-hover:opacity-100 transition-opacity duration-200`}>
                   <Icon className={`w-4 h-4 ${stat.color}`} />

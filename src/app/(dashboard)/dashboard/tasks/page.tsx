@@ -15,6 +15,7 @@ import {
   AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { motion } from 'framer-motion';
 import TaskCard from '@/components/dashboard/TaskCard';
 import TaskForm from '@/components/dashboard/TaskForm';
 import TaskDetailModal from '@/components/dashboard/TaskDetailModal';
@@ -110,15 +111,27 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate }: {
       {viewMode === 'board' ? (
         <BoardView tasks={activeTasks} {...cardProps} />
       ) : (
-        <div className="space-y-3">
-          {activeTasks.map((task) => <TaskCard key={task.id} task={task} {...cardProps} />)}
+        <motion.div
+          className="space-y-2"
+          initial="hidden"
+          animate="visible"
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+        >
+          {activeTasks.map((task) => (
+            <motion.div
+              key={task.id}
+              variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } } }}
+            >
+              <TaskCard task={task} {...cardProps} />
+            </motion.div>
+          ))}
           {activeTasks.length === 0 && (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <CheckCircle2 className="w-10 h-10 text-green-400/40 mb-2" />
               <p className="text-sm text-white/40">Todas las tareas están completadas</p>
             </div>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* Sección Listas colapsable */}
