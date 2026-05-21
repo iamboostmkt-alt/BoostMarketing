@@ -107,7 +107,14 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {BOARD_GROUPS.map((group) => {
-          const groupTasks = tasks.filter(t => group.statuses.includes(t.status));
+          const groupTasks = tasks
+            .filter(t => group.statuses.includes(t.status))
+            .sort((a, b) => {
+              if (!a.dueDate && !b.dueDate) return 0;
+              if (!a.dueDate) return 1;
+              if (!b.dueDate) return -1;
+              return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+            });
           return (
             <div key={group.id} className="space-y-2">
               {/* Column header */}
@@ -159,6 +166,14 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                             <TaskCard task={task} onEdit={onEdit} onDelete={onDelete}
                               onView={onView} onMarkComplete={onMarkComplete}
                               onMarkPending={onMarkPending} onAddSubtask={onAddSubtask} />
+                            {(task as any).client?.name && (
+                              <div className="flex items-center gap-1 px-2 pb-1 -mt-1">
+                                <span className="w-1 h-1 rounded-full bg-brand/40 shrink-0" />
+                                <span className="text-[10px] text-white/25 truncate">
+                                  {(task as any).client.name}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </Draggable>
@@ -404,7 +419,10 @@ function TasksContent() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Tareas</p>
-          <p className="text-white/40 text-sm">{tabs.find(t => t.id === activeTab)?.count ?? 0} tareas activas</p>
+          <div className="flex items-baseline gap-2">
+            <h1 className="text-xl font-medium text-white">Tareas</h1>
+            <span className="text-sm text-white/30">{tabs.find(t => t.id === activeTab)?.count ?? 0} activas</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
