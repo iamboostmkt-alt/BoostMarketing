@@ -39,6 +39,9 @@ import TaskFeedbackButtons from '@/components/client-portal/TaskFeedbackButtons'
 import PortalAppointmentEditModal from '@/components/client-portal/PortalAppointmentEditModal';
 import { PortalCalendar } from '@/components/client-portal/PortalCalendar';
 import { ProjectTimeline } from '@/components/client-portal/ProjectTimeline';
+import { PortalTaskCard } from '@/components/client-portal/PortalTaskCard';
+import { PortalMeetingCard } from '@/components/client-portal/PortalMeetingCard';
+import { PortalActivityCard } from '@/components/client-portal/PortalActivityCard';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -303,256 +306,6 @@ function CompletedDeliverables({ tasks }: { tasks: any[] }) {
 }
 
 // ── TaskCard ──────────────────────────────────────────────────────────────────
-
-function TaskCard({ task, onFeedback, onDelete }: { task: Task; onFeedback?: () => void; onDelete?: (id: string) => void }) {
-  const [expanded, setExpanded] = useState(false);
-  const cfg = taskStatusConfig[task.status] ?? taskStatusConfig.pending;
-  const priorityColor: Record<string, string> = {
-    urgent: 'text-red-400', high: 'text-orange-400', medium: 'text-blue-400', low: 'text-emerald-400',
-  };
-  const priorityLabel: Record<string, string> = {
-    urgent: 'Urgente', high: 'Alta', medium: 'Media', low: 'Baja',
-  };
-  return (
-    <div
-      className={`glass-card rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${expanded ? 'ring-1 ring-brand/30' : 'hover:ring-1 hover:ring-white/10'}`}
-      onClick={() => setExpanded(e => !e)}
-    >
-      <div className="p-4 space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <CheckSquare className="h-4 w-4 text-amber-400 shrink-0" />
-            <p className="text-sm font-semibold text-white truncate">{task.title}</p>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
-              {cfg.icon}{cfg.label}
-            </span>
-            <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
-          </div>
-        </div>
-        {!expanded && task.description && (
-          <p className="text-xs text-white/45 line-clamp-1 pl-6">{task.description}</p>
-        )}
-        {!expanded && (
-          <div className="flex flex-wrap items-center gap-x-3 pl-6 text-[11px] text-white/35">
-            {task.dueDate && <span>Vence: {fmtDate(task.dueDate)}</span>}
-          </div>
-        )}
-      </div>
-
-      {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
-          {task.description && (
-            <p className="text-xs text-white/60 leading-relaxed">{task.description}</p>
-          )}
-          <div className="grid grid-cols-2 gap-2">
-            {task.dueDate && (
-              <div className="bg-white/[0.03] rounded-lg p-2.5">
-                <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Vence</p>
-                <p className="text-xs text-white/70 font-medium">{fmtDate(task.dueDate)}</p>
-              </div>
-            )}
-            {task.priority && (
-              <div className="bg-white/[0.03] rounded-lg p-2.5">
-                <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Prioridad</p>
-                <p className={`text-xs font-medium flex items-center gap-1 ${priorityColor[task.priority] || 'text-white/50'}`}>
-                  <Flag className="w-3 h-3" />
-                  {priorityLabel[task.priority] || task.priority}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {onDelete && (
-            <div className="pt-2 border-t border-white/[0.04] mt-1" onClick={e => e.stopPropagation()}>
-              <button type="button"
-                onClick={() => { if (confirm('¿Eliminar "' + task.title + '"?')) onDelete(task.id); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 transition-colors">
-                <Trash2 className="w-3 h-3" />
-                Eliminar entrega
-              </button>
-            </div>
-          )}
-          {expanded && (
-            <DeliverableHistory taskId={task.id} />
-          )}
-          {onFeedback && (
-            <TaskFeedbackButtons
-              taskId={task.id}
-              taskTitle={task.title}
-              deliverableStatus={(task as any).deliverableStatus}
-              onSuccess={onFeedback}
-            />
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── ActivityCard ──────────────────────────────────────────────────────────────
-
-const activityStatusConfig: Record<string, { label: string; color: string }> = {
-  pending:     { label: 'Pendiente',   color: 'bg-amber-500/15 text-amber-300 border-amber-500/20' },
-  in_progress: { label: 'En progreso', color: 'bg-blue-500/15 text-blue-300 border-blue-500/20' },
-  completed:   { label: 'Completado',  color: 'bg-green-500/15 text-green-300 border-green-500/20' },
-};
-
-function ActivityCard({ activity }: { activity: Activity }) {
-  const [expanded, setExpanded] = useState(false);
-  const cfg = activityStatusConfig[activity.status] ?? activityStatusConfig.pending;
-  return (
-    <div
-      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
-      onClick={() => setExpanded(e => !e)}
-    >
-      <div className="p-4 space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <Eye className="h-4 w-4 text-brand-light shrink-0" />
-            <p className="text-sm font-semibold text-white truncate">{activity.title}</p>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
-              {cfg.label}
-            </span>
-            <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
-          </div>
-        </div>
-        {!expanded && activity.description && (
-          <p className="text-xs text-white/45 line-clamp-1 pl-6">{activity.description}</p>
-        )}
-        {!expanded && (
-          <p className="text-[11px] text-white/35 pl-6">{fmtDate(activity.startDate)}</p>
-        )}
-      </div>
-
-      {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
-          {activity.description && (
-            <p className="text-xs text-white/60 leading-relaxed">{activity.description}</p>
-          )}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-white/[0.03] rounded-lg p-2.5">
-              <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Inicio</p>
-              <p className="text-xs text-white/70 font-medium">{fmtDate(activity.startDate)}</p>
-            </div>
-            {activity.endDate && (
-              <div className="bg-white/[0.03] rounded-lg p-2.5">
-                <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Fin</p>
-                <p className="text-xs text-white/70 font-medium">{fmtDate(activity.endDate)}</p>
-              </div>
-            )}
-          </div>
-          {activity.createdBy && (
-            <div className="flex items-center gap-2 pt-1">
-              <User className="h-3.5 w-3.5 text-white/30" />
-              <span className="text-xs text-white/50">
-                Publicado por <span className="text-white/70 font-medium">{activity.createdBy.name || activity.createdBy.email}</span>
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── MeetingCard ───────────────────────────────────────────────────────────────
-
-const meetingStatusConfig: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Programada', color: 'bg-blue-500/15 text-blue-300 border-blue-500/20' },
-  confirmed: { label: 'Confirmada', color: 'bg-green-500/15 text-green-300 border-green-500/20' },
-  completed: { label: 'Realizada',  color: 'bg-green-500/15 text-green-300 border-green-500/20' },
-  cancelled: { label: 'Cancelada',  color: 'bg-red-500/15 text-red-300 border-red-500/20' },
-};
-
-function MeetingCard({ appointment, isManager = false, onDelete, onEdit, onRemind }: { appointment: any; isManager?: boolean; onDelete?: (id: string) => void; onEdit?: (apt: any) => void; onRemind?: (id: string) => void }) {
-  const [expanded, setExpanded] = useState(false);
-  const status = appointment.status || 'pending';
-  const cfg    = meetingStatusConfig[status] ?? meetingStatusConfig.pending;
-  const isPast = new Date(appointment.date) < new Date();
-
-  return (
-    <div
-      className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer border ${expanded ? 'ring-1 ring-green-500/30 bg-green-500/[0.08] border-green-500/25' : 'bg-green-500/[0.04] border-green-500/15 hover:border-green-500/30'}`}
-      onClick={() => setExpanded(e => !e)}
-    >
-      <div className="p-4 space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <Video className={`h-4 w-4 shrink-0 ${isPast ? 'text-white/30' : 'text-green-400'}`} />
-            <p className="text-sm font-semibold text-white truncate">{appointment.name || 'Videollamada'}</p>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
-              {cfg.label}
-            </span>
-            <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
-          </div>
-        </div>
-        {!expanded && (
-          <p className="text-[11px] text-white/35 pl-6">{fmtDate(appointment.date)}</p>
-        )}
-      </div>
-
-      {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-white/[0.03] rounded-lg p-2.5">
-              <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Fecha</p>
-              <p className="text-xs text-white/70 font-medium">{fmtDate(appointment.date)}</p>
-            </div>
-            <div className="bg-white/[0.03] rounded-lg p-2.5">
-              <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium mb-0.5">Hora</p>
-              <p className="text-xs text-white/70 font-medium">
-                {format(new Date(appointment.date), 'HH:mm', { locale: es })}
-              </p>
-            </div>
-          </div>
-          {appointment.notes && (
-            <p className="text-xs text-white/60 leading-relaxed">{appointment.notes}</p>
-          )}
-          {appointment.meetUrl && (
-            <a
-              href={appointment.meetUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={e => e.stopPropagation()}
-              className="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-lg px-3 py-2 text-green-400 text-xs font-medium transition-colors w-fit"
-            >
-              <Video className="w-3.5 h-3.5" />
-              Unirse a la reunión
-            </a>
-          )}
-          {isManager && (
-            <div className="flex gap-2 pt-2 border-t border-white/[0.04] mt-2" onClick={e => e.stopPropagation()}>
-              <button type="button"
-                onClick={() => onEdit?.(appointment)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
-                <Pencil className="w-3 h-3" />
-                Editar
-              </button>
-              <button type="button"
-                onClick={() => onRemind?.(appointment.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 hover:text-blue-300 transition-colors">
-                <Bell className="w-3 h-3" />
-                Recordatorio
-              </button>
-              <button type="button"
-                onClick={() => { if (confirm("¿Eliminar " + appointment.name + "?")) onDelete?.(appointment.id); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 transition-colors">
-                <Trash2 className="w-3 h-3" />
-                Eliminar
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── ProgressBar ───────────────────────────────────────────────────────────────
 
@@ -1037,7 +790,7 @@ export default function ClientPortalContent() {
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
               {displayedTasks.map((task) => (
                 <div key={task.id} className="relative group/taskwrap">
-                  <TaskCard task={task} onFeedback={!isManager ? refetchSilent : undefined} onDelete={isManager ? handleDeleteTask : undefined} />
+                  <PortalTaskCard task={task} onFeedback={!isManager ? refetchSilent : undefined} onDelete={isManager ? handleDeleteTask : undefined} />
                   {isManager && (
                     <button type="button"
                       onClick={() => { setEditingTask(task as any); setPortalTaskOpen(true); }}
@@ -1142,7 +895,7 @@ export default function ClientPortalContent() {
               </div>
             ) : (
               <div className="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
-                {appointments.map((appt) => <MeetingCard key={appt.id} appointment={appt} isManager={isManager} onDelete={handleDeleteAppt} onEdit={(apt) => { if (apt) { setEditingAppt(apt); setApptEditOpen(true); } }} />)}
+                {appointments.map((appt) => <PortalMeetingCard key={appt.id} appointment={appt} isManager={isManager} onDelete={handleDeleteAppt} onEdit={(apt) => { if (apt) { setEditingAppt(apt); setApptEditOpen(true); } }} />)}
               </div>
             )}
 
@@ -1170,7 +923,7 @@ export default function ClientPortalContent() {
               <h3 className="text-sm font-semibold text-white">Actualizaciones recientes</h3>
             </div>
             <div className="space-y-3">
-              {activities.slice(0, 3).map((a) => <ActivityCard key={a.id} activity={a as unknown as Activity} />)}
+              {activities.slice(0, 3).map((a) => <PortalActivityCard key={a.id} activity={a as unknown as Activity} />)}
             </div>
           </div>
         )}
