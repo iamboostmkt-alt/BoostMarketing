@@ -8,8 +8,10 @@ import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, format, isSameDay, isToday,
   addMonths, subMonths, addWeeks, subWeeks, isSameMonth, isWithinInterval,
-  startOfDay, endOfDay, differenceInCalendarDays,
+  startOfDay, endOfDay, differenceInCalendarDays, addDays,
 } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CalendarGridProps {
   tasks:         Task[];
@@ -97,7 +99,7 @@ function getRangeBarProps(task: Task, day: Date, days: Date[]) {
   return { isStart, isEnd, roundLeft: isStart || isFirst, roundRight: isEnd || isLast };
 }
 
-type CalendarView = 'month' | 'week';
+type CalendarView = 'month' | 'week' | 'agenda';
 
 export default function CalendarGrid({ tasks, activities = [], appointments = [], milestones = [], selectedDay, onSelectDay }: CalendarGridProps) {
   const [view, setView] = useState<CalendarView>('month');
@@ -155,23 +157,21 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
           </Button>
         </div>
         <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
-          <button onClick={() => setView('month')}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === 'month' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}>
-            Mes
-          </button>
-          <button onClick={() => setView('week')}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === 'week' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}>
-            Semana
-          </button>
+          {(['month', 'week', 'agenda'] as CalendarView[]).map((v) => (
+            <button key={v} onClick={() => setView(v)}
+              className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === v ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}>
+              {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Agenda'}
+            </button>
+          ))}
         </div>
       </div>
 
       {view === 'month' && (
         <div className="space-y-4">
       {/* Day names */}
-      <div className="grid grid-cols-7 bg-brand/[0.08] rounded-lg mb-1">
+      <div className="grid grid-cols-7 border-b border-white/[0.06]">
         {DAY_NAMES.map(name => (
-          <div key={name} className="text-center text-[11px] font-medium text-brand-light/60 py-2 uppercase tracking-wider">{name}</div>
+          <div key={name} className="text-center text-[10px] font-medium text-white/20 py-2 uppercase tracking-widest">{name}</div>
         ))}
       </div>
 
@@ -236,11 +236,13 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                 {dayTasks.slice(0, 1).map((task, i) => (
                   <div
                     key={`chip-${task.id}-${i}`}
-                    className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 bg-white/[0.03] text-white/60 ${
-                      task.priority === 'urgent' ? 'border-red-500/70'
-                      : task.priority === 'high' ? 'border-orange-400/60'
-                      : task.priority === 'medium' ? 'border-violet-400/50'
-                      : 'border-white/20'
+                    className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 ${
+                      today
+                        ? 'bg-brand/20 border-brand text-white'
+                        : task.priority === 'urgent' ? 'bg-red-500/10 border-red-500/70 text-white/80'
+                        : task.priority === 'high' ? 'bg-orange-400/10 border-orange-400/60 text-white/80'
+                        : task.priority === 'medium' ? 'bg-violet-400/10 border-violet-400/60 text-white/80'
+                        : 'bg-violet-500/[0.08] border-violet-500/30 text-white/70'
                     }`}
                     title={task.title}
                   >
@@ -304,7 +306,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
             {weekDays.map((day) => (
               <div key={day.toISOString()} className="text-center py-2 space-y-1">
                 <p className="text-[10px] font-medium text-white/25 uppercase tracking-wide">
-                  {format(day, 'EEE', { locale: undefined })}
+                  {format(day, 'EEE', { locale: es })}
                 </p>
                 <button
                   onClick={() => onSelectDay(day)}
@@ -397,10 +399,99 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
         </div>
       )}
 
+      {/* Agenda View */}
+      {view === 'agenda' && (
+        <div className="space-y-1">
+          {Array.from({ length: 14 }).map((_, i) => {
+            const day = addDays(startOfDay(new Date()), i);
+            const dayTasks        = getTasksForDay(tasks, day);
+            const dayAppointments = getAppointmentsForDay(appointments, day);
+            const dayMilestones   = getMilestonesForDay(milestones, day);
+            const total = dayTasks.length + dayAppointments.length + dayMilestones.length;
+            if (total === 0 && i > 0) return null;
+            return (
+              <motion.div
+                key={day.toISOString()}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: i * 0.03 }}
+                className={`rounded-xl overflow-hidden ${isToday(day) ? 'ring-1 ring-brand/30' : ''}`}
+              >
+                {/* Day header */}
+                <button
+                  type="button"
+                  onClick={() => onSelectDay(day)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 transition-colors ${
+                    isToday(day) ? 'bg-brand/[0.08]' : 'bg-white/[0.02] hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className={`flex items-center justify-center w-7 h-7 rounded-full shrink-0 ${
+                    isToday(day) ? 'bg-brand text-white' : 'bg-white/[0.06] text-white/50'
+                  }`}>
+                    <span className="text-xs font-semibold">{format(day, 'd')}</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className={`text-xs font-medium capitalize ${isToday(day) ? 'text-white' : 'text-white/50'}`}>
+                      {format(day, "EEEE d 'de' MMMM", { locale: es })}
+                    </p>
+                    {isToday(day) && <p className="text-[10px] text-brand-light/70">Hoy</p>}
+                  </div>
+                  {total > 0 && (
+                    <span className="text-[10px] text-white/25 bg-white/[0.04] px-1.5 py-0.5 rounded-full">
+                      {total}
+                    </span>
+                  )}
+                </button>
+
+                {/* Events */}
+                {total > 0 && (
+                  <div className="divide-y divide-white/[0.03]">
+                    {dayTasks.map((task) => (
+                      <div key={task.id} className="flex items-center gap-3 px-3 py-2 hover:bg-white/[0.02] transition-colors">
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                          task.priority === 'urgent' ? 'bg-red-500' :
+                          task.priority === 'high' ? 'bg-orange-400' :
+                          task.priority === 'medium' ? 'bg-violet-400' : 'bg-white/30'
+                        }`} />
+                        <p className="text-xs text-white/70 flex-1 truncate">{task.title}</p>
+                        {task.dueDate && (
+                          <span className="text-[10px] text-white/25 shrink-0">
+                            {format(new Date(task.dueDate), 'HH:mm') !== '00:00' ? format(new Date(task.dueDate), 'HH:mm') : ''}
+                          </span>
+                        )}
+                        {(task as any).client?.name && (
+                          <span className="text-[10px] text-white/20 shrink-0 hidden sm:inline">{(task as any).client.name}</span>
+                        )}
+                      </div>
+                    ))}
+                    {dayAppointments.map((apt) => (
+                      <div key={apt.id} className="flex items-center gap-3 px-3 py-2 hover:bg-white/[0.02] transition-colors">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
+                        <p className="text-xs text-white/70 flex-1 truncate">{apt.name}</p>
+                        <span className="text-[10px] text-white/25 shrink-0">
+                          {format(new Date(apt.date), 'HH:mm')}
+                        </span>
+                      </div>
+                    ))}
+                    {dayMilestones.map((m) => (
+                      <div key={m.id} className="flex items-center gap-3 px-3 py-2 hover:bg-white/[0.02] transition-colors">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                        <p className="text-xs text-white/70 flex-1 truncate">🏁 {m.title}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {total === 0 && isToday(day) && (
+                  <div className="px-3 py-3 text-[11px] text-white/20">Sin eventos hoy</div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
       {/* Month View */}
       {view === 'month' && (
         <>
-
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/[0.04]">
         <div className="flex items-center gap-1.5">
