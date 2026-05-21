@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { sendMail, templateBienvenida } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
+import { ClientCreateSchema, ClientUpdateSchema, validateBody } from '@/lib/schemas';
 
 const MANAGE_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'];
 

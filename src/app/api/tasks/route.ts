@@ -14,6 +14,7 @@ import {
 import { getBranding } from "@/lib/branding";
 import { getSessionUser } from "@/core/auth/get-session-user";
 import { AccessControl } from "@/core/access/access-control";
+import { TaskCreateSchema, TaskUpdateSchema, validateBody } from "@/lib/schemas";
 
 const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
 
@@ -252,8 +253,14 @@ export async function POST(req: NextRequest) {
 
   const userId    = (session.user as any).id;
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
-  const body      = await req.json();
-  const { title, description, priority, dueDate, assignedUserId: _assignedUserId, assignedUserIds, clientId, visibility, references, type: taskType, parentTaskId, milestoneId } = body;
+  const rawBody   = await req.json();
+  const validation = validateBody(TaskCreateSchema, rawBody);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
+  }
+  const body = validation.data;
+  const { title, description, priority, dueDate, assignedUserIds, clientId, visibility, references, type: taskType, parentTaskId, milestoneId } = body;
+  const _assignedUserId = (body as any).assignedUserId;
   const assignedUserId = _assignedUserId || (Array.isArray(assignedUserIds) && assignedUserIds[0]) || null;
 
   if (!title) return NextResponse.json({ error: "Titulo requerido" }, { status: 400 });
@@ -324,8 +331,13 @@ export async function PUT(req: NextRequest) {
   const userId    = (session.user as any).id;
   const userName  = (session.user as any).name || "Un usuario";
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
-  const body      = await req.json();
-  const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId, visibility, references, milestoneId, phase, type: taskType } = body;
+  const rawBody    = await req.json();
+  const validation = validateBody(TaskUpdateSchema, rawBody);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
+  }
+  const body = validation.data;
+  const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId, visibility, references, milestoneId, phase, type: taskType } = body as any;
 
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
