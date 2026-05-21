@@ -105,6 +105,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
   const [view, setView] = useState<CalendarView>('month');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [timelineZoom, setTimelineZoom] = useState<'compact' | 'normal' | 'expanded'>('normal');
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -156,13 +157,34 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
             Hoy
           </Button>
         </div>
-        <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
-          {(['month', 'week', 'timeline'] as CalendarView[]).map((v) => (
-            <button key={v} onClick={() => setView(v)}
-              className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === v ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}>
-              {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Timeline'}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
+            {(['month', 'week', 'timeline'] as CalendarView[]).map((v) => (
+              <button key={v} onClick={() => setView(v)}
+                className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === v ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}>
+                {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Timeline'}
+              </button>
+            ))}
+          </div>
+          {view === 'timeline' && (
+            <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
+              <button onClick={() => setTimelineZoom('compact')}
+                className={`px-2 py-1 text-xs rounded-md transition-all ${timelineZoom === 'compact' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}
+                title="Vista compacta">
+                S
+              </button>
+              <button onClick={() => setTimelineZoom('normal')}
+                className={`px-2 py-1 text-xs rounded-md transition-all ${timelineZoom === 'normal' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}
+                title="Vista normal">
+                M
+              </button>
+              <button onClick={() => setTimelineZoom('expanded')}
+                className={`px-2 py-1 text-xs rounded-md transition-all ${timelineZoom === 'expanded' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}
+                title="Vista expandida">
+                L
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -401,6 +423,9 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
 
       {/* Agenda View */}
       {view === 'timeline' && (() => {
+        const rowH = timelineZoom === 'compact' ? 'h-5' : timelineZoom === 'expanded' ? 'h-9' : 'h-7';
+        const labelW = timelineZoom === 'compact' ? 'w-24 md:w-28' : timelineZoom === 'expanded' ? 'w-36 md:w-44' : 'w-28 md:w-36';
+        const textSz = timelineZoom === 'compact' ? 'text-[10px]' : timelineZoom === 'expanded' ? 'text-xs' : 'text-[11px]';
         const monthStart = startOfMonth(currentMonth);
         const monthEnd   = endOfMonth(currentMonth);
         const totalDays  = differenceInCalendarDays(monthEnd, monthStart) + 1;
@@ -474,13 +499,13 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                       transition={{ duration: 0.2 }}
                       className="flex items-center gap-2"
                     >
-                      <div className="w-28 md:w-36 shrink-0 text-right pr-2">
-                        <p className="text-[11px] text-white/60 truncate">{task.title}</p>
+                      <div className={`${labelW} shrink-0 text-right pr-2`}>
+                        <p className={`${textSz} text-white/60 truncate`}>{task.title}</p>
                         {(task as any).client?.name && (
                           <p className="text-[9px] text-white/25 truncate">{(task as any).client.name}</p>
                         )}
                       </div>
-                      <div className="flex-1 relative h-6">
+                      <div className={`flex-1 relative ${rowH}`}>
                         <div className="absolute inset-y-0 w-full flex">
                           {daysArray.map((_, i) => (
                             <div key={i} className={`flex-1 border-r border-white/[0.03] ${i % 7 === 6 ? 'bg-white/[0.01]' : ''}`} />
@@ -529,10 +554,10 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                       transition={{ duration: 0.2 }}
                       className="flex items-center gap-2"
                     >
-                      <div className="w-28 md:w-36 shrink-0 text-right pr-2">
-                        <p className="text-[11px] text-white/60 truncate">{task.title}</p>
+                      <div className={`${labelW} shrink-0 text-right pr-2`}>
+                        <p className={`${textSz} text-white/60 truncate`}>{task.title}</p>
                       </div>
-                      <div className="flex-1 relative h-6">
+                      <div className={`flex-1 relative ${rowH}`}>
                         <div className="absolute inset-y-0 w-full flex">
                           {daysArray.map((_, i) => (
                             <div key={i} className={`flex-1 border-r border-white/[0.03] ${i % 7 === 6 ? 'bg-white/[0.01]' : ''}`} />
@@ -568,10 +593,10 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                       transition={{ duration: 0.2 }}
                       className="flex items-center gap-2"
                     >
-                      <div className="w-28 md:w-36 shrink-0 text-right pr-2">
-                        <p className="text-[11px] text-white/60 truncate">{apt.name}</p>
+                      <div className={`${labelW} shrink-0 text-right pr-2`}>
+                        <p className={`${textSz} text-white/60 truncate`}>{apt.name}</p>
                       </div>
-                      <div className="flex-1 relative h-6">
+                      <div className={`flex-1 relative ${rowH}`}>
                         <div className="absolute inset-y-0 w-full flex">
                           {daysArray.map((_, i) => (
                             <div key={i} className={`flex-1 border-r border-white/[0.03]`} />
