@@ -2,6 +2,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { logAction } from '@/lib/audit';
 import { sendMail, templateBienvenida } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
 import { ClientCreateSchema, ClientUpdateSchema, validateBody } from '@/lib/schemas';
@@ -203,6 +204,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    await logAction({ userId, action: "CLIENT_CREATED", entity: "client", entityId: client.id, details: { name: client.name } });
     return NextResponse.json({ client: formatClient(fresh as unknown as Record<string, unknown>) }, { status: 201 });
   } catch (error) {
     console.error('[clients POST]', error);

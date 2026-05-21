@@ -31,6 +31,7 @@ import { useRef } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -365,6 +366,109 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+function AuditLogsTab() {
+  const [logs, setLogs]       = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage]       = useState(1);
+  const [pages, setPages]     = useState(1);
+  const [total, setTotal]     = useState(0);
+
+  const fetchLogs = useCallback(async (p = 1) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/audit-logs?page=${p}&limit=50`);
+      if (res.ok) {
+        const d = await res.json();
+        setLogs(d.logs ?? []);
+        setPages(d.pages ?? 1);
+        setTotal(d.total ?? 0);
+        setPage(p);
+      }
+    } finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchLogs(1); }, [fetchLogs]);
+
+  const actionColors: Record<string, string> = {
+    TASK_CREATED:   'text-cyan-400',
+    TASK_UPDATED:   'text-amber-400',
+    TASK_DELETED:   'text-red-400',
+    CLIENT_CREATED: 'text-green-400',
+    CLIENT_UPDATED: 'text-amber-400',
+    CLIENT_DELETED: 'text-red-400',
+    USER_LOGIN:     'text-brand-light',
+    ROLE_CHANGED:   'text-purple-400',
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs text-white/30 uppercase tracking-widest mb-1">Audit Logs</p>
+          <p className="text-sm text-white/50">{total} registros totales</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => fetchLogs(page)}
+          className="text-white/40 hover:text-white gap-2">
+          <RefreshCw className="w-3.5 h-3.5" /> Actualizar
+        </Button>
+      </div>
+      <div className="rounded-xl border border-white/[0.06] overflow-hidden">
+        <div className="grid grid-cols-4 px-4 py-2 bg-white/[0.03] border-b border-white/[0.06]">
+          <span className="text-[11px] text-white/30 uppercase tracking-wider">Acción</span>
+          <span className="text-[11px] text-white/30 uppercase tracking-wider">Usuario</span>
+          <span className="text-[11px] text-white/30 uppercase tracking-wider">Entidad</span>
+          <span className="text-[11px] text-white/30 uppercase tracking-wider">Fecha</span>
+        </div>
+        <ScrollArea className="max-h-[500px]">
+          {loading ? (
+            <div className="space-y-2 p-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-8 bg-white/[0.04] rounded animate-pulse" />
+              ))}
+            </div>
+          ) : logs.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-sm text-white/30">Sin registros aún</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-white/[0.04]">
+              {logs.map((log) => (
+                <div key={log.id} className="grid grid-cols-4 px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
+                  <span className={`text-xs font-mono font-medium ${actionColors[log.action] ?? 'text-white/60'}`}>
+                    {log.action}
+                  </span>
+                  <span className="text-xs text-white/50 truncate">
+                    {log.user?.name ?? log.user?.email ?? 'Sistema'}
+                  </span>
+                  <span className="text-xs text-white/40 truncate">
+                    {log.entity} · <span className="text-white/25">{log.entityId.slice(0, 8)}...</span>
+                  </span>
+                  <span className="text-xs text-white/30">
+                    {format(new Date(log.createdAt), "dd MMM HH:mm", { locale: es })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+      </div>
+      {pages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button variant="ghost" size="sm" disabled={page <= 1}
+            onClick={() => fetchLogs(page - 1)} className="text-white/40 hover:text-white">
+            Anterior
+          </Button>
+          <span className="text-xs text-white/30">{page} / {pages}</span>
+          <Button variant="ghost" size="sm" disabled={page >= pages}
+            onClick={() => fetchLogs(page + 1)} className="text-white/40 hover:text-white">
+            Siguiente
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboardPage() {
   const { data: session } = useSession();
   const role    = session?.user?.role as string | undefined;
@@ -672,6 +776,9 @@ export default function AdminDashboardPage() {
             <>
               <TabsTrigger value="roles" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
                 <Tags className="h-4 w-4" />Roles
+              </TabsTrigger>
+              <TabsTrigger value="logs" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+                <Shield className="w-4 h-4" /> Audit Logs
               </TabsTrigger>
               <TabsTrigger value="cms" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
                 <LayoutTemplate className="h-4 w-4" />Contenido
@@ -1225,6 +1332,13 @@ export default function AdminDashboardPage() {
                 })}
               </div>
             )}
+          </TabsContent>
+        )}
+
+        {/* ── Audit Logs tab ─────────────────────────────────────────────────── */}
+        {isAdmin && (
+          <TabsContent value="logs" className="mt-4 space-y-4">
+            <AuditLogsTab />
           </TabsContent>
         )}
 

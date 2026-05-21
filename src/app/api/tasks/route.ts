@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { logAction } from "@/lib/audit";
 import { normalizeTaskStatus } from "@/lib/task-status";
 import {
   sendMail,
@@ -324,6 +325,7 @@ export async function POST(req: NextRequest) {
     await sendMail(email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding));
   }
 
+  await logAction({ userId, action: "TASK_CREATED", entity: "task", entityId: task.id, details: { title: task.title } });
   return NextResponse.json({ task: flattenTask(task) }, { status: 201 });
 }
 
@@ -587,6 +589,7 @@ export async function PUT(req: NextRequest) {
     }
   }
 
+  await logAction({ userId, action: "TASK_UPDATED", entity: "task", entityId: task.id, details: { status: task.status, title: task.title } });
   return NextResponse.json({ task: flattenTask(task) });
 }
 
@@ -614,5 +617,6 @@ export async function DELETE(req: NextRequest) {
 
   await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
   await db.task.delete({ where: { id } });
+  await logAction({ userId: (session.user as any).id, action: "TASK_DELETED", entity: "task", entityId: id });
   return NextResponse.json({ success: true });
 }
