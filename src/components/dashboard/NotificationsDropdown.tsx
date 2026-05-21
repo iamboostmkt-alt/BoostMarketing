@@ -112,59 +112,7 @@ export function NotificationsDropdown() {
     return () => { supabase.removeChannel(channel); };
   }, [userId, fetchNotifications]);
 
-  // Supabase Realtime — escuchar nuevas notificaciones sin polling
-  useEffect(() => {
-    if (!userId) return;
-    const supabase = getSupabaseBrowser();
-    if (!supabase) return;
 
-    const channel = supabase
-      .channel('notifications-' + userId)
-      .on(
-        'postgres_changes',
-        {
-          event:  'INSERT',
-          schema: 'public',
-          table:  'notifications',
-          filter: 'user_id=eq.' + userId,
-        },
-        () => {
-          fetchNotifications();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, fetchNotifications]);
-
-  // Supabase Realtime — escuchar nuevas notificaciones sin polling
-  useEffect(() => {
-    if (!userId) return;
-    const supabase = getSupabaseBrowser();
-    if (!supabase) return;
-
-    const channel = supabase
-      .channel('notifications-' + userId)
-      .on(
-        'postgres_changes',
-        {
-          event:  'INSERT',
-          schema: 'public',
-          table:  'notifications',
-          filter: 'user_id=eq.' + userId,
-        },
-        () => {
-          fetchNotifications();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, fetchNotifications]);
 
   // Cerrar al click fuera
   useEffect(() => {
