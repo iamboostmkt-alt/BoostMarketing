@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(req, { limit: 20, windowMs: 60_000, identifier: "meeting-post" });
+  const rl = await rateLimit(req, { limit: 20, windowMs: 60_000, identifier: "meeting-post" });
   if (!rl.success) return rl.response;
   const session = await requireManager();
   if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });

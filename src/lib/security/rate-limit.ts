@@ -1,32 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 
-// In-memory rate limiter — migrar a @upstash/ratelimit cuando sea multi-tenant
-const requests = new Map<string, { count: number; resetAt: number }>();
+// Cliente Redis Upstash
+const redis = new Redis({
+  url:   process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
-interface RateLimitOptions {
-  limit:       number;  // max requests
-  windowMs:    number;  // ventana en ms
-  identifier?: string;  // prefijo para la key
+// Cache de instancias para no recrear en cada request
+const limiters = new Map<string, Ratelimit>();
+
+function getLimiter(key: string, limit: number, windowMs: number): Ratelimit {
+  const cacheKey = `${key}:${limit}:${windowMs}`;
+  if (!limiters.has(cacheKey)) {
+    limiters.set(cacheKey, new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(limit, `${Math.ceil(windowMs / 1000)} s`),
+      prefix:  `rl:${key}`,
+    }));
+  }
+  return limiters.get(cacheKey)!;
 }
 
-export function rateLimit(req: NextRequest, options: RateLimitOptions): 
-  { success: true } | { success: false; response: NextResponse } {
-  
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
-    ?? req.headers.get('x-real-ip') 
+interface RateLimitOptions {
+  limit:       number;
+  windowMs:    number;
+  identifier?: string;
+}
+
+export async function rateLimit(
+  req: NextRequest,
+  options: RateLimitOptions
+): Promise<{ success: true } | { success: false; response: NextResponse }> {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? req.headers.get('x-real-ip')
     ?? 'unknown';
-  
-  const key = `${options.identifier ?? 'rl'}:${ip}`;
-  const now = Date.now();
 
-  const current = requests.get(key);
+  const limiter = getLimiter(options.identifier ?? 'rl', options.limit, options.windowMs);
+  const { success, limit, remaining, reset } = await limiter.limit(ip);
 
-  if (!current || now > current.resetAt) {
-    requests.set(key, { count: 1, resetAt: now + options.windowMs });
-    return { success: true };
-  }
-
-  if (current.count >= options.limit) {
+  if (!success) {
     return {
       success: false,
       response: NextResponse.json(
@@ -34,25 +48,13 @@ export function rateLimit(req: NextRequest, options: RateLimitOptions):
         {
           status: 429,
           headers: {
-            'Retry-After': String(Math.ceil((current.resetAt - now) / 1000)),
-            'X-RateLimit-Limit': String(options.limit),
-            'X-RateLimit-Remaining': '0',
+            'Retry-After':         String(Math.ceil((reset - Date.now()) / 1000)),
+            'X-RateLimit-Limit':   String(limit),
+            'X-RateLimit-Remaining': String(remaining),
           },
         }
       ),
     };
   }
-
-  current.count++;
   return { success: true };
-}
-
-// Limpiar entries expiradas cada 5 minutos
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, value] of requests.entries()) {
-      if (now > value.resetAt) requests.delete(key);
-    }
-  }, 5 * 60 * 1000);
 }

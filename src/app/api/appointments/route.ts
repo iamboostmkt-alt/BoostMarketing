@@ -31,7 +31,7 @@ async function requireManager() {
 
 // â”€â”€ POST: crear cita publica (sin auth) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(req, { limit: 20, windowMs: 60_000, identifier: "appt-post" });
+  const rl = await rateLimit(req, { limit: 20, windowMs: 60_000, identifier: "appt-post" });
   if (!rl.success) return rl.response;
   try {
     const rawBody = await req.json();

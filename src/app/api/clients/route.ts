@@ -128,7 +128,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(req, { limit: 20, windowMs: 60_000, identifier: 'clients-post' });
+  const rl = await rateLimit(req, { limit: 20, windowMs: 60_000, identifier: 'clients-post' });
   if (!rl.success) return rl.response;
   try {
     const session = await getServerSession(authOptions);
@@ -211,7 +211,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const rl2 = rateLimit(req, { limit: 40, windowMs: 60_000, identifier: 'clients-put' });
+  const rl2 = await rateLimit(req, { limit: 40, windowMs: 60_000, identifier: 'clients-put' });
   if (!rl2.success) return rl2.response;
   try {
     const session = await getServerSession(authOptions);

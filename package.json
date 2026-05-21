@@ -56,6 +56,8 @@
     "@sparticuz/chromium": "^148.0.0",
     "@supabase/supabase-js": "^2.105.4",
     "@uploadthing/react": "^7.3.3",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
