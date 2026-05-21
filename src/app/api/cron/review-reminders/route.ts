@@ -48,13 +48,14 @@ export async function GET(req: NextRequest) {
 
     const horas = horasDesde(tarea.updatedAt);
 
-    // Determinar si toca notificar
-    // 5h: primer recordatorio (entre 5h y 6h)
-    // 24h: urgente (entre 24h y 25h) — también sube prioridad
-    // Cada 4h después de 24h: recordatorio (25h, 29h, 33h...)
-    const esPrimero   = horas >= 5  && horas < 6;
-    const esUrgente   = horas >= 24 && horas < 25;
-    const esPeriodico = horas >= 25 && Math.floor((horas - 25) % 4) === 0 && (horas - 25) % 4 < 1;
+    // Cron diario — notificar según antigüedad acumulada
+    // < 5h:  demasiado reciente, ignorar
+    // 5-23h: primer recordatorio
+    // 24-47h: urgente (sube prioridad)
+    // 48h+:  recordatorio diario
+    const esPrimero   = horas >= 5  && horas < 24;
+    const esUrgente   = horas >= 24 && horas < 48;
+    const esPeriodico = horas >= 48;
 
     if (!esPrimero && !esUrgente && !esPeriodico) continue;
 
