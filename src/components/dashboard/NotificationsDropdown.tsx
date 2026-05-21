@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { useSession } from "next-auth/react";
 import { bus, RT_EVENTS } from "@/lib/event-bus";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -44,6 +46,8 @@ const typeColors: Record<string, string> = {
 
 export function NotificationsDropdown() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const userId = (session?.user as any)?.id;
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount,   setUnreadCount]   = useState(0);
   const [loading,       setLoading]       = useState(true);
@@ -86,6 +90,81 @@ export function NotificationsDropdown() {
   useEffect(() => {
     return bus.on(RT_EVENTS.NOTIFICATION_NEW, () => fetchNotifications());
   }, [fetchNotifications]);
+
+  // Supabase Realtime
+  useEffect(() => {
+    if (!userId) return;
+    const supabase = getSupabaseBrowser();
+    if (!supabase) return;
+    const channel = supabase
+      .channel('notifications-' + userId)
+      .on(
+        'postgres_changes',
+        {
+          event:  'INSERT',
+          schema: 'public',
+          table:  'notifications',
+          filter: 'user_id=eq.' + userId,
+        },
+        () => { fetchNotifications(); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, fetchNotifications]);
+
+  // Supabase Realtime — escuchar nuevas notificaciones sin polling
+  useEffect(() => {
+    if (!userId) return;
+    const supabase = getSupabaseBrowser();
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel('notifications-' + userId)
+      .on(
+        'postgres_changes',
+        {
+          event:  'INSERT',
+          schema: 'public',
+          table:  'notifications',
+          filter: 'user_id=eq.' + userId,
+        },
+        () => {
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, fetchNotifications]);
+
+  // Supabase Realtime — escuchar nuevas notificaciones sin polling
+  useEffect(() => {
+    if (!userId) return;
+    const supabase = getSupabaseBrowser();
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel('notifications-' + userId)
+      .on(
+        'postgres_changes',
+        {
+          event:  'INSERT',
+          schema: 'public',
+          table:  'notifications',
+          filter: 'user_id=eq.' + userId,
+        },
+        () => {
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, fetchNotifications]);
 
   // Cerrar al click fuera
   useEffect(() => {

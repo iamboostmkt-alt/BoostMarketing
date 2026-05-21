@@ -154,7 +154,11 @@ export async function GET(req: NextRequest) {
     if (appts.length > 0) {
       // Notify all admin users about upcoming appointments
       const admins = await db.user.findMany({
-        where:  { role: 'ADMIN', active: true },
+        where:  { 
+          role: 'ADMIN', 
+          active: true,
+          email: { not: { contains: 'boostmkt.com' } },
+        },
         select: { email: true, name: true },
       });
 
