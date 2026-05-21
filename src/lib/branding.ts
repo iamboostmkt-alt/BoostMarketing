@@ -40,7 +40,18 @@ export function emailLayout(content: string, branding: Branding): string {
   <meta name="color-scheme" content="light only" />
   <meta name="supported-color-schemes" content="light" />
   <title>${brandName}</title>
-  <style>:root{color-scheme:light only}body{margin:0;padding:0;background-color:#f4f4f7!important}</style>
+  <style>
+    :root{color-scheme:light only}
+    body{margin:0;padding:0;background-color:#f4f4f7!important;color:#18181b!important}
+    * {color-scheme:light only!important}
+    @media (prefers-color-scheme:dark){
+      body{background-color:#f4f4f7!important;color:#18181b!important}
+      table{background-color:#f4f4f7!important}
+      td{color:#18181b!important}
+      .content-td{background-color:#ffffff!important;color:#18181b!important}
+      .footer-td{background-color:#f9fafb!important}
+    }
+  </style>
 </head>
 <body bgcolor="#f4f4f7" style="margin:0;padding:0;background-color:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f7" style="background-color:#f4f4f7;padding:32px 16px;">
@@ -53,12 +64,12 @@ export function emailLayout(content: string, branding: Branding): string {
           </td>
         </tr>
         <tr>
-          <td style="padding:32px;background-color:#ffffff;color:#18181b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;">
+          <td class="content-td" style="padding:32px;background-color:#ffffff!important;color:#18181b!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;">
             ${content}
           </td>
         </tr>
         <tr>
-          <td bgcolor="#f9fafb" style="background-color:#f9fafb;border-top:1px solid #e4e4e7;padding:16px 32px;text-align:center;">
+          <td class="footer-td" bgcolor="#f9fafb" style="background-color:#f9fafb!important;border-top:1px solid #e4e4e7;padding:16px 32px;text-align:center;">
             <p style="margin:0;color:#9ca3af;font-size:12px;">${brandName} &copy; ${new Date().getFullYear()} &middot; Mensaje automático</p>
           </td>
         </tr>

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { AppointmentCreateSchema, AppointmentUpdateSchema, validateBody } from "@/lib/schemas";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
@@ -29,18 +31,16 @@ async function requireManager() {
 
 // â”€â”€ POST: crear cita publica (sin auth) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(req, { limit: 20, windowMs: 60_000, identifier: "appt-post" });
+  if (!rl.success) return rl.response;
   try {
-    const body = await req.json();
+    const rawBody = await req.json();
+    const validation = validateBody(AppointmentCreateSchema, rawBody);
+    if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+    const body = validation.data;
     const { name, email, phone, date, notes, assignedUserIds, meetUrl } = body;
 
-    if (!name || !email || !date) {
-      return NextResponse.json({ error: 'Nombre, email y fecha son requeridos.' }, { status: 400 });
-    }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: 'Email no valido.' }, { status: 400 });
-    }
 
     const parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) {
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
           sendMail(
             u.email,
             'Nuevo prospecto: ' + nameTrim,
-            templateNuevaCita(nameTrim, emailNorm, dateStr, notes)
+            templateNuevaCita(nameTrim, emailNorm, dateStr, notes ?? undefined)
           ).catch(console.error);
         }
       }

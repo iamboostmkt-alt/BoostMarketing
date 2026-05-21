@@ -61,6 +61,38 @@ export const ClientUpdateSchema = ClientCreateSchema.partial().extend({
   id: z.string().cuid('ID inválido'),
 });
 
+// ── Appointment schemas ──────────────────────────────────────────────────────
+
+export const AppointmentCreateSchema = z.object({
+  name:            z.string().min(1, 'El nombre es requerido').max(255),
+  email:           z.string().email('Email inválido'),
+  phone:           z.string().max(50).optional().nullable(),
+  date:            z.string().min(1, 'La fecha es requerida'),
+  notes:           z.string().max(2000).optional().nullable(),
+  meetUrl:         z.string().url('URL inválida').optional().nullable(),
+  assignedUserIds: z.array(z.string()).optional(),
+  status:          z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
+});
+
+export const AppointmentUpdateSchema = AppointmentCreateSchema.partial().extend({
+  id: z.string().min(1, 'ID requerido'),
+});
+
+// ── Meeting schemas ───────────────────────────────────────────────────────────
+
+export const MeetingCreateSchema = z.object({
+  name:            z.string().min(1, 'El nombre es requerido').max(255),
+  date:            z.string().min(1, 'La fecha es requerida'),
+  notes:           z.string().max(2000).optional().nullable(),
+  meetUrl:         z.string().url('URL inválida').optional().nullable(),
+  assignedUserIds: z.array(z.string()).optional(),
+  status:          z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
+});
+
+export const MeetingUpdateSchema = MeetingCreateSchema.partial().extend({
+  id: z.string().min(1, 'ID requerido'),
+});
+
 // ── Helper ────────────────────────────────────────────────────────────────────
 
 export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): 

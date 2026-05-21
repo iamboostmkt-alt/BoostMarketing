@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { MeetingCreateSchema, MeetingUpdateSchema, validateBody } from "@/lib/schemas";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -28,12 +30,15 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(req, { limit: 20, windowMs: 60_000, identifier: "meeting-post" });
+  if (!rl.success) return rl.response;
   const session = await requireManager();
   if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-  const { name, date, notes, meetUrl, assignedUserIds, status } = await req.json();
-  if (!name || !date) return NextResponse.json({ error: "Nombre y fecha requeridos." }, { status: 400 });
+  const rawBody = await req.json();
+  const validation = validateBody(MeetingCreateSchema, rawBody);
+  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  const { name, date, notes, meetUrl, assignedUserIds, status } = validation.data;
   const parsed = new Date(date);
-  if (isNaN(parsed.getTime())) return NextResponse.json({ error: "Fecha invalida." }, { status: 400 });
   // Auto-asignar al creador
   const creatorId = (session.user as any).id;
   const allMeetingIds = [...new Set([creatorId, ...(assignedUserIds ?? [])])] as string[];
@@ -51,7 +56,7 @@ export async function POST(req: NextRequest) {
     include,
   });
   // Notificar a asignados
-  if (assignedUserIds?.length > 0) {
+  if ((assignedUserIds?.length ?? 0) > 0) {
     const dateStr = parsed.toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
     const team = await db.user.findMany({ where: { id: { in: assignedUserIds as string[] } }, select: { email: true, name: true } });
     for (const u of team) {
