@@ -166,6 +166,8 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
         </div>
       </div>
 
+      {view === 'month' && (
+        <div className="space-y-4">
       {/* Day names */}
       <div className="grid grid-cols-7">
         {DAY_NAMES.map(name => (
@@ -291,6 +293,8 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
           );
         })}
       </div>
+        </div>
+      )}
 
       {/* Week View */}
       {view === 'week' && (
