@@ -138,12 +138,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
-    const body = await req.json();
-    const { name, email, company, phone, status, assignedManagerId, assignedUserIds } = body;
-
-    if (!name || !email) {
-      return NextResponse.json({ error: 'Nombre y email son requeridos' }, { status: 400 });
+    const rawBody = await req.json();
+    const validation = validateBody(ClientCreateSchema, rawBody);
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
+    const body = validation.data;
+    const { name, email, company, phone, status, assignedManagerId } = body;
+    const assignedUserIds = (rawBody as any).assignedUserIds;
 
     const resolvedManagerId = role === 'ADMIN'
       ? (assignedManagerId || null)
@@ -217,8 +219,14 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
-    const body = await req.json();
-    const { id, name, email, company, phone, status, assignedManagerId, assignedUserIds } = body;
+    const rawBody = await req.json();
+    const validation = validateBody(ClientUpdateSchema, rawBody);
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
+    }
+    const body = validation.data;
+    const { id, name, email, company, phone, status, assignedManagerId } = body;
+    const assignedUserIds = (rawBody as any).assignedUserIds;
 
     if (!id) return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
 

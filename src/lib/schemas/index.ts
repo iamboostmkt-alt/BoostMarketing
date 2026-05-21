@@ -49,7 +49,7 @@ export const TaskUpdateSchema = z.object({
 
 export const ClientCreateSchema = z.object({
   name:              z.string().min(1, 'El nombre es requerido').max(255),
-  email:             z.string().email('Email inválido').optional().nullable(),
+  email:             z.string().email('Email inválido'),
   company:           z.string().max(255).optional().nullable(),
   phone:             z.string().max(50).optional().nullable(),
   status:            z.enum(['prospect', 'active', 'inactive']).optional(),
