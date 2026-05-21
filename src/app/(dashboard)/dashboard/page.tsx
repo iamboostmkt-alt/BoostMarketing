@@ -354,7 +354,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-white/[0.06] flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-amber-400" />
-              <h3 className="text-base font-semibold text-white">Equipo de Trabajo</h3>
+              <p className="text-xs font-medium text-white/30 uppercase tracking-widest">Equipo de Trabajo</p>
               <span className="text-xs text-white/30 ml-1">
                 {loadingTeam ? '…' : `${filteredTeamTasks.length} tareas`}
               </span>
@@ -494,7 +494,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-center gap-2">
               <Video className="w-5 h-5 text-green-400" />
-              <h3 className="text-base font-semibold text-white">Reuniones Proximas</h3>
+              <p className="text-xs font-medium text-white/30 uppercase tracking-widest">Reuniones</p>
               <span className="text-xs text-white/30 ml-1">
                 {loadingMeetings ? '...' : `${meetings.length} reunion${meetings.length !== 1 ? 'es' : ''}`}
               </span>
@@ -595,7 +595,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
             <div className="flex items-center gap-2">
               <CheckSquare className="w-4 h-4 text-cyan-400" />
-              <h3 className="text-sm font-semibold text-white">Tareas Activas</h3>
+              <p className="text-xs font-medium text-white/30 uppercase tracking-widest">Tareas Activas</p>
               <span className="text-[10px] bg-cyan-500/15 text-cyan-300 px-1.5 py-0.5 rounded-full">
                 {tasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length}
               </span>
@@ -637,7 +637,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
                 <div className="flex items-center gap-2">
                   <CheckSquare className="w-4 h-4 text-violet-400" />
-                  <h3 className="text-sm font-semibold text-white">Mis Tareas</h3>
+                  <p className="text-xs font-medium text-white/30 uppercase tracking-widest">Mis Tareas</p>
                   <span className="text-[10px] bg-violet-500/15 text-violet-300 px-1.5 py-0.5 rounded-full">
                     {tasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length}
                   </span>
@@ -671,7 +671,7 @@ export default function DashboardPage() {
             <div className="glass-card rounded-xl">
               <div className="flex items-center gap-2 p-4 border-b border-white/[0.06]">
                 <Video className="w-4 h-4 text-green-400" />
-                <h3 className="text-sm font-semibold text-white">Próximas Reuniones</h3>
+                <p className="text-xs font-medium text-white/30 uppercase tracking-widest">Próximas Reuniones</p>
               </div>
               <div className="p-4 space-y-3">
                 {loadingMeetings ? (
@@ -707,7 +707,7 @@ export default function DashboardPage() {
             <div className="glass-card rounded-xl">
               <div className="flex items-center gap-2 p-4 border-b border-white/[0.06]">
                 <CheckCircle2 className="w-4 h-4 text-green-400" />
-                <h3 className="text-sm font-semibold text-white">Completadas Recientemente</h3>
+                <p className="text-xs font-medium text-white/30 uppercase tracking-widest">Completadas Recientemente</p>
               </div>
               <div className="divide-y divide-white/[0.04] max-h-[280px] overflow-y-auto custom-scrollbar">
                 {loadingTasks ? (
