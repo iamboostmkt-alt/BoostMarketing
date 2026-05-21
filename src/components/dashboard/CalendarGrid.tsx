@@ -236,10 +236,11 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                 {dayTasks.slice(0, 1).map((task, i) => (
                   <div
                     key={`chip-${task.id}-${i}`}
-                    className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight ${
-                      task.priority === 'urgent' ? 'bg-red-500/20 text-red-300/90'
-                      : task.priority === 'high' ? 'bg-orange-500/15 text-orange-300/80'
-                      : 'bg-white/[0.06] text-white/55'
+                    className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 bg-white/[0.03] text-white/60 ${
+                      task.priority === 'urgent' ? 'border-red-500/70'
+                      : task.priority === 'high' ? 'border-orange-400/60'
+                      : task.priority === 'medium' ? 'border-violet-400/50'
+                      : 'border-white/20'
                     }`}
                     title={task.title}
                   >
@@ -248,7 +249,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                 ))}
                 {dayAppointments.slice(0, 1).map((apt, i) => (
                   <div key={`aptchip-${i}`}
-                    className="w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight bg-green-500/15 text-green-300/80"
+                    className="w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 border-green-500/60 bg-white/[0.03] text-white/60"
                     title={apt.name}>
                     {apt.name}
                   </div>
@@ -356,10 +357,11 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                   <div className="w-full space-y-px">
                     {dayTasks.slice(0, 4).map((task, i) => (
                       <div key={`chip-${task.id}-${i}`}
-                        className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight ${
-                          task.priority === 'urgent' ? 'bg-red-500/20 text-red-300/90'
-                          : task.priority === 'high' ? 'bg-orange-500/15 text-orange-300/80'
-                          : 'bg-white/[0.06] text-white/55'
+                        className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 bg-white/[0.03] text-white/60 ${
+                          task.priority === 'urgent' ? 'border-red-500/70'
+                          : task.priority === 'high' ? 'border-orange-400/60'
+                          : task.priority === 'medium' ? 'border-violet-400/50'
+                          : 'border-white/20'
                         }`}
                         title={task.title}
                       >
