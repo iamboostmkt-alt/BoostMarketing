@@ -7,7 +7,7 @@ import type { Task, Activity, Appointment } from '@/lib/types';
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, format, isSameDay, isToday,
-  addMonths, subMonths, isSameMonth, isWithinInterval,
+  addMonths, subMonths, addWeeks, subWeeks, isSameMonth, isWithinInterval,
   startOfDay, endOfDay, differenceInCalendarDays,
 } from 'date-fns';
 
@@ -97,8 +97,12 @@ function getRangeBarProps(task: Task, day: Date, days: Date[]) {
   return { isStart, isEnd, roundLeft: isStart || isFirst, roundRight: isEnd || isLast };
 }
 
+type CalendarView = 'month' | 'week';
+
 export default function CalendarGrid({ tasks, activities = [], appointments = [], milestones = [], selectedDay, onSelectDay }: CalendarGridProps) {
+  const [view, setView] = useState<CalendarView>('month');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentWeek, setCurrentWeek] = useState(new Date());
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -107,6 +111,21 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
     const calEnd     = endOfWeek(monthEnd, { weekStartsOn: 1 });
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
+
+  const weekDays = useMemo(() => {
+    const start = startOfWeek(currentWeek, { weekStartsOn: 1 });
+    const end   = endOfWeek(currentWeek,   { weekStartsOn: 1 });
+    return eachDayOfInterval({ start, end });
+  }, [currentWeek]);
+
+  const weekLabel = (() => {
+    const start = startOfWeek(currentWeek, { weekStartsOn: 1 });
+    const end   = endOfWeek(currentWeek,   { weekStartsOn: 1 });
+    if (start.getMonth() === end.getMonth()) {
+      return `${format(start, 'd')} - ${format(end, 'd')} de ${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`;
+    }
+    return `${format(start, 'd MMM')} - ${format(end, 'd MMM yyyy')}`;
+  })();
 
   const rangeTasks = useMemo(() =>
     tasks.filter((t) => t.startDate && t.dueDate && differenceInCalendarDays(new Date(t.dueDate), new Date(t.startDate)) >= 1),
@@ -117,18 +136,33 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
   return (
     <div className="space-y-4">
       {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-white/70">{monthLabel}</h2>
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]" onClick={() => setCurrentMonth(m => subMonths(m, 1))}>
-            <ChevronLeft className="w-4 h-4" />
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
+            onClick={() => view === 'month' ? setCurrentMonth(m => subMonths(m, 1)) : setCurrentWeek(w => subWeeks(w, 1))}>
+            <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs text-white/50 hover:text-white hover:bg-white/[0.06]" onClick={() => setCurrentMonth(new Date())}>
+          <span className="text-sm font-medium text-white/70 min-w-[180px] text-center">
+            {view === 'month' ? monthLabel : weekLabel}
+          </span>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
+            onClick={() => view === 'month' ? setCurrentMonth(m => addMonths(m, 1)) : setCurrentWeek(w => addWeeks(w, 1))}>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-white/50 hover:text-white hover:bg-white/[0.06]"
+            onClick={() => { setCurrentMonth(new Date()); setCurrentWeek(new Date()); }}>
             Hoy
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]" onClick={() => setCurrentMonth(m => addMonths(m, 1))}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+        </div>
+        <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
+          <button onClick={() => setView('month')}
+            className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === 'month' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}>
+            Mes
+          </button>
+          <button onClick={() => setView('week')}
+            className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === 'week' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}>
+            Semana
+          </button>
         </div>
       </div>
 
@@ -258,6 +292,109 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
         })}
       </div>
 
+      {/* Week View */}
+      {view === 'week' && (
+        <div className="space-y-2">
+          <div className="grid grid-cols-7">
+            {weekDays.map((day) => (
+              <div key={day.toISOString()} className="text-center py-2 space-y-1">
+                <p className="text-[10px] font-medium text-white/25 uppercase tracking-wide">
+                  {format(day, 'EEE', { locale: undefined })}
+                </p>
+                <button
+                  onClick={() => onSelectDay(day)}
+                  className={`mx-auto flex items-center justify-center w-7 h-7 rounded-full text-sm font-medium transition-colors ${
+                    isToday(day)
+                      ? 'bg-brand text-white'
+                      : selectedDay && isSameDay(day, selectedDay)
+                      ? 'bg-white/[0.12] text-white'
+                      : 'text-white/60 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                >
+                  {format(day, 'd')}
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 border-t border-l border-white/[0.04]">
+            {weekDays.map((day) => {
+              const dayTasks        = getTasksForDay(tasks, day);
+              const dayAppointments = getAppointmentsForDay(appointments, day);
+              const dayMilestones   = getMilestonesForDay(milestones, day);
+              const dayRangeTasks   = getRangeTasksForDay(rangeTasks, day);
+              const isSelected      = selectedDay && isSameDay(day, selectedDay);
+              return (
+                <button
+                  key={day.toISOString()}
+                  type="button"
+                  onClick={() => onSelectDay(day)}
+                  className={`
+                    flex flex-col items-start min-h-[120px] border-b border-r border-white/[0.04]
+                    p-1.5 transition-colors duration-150 text-left
+                    ${isToday(day) ? 'bg-brand/[0.04]' : ''}
+                    ${isSelected ? 'bg-brand/[0.08]' : 'hover:bg-white/[0.02]'}
+                  `}
+                >
+                  {/* Range bars */}
+                  {dayRangeTasks.slice(0, 2).map((task, i) => {
+                    const barProps = getRangeBarProps(task, day, weekDays);
+                    if (!barProps) return null;
+                    const { roundLeft, roundRight } = barProps;
+                    const color = rangeColors[task.priority] || 'bg-violet-400/20';
+                    return (
+                      <div key={`range-${task.id}-${i}`}
+                        className={`h-1.5 w-full mb-1 ${color} ${roundLeft ? 'rounded-l-full' : ''} ${roundRight ? 'rounded-r-full' : ''}`}
+                        title={task.title}
+                      />
+                    );
+                  })}
+                  {/* Task chips */}
+                  <div className="w-full space-y-px">
+                    {dayTasks.slice(0, 4).map((task, i) => (
+                      <div key={`chip-${task.id}-${i}`}
+                        className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight ${
+                          task.priority === 'urgent' ? 'bg-red-500/20 text-red-300/90'
+                          : task.priority === 'high' ? 'bg-orange-500/15 text-orange-300/80'
+                          : 'bg-white/[0.06] text-white/55'
+                        }`}
+                        title={task.title}
+                      >
+                        {task.title}
+                      </div>
+                    ))}
+                    {dayAppointments.slice(0, 2).map((apt, i) => (
+                      <div key={`apt-${i}`}
+                        className="w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight bg-green-500/15 text-green-300/80"
+                        title={apt.name}
+                      >
+                        {apt.name}
+                      </div>
+                    ))}
+                    {dayMilestones.slice(0, 1).map((m, i) => (
+                      <div key={`mil-${i}`}
+                        className="w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight bg-amber-500/15 text-amber-300/80"
+                        title={m.title}
+                      >
+                        🏁 {m.title}
+                      </div>
+                    ))}
+                    {(dayTasks.length + dayAppointments.length) > 5 && (
+                      <div className="text-[10px] text-white/25 px-1">
+                        +{dayTasks.length + dayAppointments.length - 5}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Month View */}
+      {view === 'month' && (
+        <>
+
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/[0.04]">
         <div className="flex items-center gap-1.5">
@@ -285,6 +422,8 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
           <span className="text-[11px] text-white/30">Urgente</span>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
