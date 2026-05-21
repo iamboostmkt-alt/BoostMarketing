@@ -99,7 +99,7 @@ function getRangeBarProps(task: Task, day: Date, days: Date[]) {
   return { isStart, isEnd, roundLeft: isStart || isFirst, roundRight: isEnd || isLast };
 }
 
-type CalendarView = 'month' | 'week' | 'agenda';
+type CalendarView = 'month' | 'week' | 'timeline';
 
 export default function CalendarGrid({ tasks, activities = [], appointments = [], milestones = [], selectedDay, onSelectDay }: CalendarGridProps) {
   const [view, setView] = useState<CalendarView>('month');
@@ -157,10 +157,10 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
           </Button>
         </div>
         <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
-          {(['month', 'week', 'agenda'] as CalendarView[]).map((v) => (
+          {(['month', 'week', 'timeline'] as CalendarView[]).map((v) => (
             <button key={v} onClick={() => setView(v)}
               className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === v ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}>
-              {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Agenda'}
+              {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Timeline'}
             </button>
           ))}
         </div>
@@ -400,95 +400,205 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
       )}
 
       {/* Agenda View */}
-      {view === 'agenda' && (
-        <div className="space-y-1">
-          {Array.from({ length: 14 }).map((_, i) => {
-            const day = addDays(startOfDay(new Date()), i);
-            const dayTasks        = getTasksForDay(tasks, day);
-            const dayAppointments = getAppointmentsForDay(appointments, day);
-            const dayMilestones   = getMilestonesForDay(milestones, day);
-            const total = dayTasks.length + dayAppointments.length + dayMilestones.length;
-            if (total === 0 && i > 0) return null;
-            return (
-              <motion.div
-                key={day.toISOString()}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: i * 0.03 }}
-                className={`rounded-xl overflow-hidden ${isToday(day) ? 'ring-1 ring-brand/30' : ''}`}
-              >
-                {/* Day header */}
-                <button
-                  type="button"
-                  onClick={() => onSelectDay(day)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 transition-colors ${
-                    isToday(day) ? 'bg-brand/[0.08]' : 'bg-white/[0.02] hover:bg-white/[0.04]'
-                  }`}
-                >
-                  <div className={`flex items-center justify-center w-7 h-7 rounded-full shrink-0 ${
-                    isToday(day) ? 'bg-brand text-white' : 'bg-white/[0.06] text-white/50'
-                  }`}>
-                    <span className="text-xs font-semibold">{format(day, 'd')}</span>
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className={`text-xs font-medium capitalize ${isToday(day) ? 'text-white' : 'text-white/50'}`}>
-                      {format(day, "EEEE d 'de' MMMM", { locale: es })}
-                    </p>
-                    {isToday(day) && <p className="text-[10px] text-brand-light/70">Hoy</p>}
-                  </div>
-                  {total > 0 && (
-                    <span className="text-[10px] text-white/25 bg-white/[0.04] px-1.5 py-0.5 rounded-full">
-                      {total}
-                    </span>
-                  )}
-                </button>
+      {view === 'timeline' && (() => {
+        const monthStart = startOfMonth(currentMonth);
+        const monthEnd   = endOfMonth(currentMonth);
+        const totalDays  = differenceInCalendarDays(monthEnd, monthStart) + 1;
+        const daysArray  = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-                {/* Events */}
-                {total > 0 && (
-                  <div className="divide-y divide-white/[0.03]">
-                    {dayTasks.map((task) => (
-                      <div key={task.id} className="flex items-center gap-3 px-3 py-2 hover:bg-white/[0.02] transition-colors">
-                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                          task.priority === 'urgent' ? 'bg-red-500' :
-                          task.priority === 'high' ? 'bg-orange-400' :
-                          task.priority === 'medium' ? 'bg-violet-400' : 'bg-white/30'
-                        }`} />
-                        <p className="text-xs text-white/70 flex-1 truncate">{task.title}</p>
-                        {task.dueDate && (
-                          <span className="text-[10px] text-white/25 shrink-0">
-                            {format(new Date(task.dueDate), 'HH:mm') !== '00:00' ? format(new Date(task.dueDate), 'HH:mm') : ''}
-                          </span>
-                        )}
-                        {(task as any).client?.name && (
-                          <span className="text-[10px] text-white/20 shrink-0 hidden sm:inline">{(task as any).client.name}</span>
-                        )}
-                      </div>
-                    ))}
-                    {dayAppointments.map((apt) => (
-                      <div key={apt.id} className="flex items-center gap-3 px-3 py-2 hover:bg-white/[0.02] transition-colors">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
-                        <p className="text-xs text-white/70 flex-1 truncate">{apt.name}</p>
-                        <span className="text-[10px] text-white/25 shrink-0">
-                          {format(new Date(apt.date), 'HH:mm')}
-                        </span>
-                      </div>
-                    ))}
-                    {dayMilestones.map((m) => (
-                      <div key={m.id} className="flex items-center gap-3 px-3 py-2 hover:bg-white/[0.02] transition-colors">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                        <p className="text-xs text-white/70 flex-1 truncate">🏁 {m.title}</p>
-                      </div>
-                    ))}
+        // Tareas con rango (startDate + dueDate)
+        const rangeTasks = tasks.filter(t => t.startDate && t.dueDate);
+        // Tareas solo con dueDate
+        const pointTasks = tasks.filter(t => !t.startDate && t.dueDate &&
+          new Date(t.dueDate) >= monthStart && new Date(t.dueDate) <= monthEnd);
+        // Appointments del mes
+        const monthAppts = appointments.filter(a => {
+          const d = new Date(a.date);
+          return d >= monthStart && d <= monthEnd;
+        });
+
+        function getBarStyle(startDate: string, dueDate: string) {
+          const s = new Date(startDate) < monthStart ? monthStart : new Date(startDate);
+          const e = new Date(dueDate)   > monthEnd   ? monthEnd   : new Date(dueDate);
+          const left = (differenceInCalendarDays(s, monthStart) / totalDays) * 100;
+          const width = ((differenceInCalendarDays(e, s) + 1) / totalDays) * 100;
+          return { left: left + '%', width: Math.max(width, 1.5) + '%' };
+        }
+
+        return (
+          <div className="space-y-3">
+            {/* Day markers header */}
+            <div className="relative ml-28 md:ml-36">
+              <div className="flex">
+                {daysArray.map((day, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 text-center"
+                    style={{ minWidth: 0 }}
+                  >
+                    {(i === 0 || i % 5 === 0 || isToday(day)) && (
+                      <span className={`text-[9px] font-medium ${
+                        isToday(day) ? 'text-brand-light' : 'text-white/20'
+                      }`}>
+                        {format(day, 'd')}
+                      </span>
+                    )}
                   </div>
-                )}
-                {total === 0 && isToday(day) && (
-                  <div className="px-3 py-3 text-[11px] text-white/20">Sin eventos hoy</div>
-                )}
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
+                ))}
+              </div>
+              {/* Today line */}
+              {isToday(new Date()) && isSameMonth(new Date(), currentMonth) && (
+                <div
+                  className="absolute top-0 bottom-0 w-px bg-brand/60 z-10"
+                  style={{ left: ((differenceInCalendarDays(new Date(), monthStart)) / totalDays * 100) + '%' }}
+                />
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-white/[0.06]" />
+
+            {/* Range tasks */}
+            {rangeTasks.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-medium text-white/25 uppercase tracking-widest ml-1">Rangos</p>
+                {rangeTasks.map((task) => {
+                  const barStyle = getBarStyle(task.startDate!, task.dueDate!);
+                  const isVisible = new Date(task.dueDate!) >= monthStart && new Date(task.startDate!) <= monthEnd;
+                  if (!isVisible) return null;
+                  return (
+                    <motion.div
+                      key={task.id}
+                      initial={{ opacity: 0, x: -4 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2"
+                    >
+                      <div className="w-28 md:w-36 shrink-0 text-right pr-2">
+                        <p className="text-[11px] text-white/60 truncate">{task.title}</p>
+                        {(task as any).client?.name && (
+                          <p className="text-[9px] text-white/25 truncate">{(task as any).client.name}</p>
+                        )}
+                      </div>
+                      <div className="flex-1 relative h-6">
+                        <div className="absolute inset-y-0 w-full flex">
+                          {daysArray.map((_, i) => (
+                            <div key={i} className={`flex-1 border-r border-white/[0.03] ${i % 7 === 6 ? 'bg-white/[0.01]' : ''}`} />
+                          ))}
+                        </div>
+                        {/* Today line */}
+                        {isSameMonth(new Date(), currentMonth) && (
+                          <div
+                            className="absolute top-0 bottom-0 w-px bg-brand/40 z-10"
+                            style={{ left: ((differenceInCalendarDays(new Date(), monthStart)) / totalDays * 100) + '%' }}
+                          />
+                        )}
+                        <motion.div
+                          className={`absolute top-1 bottom-1 rounded-full flex items-center px-2 overflow-hidden ${
+                            task.priority === 'urgent' ? 'bg-red-500/30 border border-red-500/40' :
+                            task.priority === 'high'   ? 'bg-orange-400/25 border border-orange-400/35' :
+                            task.priority === 'medium' ? 'bg-violet-500/25 border border-violet-500/35' :
+                            'bg-violet-400/15 border border-violet-400/25'
+                          }`}
+                          style={barStyle}
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                          title={task.title}
+                        >
+                          <span className="text-[9px] text-white/80 truncate font-medium">{task.title}</span>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Point tasks (solo dueDate) */}
+            {pointTasks.length > 0 && (
+              <div className="space-y-1.5 pt-2 border-t border-white/[0.04]">
+                <p className="text-[10px] font-medium text-white/25 uppercase tracking-widest ml-1">Vencimientos</p>
+                {pointTasks.map((task) => {
+                  const left = (differenceInCalendarDays(new Date(task.dueDate!), monthStart) / totalDays) * 100;
+                  return (
+                    <motion.div
+                      key={task.id}
+                      initial={{ opacity: 0, x: -4 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2"
+                    >
+                      <div className="w-28 md:w-36 shrink-0 text-right pr-2">
+                        <p className="text-[11px] text-white/60 truncate">{task.title}</p>
+                      </div>
+                      <div className="flex-1 relative h-6">
+                        <div className="absolute inset-y-0 w-full flex">
+                          {daysArray.map((_, i) => (
+                            <div key={i} className={`flex-1 border-r border-white/[0.03] ${i % 7 === 6 ? 'bg-white/[0.01]' : ''}`} />
+                          ))}
+                        </div>
+                        <div
+                          className={`absolute top-1.5 w-3 h-3 rounded-full -translate-x-1/2 border-2 ${
+                            task.priority === 'urgent' ? 'bg-red-500 border-red-300' :
+                            task.priority === 'high'   ? 'bg-orange-400 border-orange-200' :
+                            'bg-violet-400 border-violet-200'
+                          }`}
+                          style={{ left: left + '%' }}
+                          title={task.title}
+                        />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Appointments */}
+            {monthAppts.length > 0 && (
+              <div className="space-y-1.5 pt-2 border-t border-white/[0.04]">
+                <p className="text-[10px] font-medium text-white/25 uppercase tracking-widest ml-1">Reuniones</p>
+                {monthAppts.map((apt) => {
+                  const left = (differenceInCalendarDays(new Date(apt.date), monthStart) / totalDays) * 100;
+                  return (
+                    <motion.div
+                      key={apt.id}
+                      initial={{ opacity: 0, x: -4 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2"
+                    >
+                      <div className="w-28 md:w-36 shrink-0 text-right pr-2">
+                        <p className="text-[11px] text-white/60 truncate">{apt.name}</p>
+                      </div>
+                      <div className="flex-1 relative h-6">
+                        <div className="absolute inset-y-0 w-full flex">
+                          {daysArray.map((_, i) => (
+                            <div key={i} className={`flex-1 border-r border-white/[0.03]`} />
+                          ))}
+                        </div>
+                        <div
+                          className="absolute top-1.5 w-3 h-3 rounded-full -translate-x-1/2 bg-green-400 border-2 border-green-200"
+                          style={{ left: left + '%' }}
+                          title={apt.name}
+                        />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+
+            {rangeTasks.length === 0 && pointTasks.length === 0 && monthAppts.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
+                <p className="text-sm text-white/30">Sin eventos este mes</p>
+                <p className="text-xs text-white/20">Crea tareas con fechas de inicio y fin para verlas aquí</p>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Month View */}
       {view === 'month' && (
         <>
