@@ -15,6 +15,7 @@ import { getBranding } from "@/lib/branding";
 import { getSessionUser } from "@/core/auth/get-session-user";
 import { AccessControl } from "@/core/access/access-control";
 import { TaskCreateSchema, TaskUpdateSchema, validateBody } from "@/lib/schemas";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
 
@@ -248,6 +249,8 @@ async function getAssignedEmails(taskId: string): Promise<Set<string>> {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(req, { limit: 30, windowMs: 60_000, identifier: 'tasks-post' });
+  if (!rl.success) return rl.response;
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -325,6 +328,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const rl = rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'tasks-put' });
+  if (!rl.success) return rl.response;
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 

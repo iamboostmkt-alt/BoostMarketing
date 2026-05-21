@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { sendMail, templateBienvenida } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
 import { ClientCreateSchema, ClientUpdateSchema, validateBody } from '@/lib/schemas';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 const MANAGE_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'];
 
@@ -127,6 +128,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(req, { limit: 20, windowMs: 60_000, identifier: 'clients-post' });
+  if (!rl.success) return rl.response;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
@@ -208,6 +211,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const rl2 = rateLimit(req, { limit: 40, windowMs: 60_000, identifier: 'clients-put' });
+  if (!rl2.success) return rl2.response;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
