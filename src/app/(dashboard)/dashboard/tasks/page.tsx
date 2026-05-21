@@ -21,7 +21,7 @@ import TaskCard from '@/components/dashboard/TaskCard';
 import TaskForm from '@/components/dashboard/TaskForm';
 import TaskDetailModal from '@/components/dashboard/TaskDetailModal';
 import type { Task } from '@/lib/types';
-import { taskStatuses } from '@/lib/theme-maps';
+import { taskStatuses, statusLabels } from '@/lib/theme-maps';
 
 type ViewMode = 'list' | 'board';
 type TabId = 'mine' | 'clients' | 'all';
@@ -42,6 +42,46 @@ const statusDotColors: Record<string, string> = {
   completed: 'bg-emerald-400',
 };
 
+// 4 macro-grupos que agrupan los 10 estados
+const BOARD_GROUPS = [
+  {
+    id: 'backlog',
+    label: 'Backlog',
+    icon: '📥',
+    statuses: ['draft', 'pending'],
+    dropStatus: 'pending',
+    color: 'bg-slate-400',
+    glow: 'bg-slate-400/[0.06] ring-slate-400/20',
+  },
+  {
+    id: 'in_progress',
+    label: 'En curso',
+    icon: '⚡',
+    statuses: ['in_progress', 'changes_requested'],
+    dropStatus: 'in_progress',
+    color: 'bg-cyan-400',
+    glow: 'bg-cyan-400/[0.06] ring-cyan-400/20',
+  },
+  {
+    id: 'review',
+    label: 'Revisión',
+    icon: '🔍',
+    statuses: ['internal_review', 'client_review'],
+    dropStatus: 'client_review',
+    color: 'bg-amber-400',
+    glow: 'bg-amber-400/[0.06] ring-amber-400/20',
+  },
+  {
+    id: 'done',
+    label: 'Listo',
+    icon: '✅',
+    statuses: ['approved', 'scheduled', 'published', 'completed'],
+    dropStatus: 'completed',
+    color: 'bg-emerald-400',
+    glow: 'bg-emerald-400/[0.06] ring-emerald-400/20',
+  },
+];
+
 function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask, onStatusChange }: {
   tasks: Task[];
   onEdit: (t: Task) => void;
@@ -55,34 +95,53 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
     const { draggableId, destination } = result;
-    const newStatus = destination.droppableId;
+    const group = BOARD_GROUPS.find(g => g.id === destination.droppableId);
+    if (!group) return;
     const task = tasks.find(t => t.id === draggableId);
-    if (!task || task.status === newStatus) return;
-    await onStatusChange(draggableId, newStatus);
+    if (!task) return;
+    if (group.statuses.includes(task.status)) return;
+    await onStatusChange(draggableId, group.dropStatus);
   };
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {taskStatuses.map((stage) => {
-          const stageTasks = tasks.filter((t) => t.status === stage.id);
+        {BOARD_GROUPS.map((group) => {
+          const groupTasks = tasks.filter(t => group.statuses.includes(t.status));
           return (
-            <div key={stage.id} className="space-y-2">
+            <div key={group.id} className="space-y-2">
+              {/* Column header */}
               <div className="flex items-center gap-2 px-2 py-1">
-                <span className={`w-1.5 h-1.5 rounded-full ${statusDotColors[stage.id] || 'bg-white/30'}`} />
-                <span className="text-xs font-medium text-white/40 uppercase tracking-wide">{stage.label}</span>
-                <span className="text-[10px] text-white/20 ml-auto bg-white/[0.06] px-1.5 py-0.5 rounded-full">{stageTasks.length}</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${group.color}`} />
+                <span className="text-xs font-medium text-white/40 uppercase tracking-wide">
+                  {group.label}
+                </span>
+                <span className="text-[10px] text-white/20 ml-auto bg-white/[0.06] px-1.5 py-0.5 rounded-full">
+                  {groupTasks.length}
+                </span>
               </div>
-              <Droppable droppableId={stage.id}>
+              {/* Sub-status pills */}
+              <div className="flex flex-wrap gap-1 px-1 pb-1">
+                {group.statuses.map(s => {
+                  const count = tasks.filter(t => t.status === s).length;
+                  if (count === 0) return null;
+                  return (
+                    <span key={s} className="text-[9px] text-white/25 bg-white/[0.04] px-1.5 py-0.5 rounded-full">
+                      {statusLabels[s] || s} {count}
+                    </span>
+                  );
+                })}
+              </div>
+              <Droppable droppableId={group.id}>
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`space-y-2 min-h-[80px] rounded-xl p-1 transition-colors duration-150 ${
-                      snapshot.isDraggingOver ? 'bg-brand/[0.06] ring-1 ring-brand/20' : ''
+                    className={`space-y-2 min-h-[120px] rounded-xl p-1 transition-colors duration-150 ${
+                      snapshot.isDraggingOver ? `ring-1 ${group.glow}` : ''
                     }`}
                   >
-                    {stageTasks.map((task, index) => (
+                    {groupTasks.map((task, index) => (
                       <Draggable key={task.id} draggableId={task.id} index={index}>
                         {(provided, snapshot) => (
                           <div
@@ -105,9 +164,9 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                       </Draggable>
                     ))}
                     {provided.placeholder}
-                    {stageTasks.length === 0 && !snapshot.isDraggingOver && (
-                      <div className="flex items-center justify-center h-12 text-[11px] text-white/15 border border-dashed border-white/[0.04] rounded-lg">
-                        Vacío
+                    {groupTasks.length === 0 && !snapshot.isDraggingOver && (
+                      <div className="flex items-center justify-center h-16 text-[11px] text-white/10 border border-dashed border-white/[0.04] rounded-lg">
+                        Sin tareas
                       </div>
                     )}
                   </div>
