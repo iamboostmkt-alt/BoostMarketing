@@ -25,10 +25,10 @@ const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','A
 
 // Colores de rango por prioridad
 const rangeColors: Record<string, string> = {
-  low:    'bg-emerald-400/20',
-  medium: 'bg-amber-400/20',
-  high:   'bg-red-400/25',
-  urgent: 'bg-red-500/35',
+  low:    'bg-violet-400/20',
+  medium: 'bg-violet-500/25',
+  high:   'bg-violet-600/30',
+  urgent: 'bg-violet-700/35',
 };
 
 // Dots por tipo
@@ -169,9 +169,9 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
       {view === 'month' && (
         <div className="space-y-4">
       {/* Day names */}
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 bg-brand/[0.08] rounded-lg mb-1">
         {DAY_NAMES.map(name => (
-          <div key={name} className="text-center text-[11px] font-medium text-white/25 py-2 uppercase tracking-wide">{name}</div>
+          <div key={name} className="text-center text-[11px] font-medium text-brand-light/60 py-2 uppercase tracking-wider">{name}</div>
         ))}
       </div>
 
@@ -402,7 +402,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/[0.04]">
         <div className="flex items-center gap-1.5">
-          <span className="w-5 h-1 rounded-full bg-amber-400/60 inline-block" />
+          <span className="w-5 h-1 rounded-full bg-violet-400/60 inline-block" />
           <span className="text-[11px] text-white/30">Rango tarea</span>
         </div>
         <div className="flex items-center gap-1.5">
