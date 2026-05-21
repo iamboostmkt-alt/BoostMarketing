@@ -268,7 +268,23 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
                   <p className="text-[10px] text-white/30 uppercase tracking-wider">Archivos adjuntos {attachments.length > 0 && `(${attachments.length})`}</p>
                 </div>
                 <label className="cursor-pointer">
-                  <input type="file" multiple accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={e => { const files = Array.from(e.target.files || []); if (files.length) startUpload(files); e.target.value = ''; }} disabled={isUploading} />
+                  <input type="file" multiple accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={e => {
+                      const ALLOWED_MIME = [
+                        'image/jpeg','image/png','image/gif','image/webp',
+                        'application/pdf',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                      ];
+                      const files = Array.from(e.target.files || []).filter(f => {
+                        if (!ALLOWED_MIME.includes(f.type)) {
+                          toast.error(`Tipo de archivo no permitido: ${f.name}`);
+                          return false;
+                        }
+                        return true;
+                      });
+                      if (files.length) startUpload(files);
+                      e.target.value = '';
+                    }} disabled={isUploading} />
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-md text-white/60 hover:text-white text-xs transition-colors">
                     {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
                     {isUploading ? 'Subiendo...' : 'Adjuntar'}
