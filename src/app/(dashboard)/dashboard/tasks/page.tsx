@@ -180,8 +180,8 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                     ))}
                     {provided.placeholder}
                     {groupTasks.length === 0 && !snapshot.isDraggingOver && (
-                      <div className="flex items-center justify-center h-16 text-[11px] text-white/10 border border-dashed border-white/[0.04] rounded-lg">
-                        Sin tareas
+                      <div className="flex flex-col items-center justify-center h-16 gap-1 border border-dashed border-white/[0.04] rounded-lg">
+                        <span className="text-[10px] text-white/15">Arrastra aquí</span>
                       </div>
                     )}
                   </div>
@@ -212,10 +212,10 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange }:
         <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
           <CheckSquare className="w-8 h-8 text-white/20" />
         </div>
-        <h3 className="text-lg font-semibold text-white/70 mb-1">Sin tareas asignadas</h3>
-        <p className="text-sm text-white/40 mb-4">Crea una tarea para comenzar</p>
-        <Button onClick={onCreate} className="bg-brand hover:bg-brand-dark text-white gap-2">
-          <Plus className="w-4 h-4" /> Nueva Tarea
+        <p className="text-sm font-medium text-white/50 mb-1">Sin tareas activas</p>
+        <p className="text-xs text-white/30 mb-4">Todo en orden — o crea una tarea para empezar</p>
+        <Button onClick={onCreate} size="sm" className="bg-brand hover:bg-brand-dark text-white gap-2">
+          <Plus className="w-3.5 h-3.5" /> Nueva Tarea
         </Button>
       </div>
     );
@@ -482,8 +482,8 @@ function TasksContent() {
               <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
                 <Building2 className="w-8 h-8 text-white/20" />
               </div>
-              <h3 className="text-lg font-semibold text-white/70 mb-1">Sin tareas de clientes</h3>
-              <p className="text-sm text-white/40">No hay tareas asociadas a clientes visibles para ti</p>
+              <p className="text-sm font-medium text-white/50 mb-1">Sin tareas de clientes</p>
+              <p className="text-xs text-white/30">No hay tareas de clientes asignadas a ti</p>
             </div>
           ) : clientsWithTasks.map((client) => (
             <div key={client.id} className="rounded-xl border border-white/[0.06] overflow-hidden">
