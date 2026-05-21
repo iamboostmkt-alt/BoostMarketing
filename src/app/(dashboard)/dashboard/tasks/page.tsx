@@ -16,6 +16,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import TaskCard from '@/components/dashboard/TaskCard';
 import TaskForm from '@/components/dashboard/TaskForm';
 import TaskDetailModal from '@/components/dashboard/TaskDetailModal';
@@ -41,7 +42,7 @@ const statusDotColors: Record<string, string> = {
   completed: 'bg-emerald-400',
 };
 
-function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask }: {
+function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPending, onAddSubtask, onStatusChange }: {
   tasks: Task[];
   onEdit: (t: Task) => void;
   onDelete: (t: Task) => void;
@@ -49,42 +50,83 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
   onMarkComplete: (t: Task) => Promise<void>;
   onMarkPending: (t: Task) => Promise<void>;
   onAddSubtask: (t: Task) => void;
+  onStatusChange: (taskId: string, newStatus: string) => Promise<void>;
 }) {
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+    const { draggableId, destination } = result;
+    const newStatus = destination.droppableId;
+    const task = tasks.find(t => t.id === draggableId);
+    if (!task || task.status === newStatus) return;
+    await onStatusChange(draggableId, newStatus);
+  };
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {taskStatuses.map((stage) => {
-        const stageTasks = tasks.filter((t) => t.status === stage.id);
-        return (
-          <div key={stage.id} className="space-y-2">
-            <div className="flex items-center gap-2 px-2 py-1">
-              <span className={`w-1.5 h-1.5 rounded-full ${statusDotColors[stage.id] || 'bg-white/30'}`} />
-              <span className="text-xs font-medium text-white/40 uppercase tracking-wide">{stage.label}</span>
-              <span className="text-[10px] text-white/20 ml-auto bg-white/[0.06] px-1.5 py-0.5 rounded-full">{stageTasks.length}</span>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {taskStatuses.map((stage) => {
+          const stageTasks = tasks.filter((t) => t.status === stage.id);
+          return (
+            <div key={stage.id} className="space-y-2">
+              <div className="flex items-center gap-2 px-2 py-1">
+                <span className={`w-1.5 h-1.5 rounded-full ${statusDotColors[stage.id] || 'bg-white/30'}`} />
+                <span className="text-xs font-medium text-white/40 uppercase tracking-wide">{stage.label}</span>
+                <span className="text-[10px] text-white/20 ml-auto bg-white/[0.06] px-1.5 py-0.5 rounded-full">{stageTasks.length}</span>
+              </div>
+              <Droppable droppableId={stage.id}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`space-y-2 min-h-[80px] rounded-xl p-1 transition-colors duration-150 ${
+                      snapshot.isDraggingOver ? 'bg-brand/[0.06] ring-1 ring-brand/20' : ''
+                    }`}
+                  >
+                    {stageTasks.map((task, index) => (
+                      <Draggable key={task.id} draggableId={task.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              opacity: snapshot.isDragging ? 0.85 : 1,
+                            }}
+                            className={`transition-shadow duration-150 ${
+                              snapshot.isDragging ? 'shadow-lg shadow-black/30 rotate-[0.5deg]' : ''
+                            }`}
+                          >
+                            <TaskCard task={task} onEdit={onEdit} onDelete={onDelete}
+                              onView={onView} onMarkComplete={onMarkComplete}
+                              onMarkPending={onMarkPending} onAddSubtask={onAddSubtask} />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    {stageTasks.length === 0 && !snapshot.isDraggingOver && (
+                      <div className="flex items-center justify-center h-12 text-[11px] text-white/15 border border-dashed border-white/[0.04] rounded-lg">
+                        Vacío
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Droppable>
             </div>
-            <div className="space-y-2 min-h-[80px] rounded-xl p-1">
-              {stageTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onEdit={onEdit} onDelete={onDelete}
-                  onMarkComplete={onMarkComplete} onMarkPending={onMarkPending}
-                  onAddSubtask={onAddSubtask} />
-              ))}
-              {stageTasks.length === 0 && (
-                <div className="flex items-center justify-center h-12 text-[11px] text-white/15 border border-dashed border-white/[0.04] rounded-lg">
-                  Vacío
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </DragDropContext>
   );
 }
 
-function MineTasksView({ tasks, viewMode, cardProps, onCreate }: {
+function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange }: {
   tasks: Task[];
   viewMode: ViewMode;
   cardProps: any;
   onCreate: () => void;
+  onStatusChange: (taskId: string, newStatus: string) => Promise<void>;
 }) {
   const [showCompleted, setShowCompleted] = useState(false);
   const activeTasks    = tasks.filter(t => t.status !== 'completed' && t.status !== 'approved');
@@ -109,7 +151,7 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate }: {
     <div className="space-y-4">
       {/* Tareas activas */}
       {viewMode === 'board' ? (
-        <BoardView tasks={activeTasks} {...cardProps} />
+        <BoardView tasks={activeTasks} {...cardProps} onStatusChange={onStatusChange} />
       ) : (
         <motion.div
           className="space-y-2"
@@ -212,6 +254,15 @@ function TasksContent() {
       toast.success('Tarea completada');
       await fetchAll();
     } catch { toast.error('Error al completar'); }
+  }
+
+  async function handleStatusChange(taskId: string, newStatus: string) {
+    try {
+      const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: taskId, status: newStatus }) });
+      if (!res.ok) throw new Error();
+      setMyTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+      setAllTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+    } catch { toast.error('Error al mover tarea'); }
   }
 
   async function handleMarkPending(task: Task) {
@@ -342,6 +393,7 @@ function TasksContent() {
           viewMode={viewMode}
           cardProps={cardProps}
           onCreate={handleCreate}
+          onStatusChange={handleStatusChange}
         />
       )}
 
@@ -377,6 +429,7 @@ function TasksContent() {
                     viewMode={viewMode}
                     cardProps={cardProps}
                     onCreate={handleCreate}
+                    onStatusChange={handleStatusChange}
                   />
                 </div>
               )}
@@ -392,6 +445,7 @@ function TasksContent() {
           viewMode={viewMode}
           cardProps={cardProps}
           onCreate={handleCreate}
+          onStatusChange={handleStatusChange}
         />
       )}
 
