@@ -41,6 +41,7 @@ type NavItem = {
   label: string;
   icon: React.ElementType;
   adminOnly?: boolean;
+  disabled?: boolean;
 };
 
 const navItems: NavItem[] = [
@@ -232,7 +233,7 @@ function NavItemButton({
       className={cn(
         "group relative mx-2 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150",
         collapsed && "mx-0 justify-center px-2",
-        isActive ? "text-white/90" : "text-white/45 hover:text-white/90"
+        isActive ? "text-white/90" : "text-white/60 hover:text-white/90"
       )}
     >
       {/* Active background */}
@@ -271,7 +272,7 @@ function NavItemButton({
       <Icon
         className={cn(
           "relative z-10 h-[15px] w-[15px] shrink-0 transition-colors duration-150",
-          isActive ? "text-purple-400" : "text-white/35 group-hover:text-purple-400"
+          isActive ? "text-purple-400" : "text-white/55 group-hover:text-purple-400"
         )}
         strokeWidth={1.5}
       />
@@ -373,7 +374,7 @@ function SettingsDropdown({ collapsed }: { collapsed: boolean }) {
     >
       <div className="absolute inset-0 rounded-lg bg-white/[0.04] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
       <Settings
-        className="relative z-10 h-[15px] w-[15px] shrink-0 text-white/35 transition-colors duration-150 group-hover:text-purple-400"
+        className="relative z-10 h-[15px] w-[15px] shrink-0 text-white/55 transition-colors duration-150 group-hover:text-purple-400"
         strokeWidth={1.5}
       />
       {!collapsed && (
@@ -443,7 +444,7 @@ export default function AppSidebar() {
   const userColor       = (session?.user as any)?.color || "#7c3aed";
   const customRoleLabel = (session?.user as any)?.customRoleLabel ?? null;
   const customRoleColor = (session?.user as any)?.customRoleColor ?? "#7c3aed";
-  const workspaceName   = (session?.user as any)?.workspaceName || "Workspace";
+  const workspaceName   = (session?.user as any)?.workspaceName || (session?.user?.name ? session.user.name.split(" ")[0] : "Boost");
 
   const workspaceInitial = workspaceName[0]?.toUpperCase() || "W";
 
@@ -458,41 +459,36 @@ export default function AppSidebar() {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex h-14 items-center justify-between px-3">
-        {!collapsed && (
-          <span className="text-sm font-semibold text-white/90">Weeklink</span>
-        )}
-        <div className={cn("flex items-center gap-1", collapsed && "w-full justify-center")}>
-          {/* Bell */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button className="relative rounded-lg p-1.5 text-white/40 transition-colors hover:text-white">
-                <Bell className="h-4 w-4" strokeWidth={1.5} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side={collapsed ? "right" : "bottom"}>Notificaciones</TooltipContent>
-          </Tooltip>
-
-          {/* User dropdown */}
-          <UserDropdown
-            user={{ name: userName, image: userImage, color: userColor, customRoleLabel, customRoleColor }}
-            collapsed={collapsed}
-          />
-
-          {/* Collapse toggle */}
-          {!collapsed && (
+        {!collapsed ? (
+          <>
+            <span className="text-sm font-semibold text-white/90">{workspaceName}</span>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={() => setCollapsed(true)}
-                  className="rounded-lg p-1.5 text-white/30 transition-colors hover:text-white/60"
+                  className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-white/60 border border-white/[0.08]"
                 >
-                  <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
+                  <ChevronLeft className="h-3.5 w-3.5" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">Colapsar</TooltipContent>
             </Tooltip>
-          )}
-        </div>
+          </>
+        ) : (
+          <div className="w-full flex justify-center">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setCollapsed(false)}
+                  className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-white/60 border border-white/[0.08]"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Expandir</TooltipContent>
+            </Tooltip>
+          </div>
+        )}
       </div>
 
       {/* Workspace switcher */}
@@ -506,7 +502,7 @@ export default function AppSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-2">
+      <nav className="flex-1 overflow-y-auto py-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
         <SectionLabel collapsed={collapsed}>Menú Principal</SectionLabel>
         <div className="space-y-0.5">
           {filteredNavItems.map((item) => (
@@ -533,7 +529,7 @@ export default function AppSidebar() {
         )}
         <div className="space-y-0.5">
           <NavItemButton
-            item={{ href: "/dashboard/email", label: "Email", icon: Mail }}
+            item={{ href: "/dashboard/email", label: "Email", icon: Mail, disabled: true }}
             isActive={isActive("/dashboard/email")}
             collapsed={collapsed}
           />
@@ -541,22 +537,7 @@ export default function AppSidebar() {
         </div>
       </div>
 
-      {/* Expand button when collapsed */}
-      {collapsed && (
-        <div className="border-t border-white/[0.06] p-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setCollapsed(false)}
-                className="flex w-full items-center justify-center rounded-lg p-2 text-white/40 transition-colors hover:bg-white/[0.04] hover:text-white/60"
-              >
-                <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Expandir</TooltipContent>
-          </Tooltip>
-        </div>
-      )}
+
     </div>
   );
 
@@ -565,7 +546,7 @@ export default function AppSidebar() {
       {/* Desktop sidebar */}
       <aside
         style={{ width: collapsed ? 72 : 240 }}
-        className="hidden md:flex flex-col bg-[#13131a] border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
+        className="hidden md:flex flex-col bg-[#0e0e14] border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
       >
         {sidebarContent}
       </aside>
@@ -580,7 +561,7 @@ export default function AppSidebar() {
 
       {/* Mobile sidebar */}
       <aside
-        className="fixed top-0 left-0 z-50 h-screen w-[240px] bg-[#13131a] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out"
+        className="fixed top-0 left-0 z-50 h-screen w-[240px] bg-[#0e0e14] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out"
         style={{ transform: mobileOpen ? "translateX(0)" : "translateX(-280px)" }}
       >
         {sidebarContent}
