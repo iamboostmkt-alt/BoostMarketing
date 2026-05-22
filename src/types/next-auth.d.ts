@@ -9,6 +9,7 @@ declare module "next-auth" {
       lifecycleStatus?: UserLifecycleStatus | null;
       color?: string;
       customRoleId?: string | null;
+      workspaceId?: string | null;
       customRoleLabel?: string | null;
       customRoleColor?: string | null;
       permissions?: Record<string, boolean>;
@@ -29,6 +30,7 @@ declare module "next-auth/jwt" {
     lifecycleStatus?: UserLifecycleStatus | null;
     color?: string;
     customRoleId?: string | null;
+    workspaceId?: string | null;
     customRoleLabel?: string | null;
     customRoleColor?: string | null;
     permissions?: Record<string, boolean>;

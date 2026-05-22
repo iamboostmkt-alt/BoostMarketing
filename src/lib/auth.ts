@@ -129,6 +129,7 @@ export const authOptions: NextAuthOptions = {
             select: {
               lifecycleStatus: true,
               customRoleId: true,
+              workspaceId: true,
               customRole: {
                 select: {
                   label: true,
@@ -141,6 +142,7 @@ export const authOptions: NextAuthOptions = {
 
           token.lifecycleStatus = dbUser?.lifecycleStatus ?? null;
           token.customRoleId = dbUser?.customRoleId ?? null;
+          token.workspaceId = dbUser?.workspaceId ?? null;
           token.customRoleLabel = dbUser?.customRole?.label ?? null;
           token.customRoleColor = dbUser?.customRole?.color ?? null;
           token.permissions =
@@ -149,6 +151,7 @@ export const authOptions: NextAuthOptions = {
         } catch {
           token.lifecycleStatus = null;
           token.customRoleId = null;
+          token.workspaceId = null;
           token.customRoleLabel = null;
           token.customRoleColor = null;
           token.permissions = {};
@@ -172,6 +175,7 @@ export const authOptions: NextAuthOptions = {
         session.user.color = token.color;
         session.user.image = token.picture ?? null;
         session.user.customRoleId = token.customRoleId;
+        session.user.workspaceId = token.workspaceId as string | null;
         session.user.customRoleLabel = token.customRoleLabel;
         session.user.customRoleColor = token.customRoleColor;
         session.user.permissions = token.permissions;
