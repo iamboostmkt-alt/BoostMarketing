@@ -1,210 +1,576 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
-import type { LucideIcon } from 'lucide-react';
+import * as React from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
+  Briefcase,
   Users,
   CheckSquare,
   Calendar,
+  MessageSquare,
   UserCircle,
   BarChart3,
+  Shield,
+  Mail,
   Settings,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Zap,
+  Bell,
   LogOut,
-  Shield,
-  MessageSquare,
-  Briefcase,
-} from 'lucide-react';
-import { isAdminRole, canAccessRoute, getRoleLabel } from '@/lib/roles';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-
-import { motion, AnimatePresence } from 'framer-motion';
-import { useSidebar } from './SidebarContext';
-import { LogoBrand } from '@/components/shared/LogoBrand';
+  User,
+  Plus,
+  Zap,
+  Command,
+  HelpCircle,
+  Palette,
+  Home,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { canAccessRoute, getRoleLabel } from "@/lib/roles";
+import { useSidebar } from "./SidebarContext";
 
 type NavItem = {
-  label: string;
   href: string;
-  icon: LucideIcon;
+  label: string;
+  icon: React.ElementType;
   adminOnly?: boolean;
 };
 
-const navItemsBase: NavItem[] = [
-  { label: 'Dashboard',  href: '/dashboard',              icon: LayoutDashboard },
-  { label: 'Mi Portal',  href: '/dashboard/client-portal', icon: Briefcase },
-  { label: 'CRM',        href: '/dashboard/crm',           icon: Users },
-  { label: 'Tareas',     href: '/dashboard/tasks',         icon: CheckSquare },
-  { label: 'Calendario', href: '/dashboard/calendar',      icon: Calendar },
-  { label: 'Chat',       href: '/dashboard/chat',          icon: MessageSquare },
-  { label: 'Clientes',   href: '/dashboard/clients',       icon: UserCircle },
-  { label: 'Analytics',  href: '/dashboard/analytics',     icon: BarChart3 },
-  { label: 'Admin',      href: '/dashboard/admin',         icon: Shield, adminOnly: true },
-  { label: 'Ajustes',   href: '/dashboard/settings',      icon: Settings },
+const navItems: NavItem[] = [
+  { href: "/dashboard",               label: "Home",      icon: Home },
+  { href: "/dashboard/client-portal", label: "Mi Portal", icon: Briefcase },
+  { href: "/dashboard/crm",           label: "Leads",     icon: Users },
+  { href: "/dashboard/tasks",         label: "Tareas",    icon: CheckSquare },
+  { href: "/dashboard/calendar",      label: "Calendario",icon: Calendar },
+  { href: "/dashboard/chat",          label: "Chat",      icon: MessageSquare },
+  { href: "/dashboard/clients",       label: "Usuarios",  icon: UserCircle },
+  { href: "/dashboard/analytics",     label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard/admin",         label: "Admin",     icon: Shield, adminOnly: true },
 ];
 
+// ─── User Dropdown ────────────────────────────────────────────────────────────
+function UserDropdown({
+  user,
+  collapsed,
+}: {
+  user: { name: string; image?: string | null; color?: string; customRoleLabel?: string | null; customRoleColor?: string | null };
+  collapsed: boolean;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const initials = user.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex h-7 w-7 items-center justify-center rounded-full transition-opacity hover:opacity-80"
+      >
+        <Avatar className="h-7 w-7">
+          <AvatarImage src={user.image ?? undefined} alt={user.name} />
+          <AvatarFallback
+            style={{ backgroundColor: user.color || "#7c3aed" }}
+            className="text-[10px] font-medium text-white"
+          >
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            className={cn(
+              "absolute z-50 mt-2 w-52 overflow-hidden rounded-xl border border-white/[0.08] bg-[#16161e] p-1 shadow-2xl",
+              collapsed ? "left-full ml-2 top-0" : "right-0 top-full"
+            )}
+          >
+            <button
+              onClick={() => { setOpen(false); router.push("/dashboard/profile"); }}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
+            >
+              <User className="h-4 w-4" strokeWidth={1.5} />
+              <span>Perfil</span>
+            </button>
+            <button
+              onClick={() => { setOpen(false); router.push("/dashboard/settings"); }}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
+            >
+              <Settings className="h-4 w-4" strokeWidth={1.5} />
+              <span>Ajustes</span>
+            </button>
+            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
+              <Palette className="h-4 w-4" strokeWidth={1.5} />
+              <span className="flex-1 text-left">Tema</span>
+              <ChevronRight className="h-4 w-4 text-white/30" />
+            </button>
+            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
+              <Zap className="h-4 w-4" strokeWidth={1.5} />
+              <span>Upgrade</span>
+            </button>
+            <div className="my-1 h-px bg-white/[0.06]" />
+            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
+              <Command className="h-4 w-4" strokeWidth={1.5} />
+              <span>Atajos de teclado</span>
+            </button>
+            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
+              <HelpCircle className="h-4 w-4" strokeWidth={1.5} />
+              <span>Centro de ayuda</span>
+            </button>
+            <div className="my-1 h-px bg-white/[0.06]" />
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-red-500/10 hover:text-red-400"
+            >
+              <LogOut className="h-4 w-4" strokeWidth={1.5} />
+              <span>Cerrar sesión</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Workspace Switcher ────────────────────────────────────────────────────────
+function WorkspaceSwitcher({
+  name,
+  initial,
+  color,
+  collapsed,
+}: {
+  name: string;
+  initial: string;
+  color: string;
+  collapsed: boolean;
+}) {
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] transition-colors hover:bg-white/[0.07]">
+            <div
+              className="flex h-[22px] w-[22px] items-center justify-center rounded-md text-xs font-semibold text-white"
+              style={{ backgroundColor: `${color}33` }}
+            >
+              {initial}
+            </div>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">{name}</TooltipContent>
+      </Tooltip>
+    );
+  }
+  return (
+    <button className="flex w-full items-center gap-3 rounded-lg bg-white/[0.04] px-3 py-2.5 transition-colors hover:bg-white/[0.07]">
+      <div
+        className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-md text-xs font-semibold text-white"
+        style={{ backgroundColor: `${color}33` }}
+      >
+        {initial}
+      </div>
+      <span className="flex-1 truncate text-left text-sm font-medium text-white/75">{name}</span>
+      <ChevronDown className="h-4 w-4 shrink-0 text-white/30" />
+    </button>
+  );
+}
+
+// ─── Section Label ─────────────────────────────────────────────────────────────
+function SectionLabel({ children, collapsed }: { children: React.ReactNode; collapsed: boolean }) {
+  if (collapsed) return null;
+  return (
+    <div className="mb-1 mt-4 px-3 text-[10px] font-medium uppercase tracking-widest text-white/20">
+      {children}
+    </div>
+  );
+}
+
+// ─── Nav Item ──────────────────────────────────────────────────────────────────
+function NavItemButton({
+  item,
+  isActive,
+  collapsed,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  collapsed: boolean;
+}) {
+  const Icon = item.icon;
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  const content = (
+    <Link
+      href={item.href}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={cn(
+        "group relative mx-2 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150",
+        collapsed && "mx-0 justify-center px-2",
+        isActive ? "text-white/90" : "text-white/45 hover:text-white/90"
+      )}
+    >
+      {/* Active background */}
+      {isActive && (
+        <motion.div
+          layoutId="nav-active-bg"
+          className="absolute inset-0 rounded-lg bg-[#1e1e2a]"
+          transition={{ type: "spring", stiffness: 380, damping: 32 }}
+        />
+      )}
+
+      {/* Active right gradient — neon purple, right to left, subtle */}
+      {isActive && (
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 w-20 rounded-r-lg"
+          style={{
+            background: "linear-gradient(to left, rgba(124,58,237,0.35) 0%, rgba(124,58,237,0.08) 60%, transparent 100%)",
+          }}
+        />
+      )}
+
+      {/* Active right dot */}
+      {isActive && (
+        <motion.div
+          layoutId="nav-active-dot"
+          className="absolute right-2 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-purple-500"
+          transition={{ type: "spring", stiffness: 380, damping: 32 }}
+        />
+      )}
+
+      {/* Hover background */}
+      {!isActive && (
+        <div className="absolute inset-0 rounded-lg bg-white/[0.04] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+      )}
+
+      <Icon
+        className={cn(
+          "relative z-10 h-[15px] w-[15px] shrink-0 transition-colors duration-150",
+          isActive ? "text-purple-400" : "text-white/35 group-hover:text-purple-400"
+        )}
+        strokeWidth={1.5}
+      />
+
+      {!collapsed && (
+        <>
+          <span className="relative z-10 flex-1 truncate">{item.label}</span>
+          {(isActive || isHovered) && (
+            <ChevronRight className="relative z-10 h-3 w-3 text-white/20" />
+          )}
+        </>
+      )}
+    </Link>
+  );
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent side="right">{item.label}</TooltipContent>
+      </Tooltip>
+    );
+  }
+  return content;
+}
+
+// ─── Clients Section ───────────────────────────────────────────────────────────
+function ClientsSection({ collapsed }: { collapsed: boolean }) {
+  const [open, setOpen] = React.useState(true);
+  if (collapsed) return null;
+  return (
+    <div className="mt-2">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center gap-2 px-3 py-1"
+      >
+        <span className="flex-1 text-left text-[10px] uppercase tracking-widest text-white/20">
+          Usuarios
+        </span>
+        {open ? (
+          <ChevronDown className="h-3 w-3 text-white/20" />
+        ) : (
+          <ChevronRight className="h-3 w-3 text-white/20" />
+        )}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-1 space-y-0.5 pl-4">
+              <Link
+                href="/dashboard/clients"
+                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75"
+              >
+                <div className="h-2 w-2 rounded-full bg-purple-400/60" />
+                <span className="truncate">Ver todos</span>
+              </Link>
+              <Link
+                href="/dashboard/admin/users"
+                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75"
+              >
+                <div className="h-2 w-2 rounded-full bg-blue-400/60" />
+                <span className="truncate">Gestionar equipo</span>
+              </Link>
+              <Link
+                href="/dashboard/admin/invite"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] text-purple-400/70 transition-colors hover:text-purple-400"
+              >
+                <Plus className="h-3 w-3" />
+                <span>Invitar usuario</span>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Settings Dropdown ─────────────────────────────────────────────────────────
+function SettingsDropdown({ collapsed }: { collapsed: boolean }) {
+  const [open, setOpen] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  const button = (
+    <button
+      onClick={() => setOpen(!open)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={cn(
+        "group relative mx-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/45 transition-all duration-150 hover:text-white/90",
+        collapsed && "mx-0 w-full justify-center px-2"
+      )}
+    >
+      <div className="absolute inset-0 rounded-lg bg-white/[0.04] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+      <Settings
+        className="relative z-10 h-[15px] w-[15px] shrink-0 text-white/35 transition-colors duration-150 group-hover:text-purple-400"
+        strokeWidth={1.5}
+      />
+      {!collapsed && (
+        <>
+          <span className="relative z-10 flex-1 text-left">Ajustes</span>
+          {isHovered && (
+            <ChevronDown
+              className={cn(
+                "relative z-10 h-3 w-3 text-white/20 transition-transform duration-200",
+                open && "rotate-180"
+              )}
+            />
+          )}
+        </>
+      )}
+    </button>
+  );
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent side="right">Ajustes</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <div>
+      {button}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="ml-6 mt-1 space-y-0.5 border-l border-white/[0.06] pl-3">
+              {["General", "Notificaciones", "Seguridad", "Apariencia"].map((item) => (
+                <Link
+                  key={item}
+                  href={`/dashboard/settings/${item.toLowerCase()}`}
+                  className="block rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/80"
+                >
+                  {item}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Main Sidebar ──────────────────────────────────────────────────────────────
 export default function AppSidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { data: session } = useSession();
 
-  // NON-BLOCKING: always render with defaults, update when session resolves
-  const userName        = session?.user?.name || 'Usuario';
+  const userName        = session?.user?.name || "Usuario";
   const role            = session?.user?.role;
-  const userRoleLabel   = getRoleLabel(role);
   const userImage       = session?.user?.image;
-  const customRoleLabel = session?.user?.customRoleLabel ?? null;
-  const customRoleColor = session?.user?.customRoleColor ?? '#7c3aed';
+  const userColor       = (session?.user as any)?.color || "#7c3aed";
+  const customRoleLabel = (session?.user as any)?.customRoleLabel ?? null;
+  const customRoleColor = (session?.user as any)?.customRoleColor ?? "#7c3aed";
+  const workspaceName   = (session?.user as any)?.workspaceName || "Workspace";
 
-  const initials = userName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+  const workspaceInitial = workspaceName[0]?.toUpperCase() || "W";
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') return pathname === '/dashboard';
+    if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   };
 
+  const filteredNavItems = navItems.filter((item) => canAccessRoute(item.href, role));
+
   const sidebarContent = (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="flex items-center h-16 px-4 border-b border-white/[0.06]">
-        <LogoBrand size="md" showName={!collapsed} />
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <div className="flex h-14 items-center justify-between px-3">
+        {!collapsed && (
+          <span className="text-sm font-semibold text-white/90">Weeklink</span>
+        )}
+        <div className={cn("flex items-center gap-1", collapsed && "w-full justify-center")}>
+          {/* Bell */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button className="relative rounded-lg p-1.5 text-white/40 transition-colors hover:text-white">
+                <Bell className="h-4 w-4" strokeWidth={1.5} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side={collapsed ? "right" : "bottom"}>Notificaciones</TooltipContent>
+          </Tooltip>
+
+          {/* User dropdown */}
+          <UserDropdown
+            user={{ name: userName, image: userImage, color: userColor, customRoleLabel, customRoleColor }}
+            collapsed={collapsed}
+          />
+
+          {/* Collapse toggle */}
+          {!collapsed && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setCollapsed(true)}
+                  className="rounded-lg p-1.5 text-white/30 transition-colors hover:text-white/60"
+                >
+                  <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Colapsar</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      </div>
+
+      {/* Workspace switcher */}
+      <div className="mx-2 mt-1">
+        <WorkspaceSwitcher
+          name={workspaceName}
+          initial={workspaceInitial}
+          color={userColor}
+          collapsed={collapsed}
+        />
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
-        {navItemsBase
-          .filter((item) => canAccessRoute(item.href, role))
-          .map((item) => {
-          const active = isActive(item.href);
-          const Icon = item.icon;
+      <nav className="flex-1 overflow-y-auto py-2">
+        <SectionLabel collapsed={collapsed}>Menú Principal</SectionLabel>
+        <div className="space-y-0.5">
+          {filteredNavItems.map((item) => (
+            <NavItemButton
+              key={item.href}
+              item={item}
+              isActive={isActive(item.href)}
+              collapsed={collapsed}
+            />
+          ))}
+        </div>
 
-          const linkContent = (
-            <Link
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={`
-                flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
-                transition-colors duration-150 relative group
-                ${
-                  active
-                    ? 'text-white'
-                    : 'text-white/50 hover:text-white/80'
-                }
-              `}
-            >
-              {active && (
-                <motion.div
-                  layoutId="sidebar-active-pill"
-                  className="absolute inset-0 bg-white/[0.06] rounded-lg"
-                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                />
-              )}
-              {active && (
-                <motion.div
-                  layoutId="sidebar-active-indicator"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-brand rounded-r-full"
-                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                />
-              )}
-              <Icon className={`w-4 h-4 shrink-0 relative z-10 ${active ? 'text-brand-light' : ''}`} />
-              {!collapsed && (
-                <span className="whitespace-nowrap overflow-hidden relative z-10 text-sm">
-                  {item.label}
-                </span>
-              )}
-            </Link>
-          );
-
-          if (collapsed) {
-            return (
-              <Tooltip key={item.href} delayDuration={0}>
-                <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-                <TooltipContent side="right" className="bg-surface-card text-white border-white/[0.06]">
-                  {item.label}
-                </TooltipContent>
-              </Tooltip>
-            );
-          }
-
-          return <div key={item.href}>{linkContent}</div>;
-        })}
+        {/* Workspace / Usuarios section */}
+        <SectionLabel collapsed={collapsed}>Workspace</SectionLabel>
+        <ClientsSection collapsed={collapsed} />
       </nav>
 
-      {/* Bottom: User + Collapse */}
-      <div className="mt-auto border-t border-white/[0.06]">
-        <div className="flex items-center gap-3 px-3 py-3">
-          <Avatar className="w-9 h-9 shrink-0">
-            <AvatarImage src={userImage || undefined} alt={userName} />
-            <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          {!collapsed && (
-            <div className="flex-1 min-w-0 overflow-hidden transition-all duration-200">
-              <p className="text-sm font-medium text-white truncate">{userName}</p>
-              <p className="text-xs text-white/40 truncate">{userRoleLabel}</p>
-              {customRoleLabel && (
-                <span
-                  className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium mt-0.5"
-                  style={{ backgroundColor: customRoleColor + '22', color: customRoleColor }}
-                >
-                  {customRoleLabel}
-                </span>
-              )}
-            </div>
-          )}
-          {/* Logout: always visible on mobile, always visible on desktop (collapsed or expanded) */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06] flex"
-            onClick={() => signOut({ callbackUrl: '/' })}
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Collapse toggle - desktop only */}
-        <div className="hidden md:flex items-center justify-center py-2 border-t border-white/[0.06]">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06]"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            {collapsed ? (
-              <ChevronRight className="w-4 h-4" />
-            ) : (
-              <ChevronLeft className="w-4 h-4" />
-            )}
-          </Button>
+      {/* Herramientas — fixed at bottom, never collapses */}
+      <div className="border-t border-white/[0.06] pb-2 pt-2">
+        {!collapsed && (
+          <div className="mb-1 px-3 text-[10px] font-medium uppercase tracking-widest text-white/20">
+            Herramientas
+          </div>
+        )}
+        <div className="space-y-0.5">
+          <NavItemButton
+            item={{ href: "/dashboard/email", label: "Email", icon: Mail }}
+            isActive={isActive("/dashboard/email")}
+            collapsed={collapsed}
+          />
+          <SettingsDropdown collapsed={collapsed} />
         </div>
       </div>
+
+      {/* Expand button when collapsed */}
+      {collapsed && (
+        <div className="border-t border-white/[0.06] p-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setCollapsed(false)}
+                className="flex w-full items-center justify-center rounded-lg p-2 text-white/40 transition-colors hover:bg-white/[0.04] hover:text-white/60"
+              >
+                <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Expandir</TooltipContent>
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 
   return (
     <>
-      {/* Desktop sidebar - pure CSS transition, no Framer Motion */}
+      {/* Desktop sidebar */}
       <aside
-        style={{ width: collapsed ? 72 : 256 }}
-        className="hidden md:flex flex-col bg-[#0e0e14] border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
+        style={{ width: collapsed ? 72 : 240 }}
+        className="hidden md:flex flex-col bg-[#13131a] border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
       >
         {sidebarContent}
       </aside>
 
-      {/* Mobile sidebar overlay */}
+      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 md:hidden"
@@ -212,10 +578,10 @@ export default function AppSidebar() {
         />
       )}
 
-      {/* Mobile sidebar panel - pure CSS transition */}
+      {/* Mobile sidebar */}
       <aside
-        className="fixed top-0 left-0 z-50 h-screen w-[256px] bg-[#0e0e14] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out"
-        style={{ transform: mobileOpen ? 'translateX(0)' : 'translateX(-280px)' }}
+        className="fixed top-0 left-0 z-50 h-screen w-[240px] bg-[#13131a] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out"
+        style={{ transform: mobileOpen ? "translateX(0)" : "translateX(-280px)" }}
       >
         {sidebarContent}
       </aside>
