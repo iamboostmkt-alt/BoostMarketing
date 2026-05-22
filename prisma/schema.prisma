@@ -27,6 +27,31 @@ enum UserLifecycleStatus {
   INACTIVE
 }
 
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("FREE") // FREE | PRO | AGENCY
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users         User[]
+  clients       Client[]
+  tasks         Task[]
+  appointments  Appointment[]
+  activities    Activity[]
+  milestones    Milestone[]
+  notifications Notification[]
+  activityLogs  ActivityLog[]
+  contacts      Contact[]
+  chatMessages  ChatMessage[]
+  taskTemplates TaskTemplate[]
+  customRoles   CustomRole[]
+
+  @@map("workspaces")
+}
+
 model Account {
   id                String @id @default(cuid())
   userId            String @map("user_id")
@@ -72,6 +97,7 @@ model User {
   color           String               @default("#7c3aed")
   active          Boolean              @default(true)
   customRoleId    String?              @map("custom_role_id")
+  workspaceId     String?              @map("workspace_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -100,6 +126,7 @@ model User {
   activityComments       ActivityComment[]
   appointmentAssignments AppointmentAssignedUser[]
   presence               UserPresence?
+  workspace              Workspace?            @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
   @@map("users")
 }
@@ -119,10 +146,12 @@ model Notification {
   message   String
   type      String   @default("info")
   read      Boolean  @default(false)
-  link      String?
-  createdAt DateTime @default(now()) @map("created_at")
+  link        String?
+  workspaceId String?  @map("workspace_id")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
   @@map("notifications")
 }
@@ -133,10 +162,12 @@ model ActivityLog {
   action    String
   entity    String
   entityId  String   @map("entity_id")
-  details   String   @default("{}")
-  createdAt DateTime @default(now()) @map("created_at")
+  details     String   @default("{}")
+  workspaceId String?  @map("workspace_id")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  workspace Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
   @@map("activity_logs")
 }
@@ -158,6 +189,7 @@ model Task {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
+  workspaceId  String?   @map("workspace_id")
   parentTaskId String?   @map("parent_task_id")
   templateId   String?   @map("template_id")
 
@@ -171,6 +203,7 @@ model Task {
   template      TaskTemplate?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
   feedback      TaskFeedback[]
   deliverableLogs DeliverableLog[]
+  workspace       Workspace?        @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
   isDeliverable     Boolean  @default(false) @map("is_deliverable")
   deliverableStatus String?  @map("deliverable_status")
@@ -194,12 +227,14 @@ model Contact {
   status  String @default("lead")
   value   Float  @default(0)
   notes   String @default("")
-  source    String   @default("manual") // landing_video | landing_register | manual
+  source      String   @default("manual") // landing_video | landing_register | manual
+  workspaceId String?  @map("workspace_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
   @@map("contacts")
 }
@@ -213,10 +248,12 @@ model Client {
   company           String  @default("")
   phone             String  @default("")
   status            String  @default("active")
+  workspaceId       String? @map("workspace_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  workspace       Workspace?           @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignedManager User?                @relation("ClientManager", fields: [assignedManagerId], references: [id], onDelete: SetNull)
   activities      Activity[]
@@ -241,10 +278,12 @@ model Activity {
   createdByUserId String  @map("created_by_user_id")
   clientId        String? @map("client_id")
   visibleToClient Boolean @default(false) @map("visible_to_client")
+  workspaceId     String? @map("workspace_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  workspace     Workspace?             @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   assignedUser  User?                  @relation("AssignedActivities", fields: [assignedUserId], references: [id], onDelete: SetNull)
   createdBy     User                   @relation("CreatedActivities", fields: [createdByUserId], references: [id], onDelete: Cascade)
   client        Client?                @relation(fields: [clientId], references: [id], onDelete: SetNull)
@@ -275,10 +314,12 @@ model CustomRole {
   description String @default("")
   permissions Json   @default("{}")
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  workspaceId String?  @map("workspace_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  users User[]
+  users     User[]
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
   @@map("custom_roles")
 }
@@ -287,10 +328,12 @@ model ChatMessage {
   id        String   @id @default(cuid())
   userId    String   @map("user_id")
   message   String
-  room      String   @default("TEAM") // "TEAM" | clientId for per-client rooms
-  createdAt DateTime @default(now()) @map("created_at")
+  room        String   @default("TEAM") // "TEAM" | clientId for per-client rooms
+  workspaceId String?  @map("workspace_id")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   reactions ChatReaction[]
 
   @@map("chat_messages")
@@ -368,7 +411,9 @@ model Appointment {
   meetingEndedAt   DateTime? @map("meeting_ended_at")
 
   clientId    String?  @map("client_id")
+  workspaceId String?  @map("workspace_id")
   client      Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   assignedUsers AppointmentAssignedUser[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -519,11 +564,13 @@ model TaskTemplate {
   subtasks    Json     @default("[]") // [{title, description, visibility}]
   estimatedDays Int    @default(0) @map("estimated_days")
   isActive    Boolean  @default(true) @map("is_active")
+  workspaceId String?  @map("workspace_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks Task[]
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  tasks     Task[]
 
   @@map("task_templates")
 }
@@ -554,9 +601,11 @@ model Milestone {
   responsibleId    String?  @map("responsible_id")
   visibleToClient  Boolean  @default(true) @map("visible_to_client")
   comments         String   @default("")
+  workspaceId      String?  @map("workspace_id")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
-  client      Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   responsible User?  @relation("MilestoneResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
   tasks       Task[] @relation("MilestoneTasks")
   @@map("milestones")
