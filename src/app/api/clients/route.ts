@@ -57,8 +57,9 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-    const userId = (session.user as { id: string }).id;
-    const role   = session.user.role as string;
+    const userId      = (session.user as { id: string }).id;
+    const workspaceId = (session.user as any).workspaceId as string | null;
+    const role        = session.user.role as string;
     const { searchParams } = new URL(req.url);
     const status  = searchParams.get('status');
     const segment = searchParams.get('segment'); // prospect | unassigned | assigned
@@ -70,6 +71,7 @@ export async function GET(req: NextRequest) {
     }
 
     const where: Record<string, unknown> = {};
+    if (workspaceId) where.workspaceId = workspaceId;
 
     // ADMIN sees all; PM sees their assigned clients + ones they created
     if (role === 'PROJECT_MANAGER') {
@@ -135,8 +137,9 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-    const userId = (session.user as { id: string }).id;
-    const role   = session.user.role as string;
+    const userId      = (session.user as { id: string }).id;
+    const workspaceId = (session.user as any).workspaceId as string | null;
+    const role        = session.user.role as string;
 
     if (!MANAGE_ROLES.includes(role)) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
@@ -164,6 +167,7 @@ export async function POST(req: NextRequest) {
         company:  company  || '',
         phone:    phone    || '',
         status:   status   || 'active',
+        ...(workspaceId && { workspaceId }),
       },
       select: clientSelect,
     });

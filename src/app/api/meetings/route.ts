@@ -21,9 +21,10 @@ async function requireManager() {
 export async function GET(req: NextRequest) {
   const session = await requireManager();
   if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  const workspaceId = (session.user as any).workspaceId as string | null;
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
-  const where: Record<string, unknown> = { email: { contains: "@internal.boost" } };
+  const where: Record<string, unknown> = { email: { contains: "@internal.boost" }, ...(workspaceId && { workspaceId }) };
   if (status) where.status = status;
   const meetings = await db.appointment.findMany({ where, orderBy: { date: "asc" }, include });
   return NextResponse.json({ meetings });

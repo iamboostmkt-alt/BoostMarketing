@@ -53,9 +53,10 @@ export async function GET(req: NextRequest) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const userId    = user.id;
-  const role      = user.role;
-  const isAdmin   = role === "ADMIN";
+  const userId      = user.id;
+  const workspaceId = (user as any).workspaceId as string | null;
+  const role        = user.role;
+  const isAdmin     = role === "ADMIN";
   const isPM      = role === "PROJECT_MANAGER";
   const isManager = isAdmin || isPM;
   const isClient  = role === "CLIENT";
@@ -73,6 +74,7 @@ export async function GET(req: NextRequest) {
     const tasks = await db.task.findMany({
       where: {
         archivedAt: null,
+        ...(workspaceId && { workspaceId }),
         OR: [
           { userId },
           { assignedUserId: userId },
@@ -119,7 +121,7 @@ export async function GET(req: NextRequest) {
     }
 
     const clients = await db.client.findMany({
-      where: clientIds ? { id: { in: clientIds } } : {},
+      where: clientIds ? { id: { in: clientIds }, ...(workspaceId && { workspaceId }) } : { ...(workspaceId && { workspaceId }) },
       select: { id: true, name: true, company: true, assignedManagerId: true },
       orderBy: { name: "asc" },
     });
@@ -172,7 +174,7 @@ export async function GET(req: NextRequest) {
 
   if (scope === "all" && isManager) {
     // ADMIN ve todo — PM solo ve tareas de sus clientes asignados
-    let whereAll: any = { archivedAt: null };
+    let whereAll: any = { archivedAt: null, ...(workspaceId && { workspaceId }) };
     if (!isAdmin) {
       const managedClients = await db.client.findMany({
         where: { assignedManagerId: userId },
@@ -213,9 +215,10 @@ export async function GET(req: NextRequest) {
   // Fallback — mismo comportamiento que antes
   const tasks = await db.task.findMany({
     where: isClient
-      ? { assignedUserId: userId, archivedAt: null }
+      ? { assignedUserId: userId, archivedAt: null, ...(workspaceId && { workspaceId }) }
       : {
           archivedAt: null,
+          ...(workspaceId && { workspaceId }),
           OR: [
             { userId },
             { assignedUserId: userId },
@@ -255,9 +258,10 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const userId    = (session.user as any).id;
-  const isManager = MANAGER_ROLES.includes(session.user.role as string);
-  const rawBody   = await req.json();
+  const userId      = (session.user as any).id;
+  const workspaceId = (session.user as any).workspaceId as string | null;
+  const isManager   = MANAGER_ROLES.includes(session.user.role as string);
+  const rawBody     = await req.json();
   const validation = validateBody(TaskCreateSchema, rawBody);
   if (!validation.success) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
@@ -313,6 +317,7 @@ export async function POST(req: NextRequest) {
       references:     Array.isArray(references) ? references : [],
       parentTaskId:   parentTaskId || null,
       milestoneId:    milestoneId  || null,
+      ...(workspaceId && { workspaceId }),
       assignedUsers: { create: finalAssignedIds.map((uid: string) => ({ userId: uid })) },
     },
     include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },

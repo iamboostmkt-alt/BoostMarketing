@@ -10,7 +10,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId      = (session.user as any).id;
+    const workspaceId = (session.user as any).workspaceId as string | null;
     const { searchParams } = new URL(req.url);
     const page  = parseInt(searchParams.get('page')  || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -18,16 +19,16 @@ export async function GET(req: NextRequest) {
 
     const [notifications, total] = await Promise.all([
       db.notification.findMany({
-        where:   { userId },
+        where:   { userId, ...(workspaceId && { workspaceId }) },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      db.notification.count({ where: { userId } }),
+      db.notification.count({ where: { userId, ...(workspaceId && { workspaceId }) } }),
     ]);
 
     const unreadCount = await db.notification.count({
-      where: { userId, read: false },
+      where: { userId, read: false, ...(workspaceId && { workspaceId }) },
     });
 
     return NextResponse.json({
