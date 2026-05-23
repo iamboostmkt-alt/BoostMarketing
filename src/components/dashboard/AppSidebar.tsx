@@ -533,14 +533,16 @@ export default function AppSidebar() {
 
       {/* Workspace label */}
       {!collapsed && (
-        <div className="px-3 pt-1 pb-0.5">
+        <div className="px-3 pt-1 pb-0.5 flex items-center gap-1.5">
           <span className="text-[10px] uppercase tracking-widest text-white/20 font-medium">Workspace</span>
+          <span className="text-[10px] text-white/20">·</span>
+          <span className="text-[10px] text-white/35 font-medium truncate">{workspaceName}</span>
         </div>
       )}
       <div className="mx-2 mt-1">
         <WorkspaceSwitcher
-          name={workspaceName}
-          initial={workspaceName[0]?.toUpperCase() || "W"}
+          name={userName}
+          initial={initials}
           color={userColor}
           image={userImage}
           collapsed={collapsed}
