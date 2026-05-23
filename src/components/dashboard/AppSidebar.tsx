@@ -541,8 +541,8 @@ export default function AppSidebar() {
 
   const isClient = role === "CLIENT";
   const filteredNavItems = navItems.filter((item) => {
-    if (item.clientOnly) return isClient;
-    if (isClient) return item.clientOnly === true;
+    if (isClient) return !!item.clientOnly;
+    if (item.clientOnly) return false;
     return canAccessRoute(item.href, role);
   });
 
