@@ -37,7 +37,7 @@ import {
 import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
 import type { DashboardStats, Task, Appointment } from '@/lib/types';
 import {
-  statusLabels, statusColors, priorityLabels, priorityColors,
+  statusLabels, statusColors, priorityLabels, priorityColors, statusStyleMap,
 } from '@/lib/theme-maps';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
@@ -69,7 +69,7 @@ function RecentTasksList({ tasks }: { tasks: Task[] }) {
             )}
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[task.status] || 'status-pending'}`}>
+            <span className={"inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"}>
               {statusLabels[task.status] || task.status}
             </span>
             <span className={`text-xs font-medium hidden sm:inline ${priorityColors[task.priority] || 'text-white/40'}`}>

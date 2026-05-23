@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import UserAvatarStack from '@/components/dashboard/UserAvatarStack';
 import { useUploadThing } from '@/lib/uploadthing';
 import type { Task, TaskAssignee, ActivityAssignee } from '@/lib/types';
-import { statusColors, statusLabels, priorityColors, priorityLabels, taskStatuses } from '@/lib/theme-maps';
+import { statusColors, statusLabels, priorityColors, priorityLabels, taskStatuses, statusStyleMap } from '@/lib/theme-maps';
 import TaskForm from '@/components/dashboard/TaskForm';
 
 interface Attachment {
@@ -167,7 +167,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
   if (!task) return null;
 
   const [statusDropOpen, setStatusDropOpen] = React.useState(false);
-  const statusCls = statusColors[task.status] ?? 'status-pending';
+  const statusStyle = statusStyleMap[task.status] ?? { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' };
   const statusLbl = statusLabels[task.status] ?? task.status;
   const assignees = resolveAssignees(task);
   const overdue   = isOverdue(task.dueDate) && task.status !== 'completed';
@@ -192,7 +192,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                   <div className="relative">
                     <button
                       onClick={() => setStatusDropOpen(!statusDropOpen)}
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium cursor-pointer hover:opacity-80 transition-opacity ${statusCls}`}
+                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium cursor-pointer hover:opacity-80 transition-opacity" style={statusStyle}
                     >
                       {statusLbl}
                       <svg className="w-2.5 h-2.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
@@ -208,7 +208,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                             }}
                             className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s.id ? 'opacity-100' : 'opacity-60'}`}
                           >
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColors[s.id] || 'status-pending'}`}>
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s.id] || { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}>
                               {s.label}
                             </span>
                             {task.status === s.id && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
