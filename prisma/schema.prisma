@@ -214,6 +214,13 @@ model Task {
   publishedAt       DateTime? @map("published_at")
   milestone         Milestone? @relation("MilestoneTasks", fields: [milestoneId], references: [id], onDelete: SetNull)
 
+  @@index([workspaceId, status])
+  @@index([assignedUserId, status])
+  @@index([clientId, status])
+  @@index([userId, status])
+  @@index([dueDate, status])
+  @@index([parentTaskId])
+  @@index([workspaceId, assignedUserId])
   @@map("tasks")
 }
 
