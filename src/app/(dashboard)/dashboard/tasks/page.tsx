@@ -350,12 +350,20 @@ function TasksContent() {
   }
 
   async function handleStatusChange(taskId: string, newStatus: string) {
+    // Optimistic update — UI first, API after
+    const prevMy  = myTasks;
+    const prevAll = allTasks;
+    setMyTasks(prev  => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+    setAllTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
     try {
       const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: taskId, status: newStatus }) });
       if (!res.ok) throw new Error();
-      setMyTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-      setAllTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-    } catch { toast.error('Error al mover tarea'); }
+    } catch {
+      // Revert on error
+      setMyTasks(prevMy);
+      setAllTasks(prevAll);
+      toast.error('Error al mover tarea');
+    }
   }
 
   async function handleMarkPending(task: Task) {
