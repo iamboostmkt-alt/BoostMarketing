@@ -194,12 +194,12 @@ function WorkspaceSwitcher({
   name, initial, color, image, collapsed, role, workspaceName,
 }: {
   name: string; initial: string; color: string; image?: string | null;
-  collapsed: boolean; role: string; workspaceName: string;
+  collapsed: boolean; role?: string; workspaceName: string;
 }) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
-  const isAdmin = role === "ADMIN";
-  const isManager = ["ADMIN", "PROJECT_MANAGER"].includes(role);
+  const isAdmin = role === "ADMIN" || role === "admin";
+  const isManager = ["ADMIN", "PROJECT_MANAGER"].includes(role ?? "");
 
   React.useEffect(() => {
     function handleClick(e: MouseEvent) {
