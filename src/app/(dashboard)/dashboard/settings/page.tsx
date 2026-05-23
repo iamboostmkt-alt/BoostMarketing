@@ -82,11 +82,15 @@ export default function SettingsPage() {
   const [logoPreview, setLogoPreview] = useState('');
   const [savingBrand, setSavingBrand] = useState(false);
   const [savedBrand, setSavedBrand] = useState(false);
+  const [workspaceName, setWorkspaceName] = useState('');
 
   useEffect(() => {
     fetch('/api/cms/settings').then(r => r.json()).then(d => {
       if (d.settings?.logoUrl) { setLogoUrl(d.settings.logoUrl); setLogoPreview(d.settings.logoUrl); }
       if (d.settings?.agencyName) setBrandName(d.settings.agencyName);
+    }).catch(() => {});
+    fetch('/api/workspace/me').then(r => r.json()).then(d => {
+      if (d.workspace?.name) setWorkspaceName(d.workspace.name);
     }).catch(() => {});
 
     async function fetchProfile() {
@@ -169,7 +173,10 @@ export default function SettingsPage() {
   async function handleSaveBrand() {
     setSavingBrand(true);
     try {
-      await fetch('/api/cms/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logoUrl, agencyName: brandName }) });
+      await Promise.all([
+        fetch('/api/cms/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logoUrl, agencyName: brandName }) }),
+        workspaceName ? fetch('/api/workspace/update', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: workspaceName }) }) : Promise.resolve(),
+      ]);
       setSavedBrand(true); setTimeout(() => setSavedBrand(false), 2000);
       toast.success('Configuracion guardada');
     } finally { setSavingBrand(false); }
@@ -554,7 +561,12 @@ export default function SettingsPage() {
                 </label>
               </div>
               <div className="space-y-2">
-                <label className="text-white/70 text-sm font-medium">Nombre de la empresa</label>
+                <label className="text-white/70 text-sm font-medium">Nombre del workspace</label>
+                <p className="text-xs text-white/30">Se muestra en el sidebar como identificador de tu agencia</p>
+                <Input value={workspaceName} onChange={e => setWorkspaceName(e.target.value)} className="bg-white/[0.04] border-white/[0.08] text-white max-w-sm" placeholder="BoostMarketing" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-white/70 text-sm font-medium">Nombre de la empresa (emails)</label>
                 <Input value={brandName} onChange={e => setBrandName(e.target.value)} className="bg-white/[0.04] border-white/[0.08] text-white max-w-sm" placeholder="BoostMarketing" />
               </div>
               <div className="space-y-2">
