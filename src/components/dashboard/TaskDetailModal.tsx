@@ -164,9 +164,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
     }
   }
 
-  if (!task) return null;
-
   const [statusDropOpen, setStatusDropOpen] = React.useState(false);
+
+  if (!task) return null;
   const statusStyle = statusStyleMap[task.status] ?? { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' };
   const statusLbl = statusLabels[task.status] ?? task.status;
   const assignees = resolveAssignees(task);
