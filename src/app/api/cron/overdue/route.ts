@@ -11,6 +11,30 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const ahora = new Date();
+  const manana = new Date(ahora); manana.setDate(manana.getDate() + 1);
+  const pasadoManana = new Date(ahora); pasadoManana.setDate(pasadoManana.getDate() + 2);
+
+  // REGLA 1: Subir prioridad a urgent si vence hoy o manana
+  await db.task.updateMany({
+    where: {
+      dueDate: { gte: ahora, lte: manana },
+      status: { notIn: ["completed", "cancelled", "approved"] },
+      priority: { not: "urgent" },
+      deletedAt: null,
+    },
+    data: { priority: "urgent" },
+  });
+
+  // REGLA 2: Subir prioridad a high si vence en 2 dias
+  await db.task.updateMany({
+    where: {
+      dueDate: { gt: manana, lte: pasadoManana },
+      status: { notIn: ["completed", "cancelled", "approved"] },
+      priority: { notIn: ["urgent", "high"] },
+      deletedAt: null,
+    },
+    data: { priority: "high" },
+  });
 
   const tareasVencidas = await db.task.findMany({
     where: {
