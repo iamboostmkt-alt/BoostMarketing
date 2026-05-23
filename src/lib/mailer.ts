@@ -39,7 +39,7 @@ function btn(url: string, label: string, color: string) {
 }
 
 function infoBox(content: string, color: string) {
-  return `<div style="background:rgba(255,255,255,0.04);border-left:3px solid ${color};border-radius:0 8px 8px 0;padding:16px 20px;margin:16px 0;">${content}</div>`;
+  return `<div style="background:#f8f9fa;border-left:3px solid ${color};border-radius:0 8px 8px 0;padding:16px 20px;margin:16px 0;">${content}</div>`;
 }
 
 function statusBadge(status: string, color: string) {
@@ -53,11 +53,11 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "
 export function templateNuevaTarea(title: string, description: string, dueDate?: string, b?: Branding) {
   const color = b?.brandColor || '#7c3aed';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">📌 Nueva tarea asignada</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">Se te ha asignado una nueva tarea</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">📌 Nueva tarea asignada</h2>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">Se te ha asignado una nueva tarea</p>
     ${infoBox(`
-      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">${title}</p>
-      <p style="margin:0;color:rgba(255,255,255,0.5);font-size:14px;">${description || 'Sin descripción'}</p>
+      <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">${title}</p>
+      <p style="margin:0;color:#6b7280;font-size:14px;">${description || 'Sin descripción'}</p>
       ${dueDate ? `<p style="margin:8px 0 0;color:#f59e0b;font-size:13px;">⏰ Vence: ${dueDate}</p>` : ''}
     `, color)}
     ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
@@ -71,10 +71,10 @@ export function templateCambioEstado(title: string, oldStatus: string, newStatus
   const oldLabel = labels[oldStatus] || oldStatus;
   const newLabel = labels[newStatus] || newStatus;
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🔄 Estado actualizado</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">${title}</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">🔄 Estado actualizado</h2>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">${title}</p>
     ${infoBox(`
-      <p style="margin:0;color:rgba(255,255,255,0.5);font-size:14px;">
+      <p style="margin:0;color:#6b7280;font-size:14px;">
         ${statusBadge(oldLabel, '#6b7280')} &nbsp;→&nbsp; ${statusBadge(newLabel, color)}
       </p>
     `, color)}
@@ -85,12 +85,12 @@ export function templateCambioEstado(title: string, oldStatus: string, newStatus
 export function templateRecordatorio(title: string, dueDate: string, horasRestantes: number, b?: Branding) {
   const color = '#f59e0b';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">⏰ Recordatorio de tarea</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">Una tarea está próxima a vencer</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">⏰ Recordatorio de tarea</h2>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">Una tarea está próxima a vencer</p>
     ${infoBox(`
-      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">${title}</p>
+      <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">${title}</p>
       <p style="margin:0;color:${color};font-weight:700;font-size:18px;">Vence en ${horasRestantes} hora${horasRestantes !== 1 ? 's' : ''}</p>
-      <p style="margin:6px 0 0;color:rgba(255,255,255,0.4);font-size:13px;">Fecha límite: ${dueDate}</p>
+      <p style="margin:6px 0 0;color:#9ca3af;font-size:13px;">Fecha límite: ${dueDate}</p>
     `, color)}
     ${btn(`${APP_URL}/dashboard/tasks`, 'Completar Tarea', color)}`;
   return b ? emailLayout(content, b) : content;
@@ -100,11 +100,11 @@ export function templateBienvenida(name: string, b?: Branding) {
   const color = b?.brandColor || '#7c3aed';
   const brandName = b?.brandName || 'BoostMarketing';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:22px;">👋 Bienvenido, ${name}!</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 24px;">Tu cuenta en ${brandName} ha sido creada exitosamente.</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:22px;">👋 Bienvenido, ${name}!</h2>
+    <p style="color:#6b7280;margin:0 0 24px;">Tu cuenta en ${brandName} ha sido creada exitosamente.</p>
     ${infoBox(`
-      <p style="margin:0 0 8px;color:white;font-weight:600;">¿Qué puedes hacer?</p>
-      <p style="margin:0;color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;">
+      <p style="margin:0 0 8px;color:#18181b;font-weight:600;">¿Qué puedes hacer?</p>
+      <p style="margin:0;color:#6b7280;font-size:14px;line-height:1.8;">
         ✅ Gestionar tus tareas asignadas<br/>
         📊 Ver el estado de proyectos<br/>
         💬 Colaborar con tu equipo<br/>
@@ -119,7 +119,7 @@ export function templateNuevoComentario(taskTitle: string, authorName: string, c
   const color = '#0ea5e9';
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">💬 Nuevo comentario</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">En la tarea: <strong style="color:white;">${taskTitle}</strong></p>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">En la tarea: <strong style="color:white;">${taskTitle}</strong></p>
     ${infoBox(`
       <p style="margin:0 0 6px;color:${color};font-weight:600;font-size:13px;">${authorName} comentó:</p>
       <p style="margin:0;color:rgba(255,255,255,0.8);">${comment}</p>
@@ -132,9 +132,9 @@ export function templateTareaCompletada(taskTitle: string, completedBy: string, 
   const color = '#10b981';
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">🎉 Tarea completada</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;"><strong style="color:white;">${completedBy}</strong> marcó una tarea como completada</p>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;"><strong style="color:white;">${completedBy}</strong> marcó una tarea como completada</p>
     ${infoBox(`
-      <p style="margin:0;color:white;font-weight:600;font-size:16px;">✅ ${taskTitle}</p>
+      <p style="margin:0;color:#18181b;font-weight:600;font-size:16px;">✅ ${taskTitle}</p>
     `, color)}
     <div style="text-align:center;margin:20px 0;padding:20px;background:rgba(16,185,129,0.08);border-radius:12px;">
       <p style="margin:0;color:${color};font-weight:700;font-size:18px;">¡Excelente trabajo! 🚀</p>
@@ -146,12 +146,12 @@ export function templateTareaCompletada(taskTitle: string, completedBy: string, 
 export function templateTareaVencida(taskTitle: string, dueDate: string, b?: Branding) {
   const color = '#ef4444';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🚨 Tarea vencida</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">Una tarea ha superado su fecha límite</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">🚨 Tarea vencida</h2>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">Una tarea ha superado su fecha límite</p>
     ${infoBox(`
-      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">${taskTitle}</p>
+      <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">${taskTitle}</p>
       <p style="margin:0;color:${color};font-weight:600;">⚠️ Venció el ${dueDate}</p>
-      <p style="margin:6px 0 0;color:rgba(255,255,255,0.4);font-size:13px;">Actualiza el estado o contacta a tu manager.</p>
+      <p style="margin:6px 0 0;color:#9ca3af;font-size:13px;">Actualiza el estado o contacta a tu manager.</p>
     `, color)}
     ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
   return b ? emailLayout(content, b) : content;
@@ -164,7 +164,7 @@ export function templateResumenSemanal(name: string, pendientes: number, enProgr
     const sl: Record<string,string> = { completed:'Completada', in_progress:'En progreso', pending:'Pendiente' };
     return `<tr>
       <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.8);font-size:14px;">${t.title}</td>
-      <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);font-size:13px;">${t.dueDate || 'Sin fecha'}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:#9ca3af;font-size:13px;">${t.dueDate || 'Sin fecha'}</td>
       <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);">${statusBadge(sl[t.status]||t.status, sc[t.status]||'#6b7280')}</td>
     </tr>`;
   }).join('');
@@ -194,9 +194,9 @@ export function templateResetPassword(name: string, resetUrl: string, b?: Brandi
   const color = b?.brandColor || '#7c3aed';
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">🔐 Restablecer contraseña</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${name}</strong>, recibimos una solicitud para restablecer tu contraseña.</p>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${name}</strong>, recibimos una solicitud para restablecer tu contraseña.</p>
     ${btn(resetUrl, 'Restablecer Contraseña', color)}
-    ${infoBox(`<p style="margin:0;color:rgba(255,255,255,0.4);font-size:13px;">⏰ Este enlace expira en <strong style="color:white;">1 hora</strong>.<br/>Si no solicitaste esto, ignora este mensaje.</p>`, '#6b7280')}`;
+    ${infoBox(`<p style="margin:0;color:#9ca3af;font-size:13px;">⏰ Este enlace expira en <strong style="color:white;">1 hora</strong>.<br/>Si no solicitaste esto, ignora este mensaje.</p>`, '#6b7280')}`;
   return b ? emailLayout(content, b) : content;
 }
 
@@ -204,7 +204,7 @@ export function templateVideollamadaConfirmada(clientName: string, date: string,
   const color = '#0ea5e9';
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">🎥 Videollamada confirmada</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong>, tu videollamada ha sido confirmada.</p>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong>, tu videollamada ha sido confirmada.</p>
     ${infoBox(`
       <p style="margin:0 0 8px;color:rgba(255,255,255,0.4);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">📅 Detalles de la reunión</p>
       <p style="margin:0 0 6px;color:white;font-size:16px;font-weight:600;">${date}</p>
@@ -219,11 +219,11 @@ export function templateNuevaCita(clientName: string, clientEmail: string, date:
   const color = '#f59e0b';
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">📆 Nueva cita agendada</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Un prospecto agendó una videollamada</p>
+    <p style="color:#6b7280;margin:0 0 20px;">Un prospecto agendó una videollamada</p>
     ${infoBox(`
-      <p style="margin:0 0 8px;color:white;"><span style="color:rgba(255,255,255,0.4);font-size:13px;">👤 NOMBRE</span><br/><strong>${clientName}</strong></p>
-      <p style="margin:0 0 8px;color:white;"><span style="color:rgba(255,255,255,0.4);font-size:13px;">📧 EMAIL</span><br/><strong>${clientEmail}</strong></p>
-      <p style="margin:0 ${notes ? '0 8px' : ''};color:white;"><span style="color:rgba(255,255,255,0.4);font-size:13px;">📅 FECHA</span><br/><strong>${date}</strong></p>
+      <p style="margin:0 0 8px;color:white;"><span style="color:#9ca3af;font-size:13px;">👤 NOMBRE</span><br/><strong>${clientName}</strong></p>
+      <p style="margin:0 0 8px;color:white;"><span style="color:#9ca3af;font-size:13px;">📧 EMAIL</span><br/><strong>${clientEmail}</strong></p>
+      <p style="margin:0 ${notes ? '0 8px' : ''};color:white;"><span style="color:#9ca3af;font-size:13px;">📅 FECHA</span><br/><strong>${date}</strong></p>
       ${notes ? `<p style="margin:0;color:rgba(255,255,255,0.6);font-size:14px;">📝 ${notes}</p>` : ''}
     `, color)}
     ${btn(`${APP_URL}/dashboard/calendar`, 'Ver en Dashboard', color)}`;
@@ -234,7 +234,7 @@ export function templateCitaCancelada(clientName: string, date: string, b?: Bran
   const color = '#ef4444';
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">❌ Cita cancelada</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong></p>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong></p>
     ${infoBox(`<p style="margin:0;color:rgba(255,255,255,0.7);">Tu cita del <strong style="color:white;">${date}</strong> ha sido cancelada.<br/><span style="font-size:13px;color:rgba(255,255,255,0.4);">Por favor contáctanos para reagendar.</span></p>`, color)}
     ${btn(APP_URL, 'Reagendar', color)}`;
   return b ? emailLayout(content, b) : content;
@@ -255,11 +255,11 @@ export function templateFeedbackCliente(
   const cfg = configs[type];
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">${cfg.emoji} ${cfg.title}</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">
       <strong style="color:white;">${clientName}</strong> ${cfg.label} una entrega
     </p>
     ${infoBox(`
-      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">${taskTitle}</p>
+      <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">${taskTitle}</p>
       ${message ? `<p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:13px;">"${message}"</p>` : ''}
     `, cfg.color)}
     ${btn(`${APP_URL}/dashboard/tasks`, 'Ver en Dashboard', cfg.color)}`;
@@ -269,13 +269,13 @@ export function templateFeedbackCliente(
 export function templateTareaEditada(taskTitle: string, cambios: Array<{campo: string, antes: string, despues: string}>, b?: Branding) {
   const color = b?.brandColor || '#6366f1';
   const filas = cambios.map(c => `<tr>
-    <td style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:13px;">${c.campo}</td>
+    <td style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:#6b7280;font-size:13px;">${c.campo}</td>
     <td style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:#ef4444;font-size:13px;text-decoration:line-through;">${c.antes}</td>
     <td style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:#10b981;font-size:13px;font-weight:600;">${c.despues}</td>
   </tr>`).join('');
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">✏️ Tarea actualizada</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;"><strong style="color:white;">${taskTitle}</strong></p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">✏️ Tarea actualizada</h2>
+    <p style="color:#6b7280;margin:0 0 20px;"><strong style="color:white;">${taskTitle}</strong></p>
     <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
       <thead><tr style="background:rgba(255,255,255,0.04);">
         <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">CAMPO</th>
@@ -292,9 +292,9 @@ export function templateNuevaReunion(userName: string, meetingTitle: string, dat
   const color = b?.brandColor || '#7c3aed';
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">📅 Nueva reunión asignada</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${userName}</strong>, se te asignó a una reunión</p>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${userName}</strong>, se te asignó a una reunión</p>
     ${infoBox(`
-      <p style="margin:0 0 6px;color:white;font-weight:600;font-size:16px;">🗓 ${meetingTitle}</p>
+      <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">🗓 ${meetingTitle}</p>
       <p style="margin:0;color:rgba(255,255,255,0.6);font-size:14px;">${date}</p>
       ${meetUrl ? `<p style="margin:6px 0 0;"><a href="${meetUrl}" style="color:${color};font-size:14px;">${meetUrl}</a></p>` : ''}
     `, color)}
@@ -307,8 +307,8 @@ export function templateRecordatorioVideollamada(params: { name: string; dateStr
   const color = '#0ea5e9';
   const label = minutesBefore >= 1440 ? '24 horas' : minutesBefore >= 60 ? '1 hora' : '15 minutos';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">⏰ Recordatorio de videollamada</h2>
-    <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;">Hola <strong style="color:white;">${name}</strong>, tu reunión comienza en <strong style="color:${color};">${label}</strong></p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">⏰ Recordatorio de videollamada</h2>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${name}</strong>, tu reunión comienza en <strong style="color:${color};">${label}</strong></p>
     ${infoBox(`
       <p style="margin:0 0 6px;color:rgba(255,255,255,0.4);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">📅 Fecha y hora</p>
       <p style="margin:0;color:white;font-size:16px;font-weight:600;">${dateStr}</p>
