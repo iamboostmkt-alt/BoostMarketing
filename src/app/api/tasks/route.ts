@@ -12,7 +12,7 @@ import {
   templateTareaEditada,
   templateEntregaListaParaRevisar,
 } from "@/lib/mailer";
-import { getBranding } from "@/lib/branding";
+import { getBranding, type Branding } from "@/lib/branding";
 import { getSessionUser } from "@/core/auth/get-session-user";
 import { AccessControl } from "@/core/access/access-control";
 import { TaskCreateSchema, TaskUpdateSchema, validateBody } from "@/lib/schemas";
@@ -437,7 +437,8 @@ export async function PUT(req: NextRequest) {
     }
     const emails = await getAssignedEmails(task.id);
     for (const email of emails) {
-      await sendMail(email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending"));
+      const _branding = await getBranding();
+      await sendMail(email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending", _branding));
     }
     if (task.status === "completed") {
       for (const email of emails) {
