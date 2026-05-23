@@ -52,7 +52,7 @@ export default function TopNav() {
   };
 
   return (
-    <header className="h-12 border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #0d0b12 40%, #0f0b18 70%, #0a0a0a 100%)" }}>
+    <header className="h-12 border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #1a0a2e 40%, #2d0a4e 50%, #1a0a2e 60%, #0a0a0a 85%, #0a0a0a 100%)" }}>
       <div className="flex items-center h-full px-4 md:px-6 gap-3">
 
         <Button
@@ -65,9 +65,7 @@ export default function TopNav() {
         </Button>
 
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-semibold text-white/80 truncate">{workspaceName}</span>
-          <span className="text-white/20 hidden sm:inline">·</span>
-          <span className="text-sm text-white/40 truncate hidden sm:inline">{getPageTitle()}</span>
+          <span className="text-sm font-semibold text-white/85 truncate">{workspaceName}</span>
         </div>
 
         <div className="flex-1 max-w-sm mx-auto hidden sm:block">
