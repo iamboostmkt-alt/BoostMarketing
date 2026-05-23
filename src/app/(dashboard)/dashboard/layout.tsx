@@ -42,7 +42,7 @@ export default function DashboardLayout({
       <RealtimeProvider>
       <TooltipProvider delayDuration={0}>
         <SidebarProvider>
-          <div className="flex h-screen overflow-hidden bg-[#0b0b0f]">
+          <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #0d0b12 40%, #0f0b18 70%, #0a0a0a 100%)" }}>
             {/* Sidebar */}
             <AppSidebar />
 
