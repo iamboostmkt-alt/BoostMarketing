@@ -107,50 +107,81 @@ function UserDropdown({
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              "absolute z-50 mt-2 w-52 overflow-hidden rounded-xl border border-white/[0.08] bg-[#16161e] p-1 shadow-2xl",
+              "absolute z-50 mt-2 w-56 overflow-hidden rounded-xl border border-white/[0.08] bg-[#16161e] shadow-2xl",
               collapsed ? "left-full ml-2 top-0" : "right-0 top-full"
             )}
           >
-            <button
-              onClick={() => { setOpen(false); router.push("/dashboard/profile"); }}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
-            >
-              <User className="h-4 w-4" strokeWidth={1.5} />
-              <span>Perfil</span>
-            </button>
-            <button
-              onClick={() => { setOpen(false); router.push("/dashboard/settings"); }}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
-            >
-              <Settings className="h-4 w-4" strokeWidth={1.5} />
-              <span>Ajustes</span>
-            </button>
-            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
-              <Palette className="h-4 w-4" strokeWidth={1.5} />
-              <span className="flex-1 text-left">Tema</span>
-              <ChevronRight className="h-4 w-4 text-white/30" />
-            </button>
-            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
-              <Zap className="h-4 w-4" strokeWidth={1.5} />
-              <span>Upgrade</span>
-            </button>
-            <div className="my-1 h-px bg-white/[0.06]" />
-            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
-              <Command className="h-4 w-4" strokeWidth={1.5} />
-              <span>Atajos de teclado</span>
-            </button>
-            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
-              <HelpCircle className="h-4 w-4" strokeWidth={1.5} />
-              <span>Centro de ayuda</span>
-            </button>
-            <div className="my-1 h-px bg-white/[0.06]" />
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-red-500/10 hover:text-red-400"
-            >
-              <LogOut className="h-4 w-4" strokeWidth={1.5} />
-              <span>Cerrar sesión</span>
-            </button>
+            {/* Header: Avatar + nombre + rol */}
+            <div className="flex items-center gap-3 px-3 py-3 border-b border-white/[0.06]">
+              <Avatar className="h-9 w-9 shrink-0">
+                <AvatarImage src={user.image ?? undefined} alt={user.name} />
+                <AvatarFallback
+                  style={{ backgroundColor: (user.color || "#7c3aed") + "33", color: user.color || "#a78bfa" }}
+                  className="text-xs font-semibold"
+                >
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white/90 truncate">{user.name}</p>
+                {user.customRoleLabel ? (
+                  <span
+                    className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium mt-0.5"
+                    style={{ backgroundColor: (user.customRoleColor || "#7c3aed") + "22", color: user.customRoleColor || "#a78bfa" }}
+                  >
+                    {user.customRoleLabel}
+                  </span>
+                ) : (
+                  <p className="text-[11px] text-white/40 truncate">Usuario</p>
+                )}
+              </div>
+            </div>
+
+            {/* Menu items */}
+            <div className="p-1">
+              <button
+                onClick={() => { setOpen(false); router.push("/dashboard/settings"); }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
+              >
+                <User className="h-4 w-4" strokeWidth={1.5} />
+                <span>Mi perfil</span>
+              </button>
+              <button
+                onClick={() => { setOpen(false); router.push("/dashboard/settings"); }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
+              >
+                <Settings className="h-4 w-4" strokeWidth={1.5} />
+                <span>Ajustes</span>
+              </button>
+              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
+                <Palette className="h-4 w-4" strokeWidth={1.5} />
+                <span className="flex-1 text-left">Apariencia</span>
+                <ChevronRight className="h-3.5 w-3.5 text-white/30" />
+              </button>
+              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
+                <Zap className="h-4 w-4" strokeWidth={1.5} />
+                <span>Upgrade</span>
+                <span className="ml-auto text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">PRO</span>
+              </button>
+              <div className="my-1 h-px bg-white/[0.06]" />
+              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
+                <HelpCircle className="h-4 w-4" strokeWidth={1.5} />
+                <span>Soporte</span>
+              </button>
+              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
+                <Command className="h-4 w-4" strokeWidth={1.5} />
+                <span>Atajos</span>
+                <span className="ml-auto text-[10px] text-white/25 font-mono">⌘K</span>
+              </button>
+              <div className="my-1 h-px bg-white/[0.06]" />
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-red-500/10 hover:text-red-400"
+              >
+                <LogOut className="h-4 w-4" strokeWidth={1.5} />
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -239,7 +270,7 @@ function NavItemButton({
       {isActive && (
         <motion.div
           layoutId="nav-active-bg"
-          className="absolute inset-0 rounded-lg bg-white/[0.06]"
+          className="absolute inset-0 rounded-lg bg-[#1a1a1a]"
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
         />
       )}
@@ -249,7 +280,7 @@ function NavItemButton({
         <div
           className="pointer-events-none absolute inset-y-0 right-0 w-20 rounded-r-lg"
           style={{
-            background: "linear-gradient(to left, rgba(124,58,237,0.35) 0%, rgba(124,58,237,0.08) 60%, transparent 100%)",
+            background: "linear-gradient(to left, rgba(124,58,237,0.25) 0%, rgba(124,58,237,0.05) 50%, transparent 100%)",
           }}
         />
       )}
@@ -443,7 +474,7 @@ export default function AppSidebar() {
   const userColor       = (session?.user as any)?.color || "#7c3aed";
   const customRoleLabel = (session?.user as any)?.customRoleLabel ?? null;
   const customRoleColor = (session?.user as any)?.customRoleColor ?? "#7c3aed";
-  const workspaceName   = (session?.user as any)?.workspaceName || (session?.user?.name ? session.user.name.split(" ")[0] : "Boost");
+  const workspaceName   = (session?.user as any)?.workspaceName || "Mi Workspace";
 
   const workspaceInitial = workspaceName[0]?.toUpperCase() || "W";
 
@@ -460,7 +491,7 @@ export default function AppSidebar() {
       <div className="flex h-14 items-center justify-between px-3">
         {!collapsed ? (
           <>
-            <span className="text-sm font-semibold text-white/90">{workspaceName}</span>
+            <span className="text-sm font-semibold text-white/90">Weeklink</span>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -490,10 +521,10 @@ export default function AppSidebar() {
         )}
       </div>
 
-      {/* Weeklink brand + Workspace switcher */}
+      {/* Workspace label */}
       {!collapsed && (
         <div className="px-3 pt-1 pb-0.5">
-          <span className="text-[10px] uppercase tracking-widest text-white/20 font-medium">Weeklink</span>
+          <span className="text-[10px] uppercase tracking-widest text-white/20 font-medium">Workspace</span>
         </div>
       )}
       <div className="mx-2 mt-1">
