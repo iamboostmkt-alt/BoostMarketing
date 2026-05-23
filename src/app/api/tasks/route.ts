@@ -442,7 +442,7 @@ export async function PUT(req: NextRequest) {
     }
     if (task.status === "completed") {
       for (const email of emails) {
-        sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName)).catch(console.error);
+        getBranding().then(b => sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName, b))).catch(console.error);
       }
     }
 
@@ -548,7 +548,7 @@ export async function PUT(req: NextRequest) {
         data: { userId: newAssignee.id, message: `${userName} te asigno la tarea: "${task.title}"`, type: "task", link: "/dashboard/tasks" },
       });
       if (newAssignee.email) {
-        sendMail(newAssignee.email, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined)).catch(console.error);
+        getBranding().then(b => sendMail(newAssignee.email, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b))).catch(console.error);
       }
     }
   }
@@ -574,7 +574,7 @@ export async function PUT(req: NextRequest) {
     }
     const emails = await getAssignedEmails(task.id);
     for (const email of emails) {
-      sendMail(email, "Tu tarea fue editada", templateTareaEditada(task.title, cambios)).catch(console.error);
+      getBranding().then(b => sendMail(email, "Tu tarea fue editada", templateTareaEditada(task.title, cambios, b))).catch(console.error);
     }
   }
 
