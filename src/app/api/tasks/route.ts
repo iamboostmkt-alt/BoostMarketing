@@ -327,9 +327,13 @@ export async function POST(req: NextRequest) {
 
   const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined;
   const branding = await getBranding();
-  const emails = await getAssignedEmails(task.id);
-  for (const email of emails) {
-    await sendMail(email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding));
+  // Obtener asignados con nombre para personalizar email
+  const assignedWithNames = [
+    ...(task.assignedUser ? [{ email: task.assignedUser.email, name: task.assignedUser.name }] : []),
+    ...(task.assignedUsers?.map((au: any) => ({ email: au.user?.email, name: au.user?.name })) ?? []),
+  ].filter((u, i, arr) => u.email && arr.findIndex(x => x.email === u.email) === i);
+  for (const u of assignedWithNames) {
+    if (u.email) await sendMail(u.email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding, u.name ?? undefined));
   }
 
   await logAction({ userId, action: "TASK_CREATED", entity: "task", entityId: task.id, details: { title: task.title } });
@@ -442,7 +446,7 @@ export async function PUT(req: NextRequest) {
     }
     if (task.status === "completed") {
       for (const email of emails) {
-        getBranding().then(b => sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName, b))).catch(console.error);
+        getBranding().then(b => sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName, b, userName))).catch(console.error);
       }
     }
 
@@ -548,7 +552,7 @@ export async function PUT(req: NextRequest) {
         data: { userId: newAssignee.id, message: `${userName} te asigno la tarea: "${task.title}"`, type: "task", link: "/dashboard/tasks" },
       });
       if (newAssignee.email) {
-        getBranding().then(b => sendMail(newAssignee.email, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b))).catch(console.error);
+        getBranding().then(b => sendMail(newAssignee.email!, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b, newAssignee.name ?? undefined))).catch(console.error);
       }
     }
   }
