@@ -156,7 +156,7 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`space-y-2 min-h-[120px] rounded-xl p-2 transition-colors duration-150 bg-white/[0.02] ${
+                    className={`space-y-2 min-h-[calc(100vh-320px)] rounded-xl p-2 transition-colors duration-150 bg-white/[0.02] ${
                       snapshot.isDraggingOver ? `ring-1 ${group.glow} bg-white/[0.04]` : ''
                     }`}
                   >
