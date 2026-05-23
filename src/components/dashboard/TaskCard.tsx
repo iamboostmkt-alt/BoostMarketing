@@ -17,7 +17,22 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Task, TaskAssignee } from "@/lib/types";
-import { statusColors, statusLabels } from "@/lib/theme-maps";
+import { statusLabels } from "@/lib/theme-maps";
+
+// ─── Status inline styles (Tailwind v4 compatible) ───────────────────────────
+const statusStyleMap: Record<string, { background: string; color: string }> = {
+  draft:             { background: 'rgba(226,232,240,0.08)', color: '#64748b' },
+  pending:           { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' },
+  in_progress:       { background: 'rgba(56,189,248,0.15)',  color: '#38BDF8' },
+  editing:           { background: 'rgba(56,189,248,0.15)',  color: '#38BDF8' },
+  internal_review:   { background: 'rgba(167,139,250,0.15)', color: '#a78bfa' },
+  client_review:     { background: 'rgba(56,189,248,0.15)',  color: '#38BDF8' },
+  changes_requested: { background: 'rgba(234,179,8,0.15)',   color: '#EAB308' },
+  approved:          { background: 'rgba(34,197,94,0.15)',   color: '#22C55E' },
+  scheduled:         { background: 'rgba(34,197,94,0.13)',   color: '#22C55E' },
+  published:         { background: 'rgba(34,197,94,0.13)',   color: '#22C55E' },
+  completed:         { background: 'rgba(34,197,94,0.15)',   color: '#22C55E' },
+};
 
 // ─── Priority config ──────────────────────────────────────────────────────────
 const priorityDot: Record<string, string> = {
