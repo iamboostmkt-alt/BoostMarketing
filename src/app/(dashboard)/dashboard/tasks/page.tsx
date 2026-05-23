@@ -50,8 +50,9 @@ const BOARD_GROUPS = [
     icon: '○',
     statuses: ['draft', 'pending'],
     dropStatus: 'pending',
-    color: 'bg-white/40',
-    glow: 'bg-white/[0.04] ring-white/10',
+    color: 'bg-white/60',
+    glow: 'bg-white/[0.04] ring-white/15',
+    hex: '#ffffff',
   },
   {
     id: 'in_progress',
@@ -59,8 +60,9 @@ const BOARD_GROUPS = [
     icon: '◑',
     statuses: ['in_progress', 'changes_requested'],
     dropStatus: 'in_progress',
-    color: 'bg-blue-400',
-    glow: 'bg-blue-400/[0.06] ring-blue-400/20',
+    color: 'bg-[#48CAE4]',
+    glow: 'bg-[#48CAE4]/[0.06] ring-[#48CAE4]/20',
+    hex: '#48CAE4',
   },
   {
     id: 'review',
@@ -68,8 +70,9 @@ const BOARD_GROUPS = [
     icon: '◷',
     statuses: ['internal_review', 'client_review'],
     dropStatus: 'client_review',
-    color: 'bg-violet-400',
-    glow: 'bg-violet-400/[0.06] ring-violet-400/20',
+    color: 'bg-[#7c3aed]',
+    glow: 'bg-[#7c3aed]/[0.06] ring-[#7c3aed]/20',
+    hex: '#7c3aed',
   },
   {
     id: 'done',
@@ -77,8 +80,9 @@ const BOARD_GROUPS = [
     icon: '●',
     statuses: ['approved', 'scheduled', 'published', 'completed'],
     dropStatus: 'completed',
-    color: 'bg-emerald-400',
-    glow: 'bg-emerald-400/[0.06] ring-emerald-400/20',
+    color: 'bg-[#22C55E]',
+    glow: 'bg-[#22C55E]/[0.06] ring-[#22C55E]/20',
+    hex: '#22C55E',
   },
 ];
 
