@@ -455,8 +455,8 @@ export async function PUT(req: NextRequest) {
       if (u.email) await sendMail(u.email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending", _branding, u.name ?? undefined));
     }
     if (task.status === "completed") {
-      for (const email of emails) {
-        getBranding().then(b => sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName, b))).catch(console.error);
+      for (const u of _assignedUsers) {
+        if (u.email) getBranding().then(b => sendMail(u.email!, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName, b))).catch(console.error);
       }
     }
 
@@ -525,9 +525,10 @@ export async function PUT(req: NextRequest) {
           data: { userId: uid, message: mensaje, type: "task", read: false, link: "/dashboard/tasks" },
         });
       }
-      for (const email of emails) {
+      for (const u of _assignedUsers) {
+        if (!u.email) continue;
         sendMail(
-          email,
+          u.email,
           task.status === "completed" ? `✅ Tarea aprobada: ${task.title}` : `🔄 Cambios solicitados: ${task.title}`,
           `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="color-scheme" content="light only"/></head>
           <body style="margin:0;padding:0;background-color:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
