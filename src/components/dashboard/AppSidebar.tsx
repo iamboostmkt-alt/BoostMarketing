@@ -194,11 +194,13 @@ function WorkspaceSwitcher({
   name,
   initial,
   color,
+  image,
   collapsed,
 }: {
   name: string;
   initial: string;
   color: string;
+  image?: string | null;
   collapsed: boolean;
 }) {
   if (collapsed) {
@@ -206,12 +208,15 @@ function WorkspaceSwitcher({
       <Tooltip>
         <TooltipTrigger asChild>
           <button className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] transition-colors hover:bg-white/[0.07]">
-            <div
-              className="flex h-[22px] w-[22px] items-center justify-center rounded-md text-xs font-semibold text-white"
-              style={{ backgroundColor: `${color}33` }}
-            >
-              {initial}
-            </div>
+            <Avatar className="h-7 w-7">
+              <AvatarImage src={image ?? undefined} alt={name} />
+              <AvatarFallback
+                style={{ backgroundColor: color + "33", color: color }}
+                className="text-[10px] font-semibold"
+              >
+                {initial}
+              </AvatarFallback>
+            </Avatar>
           </button>
         </TooltipTrigger>
         <TooltipContent side="right">{name}</TooltipContent>
@@ -220,12 +225,15 @@ function WorkspaceSwitcher({
   }
   return (
     <button className="flex w-full items-center gap-3 rounded-lg bg-white/[0.04] px-3 py-2.5 transition-colors hover:bg-white/[0.07]">
-      <div
-        className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-md text-[10px] font-semibold text-white"
-        style={{ backgroundColor: `${color}33` }}
-      >
-        {initial}
-      </div>
+      <Avatar className="h-7 w-7 shrink-0">
+        <AvatarImage src={image ?? undefined} alt={name} />
+        <AvatarFallback
+          style={{ backgroundColor: color + "33", color: color }}
+          className="text-[10px] font-semibold"
+        >
+          {initial}
+        </AvatarFallback>
+      </Avatar>
       <span className="flex-1 truncate text-left text-sm font-medium text-white/75">{name}</span>
       <ChevronDown className="h-4 w-4 shrink-0 text-white/30" />
     </button>
@@ -478,6 +486,8 @@ export default function AppSidebar() {
 
   const workspaceInitial = workspaceName[0]?.toUpperCase() || "W";
 
+  const initials = userName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
+
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
@@ -529,9 +539,10 @@ export default function AppSidebar() {
       )}
       <div className="mx-2 mt-1">
         <WorkspaceSwitcher
-          name={workspaceName}
-          initial={workspaceInitial}
+          name={userName}
+          initial={initials}
           color={userColor}
+          image={userImage}
           collapsed={collapsed}
         />
       </div>
@@ -580,8 +591,8 @@ export default function AppSidebar() {
     <>
       {/* Desktop sidebar */}
       <aside
-        style={{ width: collapsed ? 72 : 240 }}
-        className="hidden md:flex flex-col border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
+        style={{ width: collapsed ? 72 : 240, background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
+        className="hidden md:flex flex-col border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
       >
         {sidebarContent}
       </aside>
@@ -596,8 +607,8 @@ export default function AppSidebar() {
 
       {/* Mobile sidebar */}
       <aside
-        className="fixed top-0 left-0 z-50 h-screen w-[240px] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
-        style={{ transform: mobileOpen ? "translateX(0)" : "translateX(-280px)" }}
+        className="fixed top-0 left-0 z-50 h-screen w-[240px] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out"
+        style={{ transform: mobileOpen ? "translateX(0)" : "translateX(-280px)", background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
       >
         {sidebarContent}
       </aside>
