@@ -156,8 +156,8 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`space-y-2 min-h-[120px] rounded-xl p-1 transition-colors duration-150 ${
-                      snapshot.isDraggingOver ? `ring-1 ${group.glow}` : ''
+                    className={`space-y-2 min-h-[120px] rounded-xl p-2 transition-colors duration-150 bg-white/[0.02] ${
+                      snapshot.isDraggingOver ? `ring-1 ${group.glow} bg-white/[0.04]` : ''
                     }`}
                   >
                     {groupTasks.map((task, index) => (
