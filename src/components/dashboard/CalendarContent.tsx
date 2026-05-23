@@ -31,7 +31,7 @@ import CalendarGrid from '@/components/dashboard/CalendarGrid';
 import type { Task, Activity, Appointment } from '@/lib/types';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
 import {
-  statusColors, statusLabels, priorityColors, priorityLabels,
+  statusColors, statusLabels, priorityColors, priorityLabels, statusStyleMap,
 } from '@/lib/theme-maps';
  
  
@@ -440,7 +440,7 @@ export default function CalendarContent() {
                     <button type="button" className="w-full text-left"
                       onClick={() => { setDetailTask(task); setDetailOpen(true); }}>
                       <div className="flex items-start gap-2.5">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${statusColors[task.status] || 'status-pending'}`}>
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5" style={statusStyleMap[task.status] || { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}>
                           {statusLabels[task.status] || task.status}
                         </span>
                         <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
