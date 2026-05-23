@@ -98,7 +98,10 @@ export default function TopNav() {
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={userImage || undefined} alt={userName} />
-                  <AvatarFallback className="bg-brand/20 text-brand-light text-xs font-medium">
+                  <AvatarFallback
+                    style={{ backgroundColor: ((session?.user as any)?.color || '#7c3aed') + '33', color: (session?.user as any)?.color || '#a78bfa' }}
+                    className="text-xs font-medium"
+                  >
                     {initials}
                   </AvatarFallback>
                 </Avatar>

@@ -20,7 +20,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Bell,
   LogOut,
   User,
   Plus,
@@ -191,7 +190,7 @@ function WorkspaceSwitcher({
   return (
     <button className="flex w-full items-center gap-3 rounded-lg bg-white/[0.04] px-3 py-2.5 transition-colors hover:bg-white/[0.07]">
       <div
-        className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-md text-xs font-semibold text-white"
+        className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-md text-[10px] font-semibold text-white"
         style={{ backgroundColor: `${color}33` }}
       >
         {initial}
@@ -240,7 +239,7 @@ function NavItemButton({
       {isActive && (
         <motion.div
           layoutId="nav-active-bg"
-          className="absolute inset-0 rounded-lg bg-[#1e1e2a]"
+          className="absolute inset-0 rounded-lg bg-white/[0.06]"
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
         />
       )}
@@ -491,7 +490,12 @@ export default function AppSidebar() {
         )}
       </div>
 
-      {/* Workspace switcher */}
+      {/* Weeklink brand + Workspace switcher */}
+      {!collapsed && (
+        <div className="px-3 pt-1 pb-0.5">
+          <span className="text-[10px] uppercase tracking-widest text-white/20 font-medium">Weeklink</span>
+        </div>
+      )}
       <div className="mx-2 mt-1">
         <WorkspaceSwitcher
           name={workspaceName}
