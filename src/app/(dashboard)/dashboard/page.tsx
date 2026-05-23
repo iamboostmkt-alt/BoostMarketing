@@ -461,7 +461,10 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColors[task.status] || 'status-pending'}`}>
+                      <span
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+                        style={statusStyleMap[task.status] || { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}
+                      >
                         {statusLabels[task.status] || task.status}
                       </span>
                       <span className={`text-xs font-medium hidden sm:inline ${priorityColors[task.priority] || 'text-white/40'}`}>
