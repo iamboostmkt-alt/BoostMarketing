@@ -559,7 +559,7 @@ function TasksContent() {
 
       {/* Modals */}
       <TaskForm open={formOpen} onOpenChange={(v) => { setFormOpen(v); if (!v) setParentTaskId(null); }} task={editingTask} isManager={isManager} onSuccess={fetchAll} parentTaskId={parentTaskId} />
-      <TaskDetailModal task={viewingTask} open={!!viewingTask} onClose={() => setViewingTask(null)} onEdit={handleEdit} isManager={isManager} currentUserId={currentUserId} />
+      <TaskDetailModal task={viewingTask} open={!!viewingTask} onClose={() => setViewingTask(null)} onEdit={handleEdit} onStatusChange={handleStatusChange} isManager={isManager} currentUserId={currentUserId} />
       <AlertDialog open={!!deleteTask} onOpenChange={(open) => !open && setDeleteTask(null)}>
         <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
           <AlertDialogHeader>

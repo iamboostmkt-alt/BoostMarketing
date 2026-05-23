@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell } from 'lucide-react';
@@ -12,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import UserAvatarStack from '@/components/dashboard/UserAvatarStack';
 import { useUploadThing } from '@/lib/uploadthing';
 import type { Task, TaskAssignee, ActivityAssignee } from '@/lib/types';
-import { statusColors, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';
+import { statusColors, statusLabels, priorityColors, priorityLabels, taskStatuses } from '@/lib/theme-maps';
 import TaskForm from '@/components/dashboard/TaskForm';
 
 interface Attachment {
@@ -30,6 +31,7 @@ interface TaskDetailModalProps {
   open:      boolean;
   onClose:   () => void;
   onEdit?:   (t: Task) => void;
+  onStatusChange?: (taskId: string, newStatus: string) => Promise<void>;
   isManager?: boolean;
   currentUserId?: string;
 }
@@ -68,7 +70,7 @@ function FileIcon({ type }: { type: string }) {
   return <FileText className="w-4 h-4 text-white/40" />;
 }
 
-export default function TaskDetailModal({ task, open, onClose, onEdit, isManager = false, currentUserId }: TaskDetailModalProps) {
+export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusChange, isManager = false, currentUserId }: TaskDetailModalProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -164,6 +166,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
 
   if (!task) return null;
 
+  const [statusDropOpen, setStatusDropOpen] = React.useState(false);
   const statusCls = statusColors[task.status] ?? 'status-pending';
   const statusLbl = statusLabels[task.status] ?? task.status;
   const assignees = resolveAssignees(task);
@@ -186,7 +189,34 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
               <div className="flex-1 min-w-0">
                 <p className="text-base font-semibold text-white leading-snug">{task.title}</p>
                 <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusCls}`}>{statusLbl}</span>
+                  <div className="relative">
+                    <button
+                      onClick={() => setStatusDropOpen(!statusDropOpen)}
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium cursor-pointer hover:opacity-80 transition-opacity ${statusCls}`}
+                    >
+                      {statusLbl}
+                      <svg className="w-2.5 h-2.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    {statusDropOpen && (
+                      <div className="absolute top-full left-0 mt-1 z-50 bg-[#16161e] border border-white/[0.08] rounded-xl shadow-2xl p-1 min-w-[160px]">
+                        {taskStatuses.map((s) => (
+                          <button
+                            key={s.id}
+                            onClick={async () => {
+                              setStatusDropOpen(false);
+                              if (onStatusChange) await onStatusChange(task.id, s.id);
+                            }}
+                            className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s.id ? 'opacity-100' : 'opacity-60'}`}
+                          >
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColors[s.id] || 'status-pending'}`}>
+                              {s.label}
+                            </span>
+                            {task.status === s.id && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>{priorityLabels[task.priority] || task.priority}</span>
                   {overdue && (<span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-400"><AlertCircle className="w-3 h-3" />Vencida</span>)}
                   {attachments.length > 0 && (<span className="inline-flex items-center gap-1 text-[10px] font-medium text-white/40"><Paperclip className="w-3 h-3" />{attachments.length}</span>)}
