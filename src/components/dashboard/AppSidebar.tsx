@@ -539,8 +539,8 @@ export default function AppSidebar() {
       )}
       <div className="mx-2 mt-1">
         <WorkspaceSwitcher
-          name={userName}
-          initial={initials}
+          name={workspaceName}
+          initial={workspaceName[0]?.toUpperCase() || "W"}
           color={userColor}
           image={userImage}
           collapsed={collapsed}

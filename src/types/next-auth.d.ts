@@ -10,6 +10,8 @@ declare module "next-auth" {
       color?: string;
       customRoleId?: string | null;
       workspaceId?: string | null;
+    workspaceName?: string | null;
+      workspaceName?: string | null;
       customRoleLabel?: string | null;
       customRoleColor?: string | null;
       permissions?: Record<string, boolean>;
