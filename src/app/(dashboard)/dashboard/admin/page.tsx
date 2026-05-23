@@ -1189,7 +1189,7 @@ export default function AdminDashboardPage() {
                               disabled={updatingTask === tk.id}
                             >
                               <SelectTrigger className="w-40 h-8 bg-white/[0.04] border-white/[0.08] text-white text-xs focus:ring-brand">
-                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[tk.status] || { background: \'rgba(226,232,240,0.12)\', color: \'#E2E8F0\' }}>
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[tk.status] ?? { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}>
                                   {statusLabels[tk.status] || tk.status}
                                 </span>
                               </SelectTrigger>
