@@ -205,14 +205,14 @@ export default function TaskCard({
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); void onStatusChange(task.id, "completed"); }}
-                className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-[#22C55E] hover:bg-[#22C55E]/10 transition-colors"
               >
                 <CheckCircle2 className="h-3 w-3" />
                 Aprobar
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); void onStatusChange(task.id, "changes_requested"); }}
-                className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-amber-400 hover:bg-amber-500/10 transition-colors"
+                className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-[#EAB308] hover:bg-[#EAB308]/10 transition-colors"
               >
                 <RotateCcw className="h-3 w-3" />
                 Cambios

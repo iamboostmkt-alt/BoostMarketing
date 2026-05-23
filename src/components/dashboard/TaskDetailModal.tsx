@@ -419,7 +419,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, isManager
             )}
             {isManager && task.status !== 'completed' && (
               <Button size="sm" variant="outline" onClick={handleRemind} disabled={reminding}
-                className="border-amber-500/30 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 gap-1.5 text-xs h-8">
+                className="border-[#EAB308]/30 text-[#EAB308] hover:text-[#EAB308]/80 hover:bg-[#EAB308]/10 gap-1.5 text-xs h-8">
                 {reminding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bell className="w-3.5 h-3.5" />}
                 {reminding ? 'Enviando...' : 'Recordatorio'}
               </Button>

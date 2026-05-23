@@ -27,8 +27,8 @@ const entityIcons: Record<string, React.ElementType> = {
 };
 
 const entityColors: Record<string, string> = {
-  task: 'text-cyan-400',
-  Task: 'text-cyan-400',
+  task: 'text-[#38BDF8]',
+  Task: 'text-[#38BDF8]',
   contact: 'text-brand-light',
   Contact: 'text-brand-light',
   client: 'text-green-400',
@@ -37,8 +37,8 @@ const entityColors: Record<string, string> = {
 };
 
 const entityBgColors: Record<string, string> = {
-  task: 'bg-cyan-400/10',
-  Task: 'bg-cyan-400/10',
+  task: 'bg-[#38BDF8]/10',
+  Task: 'bg-[#38BDF8]/10',
   contact: 'bg-brand/10',
   Contact: 'bg-brand/10',
   client: 'bg-green-400/10',

@@ -33,7 +33,7 @@ const typeIcons: Record<string, React.ElementType> = {
 };
 
 const typeColors: Record<string, string> = {
-  task:             "text-cyan-400",
+  task:             "text-[#38BDF8]",
   contact:          "text-brand-light",
   client:           "text-green-400",
   appointment:      "text-orange-400",
