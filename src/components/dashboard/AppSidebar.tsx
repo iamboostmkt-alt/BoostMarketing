@@ -539,7 +539,12 @@ export default function AppSidebar() {
     return pathname.startsWith(href);
   };
 
-  const filteredNavItems = navItems.filter((item) => canAccessRoute(item.href, role));
+  const isClient = role === "CLIENT";
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.clientOnly) return isClient;
+    if (isClient) return item.clientOnly === true;
+    return canAccessRoute(item.href, role);
+  });
 
   const sidebarContent = (
     <div className="flex h-full flex-col">
