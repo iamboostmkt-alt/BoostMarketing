@@ -51,22 +51,24 @@ export async function GET(req: NextRequest) {
 
   const branding = await getBranding();
 
-  // Agrupar emails a notificar por tarea
-  const emailsPorTarea = new Map<string, Set<string>>();
+  // Agrupar emails + nombres por tarea
+  const emailsPorTarea = new Map<string, Array<{ email: string; name: string | null }>>();
   for (const t of tareasVencidas) {
-    const emails = new Set<string>();
-    if (t.assignedUser?.email) emails.add(t.assignedUser.email);
-    t.assignedUsers?.forEach((au: any) => { if (au.user?.email) emails.add(au.user.email); });
-    emailsPorTarea.set(t.id, emails);
+    const users: Array<{ email: string; name: string | null }> = [];
+    if (t.assignedUser?.email) users.push({ email: t.assignedUser.email, name: t.assignedUser.name });
+    t.assignedUsers?.forEach((au: any) => { if (au.user?.email) users.push({ email: au.user.email, name: au.user.name }); });
+    // Dedup por email
+    const seen = new Set<string>();
+    emailsPorTarea.set(t.id, users.filter(u => seen.has(u.email) ? false : (seen.add(u.email), true)));
   }
 
-  // Notificar asignados
+  // Notificar asignados con nombre personalizado
   let enviados = 0;
   for (const t of tareasVencidas) {
-    const emails = emailsPorTarea.get(t.id) ?? new Set();
+    const users = emailsPorTarea.get(t.id) ?? [];
     const dueDate = t.dueDate ? new Date(t.dueDate).toLocaleDateString("es-MX") : "";
-    for (const email of emails) {
-      await sendMail(email, `🚨 Tarea vencida: ${t.title}`, templateTareaVencida(t.title, dueDate, branding));
+    for (const u of users) {
+      await sendMail(u.email, `🚨 Tarea vencida: ${t.title}`, templateTareaVencida(t.title, dueDate, branding, u.name ?? undefined));
       enviados++;
     }
   }
