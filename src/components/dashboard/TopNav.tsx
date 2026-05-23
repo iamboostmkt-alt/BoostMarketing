@@ -33,8 +33,9 @@ export default function TopNav() {
   const { setMobileOpen, setCommandOpen } = useSidebar();
   const { data: session } = useSession();
 
-  const userName  = session?.user?.name  || 'Usuario';
-  const userImage = session?.user?.image;
+  const userName      = session?.user?.name  || 'Usuario';
+  const userImage     = session?.user?.image;
+  const workspaceName = (session?.user as any)?.workspaceName || 'Weeklink';
 
   const initials = userName
     .split(' ')
@@ -51,7 +52,7 @@ export default function TopNav() {
   };
 
   return (
-    <header className="h-12 border-b border-white/[0.06] bg-[#0b0b0f]/80 backdrop-blur-xl sticky top-0 z-30">
+    <header className="h-12 border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #0d0b12 40%, #0f0b18 70%, #0a0a0a 100%)" }}>
       <div className="flex items-center h-full px-4 md:px-6 gap-3">
 
         <Button
@@ -64,7 +65,9 @@ export default function TopNav() {
         </Button>
 
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-medium text-white/50 truncate">{getPageTitle()}</span>
+          <span className="text-sm font-semibold text-white/80 truncate">{workspaceName}</span>
+          <span className="text-white/20 hidden sm:inline">·</span>
+          <span className="text-sm text-white/40 truncate hidden sm:inline">{getPageTitle()}</span>
         </div>
 
         <div className="flex-1 max-w-sm mx-auto hidden sm:block">
