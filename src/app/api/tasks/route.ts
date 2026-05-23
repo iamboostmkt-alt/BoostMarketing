@@ -446,7 +446,7 @@ export async function PUT(req: NextRequest) {
     }
     if (task.status === "completed") {
       for (const email of emails) {
-        getBranding().then(b => sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName, b, userName))).catch(console.error);
+        getBranding().then(b => sendMail(email, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName, b))).catch(console.error);
       }
     }
 
