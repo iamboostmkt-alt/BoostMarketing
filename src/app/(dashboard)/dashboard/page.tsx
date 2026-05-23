@@ -281,7 +281,7 @@ export default function DashboardPage() {
       {/* Welcome */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Dashboard</p>
+          
           <h2 className="text-xl font-medium text-white">
             Hola,{' '}
             <span className="text-gradient-brand">{userName}</span>
