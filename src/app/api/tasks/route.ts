@@ -439,10 +439,20 @@ export async function PUT(req: NextRequest) {
         data: { userId: uid, message: `"${task.title}" cambio a estado: ${task.status}`, type: "task", link: "/dashboard/tasks" },
       });
     }
-    const emails = await getAssignedEmails(task.id);
-    for (const email of emails) {
-      const _branding = await getBranding();
-      await sendMail(email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending", _branding));
+    const _branding = await getBranding();
+    const _taskWithUsers = await db.task.findUnique({
+      where: { id: task.id },
+      include: {
+        assignedUser:  { select: { email: true, name: true } },
+        assignedUsers: { include: { user: { select: { email: true, name: true } } } },
+      },
+    });
+    const _assignedUsers = [
+      ...(_taskWithUsers?.assignedUser ? [{ email: _taskWithUsers.assignedUser.email, name: _taskWithUsers.assignedUser.name }] : []),
+      ...(_taskWithUsers?.assignedUsers?.map((au: any) => ({ email: au.user?.email, name: au.user?.name })) ?? []),
+    ].filter((u, i, arr) => u.email && arr.findIndex(x => x.email === u.email) === i);
+    for (const u of _assignedUsers) {
+      if (u.email) await sendMail(u.email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending", _branding, u.name ?? undefined));
     }
     if (task.status === "completed") {
       for (const email of emails) {

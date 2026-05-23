@@ -67,13 +67,15 @@ export function templateNuevaTarea(title: string, description: string, dueDate?:
   return b ? emailLayout(content, b) : content;
 }
 
-export function templateCambioEstado(title: string, oldStatus: string, newStatus: string, b?: Branding) {
+export function templateCambioEstado(title: string, oldStatus: string, newStatus: string, b?: Branding, userName?: string) {
   const colors: Record<string, string> = { pending:'#E2E8F0', in_progress:'#38BDF8', internal_review:'#a78bfa', client_review:'#38BDF8', changes_requested:'#EAB308', approved:'#22C55E', completed:'#22C55E', cancelled:'#ef4444' };
   const labels: Record<string, string> = { draft:'Borrador', pending:'Pendiente', in_progress:'En progreso', internal_review:'Revisión interna', client_review:'En revisión', changes_requested:'Cambios pedidos', approved:'Aprobado', scheduled:'Programado', published:'Publicado', completed:'Completado', cancelled:'Cancelado' };
   const color = colors[newStatus] || b?.brandColor || '#7c3aed';
   const oldLabel = labels[oldStatus] || oldStatus;
   const newLabel = labels[newStatus] || newStatus;
+  const greeting = userName ? `<p style="color:#6b7280;font-size:15px;margin:0 0 16px;">Hola <strong>${userName}</strong>,</p>` : '';
   const content = `
+    ${greeting}
     <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;font-weight:700;">🔄 Estado de tarea actualizado</h2>
     <p style="color:#6b7280;margin:0 0 4px;font-size:14px;">La siguiente tarea cambió de estado:</p>
     <p style="color:#18181b;margin:0 0 20px;font-size:15px;font-weight:600;">${title}</p>
