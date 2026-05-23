@@ -581,7 +581,7 @@ export default function AppSidebar() {
       {/* Desktop sidebar */}
       <aside
         style={{ width: collapsed ? 72 : 240 }}
-        className="hidden md:flex flex-col bg-[#0a2a0a] border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
+        className="hidden md:flex flex-col border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
       >
         {sidebarContent}
       </aside>
@@ -596,7 +596,7 @@ export default function AppSidebar() {
 
       {/* Mobile sidebar */}
       <aside
-        className="fixed top-0 left-0 z-50 h-screen w-[240px] bg-[#0a2a0a] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out"
+        className="fixed top-0 left-0 z-50 h-screen w-[240px] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
         style={{ transform: mobileOpen ? "translateX(0)" : "translateX(-280px)" }}
       >
         {sidebarContent}
