@@ -339,14 +339,20 @@ function TasksContent() {
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
   async function handleMarkComplete(task: Task) {
+    const newStatus = isManager ? 'completed' : 'internal_review';
+    const prevMy  = myTasks;
+    const prevAll = allTasks;
+    setMyTasks(prev  => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
+    setAllTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
     try {
-      // F1: equipo manda a internal_review, managers completan directo
-      const newStatus = isManager ? 'completed' : 'internal_review';
       const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: task.id, status: newStatus }) });
       if (!res.ok) throw new Error();
       toast.success(isManager ? 'Tarea completada' : 'Tarea enviada a revisión');
-      await fetchAll();
-    } catch { toast.error('Error al completar'); }
+    } catch {
+      setMyTasks(prevMy);
+      setAllTasks(prevAll);
+      toast.error('Error al completar');
+    }
   }
 
   async function handleStatusChange(taskId: string, newStatus: string) {
@@ -367,12 +373,19 @@ function TasksContent() {
   }
 
   async function handleMarkPending(task: Task) {
+    const prevMy  = myTasks;
+    const prevAll = allTasks;
+    setMyTasks(prev  => prev.map(t => t.id === task.id ? { ...t, status: 'pending' } : t));
+    setAllTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: 'pending' } : t));
     try {
       const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: task.id, status: 'pending' }) });
       if (!res.ok) throw new Error();
       toast.success('Marcada como pendiente');
-      await fetchAll();
-    } catch { toast.error('Error al actualizar'); }
+    } catch {
+      setMyTasks(prevMy);
+      setAllTasks(prevAll);
+      toast.error('Error al actualizar');
+    }
   }
 
   async function handleDelete() {
