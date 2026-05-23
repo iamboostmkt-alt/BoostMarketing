@@ -94,7 +94,7 @@ export default function TopNav() {
 
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <button className="relative h-9 w-9 rounded-full flex items-center justify-center cursor-pointer">
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={userImage || undefined} alt={userName} />
                   <AvatarFallback
@@ -104,7 +104,7 @@ export default function TopNav() {
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               className="w-56 bg-[#16161e] border-white/[0.08] text-white p-0 overflow-hidden"
