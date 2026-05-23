@@ -272,10 +272,10 @@ export default function TaskCard({
           )}
 
           {/* Status badge */}
-          <span className={cn(
-            "inline-flex items-center gap-1.5 text-[11px]",
-            statusColors[displayStatus] || "status-pending"
-          )}>
+          <span
+            className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2 py-0.5 font-medium"
+            style={statusStyleMap[displayStatus] || { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}
+          >
             <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
             {displayLabel}
           </span>
