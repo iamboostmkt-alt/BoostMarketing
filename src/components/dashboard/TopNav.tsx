@@ -10,7 +10,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -110,7 +109,6 @@ export default function TopNav() {
             <DropdownMenuContent
               className="w-56 bg-[#16161e] border-white/[0.08] text-white p-0 overflow-hidden"
               align="end"
-              forceMount
             >
               {/* Header: Avatar + nombre + rol */}
               <div className="flex items-center gap-3 px-3 py-3 border-b border-white/[0.06]">
