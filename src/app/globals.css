@@ -279,44 +279,33 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Safe class maps for dynamic colors */
-/* pending - blanco sutil */
-.status-pending { background-color: rgba(226, 232, 240, 0.12); color: #E2E8F0; }
-/* in_progress / editing - cyan */
-.status-editing { background-color: rgba(56, 189, 248, 0.15); color: #38BDF8; }
-/* review - morado brand */
-.status-review { background-color: rgba(167, 139, 250, 0.15); color: #a78bfa; }
-/* internal_review */
-.status-internal-review { background-color: rgba(167, 139, 250, 0.15); color: #a78bfa; }
-/* client_review */
-.status-client-review { background-color: rgba(56, 189, 248, 0.15); color: #38BDF8; }
-/* changes_requested */
-.status-changes { background-color: rgba(234, 179, 8, 0.15); color: #EAB308; }
-/* approved / scheduled / published */
-.status-approved { background-color: rgba(34, 197, 94, 0.15); color: #22C55E; }
-.status-scheduled { background-color: rgba(34, 197, 94, 0.13); color: #22C55E; }
-.status-published { background-color: rgba(34, 197, 94, 0.13); color: #22C55E; }
-/* completed - verde */
-.status-completed { background-color: rgba(34, 197, 94, 0.15); color: #22C55E; }
-/* draft */
-.status-draft { background-color: rgba(226, 232, 240, 0.10); color: #64748b; }
-/* CRM */
-.status-lead { background-color: rgba(167, 139, 250, 0.15); color: #a78bfa; }
-.status-prospect { background-color: rgba(56, 189, 248, 0.15); color: #38BDF8; }
-.status-negotiation { background-color: rgba(234, 179, 8, 0.15); color: #EAB308; }
-.status-won { background-color: rgba(34, 197, 94, 0.15); color: #22C55E; }
-.status-lost { background-color: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.status-active { background-color: rgba(34, 197, 94, 0.15); color: #22C55E; }
-.status-inactive { background-color: rgba(226, 232, 240, 0.10); color: #94a3b8; }
-
-.dot-purple { background-color: #7c3aed; }
-.dot-cyan { background-color: #06b6d4; }
-.dot-amber { background-color: #f59e0b; }
-.dot-green { background-color: #10b981; }
-.dot-red { background-color: #ef4444; }
-.dot-blue { background-color: #3b82f6; }
-
-.priority-low { color: #22C55E; }
-.priority-medium { color: #EAB308; }
-.priority-high { color: #F97316; }
-.priority-urgent { color: #EF4444; }
+@layer utilities {
+  .status-pending { background-color: rgba(226, 232, 240, 0.12) !important; color: #E2E8F0 !important; }
+  .status-editing { background-color: rgba(56, 189, 248, 0.15) !important; color: #38BDF8 !important; }
+  .status-review { background-color: rgba(167, 139, 250, 0.15) !important; color: #a78bfa !important; }
+  .status-internal-review { background-color: rgba(167, 139, 250, 0.15) !important; color: #a78bfa !important; }
+  .status-client-review { background-color: rgba(56, 189, 248, 0.15) !important; color: #38BDF8 !important; }
+  .status-changes { background-color: rgba(234, 179, 8, 0.15) !important; color: #EAB308 !important; }
+  .status-approved { background-color: rgba(34, 197, 94, 0.15) !important; color: #22C55E !important; }
+  .status-scheduled { background-color: rgba(34, 197, 94, 0.13) !important; color: #22C55E !important; }
+  .status-published { background-color: rgba(34, 197, 94, 0.13) !important; color: #22C55E !important; }
+  .status-completed { background-color: rgba(34, 197, 94, 0.15) !important; color: #22C55E !important; }
+  .status-draft { background-color: rgba(226, 232, 240, 0.10) !important; color: #64748b !important; }
+  .status-lead { background-color: rgba(167, 139, 250, 0.15) !important; color: #a78bfa !important; }
+  .status-prospect { background-color: rgba(56, 189, 248, 0.15) !important; color: #38BDF8 !important; }
+  .status-negotiation { background-color: rgba(234, 179, 8, 0.15) !important; color: #EAB308 !important; }
+  .status-won { background-color: rgba(34, 197, 94, 0.15) !important; color: #22C55E !important; }
+  .status-lost { background-color: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; }
+  .status-active { background-color: rgba(34, 197, 94, 0.15) !important; color: #22C55E !important; }
+  .status-inactive { background-color: rgba(226, 232, 240, 0.10) !important; color: #94a3b8 !important; }
+  .dot-purple { background-color: #7c3aed !important; }
+  .dot-cyan { background-color: #06b6d4 !important; }
+  .dot-amber { background-color: #f59e0b !important; }
+  .dot-green { background-color: #10b981 !important; }
+  .dot-red { background-color: #ef4444 !important; }
+  .dot-blue { background-color: #3b82f6 !important; }
+  .priority-low { color: #22C55E !important; }
+  .priority-medium { color: #EAB308 !important; }
+  .priority-high { color: #F97316 !important; }
+  .priority-urgent { color: #EF4444 !important; }
+}
