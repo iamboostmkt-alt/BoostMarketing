@@ -21,17 +21,17 @@ import { statusColors, statusLabels } from "@/lib/theme-maps";
 
 // ─── Priority config ──────────────────────────────────────────────────────────
 const priorityDot: Record<string, string> = {
-  low:    "bg-emerald-500/60",
-  medium: "bg-amber-500/60",
-  high:   "bg-red-500/60",
-  urgent: "bg-red-600/80",
+  low:    "bg-[#22C55E]/70",
+  medium: "bg-[#EAB308]/70",
+  high:   "bg-[#F97316]/70",
+  urgent: "bg-[#EF4444]/80",
 };
 
 const priorityBorder: Record<string, string> = {
-  low:    "border-l-emerald-500/50",
-  medium: "border-l-amber-500/50",
-  high:   "border-l-red-500/50",
-  urgent: "border-l-red-600/70",
+  low:    "border-l-[#22C55E]/60",
+  medium: "border-l-[#EAB308]/60",
+  high:   "border-l-[#F97316]/60",
+  urgent: "border-l-[#EF4444]/70",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
