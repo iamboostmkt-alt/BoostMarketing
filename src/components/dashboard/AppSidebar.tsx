@@ -41,6 +41,7 @@ type NavItem = {
   icon: React.ElementType;
   adminOnly?: boolean;
   clientOnly?: boolean;
+  roles?: string[];
   disabled?: boolean;
 };
 
@@ -49,10 +50,10 @@ const navItems: NavItem[] = [
   { href: "/dashboard/tasks",         label: "Tareas",     icon: CheckSquare },
   { href: "/dashboard/calendar",      label: "Calendario", icon: Calendar },
   { href: "/dashboard/chat",          label: "Chat",       icon: MessageSquare },
-  { href: "/dashboard/client-portal", label: "Mi Portal",  icon: Briefcase, clientOnly: true },
-  { href: "/dashboard/crm",           label: "Leads",      icon: Users, adminOnly: false },
-  { href: "/dashboard/analytics",     label: "Analytics",  icon: BarChart3 },
-  { href: "/dashboard/admin",         label: "Admin",      icon: Shield, adminOnly: true },
+  { href: "/dashboard/client-portal", label: "Mi Portal",  icon: Briefcase, roles: ["CLIENT", "ADMIN", "PROJECT_MANAGER"] },
+  { href: "/dashboard/crm",           label: "Leads",      icon: Users,      roles: ["ADMIN", "PROJECT_MANAGER", "SALES_REP"] },
+  { href: "/dashboard/analytics",     label: "Analytics",  icon: BarChart3,  roles: ["ADMIN"] },
+  { href: "/dashboard/admin",         label: "Admin",      icon: Shield,     roles: ["ADMIN"] },
 ];
 
 // ─── User Dropdown ────────────────────────────────────────────────────────────
@@ -541,6 +542,7 @@ export default function AppSidebar() {
 
   const isClient = role === "CLIENT";
   const filteredNavItems = navItems.filter((item) => {
+    if (item.roles) return item.roles.includes(role ?? "");
     if (isClient) return !!item.clientOnly;
     if (item.clientOnly) return false;
     return canAccessRoute(item.href, role);
@@ -617,7 +619,7 @@ export default function AppSidebar() {
         </div>
 
         {/* Clientes section */}
-        <SectionLabel collapsed={collapsed}>Clientes</SectionLabel>
+        <SectionLabel collapsed={collapsed}>Cuentas</SectionLabel>
         <ClientsSection collapsed={collapsed} />
       </nav>
 
