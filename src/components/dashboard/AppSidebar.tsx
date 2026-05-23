@@ -40,19 +40,19 @@ type NavItem = {
   label: string;
   icon: React.ElementType;
   adminOnly?: boolean;
+  clientOnly?: boolean;
   disabled?: boolean;
 };
 
 const navItems: NavItem[] = [
-  { href: "/dashboard",               label: "Home",      icon: Home },
-  { href: "/dashboard/client-portal", label: "Mi Portal", icon: Briefcase },
-  { href: "/dashboard/crm",           label: "Leads",     icon: Users },
-  { href: "/dashboard/tasks",         label: "Tareas",    icon: CheckSquare },
-  { href: "/dashboard/calendar",      label: "Calendario",icon: Calendar },
-  { href: "/dashboard/chat",          label: "Chat",      icon: MessageSquare },
-  { href: "/dashboard/clients",       label: "Usuarios",  icon: UserCircle },
-  { href: "/dashboard/analytics",     label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/admin",         label: "Admin",     icon: Shield, adminOnly: true },
+  { href: "/dashboard",               label: "Home",       icon: Home },
+  { href: "/dashboard/tasks",         label: "Tareas",     icon: CheckSquare },
+  { href: "/dashboard/calendar",      label: "Calendario", icon: Calendar },
+  { href: "/dashboard/chat",          label: "Chat",       icon: MessageSquare },
+  { href: "/dashboard/client-portal", label: "Mi Portal",  icon: Briefcase, clientOnly: true },
+  { href: "/dashboard/crm",           label: "Leads",      icon: Users, adminOnly: false },
+  { href: "/dashboard/analytics",     label: "Analytics",  icon: BarChart3 },
+  { href: "/dashboard/admin",         label: "Admin",      icon: Shield, adminOnly: true },
 ];
 
 // ─── User Dropdown ────────────────────────────────────────────────────────────
@@ -611,8 +611,8 @@ export default function AppSidebar() {
           ))}
         </div>
 
-        {/* Workspace / Usuarios section */}
-        <SectionLabel collapsed={collapsed}>Workspace</SectionLabel>
+        {/* Clientes section */}
+        <SectionLabel collapsed={collapsed}>Clientes</SectionLabel>
         <ClientsSection collapsed={collapsed} />
       </nav>
 
