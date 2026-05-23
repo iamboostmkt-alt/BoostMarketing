@@ -65,14 +65,17 @@ export function templateNuevaTarea(title: string, description: string, dueDate?:
 }
 
 export function templateCambioEstado(title: string, oldStatus: string, newStatus: string, b?: Branding) {
-  const colors: Record<string, string> = { pending:'#f59e0b', in_progress:'#3b82f6', completed:'#10b981', cancelled:'#ef4444' };
+  const colors: Record<string, string> = { pending:'#E2E8F0', in_progress:'#38BDF8', internal_review:'#a78bfa', client_review:'#38BDF8', changes_requested:'#EAB308', approved:'#22C55E', completed:'#22C55E', cancelled:'#ef4444' };
+  const labels: Record<string, string> = { draft:'Borrador', pending:'Pendiente', in_progress:'En progreso', internal_review:'Revisión interna', client_review:'En revisión', changes_requested:'Cambios pedidos', approved:'Aprobado', scheduled:'Programado', published:'Publicado', completed:'Completado', cancelled:'Cancelado' };
   const color = colors[newStatus] || b?.brandColor || '#7c3aed';
+  const oldLabel = labels[oldStatus] || oldStatus;
+  const newLabel = labels[newStatus] || newStatus;
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">🔄 Estado actualizado</h2>
     <p style="color:rgba(255,255,255,0.5);margin:0 0 20px;font-size:14px;">${title}</p>
     ${infoBox(`
       <p style="margin:0;color:rgba(255,255,255,0.5);font-size:14px;">
-        ${statusBadge(oldStatus, '#6b7280')} &nbsp;→&nbsp; ${statusBadge(newStatus, color)}
+        ${statusBadge(oldLabel, '#6b7280')} &nbsp;→&nbsp; ${statusBadge(newLabel, color)}
       </p>
     `, color)}
     ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
