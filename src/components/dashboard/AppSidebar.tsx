@@ -191,52 +191,98 @@ function UserDropdown({
 
 // ─── Workspace Switcher ────────────────────────────────────────────────────────
 function WorkspaceSwitcher({
-  name,
-  initial,
-  color,
-  image,
-  collapsed,
+  name, initial, color, image, collapsed, role, workspaceName,
 }: {
-  name: string;
-  initial: string;
-  color: string;
-  image?: string | null;
-  collapsed: boolean;
+  name: string; initial: string; color: string; image?: string | null;
+  collapsed: boolean; role: string; workspaceName: string;
 }) {
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] transition-colors hover:bg-white/[0.07]">
-            <Avatar className="h-7 w-7">
-              <AvatarImage src={image ?? undefined} alt={name} />
-              <AvatarFallback
-                style={{ backgroundColor: color + "33", color: color }}
-                className="text-[10px] font-semibold"
-              >
-                {initial}
-              </AvatarFallback>
-            </Avatar>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">{name}</TooltipContent>
-      </Tooltip>
-    );
-  }
-  return (
-    <button className="flex w-full items-center gap-3 rounded-lg bg-white/[0.04] px-3 py-2.5 transition-colors hover:bg-white/[0.07]">
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const isAdmin = role === "ADMIN";
+  const isManager = ["ADMIN", "PROJECT_MANAGER"].includes(role);
+
+  React.useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const trigger = collapsed ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button onClick={() => setOpen(!open)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] transition-colors hover:bg-white/[0.07]">
+          <Avatar className="h-7 w-7">
+            <AvatarImage src={image ?? undefined} alt={name} />
+            <AvatarFallback style={{ backgroundColor: color + "33", color }} className="text-[10px] font-semibold">{initial}</AvatarFallback>
+          </Avatar>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="right">{name}</TooltipContent>
+    </Tooltip>
+  ) : (
+    <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 rounded-lg bg-white/[0.04] px-3 py-2.5 transition-colors hover:bg-white/[0.07]">
       <Avatar className="h-7 w-7 shrink-0">
         <AvatarImage src={image ?? undefined} alt={name} />
-        <AvatarFallback
-          style={{ backgroundColor: color + "33", color: color }}
-          className="text-[10px] font-semibold"
-        >
-          {initial}
-        </AvatarFallback>
+        <AvatarFallback style={{ backgroundColor: color + "33", color }} className="text-[10px] font-semibold">{initial}</AvatarFallback>
       </Avatar>
       <span className="flex-1 truncate text-left text-sm font-medium text-white/75">{name}</span>
-      <ChevronDown className="h-4 w-4 shrink-0 text-white/30" />
+      <ChevronDown className={`h-4 w-4 shrink-0 text-white/30 transition-transform ${open ? "rotate-180" : ""}`} />
     </button>
+  );
+
+  return (
+    <div ref={ref} className="relative">
+      {trigger}
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-white/[0.08] bg-[#0e0e14] shadow-2xl overflow-hidden">
+          {/* Header */}
+          <div className="px-3 py-2.5 border-b border-white/[0.06]">
+            <p className="text-xs font-semibold text-white/80 truncate">{workspaceName}</p>
+            <p className="text-[10px] text-white/30 mt-0.5">{isAdmin ? "Administrador" : isManager ? "Project Manager" : "Equipo"}</p>
+          </div>
+
+          {/* Admin stats */}
+          {isAdmin && (
+            <div className="px-3 py-2 border-b border-white/[0.06]">
+              <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Workspace</p>
+              <Link href="/dashboard/admin" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+                <span className="text-xs text-white/60 group-hover:text-white/80">Plan actual</span>
+                <span className="text-[10px] font-semibold text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full">FREE</span>
+              </Link>
+              <Link href="/dashboard/admin?tab=users" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+                <span className="text-xs text-white/60 group-hover:text-white/80">Miembros</span>
+                <span className="text-[10px] text-white/40">Ver todos →</span>
+              </Link>
+              <Link href="/dashboard/clients" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+                <span className="text-xs text-white/60 group-hover:text-white/80">Clientes activos</span>
+                <span className="text-[10px] text-white/40">Ver →</span>
+              </Link>
+            </div>
+          )}
+
+          {/* PM + equipo acciones */}
+          <div className="px-3 py-2">
+            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Acciones</p>
+            <Link href="/dashboard/tasks?new=1" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+              <span className="text-white/40 group-hover:text-purple-400 text-sm">+</span>
+              <span className="text-xs text-white/60 group-hover:text-white/80">Nueva tarea</span>
+            </Link>
+            <Link href="/dashboard/settings" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+              <span className="text-white/40 group-hover:text-white/60 text-sm">⚙</span>
+              <span className="text-xs text-white/60 group-hover:text-white/80">Ajustes</span>
+            </Link>
+            {isAdmin && (
+              <Link href="/dashboard/admin" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+                <span className="text-white/40 group-hover:text-white/60 text-sm">👥</span>
+                <span className="text-xs text-white/60 group-hover:text-white/80">Invitar usuario</span>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -546,6 +592,8 @@ export default function AppSidebar() {
           color={userColor}
           image={userImage}
           collapsed={collapsed}
+          role={role}
+          workspaceName={workspaceName}
         />
       </div>
 
