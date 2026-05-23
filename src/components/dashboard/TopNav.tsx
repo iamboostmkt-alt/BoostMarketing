@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { Menu, Search, User, LogOut, Settings } from 'lucide-react';
+import { Menu, Search, User, LogOut, Settings, Palette, Zap, HelpCircle, Command } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -20,10 +20,10 @@ import { NotificationsDropdown } from './NotificationsDropdown';
 
 const pageTitles: Record<string, string> = {
   '/dashboard':           'Dashboard',
-  '/dashboard/crm':       'CRM',
+  '/dashboard/crm':       'Leads',
   '/dashboard/tasks':     'Tareas',
   '/dashboard/calendar':  'Calendario',
-  '/dashboard/clients':   'Clientes',
+  '/dashboard/clients':   'Usuarios',
   '/dashboard/analytics': 'Analytics',
   '/dashboard/settings':  'Ajustes',
 };
@@ -108,43 +108,84 @@ export default function TopNav() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-56 bg-[#15151c] border-white/[0.06] text-white"
+              className="w-56 bg-[#16161e] border-white/[0.08] text-white p-0 overflow-hidden"
               align="end"
               forceMount
             >
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{userName}</p>
-                  <p className="text-xs leading-none text-white/40">
-                    {session?.user?.email || ''}
-                  </p>
+              {/* Header: Avatar + nombre + rol */}
+              <div className="flex items-center gap-3 px-3 py-3 border-b border-white/[0.06]">
+                <Avatar className="h-9 w-9 shrink-0">
+                  <AvatarImage src={userImage || undefined} alt={userName} />
+                  <AvatarFallback
+                    style={{ backgroundColor: ((session?.user as any)?.color || '#7c3aed') + '33', color: (session?.user as any)?.color || '#a78bfa' }}
+                    className="text-xs font-semibold"
+                  >
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white/90 truncate">{userName}</p>
+                  {(session?.user as any)?.customRoleLabel ? (
+                    <span
+                      className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium mt-0.5"
+                      style={{ backgroundColor: ((session?.user as any)?.customRoleColor || '#7c3aed') + '22', color: (session?.user as any)?.customRoleColor || '#a78bfa' }}
+                    >
+                      {(session?.user as any)?.customRoleLabel}
+                    </span>
+                  ) : (
+                    <p className="text-[11px] text-white/40 truncate">{session?.user?.email || ''}</p>
+                  )}
                 </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/[0.06]" />
-              <DropdownMenuGroup>
+              </div>
+
+              {/* Menu items */}
+              <div className="p-1">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3"
+                    onClick={() => router.push('/dashboard/settings')}
+                  >
+                    <User className="h-4 w-4" strokeWidth={1.5} />
+                    Mi perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3"
+                    onClick={() => router.push('/dashboard/settings')}
+                  >
+                    <Settings className="h-4 w-4" strokeWidth={1.5} />
+                    Ajustes
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
+                    <Palette className="h-4 w-4" strokeWidth={1.5} />
+                    Apariencia
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
+                    <Zap className="h-4 w-4" strokeWidth={1.5} />
+                    <span className="flex-1">Upgrade</span>
+                    <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">PRO</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator className="bg-white/[0.06]" />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
+                    <HelpCircle className="h-4 w-4" strokeWidth={1.5} />
+                    Soporte
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
+                    <Command className="h-4 w-4" strokeWidth={1.5} />
+                    <span className="flex-1">Atajos</span>
+                    <span className="text-[10px] text-white/25 font-mono">⌘K</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator className="bg-white/[0.06]" />
                 <DropdownMenuItem
-                  className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer"
-                  onClick={() => router.push('/dashboard/settings')}
+                  className="text-red-400/80 focus:text-red-400 focus:bg-red-500/10 cursor-pointer gap-3"
+                  onClick={() => signOut({ callbackUrl: '/' })}
                 >
-                  <User className="mr-2 h-4 w-4" />
-                  Perfil
+                  <LogOut className="h-4 w-4" strokeWidth={1.5} />
+                  Cerrar sesión
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-white/70 focus:text-white focus:bg-white/[0.06] cursor-pointer"
-                  onClick={() => router.push('/dashboard/settings')}
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  Ajustes
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-white/[0.06]" />
-              <DropdownMenuItem
-                className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
-                onClick={() => signOut({ callbackUrl: '/' })}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Cerrar Sesion
-              </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
