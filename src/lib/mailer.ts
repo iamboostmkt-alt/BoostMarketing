@@ -118,11 +118,11 @@ export function templateBienvenida(name: string, b?: Branding) {
 export function templateNuevoComentario(taskTitle: string, authorName: string, comment: string, b?: Branding) {
   const color = '#0ea5e9';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">💬 Nuevo comentario</h2>
-    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">En la tarea: <strong style="color:white;">${taskTitle}</strong></p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">💬 Nuevo comentario</h2>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">En la tarea: <strong style="color:#18181b;">${taskTitle}</strong></p>
     ${infoBox(`
       <p style="margin:0 0 6px;color:${color};font-weight:600;font-size:13px;">${authorName} comentó:</p>
-      <p style="margin:0;color:rgba(255,255,255,0.8);">${comment}</p>
+      <p style="margin:0;color:#374151;">${comment}</p>
     `, color)}
     ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Comentario', color)}`;
   return b ? emailLayout(content, b) : content;
@@ -131,12 +131,12 @@ export function templateNuevoComentario(taskTitle: string, authorName: string, c
 export function templateTareaCompletada(taskTitle: string, completedBy: string, b?: Branding) {
   const color = '#10b981';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🎉 Tarea completada</h2>
-    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;"><strong style="color:white;">${completedBy}</strong> marcó una tarea como completada</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">🎉 Tarea completada</h2>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;"><strong style="color:#18181b;">${completedBy}</strong> marcó una tarea como completada</p>
     ${infoBox(`
       <p style="margin:0;color:#18181b;font-weight:600;font-size:16px;">✅ ${taskTitle}</p>
     `, color)}
-    <div style="text-align:center;margin:20px 0;padding:20px;background:rgba(16,185,129,0.08);border-radius:12px;">
+    <div style="text-align:center;margin:20px 0;padding:20px;background:#f0fdf4;border-radius:12px;">
       <p style="margin:0;color:${color};font-weight:700;font-size:18px;">¡Excelente trabajo! 🚀</p>
     </div>
     ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tareas', color)}`;
@@ -163,26 +163,26 @@ export function templateResumenSemanal(name: string, pendientes: number, enProgr
     const sc: Record<string,string> = { completed:'#10b981', in_progress:'#3b82f6', pending:'#f59e0b' };
     const sl: Record<string,string> = { completed:'Completada', in_progress:'En progreso', pending:'Pendiente' };
     return `<tr>
-      <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.8);font-size:14px;">${t.title}</td>
-      <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:#9ca3af;font-size:13px;">${t.dueDate || 'Sin fecha'}</td>
-      <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);">${statusBadge(sl[t.status]||t.status, sc[t.status]||'#6b7280')}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#18181b;font-size:14px;">${t.title}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;">${t.dueDate || 'Sin fecha'}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">${statusBadge(sl[t.status]||t.status, sc[t.status]||'#6b7280')}</td>
     </tr>`;
   }).join('');
   const content = `
-    <h2 style="color:white;margin:0 0 4px;font-size:22px;">📊 Resumen semanal</h2>
-    <p style="color:rgba(255,255,255,0.4);margin:0 0 24px;font-size:14px;">Hola <strong style="color:white;">${name}</strong>, aquí está tu semana:</p>
+    <h2 style="color:#18181b;margin:0 0 4px;font-size:22px;">📊 Resumen semanal</h2>
+    <p style="color:#6b7280;margin:0 0 24px;font-size:14px;">Hola <strong style="color:#18181b;">${name}</strong>, aquí está tu semana:</p>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
       <tr>
-        <td width="33%" style="padding:0 6px 0 0;"><div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:16px;text-align:center;"><p style="margin:0;font-size:28px;font-weight:700;color:#f59e0b;">${pendientes}</p><p style="margin:4px 0 0;color:rgba(255,255,255,0.4);font-size:12px;">Pendientes</p></div></td>
-        <td width="33%" style="padding:0 3px;"><div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:16px;text-align:center;"><p style="margin:0;font-size:28px;font-weight:700;color:#3b82f6;">${enProgreso}</p><p style="margin:4px 0 0;color:rgba(255,255,255,0.4);font-size:12px;">En Progreso</p></div></td>
-        <td width="33%" style="padding:0 0 0 6px;"><div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:16px;text-align:center;"><p style="margin:0;font-size:28px;font-weight:700;color:#10b981;">${completadas}</p><p style="margin:4px 0 0;color:rgba(255,255,255,0.4);font-size:12px;">Completadas</p></div></td>
+        <td width="33%" style="padding:0 6px 0 0;"><div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:16px;text-align:center;"><p style="margin:0;font-size:28px;font-weight:700;color:#f59e0b;">${pendientes}</p><p style="margin:4px 0 0;color:#6b7280;font-size:12px;">Pendientes</p></div></td>
+        <td width="33%" style="padding:0 3px;"><div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;text-align:center;"><p style="margin:0;font-size:28px;font-weight:700;color:#3b82f6;">${enProgreso}</p><p style="margin:4px 0 0;color:#6b7280;font-size:12px;">En Progreso</p></div></td>
+        <td width="33%" style="padding:0 0 0 6px;"><div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;text-align:center;"><p style="margin:0;font-size:28px;font-weight:700;color:#10b981;">${completadas}</p><p style="margin:4px 0 0;color:#6b7280;font-size:12px;">Completadas</p></div></td>
       </tr>
     </table>
-    ${tareas.length > 0 ? `<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
-      <thead><tr style="background:rgba(255,255,255,0.04);">
-        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);font-weight:600;">TAREA</th>
-        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);font-weight:600;">VENCE</th>
-        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);font-weight:600;">ESTADO</th>
+    ${tareas.length > 0 ? `<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+      <thead><tr style="background:#f9fafb;">
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;font-weight:600;">TAREA</th>
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;font-weight:600;">VENCE</th>
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;font-weight:600;">ESTADO</th>
       </tr></thead>
       <tbody>${filas}</tbody>
     </table>` : ''}
@@ -193,10 +193,10 @@ export function templateResumenSemanal(name: string, pendientes: number, enProgr
 export function templateResetPassword(name: string, resetUrl: string, b?: Branding) {
   const color = b?.brandColor || '#7c3aed';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🔐 Restablecer contraseña</h2>
-    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${name}</strong>, recibimos una solicitud para restablecer tu contraseña.</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">🔐 Restablecer contraseña</h2>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:#18181b;">${name}</strong>, recibimos una solicitud para restablecer tu contraseña.</p>
     ${btn(resetUrl, 'Restablecer Contraseña', color)}
-    ${infoBox(`<p style="margin:0;color:#9ca3af;font-size:13px;">⏰ Este enlace expira en <strong style="color:white;">1 hora</strong>.<br/>Si no solicitaste esto, ignora este mensaje.</p>`, '#6b7280')}`;
+    ${infoBox(`<p style="margin:0;color:#9ca3af;font-size:13px;">⏰ Este enlace expira en <strong style="color:#18181b;">1 hora</strong>.<br/>Si no solicitaste esto, ignora este mensaje.</p>`, '#6b7280')}`;
   return b ? emailLayout(content, b) : content;
 }
 
@@ -275,9 +275,9 @@ export function templateTareaEditada(taskTitle: string, cambios: Array<{campo: s
   </tr>`).join('');
   const content = `
     <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">✏️ Tarea actualizada</h2>
-    <p style="color:#6b7280;margin:0 0 20px;"><strong style="color:white;">${taskTitle}</strong></p>
-    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
-      <thead><tr style="background:rgba(255,255,255,0.04);">
+    <p style="color:#6b7280;margin:0 0 20px;"><strong style="color:#18181b;">${taskTitle}</strong></p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+      <thead><tr style="background:#f9fafb;">
         <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">CAMPO</th>
         <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">ANTES</th>
         <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">AHORA</th>
