@@ -139,7 +139,7 @@ export default function TaskCard({
       whileHover={{ y: -1 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
       className={cn(
-        "relative rounded-lg border-l-2 transition-all duration-150",
+        "relative rounded-xl border-l-2 transition-all duration-150",
         "bg-[#0d0d0d] border border-[#1c1c1c]",
         "hover:bg-[#111111] hover:border-[#262626]",
         onView && "cursor-pointer",
