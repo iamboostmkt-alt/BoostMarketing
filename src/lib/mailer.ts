@@ -50,17 +50,20 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "
 
 // ─── TEMPLATES ──────────────────────────────────────────────
 
-export function templateNuevaTarea(title: string, description: string, dueDate?: string, b?: Branding) {
+export function templateNuevaTarea(title: string, description: string, dueDate?: string, b?: Branding, userName?: string) {
   const color = b?.brandColor || '#7c3aed';
+  const greeting = userName ? `Hola <strong>${userName}</strong>,` : 'Hola,';
   const content = `
-    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">📌 Nueva tarea asignada</h2>
-    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">Se te ha asignado una nueva tarea</p>
+    <p style="color:#6b7280;font-size:15px;margin:0 0 16px;">${greeting}</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;font-weight:700;">📌 Se te asignó una nueva tarea</h2>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">Revisa los detalles y asegúrate de completarla a tiempo.</p>
     ${infoBox(`
-      <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">${title}</p>
-      <p style="margin:0;color:#6b7280;font-size:14px;">${description || 'Sin descripción'}</p>
-      ${dueDate ? `<p style="margin:8px 0 0;color:#f59e0b;font-size:13px;">⏰ Vence: ${dueDate}</p>` : ''}
+      <p style="margin:0 0 6px;color:#18181b;font-weight:700;font-size:16px;">${title}</p>
+      ${description ? `<p style="margin:0 0 8px;color:#6b7280;font-size:14px;">${description}</p>` : ''}
+      ${dueDate ? `<p style="margin:8px 0 0;color:#f59e0b;font-size:13px;font-weight:600;">⏰ Fecha límite: ${dueDate}</p>` : ''}
     `, color)}
-    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
+    <p style="color:#9ca3af;font-size:13px;margin:0 0 20px;">Si tienes dudas, comunícate con tu PM.</p>
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver tarea', color)}`;
   return b ? emailLayout(content, b) : content;
 }
 
@@ -71,14 +74,17 @@ export function templateCambioEstado(title: string, oldStatus: string, newStatus
   const oldLabel = labels[oldStatus] || oldStatus;
   const newLabel = labels[newStatus] || newStatus;
   const content = `
-    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">🔄 Estado actualizado</h2>
-    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">${title}</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;font-weight:700;">🔄 Estado de tarea actualizado</h2>
+    <p style="color:#6b7280;margin:0 0 4px;font-size:14px;">La siguiente tarea cambió de estado:</p>
+    <p style="color:#18181b;margin:0 0 20px;font-size:15px;font-weight:600;">${title}</p>
     ${infoBox(`
-      <p style="margin:0;color:#6b7280;font-size:14px;">
-        ${statusBadge(oldLabel, '#6b7280')} &nbsp;→&nbsp; ${statusBadge(newLabel, color)}
+      <p style="margin:0 0 8px;color:#6b7280;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">Cambio de estado</p>
+      <p style="margin:0;font-size:15px;">
+        ${statusBadge(oldLabel, '#6b7280')} &nbsp;&nbsp;→&nbsp;&nbsp; ${statusBadge(newLabel, color)}
       </p>
     `, color)}
-    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
+    <p style="color:#9ca3af;font-size:13px;margin:0 0 20px;">Verifica que el trabajo cumple con los estándares antes de continuar.</p>
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver tarea completa', color)}`;
   return b ? emailLayout(content, b) : content;
 }
 
@@ -143,17 +149,19 @@ export function templateTareaCompletada(taskTitle: string, completedBy: string, 
   return b ? emailLayout(content, b) : content;
 }
 
-export function templateTareaVencida(taskTitle: string, dueDate: string, b?: Branding) {
+export function templateTareaVencida(taskTitle: string, dueDate: string, b?: Branding, userName?: string) {
   const color = '#ef4444';
+  const greeting = userName ? `Hola <strong>${userName}</strong>,` : 'Hola,';
   const content = `
-    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">🚨 Tarea vencida</h2>
-    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">Una tarea ha superado su fecha límite</p>
+    <p style="color:#6b7280;font-size:15px;margin:0 0 16px;">${greeting}</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;font-weight:700;">🚨 Tienes una tarea vencida</h2>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">Una tarea bajo tu responsabilidad ha superado su fecha límite. Por favor actualiza su estado o contacta a tu PM.</p>
     ${infoBox(`
-      <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">${taskTitle}</p>
-      <p style="margin:0;color:${color};font-weight:600;">⚠️ Venció el ${dueDate}</p>
-      <p style="margin:6px 0 0;color:#9ca3af;font-size:13px;">Actualiza el estado o contacta a tu manager.</p>
+      <p style="margin:0 0 6px;color:#18181b;font-weight:700;font-size:16px;">${taskTitle}</p>
+      <p style="margin:0;color:${color};font-weight:600;font-size:14px;">⚠️ Venció el ${dueDate}</p>
     `, color)}
-    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver Tarea', color)}`;
+    <p style="color:#9ca3af;font-size:13px;margin:0 0 20px;">Entre más rápido lo resuelvas, mejor para el proyecto.</p>
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Actualizar tarea', color)}`;
   return b ? emailLayout(content, b) : content;
 }
 
