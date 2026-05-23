@@ -87,17 +87,32 @@ export async function GET(req: NextRequest) {
   for (const { manager, tareas } of tareasPorPM.values()) {
     const lista = tareas.slice(0, 5).map(t => {
       const d = t.dueDate ? new Date(t.dueDate).toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "";
-      return `<li style="margin:4px 0;color:#e5e5e5">${t.title}${d ? ` <span style="color:#888">(venció ${d})</span>` : ""}</li>`;
+      return `<li style="margin:4px 0;color:#374151">${t.title}${d ? ` <span style="color:#6b7280">(venció ${d})</span>` : ""}</li>`;
     }).join("");
     const extra = tareas.length > 5 ? `<li style="color:#888">+${tareas.length - 5} más...</li>` : "";
-    const html = `<div style="font-family:-apple-system,sans-serif;max-width:520px;margin:0 auto;background:#0b0b0f;color:#e5e5e5;border-radius:12px;overflow:hidden">
-      <div style="background:#ef4444;padding:24px 32px"><h1 style="margin:0;font-size:20px;color:#fff">BoostMarketing — Resumen tareas vencidas</h1></div>
-      <div style="padding:32px">
-        <p style="color:#a0a0b0;margin-top:0">Tienes <strong style="color:#ef4444">${tareas.length} tarea${tareas.length > 1 ? "s" : ""} vencida${tareas.length > 1 ? "s" : ""}</strong> en tus clientes:</p>
-        <ul style="padding-left:20px;margin:16px 0">${lista}${extra}</ul>
-        <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://boostmarketingboost.com"}/dashboard/tasks" style="display:inline-block;background:#ef4444;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Ver tareas</a>
-      </div>
-    </div>`;
+    const html = `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"/><meta name="color-scheme" content="light only"/></head>
+<body style="margin:0;padding:0;background-color:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f7" style="padding:32px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
+        <tr><td bgcolor="#ef4444" style="background:linear-gradient(135deg,#ef4444,#dc2626);padding:28px 32px;text-align:center;">
+          <h1 style="margin:0;font-size:20px;color:#fff;font-weight:700;">BoostMarketing — Tareas vencidas</h1>
+        </td></tr>
+        <tr><td style="padding:32px;background-color:#ffffff;color:#18181b;font-size:15px;line-height:1.6;">
+          <p style="color:#6b7280;margin-top:0">Tienes <strong style="color:#ef4444">${tareas.length} tarea${tareas.length > 1 ? "s" : ""} vencida${tareas.length > 1 ? "s" : ""}</strong> en tus clientes:</p>
+          <ul style="padding-left:20px;margin:16px 0;color:#374151">${lista}${extra}</ul>
+          <div style="text-align:center;margin-top:24px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://boostmarketingboost.com"}/dashboard/tasks" style="display:inline-block;background:#ef4444;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Ver tareas</a>
+          </div>
+        </td></tr>
+        <tr><td bgcolor="#f9fafb" style="background-color:#f9fafb;border-top:1px solid #e4e4e7;padding:16px 32px;text-align:center;">
+          <p style="margin:0;color:#9ca3af;font-size:12px;">BoostMarketing &copy; ${new Date().getFullYear()} &middot; Mensaje automático</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
     await sendEmail({ to: manager.email, subject: `🚨 ${tareas.length} tarea${tareas.length > 1 ? "s" : ""} vencida${tareas.length > 1 ? "s" : ""} - BoostMarketing`, html });
     enviados++;
   }

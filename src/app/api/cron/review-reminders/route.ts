@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
 
     const html = emailLayout(`
       <h2 style="margin:0 0 16px;font-size:18px;color:#fff">${asunto}</h2>
-      <p style="color:#a0a0b0;margin:0 0 24px">${cuerpo}</p>
+      <p style="color:#6b7280;margin:0 0 24px">${cuerpo}</p>
       <a href="${appUrl}/dashboard/tasks" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">
         Revisar tarea
       </a>
