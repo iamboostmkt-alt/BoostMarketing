@@ -52,7 +52,7 @@ export default function TopNav() {
   };
 
   return (
-    <header className="h-12 border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(90deg, #0e0e14 0%, #0e0e14 20%, #0e0618 42%, #160528 50%, #0e0618 58%, #0e0e14 80%, #0e0e14 100%)" }}>
+    <header className="h-12 border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%)" }}>
       <div className="flex items-center h-full px-4 md:px-6 gap-3">
 
         <Button
