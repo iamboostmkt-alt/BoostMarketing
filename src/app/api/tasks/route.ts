@@ -314,6 +314,8 @@ export async function POST(req: NextRequest) {
       type:           parentTaskId ? 'internal_task' : (taskType || (resolvedVisibility === 'client_visible' ? 'deliverable' : 'internal_task')),
       isDeliverable:  parentTaskId ? false : (isClient ? true : (isManager && resolvedClientId ? true : false)),
       deliverableStatus: parentTaskId ? null : (isClient ? 'draft' : (isManager && resolvedClientId ? 'client_review' : null)),
+      // REGLA 3: si tiene cliente asignado -> auto in_progress
+      status: resolvedClientId && !parentTaskId ? 'in_progress' : 'pending',
       references:     Array.isArray(references) ? references : [],
       parentTaskId:   parentTaskId || null,
       milestoneId:    milestoneId  || null,
@@ -581,10 +583,17 @@ export async function PUT(req: NextRequest) {
         const allDone = completedSiblings === siblings.length;
         // Si todas las subtareas están completadas, marcar padre como completado
         if (allDone) {
-          await db.task.update({
+          // REGLA: si todas las subtareas done -> padre a internal_review (F1 flujo)
+          const parentTask = await db.task.findUnique({
             where: { id: taskParentId },
-            data: { status: 'completed' },
+            select: { status: true },
           });
+          if (parentTask && !['completed', 'approved', 'internal_review'].includes(parentTask.status)) {
+            await db.task.update({
+              where: { id: taskParentId },
+              data: { status: 'internal_review' },
+            });
+          }
         }
         // Notificación interna de progreso (opcional)
         console.log(`[SUBTASK] Parent ${taskParentId}: ${completedSiblings}/${siblings.length} subtasks done`);
