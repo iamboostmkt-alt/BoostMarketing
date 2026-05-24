@@ -154,6 +154,8 @@ model Notification {
   user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
+  @@index([userId, read])
+  @@index([workspaceId, userId])
   @@map("notifications")
 }
 
@@ -170,6 +172,8 @@ model ActivityLog {
   user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   workspace Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
+  @@index([userId, createdAt])
+  @@index([workspaceId, createdAt])
   @@map("activity_logs")
 }
 
@@ -244,6 +248,8 @@ model Contact {
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
+  @@index([workspaceId, status])
+  @@index([workspaceId, userId])
   @@map("contacts")
 }
 
@@ -270,6 +276,8 @@ model Client {
   milestones      Milestone[]
   appointments    Appointment[]
 
+  @@index([workspaceId, status])
+  @@index([assignedManagerId, workspaceId])
   @@map("clients")
 }
 
@@ -344,6 +352,7 @@ model ChatMessage {
   workspace Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   reactions ChatReaction[]
 
+  @@index([workspaceId, room, createdAt])
   @@map("chat_messages")
 }
 
@@ -427,6 +436,8 @@ model Appointment {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([workspaceId, date])
+  @@index([workspaceId, status])
   @@map("appointments")
 }
 
@@ -616,6 +627,7 @@ model Milestone {
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   responsible User?  @relation("MilestoneResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
   tasks       Task[] @relation("MilestoneTasks")
+  @@index([clientId, workspaceId])
   @@map("milestones")
 }
 
