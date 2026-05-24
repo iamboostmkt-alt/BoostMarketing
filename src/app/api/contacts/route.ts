@@ -1,208 +1,140 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/security/rate-limit";
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { requireWorkspace } from "@/core/auth/require-workspace";
+import { db } from "@/lib/db";
+
+const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER", "SALES_REP"];
 
 export async function GET(req: NextRequest) {
-  const _rl_contacts_get = await rateLimit(req, { limit: 30, windowMs: 60000, identifier: 'contacts-get' });
-  if (!_rl_contacts_get.success) return _rl_contacts_get.response;
+  const rl = await rateLimit(req, { limit: 30, windowMs: 60_000, identifier: "contacts-get" });
+  if (!rl.success) return rl.response;
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+  const { userId, workspaceId, role } = result.ctx;
 
-  try {
-    const session = await getServerSession(authOptions);
+  const { searchParams } = new URL(req.url);
+  const status = searchParams.get("status");
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+  const where: Record<string, unknown> = MANAGER_ROLES.includes(role)
+    ? { workspaceId }
+    : { workspaceId, userId };
+  if (status) where.status = status;
 
-    const userId = session.user.id;
-    const role   = session.user.role as string;
-    const { searchParams } = new URL(req.url);
-    const status = searchParams.get("status");
-
-    const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER", "SALES_REP"];
-    const where: Record<string, unknown> = MANAGER_ROLES.includes(role) ? {} : { userId };
-    if (status) where.status = status;
-
-    const contacts = await db.contact.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return NextResponse.json({ contacts });
-  } catch (error) {
-    console.error('Contacts GET error:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
-  }
+  const contacts = await db.contact.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+  });
+  return NextResponse.json({ contacts });
 }
 
 export async function POST(req: NextRequest) {
-  const _rl_contacts_post = await rateLimit(req, { limit: 20, windowMs: 60000, identifier: 'contacts-post' });
-  if (!_rl_contacts_post.success) return _rl_contacts_post.response;
+  const rl = await rateLimit(req, { limit: 20, windowMs: 60_000, identifier: "contacts-post" });
+  if (!rl.success) return rl.response;
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+  const { userId, workspaceId } = result.ctx;
 
-  try {
-    const session = await getServerSession(authOptions);
+  const body = await req.json();
+  const { name, email, company, phone, status, value, notes } = body;
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-
-    const userId = session.user.id;
-    const body = await req.json();
-    const { name, email, company, phone, status, value, notes } = body;
-
-    if (!name || !email) {
-      return NextResponse.json(
-        { error: 'Nombre y email son requeridos' },
-        { status: 400 }
-      );
-    }
-
-    const contact = await db.contact.create({
-      data: {
-        userId,
-        name,
-        email,
-        company: company || '',
-        phone: phone || '',
-        status: status || 'lead',
-        value: value || 0,
-        notes: notes || '',
-      },
-    });
-
-    await db.activityLog.create({
-      data: {
-        userId,
-        action: 'CREATE_CONTACT',
-        entity: 'Contact',
-        entityId: contact.id,
-        details: JSON.stringify({ name: contact.name, email: contact.email }),
-      },
-    });
-
-    return NextResponse.json({ contact }, { status: 201 });
-  } catch (error) {
-    console.error('Contacts POST error:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
+  if (!name || !email) {
+    return NextResponse.json({ error: "Nombre y email son requeridos" }, { status: 400 });
   }
+
+  const contact = await db.contact.create({
+    data: {
+      userId,
+      workspaceId,
+      name,
+      email,
+      company: company || "",
+      phone: phone || "",
+      status: status || "lead",
+      value: value || 0,
+      notes: notes || "",
+    },
+  });
+
+  await db.activityLog.create({
+    data: {
+      userId,
+      action: "CREATE_CONTACT",
+      entity: "Contact",
+      entityId: contact.id,
+      details: JSON.stringify({ name: contact.name, email: contact.email }),
+    },
+  });
+
+  return NextResponse.json({ contact }, { status: 201 });
 }
 
 export async function PUT(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+  const { userId, workspaceId, role } = result.ctx;
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+  const body = await req.json();
+  const { id, name, email, company, phone, status, value, notes } = body;
 
-    const userId = session.user.id;
-    const body = await req.json();
-    const { id, name, email, company, phone, status, value, notes } = body;
+  if (!id) return NextResponse.json({ error: "El id es requerido" }, { status: 400 });
 
-    if (!id) {
-      return NextResponse.json(
-        { error: 'El id es requerido' },
-        { status: 400 }
-      );
-    }
-
-    const existing = await db.contact.findUnique({ where: { id } });
-    const userRole = session.user.role as string;
-    const canManage = ['ADMIN', 'PROJECT_MANAGER'].includes(userRole);
-    if (!existing || (!canManage && existing.userId !== userId)) {
-      return NextResponse.json(
-        { error: 'Contacto no encontrado' },
-        { status: 404 }
-      );
-    }
-
-    const updateData: Record<string, unknown> = {};
-    if (name !== undefined) updateData.name = name;
-    if (email !== undefined) updateData.email = email;
-    if (company !== undefined) updateData.company = company;
-    if (phone !== undefined) updateData.phone = phone;
-    if (status !== undefined) updateData.status = status;
-    if (value !== undefined) updateData.value = value;
-    if (notes !== undefined) updateData.notes = notes;
-
-    const contact = await db.contact.update({
-      where: { id },
-      data: updateData,
-    });
-
-    await db.activityLog.create({
-      data: {
-        userId,
-        action: 'UPDATE_CONTACT',
-        entity: 'Contact',
-        entityId: contact.id,
-        details: JSON.stringify(updateData),
-      },
-    });
-
-    return NextResponse.json({ contact });
-  } catch (error) {
-    console.error('Contacts PUT error:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
+  const canManage = ["ADMIN", "PROJECT_MANAGER"].includes(role);
+  const existing = await db.contact.findFirst({
+    where: { id, workspaceId },
+  });
+  if (!existing || (!canManage && existing.userId !== userId)) {
+    return NextResponse.json({ error: "Contacto no encontrado" }, { status: 404 });
   }
+
+  const updateData: Record<string, unknown> = {};
+  if (name    !== undefined) updateData.name    = name;
+  if (email   !== undefined) updateData.email   = email;
+  if (company !== undefined) updateData.company = company;
+  if (phone   !== undefined) updateData.phone   = phone;
+  if (status  !== undefined) updateData.status  = status;
+  if (value   !== undefined) updateData.value   = value;
+  if (notes   !== undefined) updateData.notes   = notes;
+
+  const contact = await db.contact.update({ where: { id }, data: updateData });
+
+  await db.activityLog.create({
+    data: {
+      userId,
+      action: "UPDATE_CONTACT",
+      entity: "Contact",
+      entityId: contact.id,
+      details: JSON.stringify(updateData),
+    },
+  });
+
+  return NextResponse.json({ contact });
 }
 
 export async function DELETE(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+  const { userId, workspaceId, role } = result.ctx;
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+  const id = new URL(req.url).searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "El id es requerido" }, { status: 400 });
 
-    const userId = session.user.id;
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json(
-        { error: 'El id es requerido' },
-        { status: 400 }
-      );
-    }
-
-    const existing = await db.contact.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Contacto no encontrado' },
-        { status: 404 }
-      );
-    }
-
-    await db.contact.delete({ where: { id } });
-
-    await db.activityLog.create({
-      data: {
-        userId,
-        action: 'DELETE_CONTACT',
-        entity: 'Contact',
-        entityId: id,
-        details: JSON.stringify({ name: existing.name }),
-      },
-    });
-
-    return NextResponse.json({ message: 'Contacto eliminado' });
-  } catch (error) {
-    console.error('Contacts DELETE error:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
+  const canManage = ["ADMIN", "PROJECT_MANAGER"].includes(role);
+  const existing = await db.contact.findFirst({ where: { id, workspaceId } });
+  if (!existing || (!canManage && existing.userId !== userId)) {
+    return NextResponse.json({ error: "Contacto no encontrado" }, { status: 404 });
   }
-}
 
+  await db.contact.delete({ where: { id } });
+
+  await db.activityLog.create({
+    data: {
+      userId,
+      action: "DELETE_CONTACT",
+      entity: "Contact",
+      entityId: id,
+      details: JSON.stringify({ name: existing.name }),
+    },
+  });
+
+  return NextResponse.json({ message: "Contacto eliminado" });
+}
