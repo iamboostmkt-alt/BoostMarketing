@@ -382,8 +382,8 @@ export async function PUT(req: NextRequest) {
 
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
-  const existing = await db.task.findUnique({
-    where:   { id },
+  const existing = await db.task.findFirst({
+    where:   { id, workspaceId },
     include: {
       assignedUser:  userInclude,
       assignedUsers: { include: { user: userInclude } },
@@ -446,8 +446,8 @@ export async function PUT(req: NextRequest) {
   if (status && existing.status !== task.status) {
     const notifyIds = new Set<string>();
     if (task.clientId) {
-      const clientTeam = await db.client.findUnique({
-        where: { id: task.clientId },
+      const clientTeam = await db.client.findFirst({
+        where: { id: task.clientId, workspaceId },
         include: { assignedUsers: { include: { user: true } }, assignedManager: true },
       });
       if (clientTeam?.assignedManager?.id) notifyIds.add(clientTeam.assignedManager.id);
