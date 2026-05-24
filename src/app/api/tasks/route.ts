@@ -462,14 +462,39 @@ export async function PUT(req: NextRequest) {
 
     // F1 — Notificación inmediata al pasar a internal_review
     if (task.status === "internal_review" && existing.status !== "internal_review") {
-      // Buscar PM del cliente
+      // Buscar PM: 1) PM del cliente, 2) creador de la tarea si es manager, 3) primer ADMIN del workspace
       const clienteConPM = task.clientId
         ? await db.client.findUnique({
             where: { id: task.clientId },
             select: { assignedManagerId: true, assignedManager: { select: { id: true, email: true, name: true } } },
           })
         : null;
-      const pm = clienteConPM?.assignedManager;
+
+      let pm = clienteConPM?.assignedManager ?? null;
+
+      // Fallback: si la tarea no tiene cliente, buscar el creador si es ADMIN o PM
+      if (!pm && task.userId && task.userId !== userId) {
+        const creator = await db.user.findUnique({
+          where: { id: task.userId },
+          select: { id: true, email: true, name: true, role: true },
+        });
+        if (creator && ["ADMIN", "PROJECT_MANAGER"].includes(creator.role)) {
+          pm = creator;
+        }
+      }
+
+      // Último fallback: primer ADMIN del workspace
+      if (!pm) {
+        const workspaceId = (session.user as any).workspaceId as string | null;
+        const admin = await db.user.findFirst({
+          where: {
+            role: "ADMIN",
+            ...(workspaceId && { workspaceId }),
+          },
+          select: { id: true, email: true, name: true },
+        });
+        if (admin && admin.id !== userId) pm = admin;
+      }
       if (pm) {
         await db.notification.create({
           data: {
