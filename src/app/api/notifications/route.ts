@@ -60,7 +60,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (body.id) {
-      const notification = await db.notification.findUnique({ where: { id: body.id } });
+      const notification = await db.notification.findFirst({ where: { id: body.id, workspaceId } });
       if (!notification || notification.userId !== userId) {
         return NextResponse.json({ error: 'Notificacion no encontrada' }, { status: 404 });
       }
@@ -108,12 +108,12 @@ export async function DELETE(req: NextRequest) {
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
-    const { userId } = result.ctx;
+    const { userId, workspaceId } = result.ctx;
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
     if (id) {
-      const notification = await db.notification.findUnique({ where: { id } });
+      const notification = await db.notification.findFirst({ where: { id, workspaceId } });
       if (!notification || notification.userId !== userId) {
         return NextResponse.json({ error: 'No encontrada' }, { status: 404 });
       }

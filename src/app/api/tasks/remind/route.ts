@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
   const { taskId } = await req.json();
   if (!taskId) return NextResponse.json({ error: "taskId requerido" }, { status: 400 });
 
-  const task = await db.task.findUnique({
-    where: { id: taskId },
+  const task = await db.task.findFirst({
+    where: { id: taskId, workspaceId: result.ctx.workspaceId },
     include: {
       assignedUser:  { select: { email: true, name: true } },
       assignedUsers: { include: { user: { select: { email: true, name: true } } } },

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'contactId requerido' }, { status: 400 });
 
     // Obtener el contacto
-    const contact = await db.contact.findUnique({ where: { id: contactId } });
+    const contact = await db.contact.findFirst({ where: { id: contactId, workspaceId } });
     if (!contact)
       return NextResponse.json({ error: 'Contacto no encontrado' }, { status: 404 });
 

@@ -24,6 +24,7 @@ async function checkRoomAccess(
   role: string,
   email: string,
   room: string,
+  workspaceId: string,
 ): Promise<boolean> {
   if (room === 'PRIVATE') return PRIVATE_CHAT_ROLES.includes(role);
 
@@ -41,8 +42,8 @@ async function checkRoomAccess(
     return record?.id === room;
   }
 
-  const client = await db.client.findUnique({
-    where: { id: room },
+  const client = await db.client.findFirst({
+    where: { id: room, workspaceId },
     select: {
       id: true,
       assignedManagerId: true,
@@ -80,7 +81,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const room = searchParams.get('room') ?? 'TEAM';
 
-  if (!(await checkRoomAccess(userId, role, email, room))) {
+  if (!(await checkRoomAccess(userId, role, email, room, workspaceId))) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
   }
 
@@ -110,7 +111,7 @@ export async function POST(req: NextRequest) {
   const text      = body.message?.toString().trim() ?? '';
   const room: string = body.room ?? 'TEAM';
 
-  if (!(await checkRoomAccess(userId, role, email, room))) {
+  if (!(await checkRoomAccess(userId, role, email, room, workspaceId))) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
   }
 
@@ -149,14 +150,15 @@ export async function DELETE(req: NextRequest) {
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
 
-  const userId  = ({ id: result.ctx.userId }).id;
-  const isAdmin = result.ctx.role === 'ADMIN';
+  const userId      = result.ctx.userId;
+  const workspaceId = result.ctx.workspaceId;
+  const isAdmin     = result.ctx.role === 'ADMIN';
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id es requerido.' }, { status: 400 });
 
-  const msg = await db.chatMessage.findUnique({ where: { id } });
+  const msg = await db.chatMessage.findFirst({ where: { id, workspaceId } });
   if (!msg) return NextResponse.json({ error: 'Mensaje no encontrado.' }, { status: 404 });
 
   if (!isAdmin && msg.userId !== userId) {

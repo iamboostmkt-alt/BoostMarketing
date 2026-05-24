@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
   if (!rl.success) return rl.response;
   const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER"] });
   if (!result.ok) return result.response;
+  const { workspaceId } = result.ctx;
 
   const { searchParams } = new URL(req.url);
   const clientId = searchParams.get("clientId");
@@ -22,8 +23,8 @@ export async function GET(req: NextRequest) {
 
   if (!clientId) return NextResponse.json({ error: "clientId requerido" }, { status: 400 });
 
-  const client = await db.client.findUnique({
-    where: { id: clientId },
+  const client = await db.client.findFirst({
+    where: { id: clientId, workspaceId },
     include: { assignedManager: { select: { name: true, email: true } } },
   });
   if (!client) return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
@@ -276,6 +277,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER"] });
   if (!result.ok) return result.response;
+  const { workspaceId } = result.ctx;
 
   const body = await req.json();
   const { clientId, month, year, recipientEmail } = body;
@@ -284,7 +286,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "clientId y recipientEmail requeridos" }, { status: 400 });
   }
 
-  const client = await db.client.findUnique({ where: { id: clientId } });
+  const client = await db.client.findFirst({ where: { id: clientId, workspaceId } });
   if (!client) return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
 
   const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",

@@ -14,7 +14,7 @@ export async function POST(
     const { userId: uid, workspaceId } = result.ctx;
     const user = { ...result.ctx, id: result.ctx.userId };
 
-    const lead = await db.contact.findUnique({ where: { id: params.id } });
+    const lead = await db.contact.findFirst({ where: { id: params.id, workspaceId } });
     if (!lead) {
       return NextResponse.json({ error: 'Lead no encontrado' }, { status: 404 });
     }

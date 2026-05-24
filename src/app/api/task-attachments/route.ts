@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify task exists and user has access
-    const task = await db.task.findUnique({
-      where: { id: taskId },
+    const task = await db.task.findFirst({
+      where: { id: taskId, workspaceId: result.ctx.workspaceId },
       include: { assignedUsers: true },
     });
     if (!task) return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });

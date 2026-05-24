@@ -29,8 +29,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar que la tarea existe y el cliente tiene acceso
-    const task = await db.task.findUnique({
-      where: { id: taskId },
+    const task = await db.task.findFirst({
+      where: { id: taskId, workspaceId: result.ctx.workspaceId },
       include: {
         client: { select: { id: true, name: true, assignedManagerId: true } },
       },

@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
     });
 
     // Incluir tambien el PM asignado como manager
-    const client = await db.client.findUnique({
-      where: { id: clientId },
+    const client = await db.client.findFirst({
+      where: { id: clientId, workspaceId },
       include: {
         assignedManager: {
           select: { id: true, name: true, email: true, color: true, image: true, role: true, active: true },
