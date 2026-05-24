@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     // Buscar primer admin para asignar el lead
     const firstAdmin = await db.user.findFirst({
-      where: { role: { in: ['ADMIN', 'PROJECT_MANAGER'] } },
+      where: { role: { in: ['ADMIN', 'PROJECT_MANAGER'] }, active: true },
       select: { id: true },
     });
 

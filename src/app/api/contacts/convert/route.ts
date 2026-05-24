@@ -6,6 +6,7 @@ import { MANAGER_ROLES } from '@/core/constants/roles';
 export async function POST(req: NextRequest) {
   try {
     const user = await getSessionUser();
+    const workspaceId = user?.workspaceId ?? null;
     if (!user || !MANAGER_ROLES.includes(user.role as any))
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 

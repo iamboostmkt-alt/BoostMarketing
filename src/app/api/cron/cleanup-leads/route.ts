@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
     const deleted = await db.contact.deleteMany({
       where: {
         status:    'lead',
+        ...(user.workspaceId ? { workspaceId: user.workspaceId } : {}),
         createdAt: { lt: cutoff },
       },
     });

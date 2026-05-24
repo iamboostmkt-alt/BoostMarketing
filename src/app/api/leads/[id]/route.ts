@@ -10,6 +10,7 @@ export async function POST(
 ) {
   try {
     const user = await getSessionUser();
+    const workspaceId = user?.workspaceId ?? null;
     if (!user || !MANAGER_ROLES.includes(user.role as any)) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
@@ -84,6 +85,7 @@ export async function DELETE(
 ) {
   try {
     const user = await getSessionUser();
+    const workspaceId = user?.workspaceId ?? null;
     if (!user || !MANAGER_ROLES.includes(user.role as any)) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
