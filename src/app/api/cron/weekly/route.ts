@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { TASK_STATUS, APPOINTMENT_STATUS } from "@/lib/constants/status";
 export const dynamic = "force-dynamic";
 
 function isAuthorized(req: NextRequest): boolean {
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
   for (const ws of workspaces) {
     // ─── Snapshot semanal de reuniones ──────────────────────────────────
     const reuniones = await db.appointment.findMany({
-      where: { workspaceId: ws.id, date: { lt: haceUnaSemana }, status: { in: ["confirmed", "completed"] } },
+      where: { workspaceId: ws.id, date: { lt: haceUnaSemana }, status: { in: [APPOINTMENT_STATUS.CONFIRMED, APPOINTMENT_STATUS.COMPLETED] } },
       select: { id: true },
     });
     if (reuniones.length > 0) {
@@ -48,13 +49,13 @@ export async function GET(req: NextRequest) {
 
     // ─── Eliminar reuniones viejas (no pending/confirmed) ───────────────
     await db.appointment.deleteMany({
-      where: { workspaceId: ws.id, date: { lt: haceUnaSemana }, status: { notIn: ["pending", "confirmed"] } },
+      where: { workspaceId: ws.id, date: { lt: haceUnaSemana }, status: { notIn: [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.CONFIRMED] } },
     });
 
     // ─── Snapshot mensual de tareas (solo primera semana del mes) ───────
     if (esInicioMes) {
       const tareasCompletadas = await db.task.findMany({
-        where: { workspaceId: ws.id, status: { in: ["completed", "approved"] }, updatedAt: { gte: inicioMesAnterior, lt: inicioMesActual }, archivedAt: null },
+        where: { workspaceId: ws.id, status: { in: [TASK_STATUS.COMPLETED, TASK_STATUS.APPROVED] }, updatedAt: { gte: inicioMesAnterior, lt: inicioMesActual }, archivedAt: null },
         select: { id: true, userId: true, clientId: true, createdAt: true, updatedAt: true },
       });
 

@@ -3,11 +3,13 @@ import { db } from '../src/lib/db';
 async function main() {
   const user = await db.user.findFirst({ where: { role: 'ADMIN' } });
   if (!user) { console.error('No admin found'); process.exit(1); }
+  const workspaceId = user.workspaceId;
 
   await db.taskTemplate.createMany({
     data: [
       {
         userId: user.id,
+        workspaceId,
         title: 'Reel',
         description: 'Template para producción de reels',
         category: 'social_media',
@@ -19,6 +21,7 @@ async function main() {
       },
       {
         userId: user.id,
+        workspaceId,
         title: 'Campaña',
         description: 'Template para campañas de publicidad',
         category: 'ads',
@@ -30,6 +33,7 @@ async function main() {
       },
       {
         userId: user.id,
+        workspaceId,
         title: 'Branding',
         description: 'Template para proyectos de branding',
         category: 'design',
@@ -41,6 +45,7 @@ async function main() {
       },
       {
         userId: user.id,
+        workspaceId,
         title: 'Diseño',
         description: 'Template para piezas de diseño',
         category: 'design',
@@ -52,6 +57,7 @@ async function main() {
       },
       {
         userId: user.id,
+        workspaceId,
         title: 'Contenido General',
         description: 'Template para planeación de contenido mensual',
         category: 'content',

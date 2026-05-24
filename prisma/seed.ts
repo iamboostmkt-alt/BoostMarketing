@@ -12,6 +12,14 @@ const db = new PrismaClient({
 async function seed() {
   console.log('🌱 Seeding database...');
 
+  // Obtener o crear workspace para seed
+  const ws = await db.workspace.upsert({
+    where: { slug: 'boostmarketing' },
+    update: {},
+    create: { name: 'BoostMarketing', slug: 'boostmarketing' },
+  });
+  const workspaceId = ws.id;
+
   // ── Admin users ────────────────────────────────────────────────────────────
   const adminHash = await bcrypt.hash('Admin2024!', BCRYPT_ROUNDS);
 
@@ -90,7 +98,7 @@ async function seed() {
 
   for (const contact of contacts) {
     await db.contact.create({
-      data: { ...contact, userId: user.id },
+      data: { ...contact, userId: user.id, workspaceId },
     });
   }
   console.log(`✅ ${contacts.length} contacts created`);
@@ -111,7 +119,7 @@ async function seed() {
 
   for (const task of tasks) {
     await db.task.create({
-      data: { ...task, userId: user.id },
+      data: { ...task, userId: user.id, workspaceId },
     });
   }
   console.log(`✅ ${tasks.length} tasks created`);
@@ -126,7 +134,7 @@ async function seed() {
 
   for (const client of clients) {
     await db.client.create({
-      data: { ...client, userId: user.id },
+      data: { ...client, userId: user.id, workspaceId },
     });
   }
   console.log(`✅ ${clients.length} clients created`);
@@ -140,7 +148,7 @@ async function seed() {
   ];
 
   for (const notification of notifications) {
-    await db.notification.create({ data: notification });
+    await db.notification.create({ data: { ...notification, workspaceId } });
   }
   console.log(`✅ ${notifications.length} notifications created`);
 
@@ -154,7 +162,7 @@ async function seed() {
   ];
 
   for (const activity of activities) {
-    await db.activityLog.create({ data: activity });
+    await db.activityLog.create({ data: { ...activity, workspaceId } });
   }
   console.log(`✅ ${activities.length} activity logs created`);
 

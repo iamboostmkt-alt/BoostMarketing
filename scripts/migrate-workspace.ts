@@ -14,18 +14,31 @@ async function main() {
   console.log('Workspace creado:', ws.id)
 
   const [users, clients, tasks, appointments, activities, milestones, notifications, activityLogs, contacts, chatMessages, taskTemplates, customRoles] = await Promise.all([
-    db.user.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.client.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.task.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.appointment.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.activity.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.milestone.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.notification.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.activityLog.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.contact.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.chatMessage.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.taskTemplate.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
-    db.customRole.updateMany({ where: { workspaceId: null }, data: { workspaceId: ws.id } }),
+    // Script de migracion one-time — workspaceId ya es non-nullable en schema
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.user.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.client.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.task.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.appointment.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.activity.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.milestone.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.notification.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.activityLog.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.contact.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.chatMessage.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.taskTemplate.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db.customRole.updateMany({ where: { workspaceId: null as any }, data: { workspaceId: ws.id } }),
   ])
 
   console.log('Migrados:')

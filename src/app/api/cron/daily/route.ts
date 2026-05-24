@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { TASK_STATUS, APPOINTMENT_STATUS } from "@/lib/constants/status";
 import { sendMail, templateTareaVencida } from "@/lib/mailer";
 import { sendEmail } from "@/lib/resend";
 import { getBranding } from "@/lib/branding";
@@ -23,18 +24,18 @@ export async function GET(req: NextRequest) {
 
   // ─── 1. Subir prioridad tareas por vencer ────────────────────────────────
   const urgentCount = await db.task.updateMany({
-    where: { dueDate: { gte: ahora, lte: manana }, status: { notIn: ["completed","cancelled","approved"] }, priority: { not: "urgent" }, deletedAt: null },
+    where: { dueDate: { gte: ahora, lte: manana }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, priority: { not: "urgent" }, deletedAt: null },
     data: { priority: "urgent" },
   });
   const highCount = await db.task.updateMany({
-    where: { dueDate: { gt: manana, lte: pasadoManana }, status: { notIn: ["completed","cancelled","approved"] }, priority: { notIn: ["urgent","high"] }, deletedAt: null },
+    where: { dueDate: { gt: manana, lte: pasadoManana }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, priority: { notIn: ["urgent","high"] }, deletedAt: null },
     data: { priority: "high" },
   });
   results.priorityUpdates = { urgent: urgentCount.count, high: highCount.count };
 
   // ─── 2. Notificar tareas vencidas ────────────────────────────────────────
   const tareasVencidas = await db.task.findMany({
-    where: { dueDate: { lt: ahora }, status: { notIn: ["completed","cancelled","approved"] }, deletedAt: null },
+    where: { dueDate: { lt: ahora }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, deletedAt: null },
     include: {
       assignedUser:  { select: { id: true, email: true, name: true } },
       assignedUsers: { include: { user: { select: { id: true, email: true, name: true } } } },
@@ -75,7 +76,7 @@ export async function GET(req: NextRequest) {
   const hace48h = new Date(ahora.getTime() - 48 * 3600000);
 
   const pendingReview = await db.task.findMany({
-    where: { status: "internal_review", updatedAt: { lt: hace5h } },
+    where: { status: TASK_STATUS.INTERNAL_REVIEW, updatedAt: { lt: hace5h } },
     include: { client: { select: { assignedManager: { select: { id: true, email: true, name: true } } } } },
   });
 
@@ -98,14 +99,14 @@ export async function GET(req: NextRequest) {
   // ─── 4. Cleanup citas canceladas/pasadas (+30 días) ──────────────────────
   const cutoff30 = new Date(ahora); cutoff30.setDate(cutoff30.getDate() - 30);
   const deletedAppts = await db.appointment.deleteMany({
-    where: { OR: [{ status: "cancelled", date: { lt: cutoff30 } }, { status: "pending", date: { lt: cutoff30 } }] },
+    where: { OR: [{ status: APPOINTMENT_STATUS.CANCELLED, date: { lt: cutoff30 } }, { status: APPOINTMENT_STATUS.PENDING, date: { lt: cutoff30 } }] },
   });
   results.deletedAppointments = deletedAppts.count;
 
   // ─── 5. Soft-delete tareas completadas hace +7 días ──────────────────────
   const cutoff7 = new Date(ahora); cutoff7.setDate(cutoff7.getDate() - 7);
   const softDeleted = await db.task.updateMany({
-    where: { status: "completed", deletedAt: null, updatedAt: { lt: cutoff7 } },
+    where: { status: TASK_STATUS.COMPLETED, deletedAt: null, updatedAt: { lt: cutoff7 } },
     data: { deletedAt: ahora },
   });
   results.softDeletedTasks = softDeleted.count;
