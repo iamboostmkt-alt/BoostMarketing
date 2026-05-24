@@ -1,23 +1,15 @@
 import { NextResponse } from 'next/server';
 import { rateLimit } from "@/lib/security/rate-limit";
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 401 }
-      );
-    }
-
-    const userId = session.user.id;
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { userId, workspaceId } = result.ctx;
 
     const totalContacts = await db.contact.count({
       where: { userId },
@@ -34,7 +26,7 @@ export async function GET() {
       },
     });
 
-    // ✅ FIX: eliminado "active"
+    // âœ… FIX: eliminado "active"
     const activeClients = await db.client.count({
       where: { userId },
     });

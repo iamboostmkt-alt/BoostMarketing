@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/security/rate-limit";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
@@ -14,14 +13,9 @@ export async function PATCH(req: NextRequest) {
   if (!_rl_workspace_update.success) return _rl_workspace_update.response;
 
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-    }
-    const workspaceId = session.user.workspaceId as string | null;
-    if (!workspaceId) {
-      return NextResponse.json({ error: "Sin workspace." }, { status: 400 });
-    }
+    const result = await requireWorkspace({ roles: ['ADMIN'] });
+    if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
     const body = await req.json();
     const validation = UpdateSchema.safeParse(body);
     if (!validation.success) {

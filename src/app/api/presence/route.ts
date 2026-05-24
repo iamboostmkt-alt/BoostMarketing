@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 import { broadcastRealtime } from '@/lib/realtime-server';
 
-// GET — all users' presence (internal staff only)
+// GET â€” all users' presence (internal staff only)
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
   const presences = await db.userPresence.findMany({
     include: {
@@ -18,12 +17,12 @@ export async function GET() {
   return NextResponse.json({ presences });
 }
 
-// PATCH — heartbeat / status update for the current user
+// PATCH â€” heartbeat / status update for the current user
 export async function PATCH(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
-  const userId = (session.user as { id: string }).id;
+  const { userId } = result.ctx;
   const body   = await req.json().catch(() => ({}));
   const status = (body.status === 'offline' ? 'offline' : 'online') as 'online' | 'offline';
 
@@ -37,8 +36,8 @@ export async function PATCH(req: NextRequest) {
   broadcastRealtime('presence.updated', {
     userId,
     status,
-    name:  session.user.name,
-    email: session.user.email,
+    name:  result.ctx.name,
+    email: result.ctx.email,
   }).catch(() => undefined);
 
   return NextResponse.json({ presence });

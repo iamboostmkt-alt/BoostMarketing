@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-    }
-
-    const workspaceId = session.user.workspaceId as string | null;
-    if (!workspaceId) {
-      return NextResponse.json({ error: "Sin workspace asignado." }, { status: 404 });
-    }
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
 
     const workspace = await db.workspace.findUnique({
       where: { id: workspaceId },
