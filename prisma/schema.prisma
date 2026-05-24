@@ -46,8 +46,9 @@ model Workspace {
   activityLogs  ActivityLog[]
   contacts      Contact[]
   chatMessages  ChatMessage[]
-  taskTemplates TaskTemplate[]
-  customRoles   CustomRole[]
+  taskTemplates      TaskTemplate[]
+  customRoles        CustomRole[]
+  analyticsSnapshots AnalyticsSnapshot[]
 
   @@map("workspaces")
 }
@@ -627,4 +628,18 @@ model DeliverableLog {
   createdAt DateTime @default(now()) @map("created_at")
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   @@map("deliverable_logs")
+}
+
+model AnalyticsSnapshot {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  period      String   // "2025-01" (mensual) | "2025-W03" (semanal)
+  type        String   // "monthly_tasks" | "weekly_meetings"
+  data        Json     // { completed, byUser, byClient, avgDays, total }
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, period, type])
+  @@map("analytics_snapshots")
 }
