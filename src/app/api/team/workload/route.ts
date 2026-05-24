@@ -1,19 +1,11 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  const role = session.user.role;
-  if (!["ADMIN", "PROJECT_MANAGER"].includes(role as string))
-    return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
-
-  const workspaceId = session.user.workspaceId as string | null;
-
-  // Seguridad multi-tenant: sin workspaceId no se exponen usuarios de otros workspaces
-  if (!workspaceId) return NextResponse.json({ error: "Workspace no encontrado" }, { status: 400 });
+  const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER"] });
+  if (!result.ok) return result.response;
+  const { workspaceId } = result.ctx;
 
   const users = await db.user.findMany({
     where: {
@@ -46,11 +38,11 @@ export async function GET() {
   });
 
   // Aplanar taskAssignments -> tasks
-  const result = users.map(u => ({
+  const mapped = users.map(u => ({
     ...u,
     activeTasks: u.taskAssignments.map((ta: any) => ta.task),
     taskAssignments: undefined,
   }));
 
-  return NextResponse.json({ users: result });
+  return NextResponse.json({ users: mapped });
 }

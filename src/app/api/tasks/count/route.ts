@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (!result.ok) return result.response;
 
   const clientId   = req.nextUrl.searchParams.get("clientId");
-  const workspaceId = result.ctx.workspaceId as string | null;
+  const { workspaceId } = result.ctx;
 
   if (!clientId) return NextResponse.json({ error: "clientId requerido" }, { status: 400 });
   // workspaceId opcional — JWT se refresca automaticamente
