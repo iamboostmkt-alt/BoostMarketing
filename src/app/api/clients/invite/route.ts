@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
-import { MANAGER_ROLES } from '@/core/constants/roles';
+import { requireWorkspace } from '@/core/auth/require-workspace';
 import { sendMail, templateBienvenidaCliente } from '@/lib/mailer';
 import { getBranding, emailLayout } from '@/lib/branding';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any))
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'] });
+    if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
 
     const body = await req.json();
     const { clientId, clientName, clientEmail, tempPassword, assignedManagerId } = body;
@@ -43,8 +42,8 @@ export async function POST(req: NextRequest) {
     if (!clientId)
       return NextResponse.json({ error: 'clientId requerido' }, { status: 400 });
 
-    const client = await db.client.findUnique({
-      where: { id: clientId },
+    const client = await db.client.findFirst({
+      where: { id: clientId, workspaceId },
       include: { assignedManager: { select: { name: true, email: true } } },
     });
     if (!client)

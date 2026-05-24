@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 
 // POST /api/tasks/archive — archivar tareas completadas de un cliente
@@ -20,7 +19,7 @@ export async function POST(req: NextRequest) {
     // Si se pasa clientId, archivar todas las completadas/aprobadas del cliente
     let where: any = {
       archivedAt: null,
-      ...(user.workspaceId ? { workspaceId: user.workspaceId } : {}),
+      workspaceId,
       status: { in: ['completed', 'approved'] },
       deliverableStatus: { in: ['completed', 'approved'] },
     };

@@ -1,26 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
+import { requireWorkspace } from '@/core/auth/require-workspace';
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+    const result = await requireWorkspace({ roles: ['ADMIN'] });
+    if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
 
     const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const deleted = await db.contact.deleteMany({
       where: {
         status:    'lead',
-        ...(user.workspaceId ? { workspaceId: user.workspaceId } : {}),
+        workspaceId,
         createdAt: { lt: cutoff },
       },
     });
 
     const pending = await db.contact.count({
-      where: { status: 'lead', createdAt: { gte: cutoff } },
+      where: { status: 'lead', workspaceId, createdAt: { gte: cutoff } },
     });
 
     return NextResponse.json({
