@@ -23,10 +23,7 @@ export async function POST(req: NextRequest) {
     const result = await requireWorkspace({ roles: ["ADMIN"] });
     if (!result.ok) return result.response;
 
-    const workspaceId = result.ctx.workspaceId as string | null;
-    if (!workspaceId) {
-      return NextResponse.json({ error: "Sin workspace asignado." }, { status: 400 });
-    }
+    const { workspaceId, workspaceName } = result.ctx;
 
     const body = await req.json();
     const validation = InviteSchema.safeParse(body);
@@ -63,7 +60,7 @@ export async function POST(req: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
     await sendMail(
       email,
-      `Fuiste invitado a ${(await import("@/lib/db").then(m => m.db.workspace.findUnique({ where: { id: result.ctx.workspaceId }, select: { name: true } })))?.name ?? "la plataforma"}`,
+      `Fuiste invitado a ${result.ctx.workspaceName ?? "la plataforma"}`,
       `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="color-scheme" content="light only"/></head>
       <body style="margin:0;padding:0;background-color:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f7" style="padding:32px 16px;"><tr><td align="center">

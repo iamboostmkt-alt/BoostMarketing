@@ -5,11 +5,12 @@ import { db } from "@/lib/db";
 import type { Role } from "@/core/auth/user-context";
 
 export type WorkspaceContext = {
-  userId:      string;
-  workspaceId: string;
-  role:        Role;
-  email:       string;
-  name:        string;
+  userId:        string;
+  workspaceId:   string;
+  role:          Role;
+  email:         string;
+  name:          string;
+  workspaceName: string | null;
 };
 
 type RequireWorkspaceResult =
@@ -77,11 +78,12 @@ export async function requireWorkspace(
   return {
     ok: true,
     ctx: {
-      userId:      session.user.id,
+      userId:        session.user.id,
       workspaceId,
       role,
-      email:       session.user.email ?? "",
-      name:        session.user.name  ?? "",
+      email:         session.user.email ?? "",
+      name:          session.user.name  ?? "",
+      workspaceName: (session.user as { workspaceName?: string | null }).workspaceName ?? null,
     },
   };
 }
@@ -113,11 +115,12 @@ export async function requireAuth(
   return {
     ok: true,
     ctx: {
-      userId:      session.user.id,
-      workspaceId: session.user.workspaceId ?? null,
+      userId:        session.user.id,
+      workspaceId:   session.user.workspaceId ?? null,
       role,
-      email:       session.user.email ?? "",
-      name:        session.user.name  ?? "",
+      email:         session.user.email ?? "",
+      name:          session.user.name  ?? "",
+      workspaceName: (session.user as { workspaceName?: string | null }).workspaceName ?? null,
     },
   };
 }
