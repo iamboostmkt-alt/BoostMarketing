@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     };
 
     if (taskIds?.length > 0) {
-      where = { id: { in: taskIds }, archivedAt: null };
+      where = { id: { in: taskIds }, archivedAt: null, workspaceId };
     } else if (clientId) {
       where.clientId = clientId;
     } else {
