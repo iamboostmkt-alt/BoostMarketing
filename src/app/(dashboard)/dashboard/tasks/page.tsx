@@ -340,10 +340,15 @@ function TasksContent() {
 
   async function handleMarkComplete(task: Task) {
     const newStatus = isManager ? 'completed' : 'internal_review';
-    const prevMy  = myTasks;
-    const prevAll = allTasks;
+    const prevMy      = myTasks;
+    const prevAll     = allTasks;
+    const prevClients = clientsWithTasks;
     setMyTasks(prev  => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
     setAllTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
+    setClientsWithTasks(prev => prev.map(c => ({
+      ...c,
+      tasks: c.tasks.map((t: any) => t.id === task.id ? { ...t, status: newStatus } : t),
+    })));
     try {
       const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: task.id, status: newStatus }) });
       if (!res.ok) throw new Error();
@@ -351,16 +356,22 @@ function TasksContent() {
     } catch {
       setMyTasks(prevMy);
       setAllTasks(prevAll);
+      setClientsWithTasks(prevClients);
       toast.error('Error al completar');
     }
   }
 
   async function handleStatusChange(taskId: string, newStatus: string) {
     // Optimistic update — UI first, API after
-    const prevMy  = myTasks;
-    const prevAll = allTasks;
+    const prevMy      = myTasks;
+    const prevAll     = allTasks;
+    const prevClients = clientsWithTasks;
     setMyTasks(prev  => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
     setAllTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+    setClientsWithTasks(prev => prev.map(c => ({
+      ...c,
+      tasks: c.tasks.map((t: any) => t.id === taskId ? { ...t, status: newStatus } : t),
+    })));
     try {
       const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: taskId, status: newStatus }) });
       if (!res.ok) throw new Error();
@@ -368,6 +379,7 @@ function TasksContent() {
       // Revert on error
       setMyTasks(prevMy);
       setAllTasks(prevAll);
+      setClientsWithTasks(prevClients);
       toast.error('Error al mover tarea');
     }
   }
