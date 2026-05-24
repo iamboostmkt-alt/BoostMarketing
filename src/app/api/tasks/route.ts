@@ -187,8 +187,12 @@ export async function GET(req: NextRequest) {
   }
 
   if (scope === "all" && isManager) {
+    // Paginación cursor-based — límite 50 por página
+    const cursor = req.nextUrl.searchParams.get("cursor") ?? undefined;
+    const limit  = Math.min(parseInt(req.nextUrl.searchParams.get("limit") ?? "50"), 100);
+
     // ADMIN ve todo — PM solo ve tareas de sus clientes asignados
-    let whereAll: any = { archivedAt: null, ...(workspaceId && { workspaceId }) };
+    let whereAll: any = { archivedAt: null, workspaceId };
     if (!isAdmin) {
       const managedClients = await db.client.findMany({
         where: { assignedManagerId: userId },
@@ -206,6 +210,7 @@ export async function GET(req: NextRequest) {
       ];
       whereAll = {
         archivedAt: null,
+        workspaceId,
         OR: [
           { userId },
           { assignedUserId: userId },
@@ -216,6 +221,8 @@ export async function GET(req: NextRequest) {
     }
     const tasks = await db.task.findMany({
       where: whereAll,
+      take:   limit + 1,
+      ...(cursor && { cursor: { id: cursor }, skip: 1 }),
       include: {
         assignedUser:  userInclude,
         assignedUsers: { include: { user: userInclude } },
@@ -223,7 +230,10 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json({ tasks: flattenTasks(tasks) });
+    const hasMore   = tasks.length > limit;
+    const page      = hasMore ? tasks.slice(0, limit) : tasks;
+    const nextCursor = hasMore ? page[page.length - 1].id : null;
+    return NextResponse.json({ tasks: flattenTasks(page), nextCursor, hasMore });
   }
 
   // Fallback — mismo comportamiento que antes
