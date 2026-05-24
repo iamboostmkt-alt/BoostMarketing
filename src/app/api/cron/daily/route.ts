@@ -54,8 +54,11 @@ export async function GET(req: NextRequest) {
 
     for (const u of uniqueUsers) {
       await db.notification.create({ data: { userId: u.id, message: `Tu tarea "${t.title}" está vencida`, type: "task", read: false, link: "/dashboard/tasks" } }).catch(() => {});
-      await sendMail(u.email, `Tarea vencida: ${t.title}`, templateTareaVencida(t.title, dueDate, branding, u.name ?? undefined));
-      emailsEnviados++;
+      // Filtrar dominios sin MX
+      if (!u.email.endsWith('@boostmkt.com')) {
+        await sendMail(u.email, `Tarea vencida: ${t.title}`, templateTareaVencida(t.title, dueDate, branding, u.name ?? undefined));
+        emailsEnviados++;
+      }
     }
     const pm = t.client?.assignedManager;
     if (pm?.id && !uniqueUsers.find(u => u.id === pm.id)) {
