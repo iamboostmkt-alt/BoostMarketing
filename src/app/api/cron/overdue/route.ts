@@ -144,7 +144,11 @@ export async function GET(req: NextRequest) {
     const milestoneIds = [...new Set(tareasConMilestone.map((t: any) => t.milestoneId as string))];
     const milestones = await db.milestone.findMany({
       where: { id: { in: milestoneIds } },
-      include: { client: { select: { assignedManagerId: true, assignedManager: { select: { id: true, email: true } } } } },
+      select: {
+        id: true,
+        title: true,
+        client: { select: { assignedManagerId: true, assignedManager: { select: { id: true, email: true } } } },
+      },
     }).catch(() => []);
     for (const ms of milestones) {
       const pmId = ms.client?.assignedManager?.id;
