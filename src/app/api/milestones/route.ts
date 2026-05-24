@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 import { sendMail, templateMilestoneCompletado } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
@@ -76,9 +75,8 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any))
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const resultPut = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+    if (!resultPut.ok) return resultPut.response;
     const {
       id, title, description, date, status, type,
       progress, responsibleId, visibleToClient, comments,
@@ -125,9 +123,8 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any))
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const resultDel = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+    if (!resultDel.ok) return resultDel.response;
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 });

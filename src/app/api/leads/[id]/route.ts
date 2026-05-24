@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
+import { requireWorkspace } from '@/core/auth/require-workspace';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 
 // POST /api/leads/[id]/convert — convierte lead a CLIENT o USER
@@ -9,14 +9,10 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any)) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-    const workspaceId = user.workspaceId;
-    if (!workspaceId) {
-      return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
-    }
+    const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'] });
+    if (!result.ok) return result.response;
+    const { userId: uid, workspaceId } = result.ctx;
+    const user = { ...result.ctx, id: result.ctx.userId };
 
     const lead = await db.contact.findUnique({ where: { id: params.id } });
     if (!lead) {
@@ -89,12 +85,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getSessionUser();
-    const workspaceId = user?.workspaceId ?? null;
-    if (!user || !MANAGER_ROLES.includes(user.role as any)) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+    const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'] });
+    if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
 
+    const existing = await db.contact.findFirst({ where: { id: params.id, workspaceId } });
+    if (!existing) return NextResponse.json({ error: 'Lead no encontrado' }, { status: 404 });
     await db.contact.delete({ where: { id: params.id } });
     return NextResponse.json({ message: 'Lead eliminado' });
   } catch (error) {

@@ -49,17 +49,13 @@ const clientInclude = {
 export async function GET(req: NextRequest) {
   const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'tasks-get' });
   if (!rl.success) return rl.response;
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const resultGet = await requireWorkspace();
+  if (!resultGet.ok) return resultGet.response;
 
-  // FASE 1: usar user context normalizado
-  const user = await getSessionUser();
-  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-  const userId      = user.id;
-  const workspaceId = (user as any).workspaceId as string | null;
-  const role        = user.role;
-  if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
+  const userId      = resultGet.ctx.userId;
+  const workspaceId = resultGet.ctx.workspaceId;
+  const role        = resultGet.ctx.role;
+  const user        = { ...resultGet.ctx, id: resultGet.ctx.userId };
   const isAdmin     = role === "ADMIN";
   const isPM      = role === "PROJECT_MANAGER";
   const isManager = isAdmin || isPM;

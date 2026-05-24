@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
+import { requireWorkspace } from '@/core/auth/require-workspace';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 import { rateLimit } from '@/lib/security/rate-limit';
 
@@ -74,10 +74,9 @@ export async function POST(req: NextRequest) {
 // GET — solo ADMIN/PM ven los leads
 export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any)) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+    const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'] });
+    if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
 
     const { searchParams } = new URL(req.url);
     const source = searchParams.get('source');
@@ -85,6 +84,7 @@ export async function GET(req: NextRequest) {
 
     const leads = await db.contact.findMany({
       where: {
+        workspaceId,
         status,
         ...(source && { source }),
       },
