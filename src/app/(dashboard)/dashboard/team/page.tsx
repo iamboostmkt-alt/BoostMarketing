@@ -230,7 +230,7 @@ export default function TeamPage() {
   );
 
   function handleRoleChange(userId: string, currentRole: string) {
-    router.push('/dashboard/admin?tab=users');
+    router.push('/dashboard/admin');
   }
 
   return (
