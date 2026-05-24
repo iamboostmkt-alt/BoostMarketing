@@ -60,3 +60,4 @@ server.log
 
 .vercel
 .claude/
+*.py
