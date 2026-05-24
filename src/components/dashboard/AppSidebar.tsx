@@ -252,12 +252,12 @@ function WorkspaceSwitcher({
                 <span className="text-xs text-white/60 group-hover:text-white/80">Plan actual</span>
                 <span className="text-[10px] font-semibold text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full">FREE</span>
               </Link>
-              <Link href="/dashboard/admin?tab=users" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+              <Link href="/dashboard/team" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
                 <span className="text-xs text-white/60 group-hover:text-white/80">Miembros</span>
                 <span className="text-[10px] text-white/40">Ver todos →</span>
               </Link>
               <Link href="/dashboard/clients" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
-                <span className="text-xs text-white/60 group-hover:text-white/80">Clientes activos</span>
+                <span className="text-xs text-white/60 group-hover:text-white/80">Cuentas activas</span>
                 <span className="text-[10px] text-white/40">Ver →</span>
               </Link>
             </div>
@@ -420,21 +420,14 @@ function ClientsSection({ collapsed }: { collapsed: boolean }) {
                 className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75"
               >
                 <div className="h-2 w-2 rounded-full bg-purple-400/60" />
-                <span className="truncate">Ver todos</span>
+                <span className="truncate">Gestión de cuentas</span>
               </Link>
               <Link
-                href="/dashboard/admin/users"
-                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75"
-              >
-                <div className="h-2 w-2 rounded-full bg-blue-400/60" />
-                <span className="truncate">Gestionar equipo</span>
-              </Link>
-              <Link
-                href="/dashboard/admin/invite"
+                href="/dashboard/clients/new"
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] text-purple-400/70 transition-colors hover:text-purple-400"
               >
                 <Plus className="h-3 w-3" />
-                <span>Invitar usuario</span>
+                <span>Nueva cuenta</span>
               </Link>
             </div>
           </motion.div>
@@ -622,10 +615,10 @@ export default function AppSidebar() {
           ))}
         </div>
 
-        {/* Cuentas — solo roles internos con acceso a clientes */}
+        {/* Cuentas — label dinámico: "Clientes" para ADMIN, "Cuentas" para PM */}
         {(isAdmin || isManagerRole) && (
           <>
-            <SectionLabel collapsed={collapsed}>Cuentas</SectionLabel>
+            <SectionLabel collapsed={collapsed}>{isAdmin ? "Clientes" : "Cuentas"}</SectionLabel>
             <ClientsSection collapsed={collapsed} />
           </>
         )}
