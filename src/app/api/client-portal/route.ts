@@ -50,8 +50,8 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      client = await db.client.findUnique({
-        where: { id: clientId },
+      client = await db.client.findFirst({
+        where: { id: clientId, workspaceId },
         include: {
           assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
           assignedUsers: {

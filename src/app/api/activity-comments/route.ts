@@ -17,9 +17,9 @@ const userSelect = {
 // Returns the activity if the caller is allowed to read/write its comments.
 // Throws a { status, error } object if not allowed.
 
-async function resolveAccess(activityId: string, userId: string, role: string, email: string) {
-  const activity = await db.activity.findUnique({
-    where: { id: activityId },
+async function resolveAccess(activityId: string, userId: string, role: string, email: string, workspaceId: string) {
+  const activity = await db.activity.findFirst({
+    where: { id: activityId, workspaceId },
     include: {
       client: { select: { id: true, email: true, assignedManagerId: true } },
     },
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
     const activityId = searchParams.get('activityId');
     if (!activityId) return NextResponse.json({ error: 'activityId es requerido.' }, { status: 400 });
 
-    const { error, status } = await resolveAccess(activityId, userId, role, email);
+    const { error, status } = await resolveAccess(activityId, userId, role, email, workspaceId);
     if (error) return NextResponse.json({ error }, { status });
 
     const comments = await db.activityComment.findMany({
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `El mensaje no puede superar ${MAX_LEN} caracteres.` }, { status: 400 });
     }
 
-    const { error, status } = await resolveAccess(activityId, userId, role, email);
+    const { error, status } = await resolveAccess(activityId, userId, role, email, workspaceId);
     if (error) return NextResponse.json({ error }, { status });
 
     const comment = await db.activityComment.create({
@@ -123,8 +123,8 @@ export async function POST(req: NextRequest) {
     broadcastRealtime('comment.created', { activityId, commentId: comment.id }).catch(() => undefined);
 
     // Notify participants via event system (non-blocking)
-    db.activity.findUnique({
-      where:   { id: activityId },
+    db.activity.findFirst({
+      where:   { id: activityId, workspaceId },
       include: { client: { select: { assignedManagerId: true } } },
     }).then((activity) => {
       if (!activity) return;
