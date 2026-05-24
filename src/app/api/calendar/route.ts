@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
     // ── TASKS ──────────────────────────────────────────────
     // workspaceId ya disponible desde requireWorkspace
-    let taskWhere: any = workspaceId ? { workspaceId } : {};
+    let taskWhere: any = { workspaceId };
 
     if (isClient) {
       const clientRecord = await db.client.findFirst({
@@ -37,9 +37,9 @@ export async function GET(req: NextRequest) {
         ? { clientId: clientRecord.id, visibility: 'client_visible', deletedAt: null, parentTaskId: null }
         : { id: 'none' };
     } else if (scope === 'all' && isManager) {
-      taskWhere = { deletedAt: null, archivedAt: null, parentTaskId: null };
+      taskWhere = { workspaceId, deletedAt: null, archivedAt: null, parentTaskId: null };
     } else if (scope === 'clients-with-tasks' && isManager) {
-      taskWhere = { clientId: { not: null }, deletedAt: null, archivedAt: null, parentTaskId: null };
+      taskWhere = { workspaceId, clientId: { not: null }, deletedAt: null, archivedAt: null, parentTaskId: null };
     } else if (clientId && isManager) {
       taskWhere = { clientId, deletedAt: null, archivedAt: null, parentTaskId: null, NOT: { type: 'internal_task' } };
     } else {
