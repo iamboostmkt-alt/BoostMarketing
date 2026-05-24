@@ -51,7 +51,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
-    const { userId } = result.ctx;
+    const { userId, workspaceId } = result.ctx;
     const body = await req.json();
     const { name, image, color, removeImage } = body;
 
@@ -85,6 +85,7 @@ export async function PATCH(req: NextRequest) {
     await db.activityLog.create({
       data: {
         userId,
+        workspaceId,
         action: 'UPDATE_PROFILE',
         entity: 'User',
         entityId: userId,

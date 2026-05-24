@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     // Buscar primer admin para asignar el lead
     const firstAdmin = await db.user.findFirst({
       where: { role: { in: ['ADMIN', 'PROJECT_MANAGER'] }, active: true },
-      select: { id: true },
+      select: { id: true, workspaceId: true },
     });
 
     if (!firstAdmin) {
@@ -42,23 +42,25 @@ export async function POST(req: NextRequest) {
 
     const contact = await db.contact.create({
       data: {
-        userId:  firstAdmin.id,
-        name:    name.trim(),
-        email:   email.trim().toLowerCase(),
-        phone:   (phone ?? '').trim(),
-        notes:   (notes ?? '').trim(),
-        status:  'lead',
-        source:  source || 'landing_video',
+        userId:      firstAdmin.id,
+        workspaceId: firstAdmin.workspaceId,
+        name:        name.trim(),
+        email:       email.trim().toLowerCase(),
+        phone:       (phone ?? '').trim(),
+        notes:       (notes ?? '').trim(),
+        status:      'lead',
+        source:      source || 'landing_video',
       },
     });
 
     // Notificar al admin
     await db.notification.create({
       data: {
-        userId:  firstAdmin.id,
-        message: `Nuevo lead desde landing: ${contact.name} (${contact.email})`,
-        type:    'lead',
-        link:    '/dashboard/contacts',
+        userId:      firstAdmin.id,
+        workspaceId: firstAdmin.workspaceId,
+        message:     `Nuevo lead desde landing: ${contact.name} (${contact.email})`,
+        type:        'lead',
+        link:        '/dashboard/contacts',
       },
     }).catch(() => undefined);
 

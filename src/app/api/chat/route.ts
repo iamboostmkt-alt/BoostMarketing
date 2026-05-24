@@ -69,9 +69,10 @@ export async function GET(req: NextRequest) {
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
 
-  const userId = ({ id: result.ctx.userId }).id;
-  const role  = result.ctx.role  as string;
-  const email = result.ctx.email as string;
+  const userId      = result.ctx.userId;
+  const workspaceId = result.ctx.workspaceId;
+  const role        = result.ctx.role  as string;
+  const email       = result.ctx.email as string;
 
   const { searchParams } = new URL(req.url);
   const room = searchParams.get('room') ?? 'TEAM';
@@ -96,8 +97,9 @@ export async function POST(req: NextRequest) {
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
 
-  const userId = ({ id: result.ctx.userId }).id;
-  const role   = result.ctx.role  as string;
+  const userId      = result.ctx.userId;
+  const workspaceId = result.ctx.workspaceId;
+  const role        = result.ctx.role  as string;
   const email  = result.ctx.email as string;
   const name   = result.ctx.name  as string | null;
 
@@ -113,7 +115,7 @@ export async function POST(req: NextRequest) {
   if (text.length > 2000) return NextResponse.json({ error: 'El mensaje es demasiado largo.'  }, { status: 400 });
 
   const chatMessage = await db.chatMessage.create({
-    data:    { userId, message: text, room },
+    data:    { userId, workspaceId, message: text, room },
     include: messageInclude,
   });
 
@@ -125,6 +127,7 @@ export async function POST(req: NextRequest) {
       if (mentionedIds.length === 0) return;
       return dispatchEvent({
         type:           'user.mentioned',
+        workspaceId,
         actorId:        userId,
         actorName:      name,
         targetUserIds:  mentionedIds,

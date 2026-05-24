@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     const dueDate = t.dueDate ? new Date(t.dueDate).toLocaleDateString("es-MX") : "";
 
     for (const u of uniqueUsers) {
-      await db.notification.create({ data: { userId: u.id, message: `Tu tarea "${t.title}" está vencida`, type: "task", read: false, link: "/dashboard/tasks" } }).catch(() => {});
+      await db.notification.create({ data: { userId: u.id, workspaceId: t.workspaceId, message: `Tu tarea "${t.title}" está vencida`, type: "task", read: false, link: "/dashboard/tasks" } }).catch(() => {});
       // Filtrar dominios sin MX
       if (!u.email.endsWith('@boostmkt.com')) {
         await sendMail(u.email, `Tarea vencida: ${t.title}`, templateTareaVencida(t.title, dueDate, branding, u.name ?? undefined));
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     }
     const pm = t.client?.assignedManager;
     if (pm?.id && !uniqueUsers.find(u => u.id === pm.id)) {
-      await db.notification.create({ data: { userId: pm.id, message: `Tarea vencida en tu cliente: "${t.title}"`, type: "task", read: false, link: "/dashboard/tasks" } }).catch(() => {});
+      await db.notification.create({ data: { userId: pm.id, workspaceId: t.workspaceId, message: `Tarea vencida en tu cliente: "${t.title}"`, type: "task", read: false, link: "/dashboard/tasks" } }).catch(() => {});
     }
   }
   results.overdueNotified = emailsEnviados;
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
       urgencia = "24h sin revisar";
       await db.task.update({ where: { id: t.id }, data: { priority: "urgent" } }).catch(() => {});
     } else urgencia = "pendiente de revisión";
-    await db.notification.create({ data: { userId: pm.id, message: `"${t.title}" lleva ${urgencia}`, type: "task", read: false, link: "/dashboard/tasks" } }).catch(() => {});
+    await db.notification.create({ data: { userId: pm.id, workspaceId: t.workspaceId, message: `"${t.title}" lleva ${urgencia}`, type: "task", read: false, link: "/dashboard/tasks" } }).catch(() => {});
     reviewReminders++;
   }
   results.reviewReminders = reviewReminders;

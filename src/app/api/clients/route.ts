@@ -145,6 +145,7 @@ export async function POST(req: NextRequest) {
   await db.activityLog.create({
     data: {
       userId,
+      workspaceId,
       action:   "CREATE_CLIENT",
       entity:   "Client",
       entityId: client.id,
@@ -171,7 +172,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  await logAction({ userId, action: "CLIENT_CREATED", entity: "client", entityId: client.id, details: { name: client.name } });
+  await logAction({ userId, workspaceId, action: "CLIENT_CREATED", entity: "client", entityId: client.id, details: { name: client.name } });
 
   const fresh = await db.client.findFirst({ where: { id: client.id, workspaceId }, select: clientSelect });
   return NextResponse.json({ client: formatClient(fresh as unknown as Record<string, unknown>) }, { status: 201 });
@@ -223,6 +224,7 @@ export async function PUT(req: NextRequest) {
   await db.activityLog.create({
     data: {
       userId,
+      workspaceId,
       action:   "UPDATE_CLIENT",
       entity:   "Client",
       entityId: client.id,
@@ -254,6 +256,7 @@ export async function DELETE(req: NextRequest) {
   await db.activityLog.create({
     data: {
       userId,
+      workspaceId,
       action:   "DELETE_CLIENT",
       entity:   "Client",
       entityId: id,

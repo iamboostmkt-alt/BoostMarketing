@@ -99,6 +99,7 @@ export async function POST(req: NextRequest) {
       await db.task.create({
         data: {
           userId:        pmId,
+          workspaceId:   task.workspaceId,
           title:         `[Cambio solicitado] ${task.title}`,
           description:   message || `El cliente solicitó cambios en: ${task.title}`,
           priority:      'high',
@@ -113,10 +114,11 @@ export async function POST(req: NextRequest) {
       // Notificar al PM
       await db.notification.create({
         data: {
-          userId:  pmId,
-          message: `Cliente solicitó cambios en: "${task.title}"`,
-          type:    'task',
-          link:    '/dashboard/tasks',
+          userId:      pmId,
+          workspaceId: task.workspaceId,
+          message:     `Cliente solicitó cambios en: "${task.title}"`,
+          type:        'task',
+          link:        '/dashboard/tasks',
         },
       }).catch(() => undefined);
     }

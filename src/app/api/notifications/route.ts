@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
-    const { userId } = result.ctx;
+    const { userId, workspaceId } = result.ctx;
     const body   = await req.json();
 
     if (body.all === true) {
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
-    const { userId } = result.ctx;
+    const { userId, workspaceId } = result.ctx;
     const body   = await req.json();
     const { message, type, link } = body;
 
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     }
 
     const notification = await db.notification.create({
-      data: { userId, message, type: type || 'info', link },
+      data: { userId, workspaceId, message, type: type || 'info', link },
     });
 
     return NextResponse.json({ notification }, { status: 201 });

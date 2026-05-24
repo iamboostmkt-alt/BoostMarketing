@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       meetUrl:  (meetUrl ?? "").trim(),
       status:   "pending",
       clientId: matchingClient?.id ?? null,
-      ...(workspaceId && { workspaceId }),
+      workspaceId: workspaceId ?? '',
       ...(allAssignedIds.length > 0 && {
         assignedUsers: {
           create: allAssignedIds.map((uid) => ({ userId: uid })),
@@ -115,6 +115,7 @@ export async function POST(req: NextRequest) {
           endDate:         new Date(parsedDate.getTime() + 60 * 60 * 1000),
           createdByUserId: firstAdmin.id,
           assignedUserId:  firstAdmin.id,
+          workspaceId:     firstAdmin.workspaceId ?? '',
         },
       });
     } catch (actErr) {
@@ -133,10 +134,11 @@ export async function POST(req: NextRequest) {
   if (notifyUsers.length > 0) {
     await db.notification.createMany({
       data: notifyUsers.map((u) => ({
-        userId:  u.id,
-        message: "Nuevo prospecto: " + nameTrim + " agendo videollamada para el " + dateStr,
-        type:    "appointment",
-        link:    "/dashboard/calendar",
+        userId:      u.id,
+        workspaceId: workspaceId ?? '',
+        message:     "Nuevo prospecto: " + nameTrim + " agendo videollamada para el " + dateStr,
+        type:        "appointment",
+        link:        "/dashboard/calendar",
       })),
     });
     for (const u of notifyUsers) {

@@ -345,7 +345,7 @@ export async function POST(req: NextRequest) {
       references:     Array.isArray(references) ? references : [],
       parentTaskId:   parentTaskId || null,
       milestoneId:    milestoneId  || null,
-      ...(resolvedWorkspaceId && { workspaceId: resolvedWorkspaceId }),
+      workspaceId: resolvedWorkspaceId,
       assignedUsers: { create: finalAssignedIds.map((uid: string) => ({ userId: uid })) },
     },
     include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },
@@ -355,14 +355,13 @@ export async function POST(req: NextRequest) {
   const branding = await getBranding();
   // Obtener asignados con nombre para personalizar email
   const assignedWithNames = [
-    ...(task.assignedUser ? [{ email: task.assignedUser.email, name: task.assignedUser.name }] : []),
     ...(task.assignedUsers?.map((au: any) => ({ email: au.user?.email, name: au.user?.name })) ?? []),
   ].filter((u, i, arr) => u.email && arr.findIndex(x => x.email === u.email) === i);
   for (const u of assignedWithNames) {
     if (u.email) await sendMail(u.email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding, u.name ?? undefined));
   }
 
-  await logAction({ userId, action: "TASK_CREATED", entity: "task", entityId: task.id, details: { title: task.title } });
+  await logAction({ userId, workspaceId, action: "TASK_CREATED", entity: "task", entityId: task.id, details: { title: task.title } });
   return NextResponse.json({ task: flattenTask(task) }, { status: 201 });
 }
 
@@ -464,7 +463,7 @@ export async function PUT(req: NextRequest) {
     notifyIds.delete(userId);
     for (const uid of notifyIds) {
       await db.notification.create({
-        data: { userId: uid, message: `"${task.title}" cambio a estado: ${task.status}`, type: "task", link: "/dashboard/tasks" },
+        data: { userId: uid, workspaceId, message: `"${task.title}" cambio a estado: ${task.status}`, type: "task", link: "/dashboard/tasks" },
       });
     }
     const _branding = await getBranding();
@@ -526,11 +525,12 @@ export async function PUT(req: NextRequest) {
       if (pm) {
         await db.notification.create({
           data: {
-            userId:  pm.id,
-            message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`,
-            type:    "task",
-            read:    false,
-            link:    "/dashboard/tasks",
+            userId:      pm.id,
+            workspaceId: workspaceId,
+            message:     `⏳ ${userName} terminó: "${task.title}" — lista para revisar`,
+            type:        "task",
+            read:        false,
+            link:        "/dashboard/tasks",
           },
         });
         if (pm.email) {
@@ -575,7 +575,7 @@ export async function PUT(req: NextRequest) {
 
       for (const uid of asignados) {
         await db.notification.create({
-          data: { userId: uid, message: mensaje, type: "task", read: false, link: "/dashboard/tasks" },
+          data: { userId: uid, workspaceId, message: mensaje, type: "task", read: false, link: "/dashboard/tasks" },
         });
       }
       for (const u of _assignedUsers) {
@@ -613,7 +613,7 @@ export async function PUT(req: NextRequest) {
     const newAssignee = await db.user.findUnique({ where: { id: assignedUserId }, select: { id: true, email: true, name: true } });
     if (newAssignee && newAssignee.id !== userId) {
       await db.notification.create({
-        data: { userId: newAssignee.id, message: `${userName} te asigno la tarea: "${task.title}"`, type: "task", link: "/dashboard/tasks" },
+        data: { userId: newAssignee.id, workspaceId, message: `${userName} te asigno la tarea: "${task.title}"`, type: "task", link: "/dashboard/tasks" },
       });
       if (newAssignee.email) {
         getBranding().then(b => sendMail(newAssignee.email!, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b, newAssignee.name ?? undefined))).catch(console.error);
@@ -637,7 +637,7 @@ export async function PUT(req: NextRequest) {
     existing.assignedUsers?.forEach((au: any) => { if (au.user.id !== userId) notifyIds.add(au.user.id); });
     for (const uid of notifyIds) {
       await db.notification.create({
-        data: { userId: uid, message: `"${task.title}" fue editada por ${userName}`, type: "task", link: "/dashboard/tasks" },
+        data: { userId: uid, workspaceId, message: `"${task.title}" fue editada por ${userName}`, type: "task", link: "/dashboard/tasks" },
       });
     }
     const emails = await getAssignedEmails(task.id);
@@ -700,7 +700,7 @@ export async function PUT(req: NextRequest) {
     }
   }
 
-  await logAction({ userId, action: "TASK_UPDATED", entity: "task", entityId: task.id, details: { status: task.status, title: task.title } });
+  await logAction({ userId, workspaceId, action: "TASK_UPDATED", entity: "task", entityId: task.id, details: { status: task.status, title: task.title } });
   return NextResponse.json({ task: flattenTask(task) });
 }
 
@@ -728,6 +728,6 @@ export async function DELETE(req: NextRequest) {
 
   await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
   await db.task.delete({ where: { id } });
-  await logAction({ userId: result.ctx.userId, action: "TASK_DELETED", entity: "task", entityId: id });
+  await logAction({ userId: result.ctx.userId, workspaceId: result.ctx.workspaceId, action: "TASK_DELETED", entity: "task", entityId: id });
   return NextResponse.json({ success: true });
 }

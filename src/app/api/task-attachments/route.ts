@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
       await db.notification.createMany({
         data: Array.from(notifyIds).map(userId => ({
           userId,
+          workspaceId: result.ctx.workspaceId,
           message: `📎 ${result.ctx.name} adjuntó "${fileName}" en la tarea`,
           type: 'task',
           link: '/dashboard/tasks',

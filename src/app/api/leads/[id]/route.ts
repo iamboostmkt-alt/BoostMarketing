@@ -49,7 +49,7 @@ export async function POST(
           company:           lead.company || '',
           phone:             lead.phone   || '',
           assignedManagerId: assignedManagerId || user.id,
-          ...(workspaceId && { workspaceId }),
+          workspaceId: workspaceId ?? '',
         },
       });
 
@@ -61,11 +61,12 @@ export async function POST(
 
       await db.activityLog.create({
         data: {
-          userId:   user.id,
-          action:   'CONVERT_LEAD_TO_CLIENT',
-          entity:   'Client',
-          entityId: client.id,
-          details:  JSON.stringify({ leadId: lead.id, name: lead.name }),
+          userId:      user.id,
+          workspaceId: workspaceId ?? '',
+          action:      'CONVERT_LEAD_TO_CLIENT',
+          entity:      'Client',
+          entityId:    client.id,
+          details:     JSON.stringify({ leadId: lead.id, name: lead.name }),
         },
       }).catch(() => undefined);
 

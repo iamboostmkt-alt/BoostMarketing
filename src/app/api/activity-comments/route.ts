@@ -61,9 +61,10 @@ export async function GET(req: NextRequest) {
     const result = await requireWorkspace();
   if (!result.ok) return result.response;
 
-    const userId = result.ctx.userId;
-    const role   = result.ctx.role as string;
-    const email  = result.ctx.email as string;
+    const userId      = result.ctx.userId;
+    const workspaceId = result.ctx.workspaceId;
+    const role        = result.ctx.role as string;
+    const email       = result.ctx.email as string;
 
     const { searchParams } = new URL(req.url);
     const activityId = searchParams.get('activityId');
@@ -92,9 +93,10 @@ export async function POST(req: NextRequest) {
     const result = await requireWorkspace();
   if (!result.ok) return result.response;
 
-    const userId = result.ctx.userId;
-    const role   = result.ctx.role as string;
-    const email  = result.ctx.email as string;
+    const userId      = result.ctx.userId;
+    const workspaceId = result.ctx.workspaceId;
+    const role        = result.ctx.role as string;
+    const email       = result.ctx.email as string;
 
     const body = await req.json();
     const { activityId, message } = body;
@@ -135,6 +137,7 @@ export async function POST(req: NextRequest) {
       if (notifyIds.size === 0) return;
       return dispatchEvent({
         type:          'activity.commented',
+        workspaceId,
         actorId:       userId,
         actorName:     email,
         targetUserIds: [...notifyIds],

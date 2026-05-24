@@ -3,60 +3,61 @@
  * API routes call dispatchEvent() instead of writing notification logic inline.
  */
 
-import { db } from './db';
-import { sendEmail, taskAssignedHtml } from './resend';
-import { broadcastRealtime } from './realtime-server';
+import { db } from "./db";
+import { sendEmail, taskAssignedHtml } from "./resend";
+import { broadcastRealtime } from "./realtime-server";
 
 // ── Event types ────────────────────────────────────────────────────────────────
 
 export type EventType =
-  | 'task.assigned'
-  | 'task.status_changed'
-  | 'activity.assigned'
-  | 'activity.commented'
-  | 'user.mentioned';
+  | "task.assigned"
+  | "task.status_changed"
+  | "activity.assigned"
+  | "activity.commented"
+  | "user.mentioned";
 
 interface BaseEvent {
-  type: EventType;
-  actorId: string;
-  actorName?: string | null;
+  type:        EventType;
+  actorId:     string;
+  actorName?:  string | null;
+  workspaceId: string;
 }
 
 export interface TaskAssignedEvent extends BaseEvent {
-  type: 'task.assigned';
-  targetUserId: string;
-  taskTitle: string;
+  type:             "task.assigned";
+  targetUserId:     string;
+  taskTitle:        string;
   taskDescription?: string;
-  priority: string;
-  dueDate?: string;
-  assigneeEmail?: string;
-  assigneeName?: string | null;
+  priority:         string;
+  dueDate?:         string;
+  assigneeEmail?:   string;
+  assigneeName?:    string | null;
 }
 
 export interface TaskStatusChangedEvent extends BaseEvent {
-  type: 'task.status_changed';
+  type:         "task.status_changed";
   targetUserId: string;
-  taskTitle: string;
-  newStatus: string;
+  taskTitle:    string;
+  newStatus:    string;
 }
 
 export interface ActivityAssignedEvent extends BaseEvent {
-  type: 'activity.assigned';
-  targetUserId: string;
+  type:          "activity.assigned";
+  targetUserId:  string;
   activityTitle: string;
 }
 
 export interface ActivityCommentedEvent extends BaseEvent {
-  type: 'activity.commented';
+  type:          "activity.commented";
   targetUserIds: string[];
   activityTitle: string;
 }
 
 export interface MentionEvent extends BaseEvent {
-  type: 'user.mentioned';
+  type:          "user.mentioned";
   targetUserIds: string[];
   contextSnippet: string;
-  link: string;
+  link:          string;
 }
 
 export type AppEvent =
@@ -69,96 +70,101 @@ export type AppEvent =
 // ── Dispatcher ─────────────────────────────────────────────────────────────────
 
 export async function dispatchEvent(event: AppEvent): Promise<void> {
+  const { workspaceId } = event;
+
   switch (event.type) {
-    case 'task.assigned': {
+    case "task.assigned": {
       await db.notification.create({
         data: {
-          userId:  event.targetUserId,
-          message: `Se te asignó la tarea: "${event.taskTitle}"`,
-          type:    'task',
-          link:    '/dashboard/tasks',
+          userId:      event.targetUserId,
+          workspaceId,
+          message:     `Se te asignó la tarea: "${event.taskTitle}"`,
+          type:        "task",
+          link:        "/dashboard/tasks",
         },
       });
-
-      broadcastRealtime('notification.created', { userId: event.targetUserId }).catch(() => undefined);
-
+      broadcastRealtime("notification.created", { userId: event.targetUserId }).catch(() => undefined);
       if (event.assigneeEmail) {
         sendEmail({
           to:      event.assigneeEmail,
           subject: `Nueva tarea asignada: ${event.taskTitle}`,
           html:    taskAssignedHtml({
-            userName:        event.assigneeName  ?? 'Usuario',
+            userName:        event.assigneeName  ?? "Usuario",
             taskTitle:       event.taskTitle,
-            taskDescription: event.taskDescription ?? '',
+            taskDescription: event.taskDescription ?? "",
             priority:        event.priority,
-            dueDate:         event.dueDate ?? '',
-            assignedBy:      event.actorName ?? 'El sistema',
-            appUrl:          process.env.NEXTAUTH_URL ?? 'https://boostmarketing.vercel.app',
+            dueDate:         event.dueDate ?? "",
+            assignedBy:      event.actorName ?? "El sistema",
+            appUrl:          process.env.NEXTAUTH_URL ?? "https://boostmarketing.vercel.app",
           }),
         }).catch(() => undefined);
       }
       break;
     }
 
-    case 'task.status_changed': {
+    case "task.status_changed": {
       await db.notification.create({
         data: {
-          userId:  event.targetUserId,
-          message: `Tu tarea "${event.taskTitle}" cambió a: ${event.newStatus}`,
-          type:    'task',
-          link:    '/dashboard/tasks',
+          userId:      event.targetUserId,
+          workspaceId,
+          message:     `Tu tarea "${event.taskTitle}" cambió a: ${event.newStatus}`,
+          type:        "task",
+          link:        "/dashboard/tasks",
         },
       });
-      broadcastRealtime('notification.created', { userId: event.targetUserId }).catch(() => undefined);
+      broadcastRealtime("notification.created", { userId: event.targetUserId }).catch(() => undefined);
       break;
     }
 
-    case 'activity.assigned': {
+    case "activity.assigned": {
       await db.notification.create({
         data: {
-          userId:  event.targetUserId,
-          message: `Se te asignó la actividad: "${event.activityTitle}"`,
-          type:    'activity',
-          link:    '/dashboard/calendar',
+          userId:      event.targetUserId,
+          workspaceId,
+          message:     `Se te asignó la actividad: "${event.activityTitle}"`,
+          type:        "activity",
+          link:        "/dashboard/calendar",
         },
       });
-      broadcastRealtime('notification.created', { userId: event.targetUserId }).catch(() => undefined);
+      broadcastRealtime("notification.created", { userId: event.targetUserId }).catch(() => undefined);
       break;
     }
 
-    case 'activity.commented': {
+    case "activity.commented": {
       if (event.targetUserIds.length === 0) break;
       await db.notification.createMany({
         data: event.targetUserIds.map((uid) => ({
-          userId:  uid,
-          message: `${event.actorName ?? 'Alguien'} comentó en "${event.activityTitle}"`,
-          type:    'activity_comment',
-          link:    '/dashboard/calendar',
+          userId:      uid,
+          workspaceId,
+          message:     `${event.actorName ?? "Alguien"} comentó en "${event.activityTitle}"`,
+          type:        "activity_comment",
+          link:        "/dashboard/calendar",
         })),
         skipDuplicates: true,
       });
       event.targetUserIds.forEach((uid) => {
-        broadcastRealtime('notification.created', { userId: uid }).catch(() => undefined);
+        broadcastRealtime("notification.created", { userId: uid }).catch(() => undefined);
       });
       break;
     }
 
-    case 'user.mentioned': {
+    case "user.mentioned": {
       if (event.targetUserIds.length === 0) break;
       const snippet = event.contextSnippet.length > 80
-        ? event.contextSnippet.slice(0, 77) + '...'
+        ? event.contextSnippet.slice(0, 77) + "..."
         : event.contextSnippet;
       await db.notification.createMany({
         data: event.targetUserIds.map((uid) => ({
-          userId:  uid,
-          message: `${event.actorName ?? 'Alguien'} te mencionó: "${snippet}"`,
-          type:    'mention',
-          link:    event.link,
+          userId:      uid,
+          workspaceId,
+          message:     `${event.actorName ?? "Alguien"} te mencionó: "${snippet}"`,
+          type:        "mention",
+          link:        event.link,
         })),
         skipDuplicates: true,
       });
       event.targetUserIds.forEach((uid) => {
-        broadcastRealtime('notification.created', { userId: uid }).catch(() => undefined);
+        broadcastRealtime("notification.created", { userId: uid }).catch(() => undefined);
       });
       break;
     }
@@ -166,8 +172,6 @@ export async function dispatchEvent(event: AppEvent): Promise<void> {
 }
 
 // ── Mention resolver ───────────────────────────────────────────────────────────
-// Parses @all or @name from a message and returns the matching user IDs.
-// The caller filters out the actor before using the result.
 
 export async function resolveMentions(
   message: string,
@@ -175,7 +179,7 @@ export async function resolveMentions(
 ): Promise<string[]> {
   if (/@all\b/i.test(message)) {
     const users = await db.user.findMany({
-      where: { active: true, role: { not: 'CLIENT' } },
+      where:  { active: true, role: { not: "CLIENT" } },
       select: { id: true },
     });
     return users.map((u) => u.id).filter((id) => id !== excludeUserId);
@@ -188,8 +192,8 @@ export async function resolveMentions(
     where: {
       active: true,
       OR: handles.flatMap((h) => [
-        { name:  { contains: h, mode: 'insensitive' as const } },
-        { email: { startsWith: h, mode: 'insensitive' as const } },
+        { name:  { contains: h, mode: "insensitive" as const } },
+        { email: { startsWith: h, mode: "insensitive" as const } },
       ]),
     },
     select: { id: true },

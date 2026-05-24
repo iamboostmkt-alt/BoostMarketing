@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
   await db.activityLog.create({
     data: {
       userId,
+      workspaceId,
       action: "CREATE_CONTACT",
       entity: "Contact",
       entityId: contact.id,
@@ -100,6 +101,7 @@ export async function PUT(req: NextRequest) {
   await db.activityLog.create({
     data: {
       userId,
+      workspaceId,
       action: "UPDATE_CONTACT",
       entity: "Contact",
       entityId: contact.id,
@@ -129,6 +131,7 @@ export async function DELETE(req: NextRequest) {
   await db.activityLog.create({
     data: {
       userId,
+      workspaceId,
       action: "DELETE_CONTACT",
       entity: "Contact",
       entityId: id,

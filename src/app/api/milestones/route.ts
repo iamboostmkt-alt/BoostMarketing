@@ -39,9 +39,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any))
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const resultPost = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+    if (!resultPost.ok) return resultPost.response;
+    const { userId: _userId, workspaceId } = resultPost.ctx;
     const {
       clientId, title, description, date, status, type,
       progress, responsibleId, visibleToClient, comments,
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     const milestone = await db.milestone.create({
       data: {
         clientId,
+        workspaceId,
         title,
         description:     description     ?? '',
         date:            new Date(date),

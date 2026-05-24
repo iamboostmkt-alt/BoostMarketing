@@ -72,6 +72,7 @@ export async function GET(req: NextRequest) {
         await db.notification.createMany({
           data: appt.assignedUsers.map((au) => ({
             userId:  au.user.id,
+            workspaceId: appt.workspaceId,
             message: `📹 Videollamada con ${appt.name} en ${window.label === '24h' ? '24 horas' : window.label === '1h' ? '1 hora' : '15 minutos'}`,
             type:    'appointment',
             link:    '/dashboard/calendar',

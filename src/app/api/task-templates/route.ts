@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
     const template = await db.taskTemplate.create({
       data: {
         userId:        user.id,
+        workspaceId:   user.workspaceId,
         title:         title.trim(),
         description:   description   || '',
         category:      category      || 'general',

@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
   await db.notification.create({
     data: {
       userId: user.id,
+      workspaceId,
       message: "¡Bienvenido a BoostMarketing! Tu cuenta ha sido creada por el administrador.",
       type: "welcome",
       link: "/dashboard",
@@ -111,6 +112,7 @@ export async function POST(req: NextRequest) {
   await db.activityLog.create({
     data: {
       userId: adminId,
+      workspaceId,
       action: "CREATE_USER",
       entity: "User",
       entityId: user.id,
@@ -124,7 +126,7 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const result = await requireWorkspace({ roles: ["ADMIN"] });
   if (!result.ok) return result.response;
-  const { userId: adminId } = result.ctx;
+  const { userId: adminId, workspaceId } = result.ctx;
 
   const body = await req.json();
   const { userId, role, name, email, active, color, customRoleId, image, lifecycleStatus } = body;
@@ -198,6 +200,7 @@ export async function PATCH(req: NextRequest) {
   await db.activityLog.create({
     data: {
       userId: adminId,
+      workspaceId,
       action: "UPDATE_USER",
       entity: "User",
       entityId: userId,
@@ -211,7 +214,7 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const result = await requireWorkspace({ roles: ["ADMIN"] });
   if (!result.ok) return result.response;
-  const { userId: adminId } = result.ctx;
+  const { userId: adminId, workspaceId } = result.ctx;
 
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("id");
@@ -236,6 +239,7 @@ export async function DELETE(req: NextRequest) {
   await db.activityLog.create({
     data: {
       userId: adminId,
+      workspaceId,
       action: "DELETE_USER",
       entity: "User",
       entityId: userId,

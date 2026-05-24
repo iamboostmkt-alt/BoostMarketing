@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         company: contact.company || '',
         phone:   contact.phone   || '',
         status:  'active',
-        ...(workspaceId && { workspaceId }),
+        workspaceId: workspaceId ?? '',
       },
     });
 
@@ -53,10 +53,11 @@ export async function POST(req: NextRequest) {
     });
     await db.notification.createMany({
       data: admins.map(a => ({
-        userId:  a.id,
-        message: `${contact.name} fue convertido a cliente activo`,
-        type:    'client',
-        link:    '/dashboard/clients',
+        userId:      a.id,
+        workspaceId: workspaceId ?? '',
+        message:     `${contact.name} fue convertido a cliente activo`,
+        type:        'client',
+        link:        '/dashboard/clients',
       })),
       skipDuplicates: true,
     });

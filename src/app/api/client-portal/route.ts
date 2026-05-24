@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
     const user = { ...result.ctx, id: result.ctx.userId };
+    const workspaceId = result.ctx.workspaceId;
 
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
@@ -118,6 +119,7 @@ export async function GET(req: NextRequest) {
       db.activityLog.create({
         data: {
           userId,
+          workspaceId,
           action:   'CLIENT_PORTAL_VIEW',
           entity:   'Client',
           entityId: client.id,

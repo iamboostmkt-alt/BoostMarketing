@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
-    const { userId } = result.ctx;
+    const { userId, workspaceId } = result.ctx;
     const body = await req.json();
     const { action, entity, entityId, details } = body;
 
@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
     const activity = await db.activityLog.create({
       data: {
         userId,
+        workspaceId,
         action,
         entity,
         entityId,
