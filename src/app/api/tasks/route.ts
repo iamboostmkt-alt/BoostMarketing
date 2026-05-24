@@ -310,13 +310,15 @@ export async function POST(req: NextRequest) {
   let resolvedClientId = isManager ? (clientId || null) : null;
   if (isClient && clientId) resolvedClientId = clientId;
 
-  // Si es subtarea, heredar clientId del padre si no se especificó
-  if (parentTaskId && !resolvedClientId) {
+  // Si es subtarea, heredar clientId y workspaceId del padre si no se especificó
+  let resolvedWorkspaceId = workspaceId;
+  if (parentTaskId) {
     const parentTask = await db.task.findUnique({
       where: { id: parentTaskId },
-      select: { clientId: true },
+      select: { clientId: true, workspaceId: true },
     });
-    if (parentTask?.clientId) resolvedClientId = parentTask.clientId;
+    if (parentTask?.clientId && !resolvedClientId) resolvedClientId = parentTask.clientId;
+    if (parentTask?.workspaceId) resolvedWorkspaceId = parentTask.workspaceId;
   }
 
   const resolvedVisibility = parentTaskId
@@ -344,7 +346,7 @@ export async function POST(req: NextRequest) {
       references:     Array.isArray(references) ? references : [],
       parentTaskId:   parentTaskId || null,
       milestoneId:    milestoneId  || null,
-      ...(workspaceId && { workspaceId }),
+      ...(resolvedWorkspaceId && { workspaceId: resolvedWorkspaceId }),
       assignedUsers: { create: finalAssignedIds.map((uid: string) => ({ userId: uid })) },
     },
     include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },

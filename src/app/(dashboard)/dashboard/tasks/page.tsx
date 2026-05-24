@@ -333,7 +333,10 @@ function TasksContent() {
       if (mineRes.ok)    { const d = await mineRes.json();    setMyTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId)); }
       if (clientsRes.ok) { const d = await clientsRes.json(); setClientsWithTasks(d.clients ?? []); }
       if (allRes?.ok)    { const d = await allRes.json();     setAllTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId)); }
-    } catch { /* silent */ } finally { setLoading(false); }
+    } catch (err) {
+      console.error('[fetchAll]', err);
+      toast.error('Error al cargar las tareas');
+    } finally { setLoading(false); }
   }, [isManager]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
