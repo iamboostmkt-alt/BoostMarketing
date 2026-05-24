@@ -71,7 +71,8 @@ export async function GET(req: NextRequest) {
     }
 
     const where: Record<string, unknown> = {};
-    if (workspaceId) where.workspaceId = workspaceId;
+    if (!workspaceId) return NextResponse.json({ clients: [] });
+    where.workspaceId = workspaceId;
 
     // ADMIN sees all; PM sees their assigned clients + ones they created
     if (role === 'PROJECT_MANAGER') {

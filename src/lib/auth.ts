@@ -170,8 +170,10 @@ export const authOptions: NextAuthOptions = {
         token.picture = session.image ?? undefined;
       }
 
-      // Refrescar workspaceId si el token no lo tiene — sesiones activas previas a multi-tenant
-      if (!token.workspaceId && token.id) {
+      // Refrescar datos del token si no tiene workspaceId O si el token es mayor a 1 hora
+      const tokenAge = token.iat ? (Date.now() / 1000) - (token.iat as number) : 0;
+      const needsRefresh = !token.workspaceId || tokenAge > 3600;
+      if (needsRefresh && token.id) {
         try {
           const dbUser = await db.user.findUnique({
             where: { id: token.id as string },

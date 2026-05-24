@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   // workspaceId opcional — se filtra solo si existe
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
-  const where: Record<string, unknown> = { email: { contains: "@internal.boost" }, workspaceId };
+  const where: Record<string, unknown> = { ...(workspaceId ? { workspaceId } : {}) };
   if (status) where.status = status;
   const meetings = await db.appointment.findMany({ where, orderBy: { date: "asc" }, include });
   return NextResponse.json({ meetings });
