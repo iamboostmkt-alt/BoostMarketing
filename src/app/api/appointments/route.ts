@@ -55,9 +55,10 @@ export async function POST(req: NextRequest) {
   });
 
   const workspaceId = sessionWsId ?? firstAdmin?.workspaceId ?? null;
+  if (!workspaceId) return NextResponse.json({ error: 'Workspace no disponible' }, { status: 503 });
 
   const matchingClient = await db.client.findFirst({
-    where: { email: { equals: emailNorm, mode: "insensitive" } },
+    where: { email: { equals: emailNorm, mode: "insensitive" }, workspaceId },
     select: { id: true },
   });
 
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
       meetUrl:  (meetUrl ?? "").trim(),
       status:   "pending",
       clientId: matchingClient?.id ?? null,
-      workspaceId: workspaceId ?? '',
+      workspaceId: workspaceId,
       ...(allAssignedIds.length > 0 && {
         assignedUsers: {
           create: allAssignedIds.map((uid) => ({ userId: uid })),
@@ -115,7 +116,7 @@ export async function POST(req: NextRequest) {
           endDate:         new Date(parsedDate.getTime() + 60 * 60 * 1000),
           createdByUserId: firstAdmin.id,
           assignedUserId:  firstAdmin.id,
-          workspaceId:     firstAdmin.workspaceId ?? '',
+          workspaceId:     firstAdmin.workspaceId,
         },
       });
     } catch (actErr) {
@@ -126,7 +127,7 @@ export async function POST(req: NextRequest) {
   const notifyUsers = await db.user.findMany({
     where: {
       role: { in: ["ADMIN", "SALES_REP", "PROJECT_MANAGER"] },
-      workspaceId: workspaceId ?? '',
+      workspaceId: workspaceId,
     },
     select: { id: true, email: true },
   });
@@ -135,7 +136,7 @@ export async function POST(req: NextRequest) {
     await db.notification.createMany({
       data: notifyUsers.map((u) => ({
         userId:      u.id,
-        workspaceId: workspaceId ?? '',
+        workspaceId: workspaceId,
         message:     "Nuevo prospecto: " + nameTrim + " agendo videollamada para el " + dateStr,
         type:        "appointment",
         link:        "/dashboard/calendar",
