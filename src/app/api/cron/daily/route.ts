@@ -111,5 +111,13 @@ export async function GET(req: NextRequest) {
   });
   results.softDeletedTasks = softDeleted.count;
 
+
+  // ─── 6. Marcar presencias obsoletas como offline (+15 min sin heartbeat) ────
+  const cutoffPresence = new Date(ahora.getTime() - 15 * 60 * 1000);
+  const offlineCount = await db.userPresence.updateMany({
+    where: { status: 'online', lastSeen: { lt: cutoffPresence } },
+    data:  { status: 'offline' },
+  });
+  results.presenceCleanup = offlineCount.count;
   return NextResponse.json({ ok: true, timestamp: ahora.toISOString(), ...results });
 }
