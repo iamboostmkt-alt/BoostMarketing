@@ -397,7 +397,7 @@ function ClientsSection({ collapsed }: { collapsed: boolean }) {
         className="flex w-full items-center gap-2 px-3 py-1"
       >
         <span className="flex-1 text-left text-[10px] uppercase tracking-widest text-white/20">
-          Usuarios
+          Cuentas
         </span>
         {open ? (
           <ChevronDown className="h-3 w-3 text-white/20" />
@@ -542,7 +542,9 @@ export default function AppSidebar() {
     return pathname.startsWith(href);
   };
 
-  const isClient = role === "CLIENT";
+  const isClient   = role === "CLIENT";
+  const isAdmin    = role === "ADMIN";
+  const isManagerRole = ["ADMIN", "PROJECT_MANAGER"].includes(role ?? "");
   const filteredNavItems = navItems.filter((item) => {
     if (item.roles) return item.roles.includes(role ?? "");
     if (isClient) return !!item.clientOnly;
@@ -620,11 +622,38 @@ export default function AppSidebar() {
           ))}
         </div>
 
-        {/* Clientes section — ocultar a CLIENT */}
-        {!isClient && (
+        {/* Cuentas — solo roles internos con acceso a clientes */}
+        {(isAdmin || isManagerRole) && (
           <>
             <SectionLabel collapsed={collapsed}>Cuentas</SectionLabel>
             <ClientsSection collapsed={collapsed} />
+          </>
+        )}
+
+        {/* Teams — solo ADMIN y PM */}
+        {(isAdmin || isManagerRole) && (
+          <>
+            <SectionLabel collapsed={collapsed}>Equipo</SectionLabel>
+            {!collapsed && (
+              <div className="mt-2">
+                <div className="mt-1 space-y-0.5 pl-4">
+                  <Link
+                    href="/dashboard/team"
+                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75"
+                  >
+                    <div className="h-2 w-2 rounded-full bg-sky-400/60" />
+                    <span className="truncate">Ver equipo</span>
+                  </Link>
+                  <Link
+                    href="/dashboard/admin/invite"
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] text-purple-400/70 transition-colors hover:text-purple-400"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Invitar miembro</span>
+                  </Link>
+                </div>
+              </div>
+            )}
           </>
         )}
       </nav>
