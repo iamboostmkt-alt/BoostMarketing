@@ -1,4 +1,5 @@
 import dynamicImport from 'next/dynamic';
+import ErrorBoundary from '@/components/dashboard/ErrorBoundary';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,5 +9,9 @@ const ClientPortalContent = dynamicImport(
 );
 
 export default function ClientPortalPage() {
-  return <ClientPortalContent />;
+  return (
+    <ErrorBoundary>
+      <ClientPortalContent />
+    </ErrorBoundary>
+  );
 }

@@ -32,6 +32,12 @@ const CalendarContent = dynamic(
   }
 );
 
+import ErrorBoundary from '@/components/dashboard/ErrorBoundary';
+
 export default function CalendarPage() {
-  return <CalendarContent />;
+  return (
+    <ErrorBoundary>
+      <CalendarContent />
+    </ErrorBoundary>
+  );
 }

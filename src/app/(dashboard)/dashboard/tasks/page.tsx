@@ -695,8 +695,11 @@ function TasksContent() {
   );
 }
 
+import ErrorBoundary from '@/components/dashboard/ErrorBoundary';
+
 export default function TasksPage() {
   return (
+    <ErrorBoundary>
     <Suspense fallback={
       <div className="space-y-6">
         <Skeleton className="h-8 w-32" />
@@ -706,5 +709,6 @@ export default function TasksPage() {
     }>
       <TasksContent />
     </Suspense>
+    </ErrorBoundary>
   );
 }
