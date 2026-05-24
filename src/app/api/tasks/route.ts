@@ -643,7 +643,7 @@ export async function PUT(req: NextRequest) {
   }
 
   // Auto-recalcular progreso del milestone si la tarea está vinculada
-  const taskMilestoneId = (task as any).milestoneId ?? (existing as any).milestoneId;
+  const taskMilestoneId = (task as unknown as { milestoneId?: string }).milestoneId ?? existing.milestoneId;
   if (taskMilestoneId && status !== undefined) {
     const linkedTasks = await db.task.findMany({
       where: { milestoneId: taskMilestoneId, archivedAt: null },
@@ -662,7 +662,7 @@ export async function PUT(req: NextRequest) {
   }
 
   // Auto-recalcular progreso del padre al completar subtarea
-  const taskParentId = (existing as any).parentTaskId;
+  const taskParentId = existing.parentTaskId;
   if (taskParentId && status !== undefined) {
     try {
       const siblings = await db.task.findMany({

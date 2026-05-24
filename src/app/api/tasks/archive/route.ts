@@ -49,8 +49,8 @@ export async function DELETE(req: NextRequest) {
     const result2 = await requireWorkspace();
     if (!result2.ok) return result2.response;
     const user = { ...result2.ctx, id: result2.ctx.userId };
-    if (!user || !MANAGER_ROLES.includes(user.role as any))
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!(MANAGER_ROLES as unknown as string[]).includes(user.role))
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
     const taskId = req.nextUrl.searchParams.get('taskId');
     if (!taskId) return NextResponse.json({ error: 'taskId requerido' }, { status: 400 });
@@ -73,8 +73,8 @@ export async function GET(req: NextRequest) {
     const result2 = await requireWorkspace();
     if (!result2.ok) return result2.response;
     const user = { ...result2.ctx, id: result2.ctx.userId };
-    if (!user || !MANAGER_ROLES.includes(user.role as any))
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!(MANAGER_ROLES as unknown as string[]).includes(user.role))
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
     const clientId = req.nextUrl.searchParams.get('clientId');
     if (!clientId) return NextResponse.json({ error: 'clientId requerido' }, { status: 400 });

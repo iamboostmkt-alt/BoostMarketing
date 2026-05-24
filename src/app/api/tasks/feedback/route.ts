@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       });
       if (pm?.email) {
         const branding = await getBranding();
-        const clientName = (user as any).name || user.email;
+        const clientName = result.ctx.name || result.ctx.email;
         await sendMail(
           pm.email,
           `Feedback de cliente: ${task.title}`,
