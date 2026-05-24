@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const role = token.role as string | undefined;
-  const lifecycle = (token as any).lifecycleStatus as string | null | undefined;
+  const lifecycle = token.lifecycleStatus as string | null | undefined;
 
   // PROSPECT nunca entra al portal - redirigir a pagina de espera
   if (lifecycle === 'PROSPECT') {

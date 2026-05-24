@@ -30,6 +30,7 @@ declare module "next-auth" {
     workspaceId?: string | null;
     workspaceName?: string | null;
     permissions?: Record<string, boolean>;
+    lastRefresh?: number;
   }
 }
 
