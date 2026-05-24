@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
@@ -8,9 +9,10 @@ import { MANAGER_ROLES } from '@/core/constants/roles';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any))
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+    if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
+    const user = { ...result.ctx, id: result.ctx.userId };
 
     const { clientId, taskIds } = await req.json();
 
@@ -31,12 +33,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'clientId o taskIds requerido' }, { status: 400 });
     }
 
-    const result = await db.task.updateMany({
+    const archiveResult = await db.task.updateMany({
       where,
       data: { archivedAt: new Date() },
     });
 
-    return NextResponse.json({ archived: result.count });
+    return NextResponse.json({ archived: archiveResult.count });
   } catch (error) {
     console.error('[tasks/archive POST]', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
@@ -45,7 +47,9 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const user = await getSessionUser();
+    const result2 = await requireWorkspace();
+    if (!result2.ok) return result2.response;
+    const user = { ...result2.ctx, id: result2.ctx.userId };
     if (!user || !MANAGER_ROLES.includes(user.role as any))
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
@@ -67,7 +71,9 @@ export async function DELETE(req: NextRequest) {
 // GET /api/tasks/archive?clientId=xxx — ver tareas archivadas de un cliente
 export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser();
+    const result2 = await requireWorkspace();
+    if (!result2.ok) return result2.response;
+    const user = { ...result2.ctx, id: result2.ctx.userId };
     if (!user || !MANAGER_ROLES.includes(user.role as any))
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 

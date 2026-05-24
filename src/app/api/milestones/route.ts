@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
@@ -12,8 +13,10 @@ const milestoneInclude = {
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { userId, workspaceId, role } = result.ctx;
+    const user = { ...result.ctx, id: result.ctx.userId };
     const { searchParams } = new URL(req.url);
     const clientId = searchParams.get('clientId');
     if (!clientId) return NextResponse.json({ error: 'clientId requerido' }, { status: 400 });

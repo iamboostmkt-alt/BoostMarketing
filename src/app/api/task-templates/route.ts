@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any)) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+    const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+    if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
+    const user = { ...result.ctx, id: result.ctx.userId };
 
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
@@ -31,10 +31,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any)) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+    const _rq = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+    if (!_rq.ok) return _rq.response;
+    const user = { ..._rq.ctx, id: _rq.ctx.userId };
 
     const body = await req.json();
     const { title, description, category, visibility, priority, subtasks, estimatedDays } = body;
@@ -65,10 +64,9 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any)) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+    const _r = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+    if (!_r.ok) return _r.response;
+    const user = { ..._r.ctx, id: _r.ctx.userId };
 
     const body = await req.json();
     const { id, title, description, category, visibility, priority, subtasks, estimatedDays, isActive } = body;
@@ -98,10 +96,9 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user || !MANAGER_ROLES.includes(user.role as any)) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+    const _r = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+    if (!_r.ok) return _r.response;
+    const user = { ..._r.ctx, id: _r.ctx.userId };
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

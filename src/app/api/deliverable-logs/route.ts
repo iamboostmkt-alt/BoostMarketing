@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const user = { ...result.ctx, id: result.ctx.userId };
     const { searchParams } = new URL(req.url);
     const taskId = searchParams.get('taskId');
     if (!taskId) return NextResponse.json({ error: 'taskId requerido' }, { status: 400 });
@@ -22,8 +23,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const user = { ...result.ctx, id: result.ctx.userId };
     const { taskId, status, note } = await req.json();
     if (!taskId || !status) return NextResponse.json({ error: 'taskId y status requeridos' }, { status: 400 });
     const log = await db.deliverableLog.create({

@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
 import { sendMail, templateFeedbackCliente } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { userId, workspaceId, role } = result.ctx;
+    const user = { ...result.ctx, id: result.ctx.userId };
 
     // Solo CLIENT puede dar feedback
     if (user.role !== 'CLIENT' && user.role !== 'ADMIN' && user.role !== 'PROJECT_MANAGER') {
@@ -128,8 +130,9 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const _r2 = await requireWorkspace();
+    if (!_r2.ok) return _r2.response;
+    const user = { ..._r2.ctx, id: _r2.ctx.userId };
 
     const { searchParams } = new URL(req.url);
     const taskId = searchParams.get('taskId');

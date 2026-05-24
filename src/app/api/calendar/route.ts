@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
 import { AccessControl } from '@/core/access/access-control';
 import { normalizeTaskStatus } from '@/lib/task-status';
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { userId: _userId, workspaceId, role } = result.ctx;
+    const user = { ...result.ctx, id: result.ctx.userId };
 
     const { searchParams } = new URL(req.url);
     const scope    = searchParams.get('scope') || 'mine';
@@ -23,7 +25,7 @@ export async function GET(req: NextRequest) {
     };
 
     // ── TASKS ──────────────────────────────────────────────
-    const workspaceId = user.workspaceId ?? null;
+    // workspaceId ya disponible desde requireWorkspace
     let taskWhere: any = workspaceId ? { workspaceId } : {};
 
     if (isClient) {
