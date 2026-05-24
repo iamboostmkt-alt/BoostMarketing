@@ -170,6 +170,35 @@ export const authOptions: NextAuthOptions = {
         token.picture = session.image ?? undefined;
       }
 
+      // Refrescar workspaceId si el token no lo tiene — sesiones activas previas a multi-tenant
+      if (!token.workspaceId && token.id) {
+        try {
+          const dbUser = await db.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              workspaceId: true,
+              workspace: { select: { name: true } },
+              lifecycleStatus: true,
+              customRoleId: true,
+              role: true,
+              color: true,
+              customRole: { select: { label: true, color: true, permissions: true } },
+            },
+          });
+          if (dbUser?.workspaceId) {
+            token.workspaceId   = dbUser.workspaceId;
+            token.workspaceName = dbUser.workspace?.name ?? null;
+            token.role          = dbUser.role;
+            token.color         = dbUser.color ?? undefined;
+            token.lifecycleStatus  = dbUser.lifecycleStatus ?? null;
+            token.customRoleId     = dbUser.customRoleId ?? null;
+            token.customRoleLabel  = dbUser.customRole?.label ?? null;
+            token.customRoleColor  = dbUser.customRole?.color ?? null;
+            token.permissions      = (dbUser.customRole?.permissions as Record<string, boolean>) ?? {};
+          }
+        } catch { /* no bloquear si falla el refresh */ }
+      }
+
       return token;
     },
 
