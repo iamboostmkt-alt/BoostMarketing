@@ -119,8 +119,8 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
   const { startUpload, isUploading } = useUploadThing('taskAttachment', {
     onClientUploadComplete: async (res) => {
       if (!res?.length || !task) return;
-      for (const f of res) {
-        await fetch('/api/task-attachments', {
+      await Promise.all(res.map(f =>
+        fetch('/api/task-attachments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -130,8 +130,8 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
             fileType: f.type || 'application/octet-stream',
             fileSize: f.size,
           }),
-        });
-      }
+        })
+      ));
       fetchAttachments();
     },
     onUploadError: (err) => { console.error('Upload error:', err); },
@@ -306,9 +306,18 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                         'application/msword',
                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                       ];
+                      const MAX_SIZE: Record<string, number> = {
+                        'application/pdf': 16 * 1024 * 1024,
+                      };
+                      const DEFAULT_MAX = 8 * 1024 * 1024;
                       const files = Array.from(e.target.files || []).filter(f => {
                         if (!ALLOWED_MIME.includes(f.type)) {
-                          toast.error(`Tipo de archivo no permitido: ${f.name}`);
+                          toast.error(`Tipo no permitido: ${f.name}`);
+                          return false;
+                        }
+                        const maxSize = MAX_SIZE[f.type] ?? DEFAULT_MAX;
+                        if (f.size > maxSize) {
+                          toast.error(`${f.name} supera el límite (${f.type === 'application/pdf' ? '16MB' : '8MB'})`);
                           return false;
                         }
                         return true;
