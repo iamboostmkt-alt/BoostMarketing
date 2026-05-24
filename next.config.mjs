@@ -5,6 +5,7 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options',  value: 'nosniff' },
   { key: 'Referrer-Policy',         value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy',      value: 'camera=(), microphone=(), geolocation=()' },
+  { key: 'Content-Security-Policy',  value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none';" },
   {
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000; includeSubDomains; preload',
@@ -23,7 +24,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  reactStrictMode: false,
+  reactStrictMode: true,
 
   // Log every server-side fetch URL + cache status in dev
   logging: {
@@ -35,8 +36,12 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
-      { protocol: 'https', hostname: '**' },
-      { protocol: 'http',  hostname: '**' },
+      { protocol: 'https', hostname: '**.supabase.co' },
+      { protocol: 'https', hostname: '**.uploadthing.com' },
+      { protocol: 'https', hostname: 'utfs.io' },
+      { protocol: 'https', hostname: '**.ufs.sh' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
     ],
   },
 };
