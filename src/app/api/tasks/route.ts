@@ -56,6 +56,7 @@ export async function GET(req: NextRequest) {
   const userId      = user.id;
   const workspaceId = (user as any).workspaceId as string | null;
   const role        = user.role;
+  if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
   const isAdmin     = role === "ADMIN";
   const isPM      = role === "PROJECT_MANAGER";
   const isManager = isAdmin || isPM;
@@ -261,6 +262,7 @@ export async function POST(req: NextRequest) {
   const userId      = session.user.id;
   const workspaceId = session.user.workspaceId as string | null;
   const isManager   = MANAGER_ROLES.includes(session.user.role as string);
+  if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
   const rawBody     = await req.json();
   const validation = validateBody(TaskCreateSchema, rawBody);
   if (!validation.success) {
@@ -346,9 +348,11 @@ export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const userId    = session.user.id;
-  const userName  = session.user.name || "Un usuario";
-  const isManager = MANAGER_ROLES.includes(session.user.role as string);
+  const userId      = session.user.id;
+  const workspaceId = session.user.workspaceId as string | null;
+  const userName    = session.user.name || "Un usuario";
+  const isManager   = MANAGER_ROLES.includes(session.user.role as string);
+  if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
   const rawBody    = await req.json();
   const validation = validateBody(TaskUpdateSchema, rawBody);
   if (!validation.success) {

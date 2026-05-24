@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
 
     const userId      = session.user.id;
     const workspaceId = session.user.workspaceId as string | null;
+    if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
     const { searchParams } = new URL(req.url);
     const page  = parseInt(searchParams.get('page')  || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -19,12 +20,12 @@ export async function GET(req: NextRequest) {
 
     const [notifications, total] = await Promise.all([
       db.notification.findMany({
-        where:   { userId, ...(workspaceId && { workspaceId }) },
+        where:   { userId, workspaceId },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      db.notification.count({ where: { userId, ...(workspaceId && { workspaceId }) } }),
+      db.notification.count({ where: { userId, workspaceId } }),
     ]);
 
     const unreadCount = await db.notification.count({
