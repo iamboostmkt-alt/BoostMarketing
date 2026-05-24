@@ -24,18 +24,18 @@ export async function GET(req: NextRequest) {
 
   // ─── 1. Subir prioridad tareas por vencer ────────────────────────────────
   const urgentCount = await db.task.updateMany({
-    where: { dueDate: { gte: ahora, lte: manana }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, priority: { not: "urgent" }, deletedAt: null },
+    where: { dueDate: { gte: ahora, lte: manana }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, priority: { not: "urgent" }, deletedAt: null, workspaceId: { not: undefined } },
     data: { priority: "urgent" },
   });
   const highCount = await db.task.updateMany({
-    where: { dueDate: { gt: manana, lte: pasadoManana }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, priority: { notIn: ["urgent","high"] }, deletedAt: null },
+    where: { dueDate: { gt: manana, lte: pasadoManana }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, priority: { notIn: ["urgent","high"] }, deletedAt: null, workspaceId: { not: undefined } },
     data: { priority: "high" },
   });
   results.priorityUpdates = { urgent: urgentCount.count, high: highCount.count };
 
   // ─── 2. Notificar tareas vencidas ────────────────────────────────────────
   const tareasVencidas = await db.task.findMany({
-    where: { dueDate: { lt: ahora }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, deletedAt: null },
+    where: { dueDate: { lt: ahora }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, deletedAt: null, workspaceId: { not: undefined } },
     include: {
       assignedUser:  { select: { id: true, email: true, name: true } },
       assignedUsers: { include: { user: { select: { id: true, email: true, name: true } } } },
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
   // ─── 5. Soft-delete tareas completadas hace +7 días ──────────────────────
   const cutoff7 = new Date(ahora); cutoff7.setDate(cutoff7.getDate() - 7);
   const softDeleted = await db.task.updateMany({
-    where: { status: TASK_STATUS.COMPLETED, deletedAt: null, updatedAt: { lt: cutoff7 } },
+    where: { status: TASK_STATUS.COMPLETED, deletedAt: null, updatedAt: { lt: cutoff7 }, workspaceId: { not: undefined } },
     data: { deletedAt: ahora },
   });
   results.softDeletedTasks = softDeleted.count;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { TASK_STATUS } from '@/lib/constants/status';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +16,9 @@ export async function GET(req: NextRequest) {
   // Buscar tareas completadas/canceladas hace mas de 15 dias
   const doneTasks = await db.task.findMany({
     where: {
-      status: { in: ['completed', 'cancelled'] },
+      status: { in: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED] },
       updatedAt: { lt: cutoff },
+      workspaceId: { not: undefined },
     },
     select: { id: true },
   });
