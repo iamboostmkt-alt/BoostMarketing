@@ -47,7 +47,7 @@ interface TaskFormProps {
   onOpenChange: (open: boolean) => void;
   task?: Task | null;
   isManager?: boolean;
-  onSuccess?: () => void;
+  onSuccess?: (task?: any) => void;
   initialDate?: Date | null;
   initialClientId?: string | null;
   parentTaskId?: string | null;
@@ -261,7 +261,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       setSubtaskInput('');
       toast.success(isEditing ? 'Tarea actualizada' : 'Tarea creada');
       onOpenChange(false);
-      onSuccess?.();
+      onSuccess?.(resData?.task ?? resData ?? undefined);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error al guardar la tarea');
     } finally {

@@ -385,10 +385,15 @@ function TasksContent() {
   }
 
   async function handleMarkPending(task: Task) {
-    const prevMy  = myTasks;
-    const prevAll = allTasks;
+    const prevMy      = myTasks;
+    const prevAll     = allTasks;
+    const prevClients = clientsWithTasks;
     setMyTasks(prev  => prev.map(t => t.id === task.id ? { ...t, status: 'pending' } : t));
     setAllTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: 'pending' } : t));
+    setClientsWithTasks(prev => prev.map(c => ({
+      ...c,
+      tasks: c.tasks.map((t: any) => t.id === task.id ? { ...t, status: 'pending' } : t),
+    })));
     try {
       const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: task.id, status: 'pending' }) });
       if (!res.ok) throw new Error();
@@ -396,6 +401,7 @@ function TasksContent() {
     } catch {
       setMyTasks(prevMy);
       setAllTasks(prevAll);
+      setClientsWithTasks(prevClients);
       toast.error('Error al actualizar');
     }
   }
@@ -423,7 +429,7 @@ function TasksContent() {
 
   function handleEdit(task: Task) {
     if (!isManager) {
-      const currentUserId = (session?.user as any)?.id;
+      const currentUserId = session?.user?.id;
       const taskCreatorId = (task as any).userId;
       // Solo puede editar si él la creó
       const canEdit = taskCreatorId === currentUserId;
@@ -453,7 +459,7 @@ function TasksContent() {
     );
   }
 
-  const currentUserId = (session?.user as any)?.id;
+  const currentUserId = session?.user?.id;
   const cardProps = {
     onEdit: handleEdit,
     onDelete: (t: Task) => setDeleteTask(t),
@@ -583,7 +589,39 @@ function TasksContent() {
       )}
 
       {/* Modals */}
-      <TaskForm open={formOpen} onOpenChange={(v) => { setFormOpen(v); if (!v) setParentTaskId(null); }} task={editingTask} isManager={isManager} onSuccess={fetchAll} parentTaskId={parentTaskId} />
+      <TaskForm
+        open={formOpen}
+        onOpenChange={(v) => { setFormOpen(v); if (!v) setParentTaskId(null); }}
+        task={editingTask}
+        isManager={isManager}
+        parentTaskId={parentTaskId}
+        onSuccess={(savedTask?: any) => {
+          if (!savedTask) { fetchAll(); return; }
+          if (editingTask) {
+            // Edición — actualizar en los 3 estados sin recargar
+            const update = (t: Task) => t.id === savedTask.id ? { ...t, ...savedTask } : t;
+            setMyTasks(prev => prev.map(update));
+            setAllTasks(prev => prev.map(update));
+            setClientsWithTasks(prev => prev.map(c => ({
+              ...c,
+              tasks: c.tasks.map((t: any) => t.id === savedTask.id ? { ...t, ...savedTask } : t),
+            })));
+          } else {
+            // Creación — agregar al inicio sin recargar
+            if (!savedTask.parentTaskId) {
+              setMyTasks(prev => [savedTask, ...prev]);
+              setAllTasks(prev => [savedTask, ...prev]);
+              if (savedTask.clientId) {
+                setClientsWithTasks(prev => prev.map(c =>
+                  c.id === savedTask.clientId
+                    ? { ...c, tasks: [savedTask, ...c.tasks] }
+                    : c
+                ));
+              }
+            }
+          }
+        }}
+      />
       <TaskDetailModal task={viewingTask} open={!!viewingTask} onClose={() => setViewingTask(null)} onEdit={handleEdit} onStatusChange={handleStatusChange} isManager={isManager} currentUserId={currentUserId} />
       <AlertDialog open={!!deleteTask} onOpenChange={(open) => !open && setDeleteTask(null)}>
         <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
