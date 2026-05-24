@@ -5,7 +5,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
 import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db"
+import { logAction } from "@/lib/audit";
 import { sendMail, isSmtpConfigured } from "@/lib/mailer";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -160,6 +161,17 @@ export const authOptions: NextAuthOptions = {
           token.customRoleLabel = null;
           token.customRoleColor = null;
           token.permissions = {};
+        }
+        // Log login — fire and forget, no bloquea el auth
+        if (token.workspaceId && user.id) {
+          logAction({
+            userId:      user.id ?? null,
+            workspaceId: token.workspaceId as string,
+            action:      'USER_LOGIN',
+            entity:      'User',
+            entityId:    user.id as string,
+            details:     { role: token.role },
+          }).catch(() => undefined);
         }
       }
 
