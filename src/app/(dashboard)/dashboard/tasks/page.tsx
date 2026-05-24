@@ -308,6 +308,9 @@ function TasksContent() {
   const [myTasks, setMyTasks]               = useState<Task[]>([]);
   const [clientsWithTasks, setClientsWithTasks] = useState<ClientWithTasks[]>([]);
   const [allTasks, setAllTasks]             = useState<Task[]>([]);
+  const [allTasksCursor, setAllTasksCursor] = useState<string | null>(null);
+  const [allTasksHasMore, setAllTasksHasMore] = useState(false);
+  const [loadingMore, setLoadingMore]       = useState(false);
   const [loading, setLoading]               = useState(true);
   const [viewMode, setViewMode]             = useState<ViewMode>('board');
   const [formOpen, setFormOpen]             = useState(false);
@@ -332,7 +335,12 @@ function TasksContent() {
       ]);
       if (mineRes.ok)    { const d = await mineRes.json();    setMyTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId)); }
       if (clientsRes.ok) { const d = await clientsRes.json(); setClientsWithTasks(d.clients ?? []); }
-      if (allRes?.ok)    { const d = await allRes.json();     setAllTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId)); }
+      if (allRes?.ok)    {
+        const d = await allRes.json();
+        setAllTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId));
+        setAllTasksCursor(d.nextCursor ?? null);
+        setAllTasksHasMore(d.hasMore ?? false);
+      }
     } catch (err) {
       console.error('[fetchAll]', err);
       toast.error('Error al cargar las tareas');
@@ -340,6 +348,25 @@ function TasksContent() {
   }, [isManager]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  async function loadMoreTasks() {
+    if (!allTasksCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/tasks?scope=all&cursor=${allTasksCursor}`);
+      if (res.ok) {
+        const d = await res.json();
+        setAllTasks(prev => [...prev, ...(d.tasks ?? []).filter((t: Task) => !t.parentTaskId)]);
+        setAllTasksCursor(d.nextCursor ?? null);
+        setAllTasksHasMore(d.hasMore ?? false);
+      }
+    } catch (err) {
+      console.error('[loadMoreTasks]', err);
+      toast.error('Error al cargar más tareas');
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   async function handleMarkComplete(task: Task) {
     const newStatus = isManager ? 'completed' : 'internal_review';
@@ -581,14 +608,31 @@ function TasksContent() {
 
       {/* Tab: Todas (managers only) */}
       {activeTab === 'all' && isManager && (
-        <MineTasksView
-          tasks={allTasks}
-          viewMode={viewMode}
-          cardProps={cardProps}
-          onCreate={handleCreate}
-          onStatusChange={handleStatusChange}
-          isManager={isManager}
-        />
+        <div className="space-y-4">
+          <MineTasksView
+            tasks={allTasks}
+            viewMode={viewMode}
+            cardProps={cardProps}
+            onCreate={handleCreate}
+            onStatusChange={handleStatusChange}
+            isManager={isManager}
+          />
+          {allTasksHasMore && (
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={loadMoreTasks}
+                disabled={loadingMore}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/50 hover:text-white text-sm transition-colors disabled:opacity-40"
+              >
+                {loadingMore ? (
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+                ) : (
+                  '+ Cargar más tareas'
+                )}
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Modals */}
