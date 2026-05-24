@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { BCRYPT_ROUNDS } from "@/lib/password";
 import { z } from "zod";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 const RegisterSchema = z.object({
   agencyName: z.string().min(2).max(100),
@@ -13,6 +14,8 @@ const RegisterSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 3, windowMs: 60_000, identifier: 'register' });
+  if (!rl.success) return rl.response;
   try {
     const body = await req.json();
     const validation = RegisterSchema.safeParse(body);

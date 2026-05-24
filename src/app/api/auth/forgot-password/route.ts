@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/security/rate-limit';
 import crypto from 'crypto';
 import { db } from '@/lib/db';
 import { sendPasswordResetEmail } from '@/lib/email';
@@ -9,6 +10,8 @@ const EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 const OK = NextResponse.json({ message: 'Si el email existe, recibirás un enlace.' });
 
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 3, windowMs: 300_000, identifier: 'forgot-password' });
+  if (!rl.success) return rl.response;
   try {
     const body = await req.json();
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';

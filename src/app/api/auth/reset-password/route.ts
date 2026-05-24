@@ -1,10 +1,13 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/security/rate-limit';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 import { BCRYPT_ROUNDS } from '@/lib/password';
 import { sendMail, templateResetPassword } from '@/lib/mailer';
 
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 5, windowMs: 300_000, identifier: 'reset-password' });
+  if (!rl.success) return rl.response;
   try {
     const body = await req.json();
     const { token, password } = body;
