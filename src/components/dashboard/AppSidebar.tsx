@@ -266,10 +266,12 @@ function WorkspaceSwitcher({
           {/* PM + equipo acciones */}
           <div className="px-3 py-2">
             <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Acciones</p>
-            <Link href="/dashboard/tasks?new=1" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
-              <span className="text-white/40 group-hover:text-purple-400 text-sm">+</span>
-              <span className="text-xs text-white/60 group-hover:text-white/80">Nueva tarea</span>
-            </Link>
+            {role !== "CLIENT" && (
+              <Link href="/dashboard/tasks?new=1" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+                <span className="text-white/40 group-hover:text-purple-400 text-sm">+</span>
+                <span className="text-xs text-white/60 group-hover:text-white/80">Nueva tarea</span>
+              </Link>
+            )}
             <Link href="/dashboard/settings" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
               <span className="text-white/40 group-hover:text-white/60 text-sm">⚙</span>
               <span className="text-xs text-white/60 group-hover:text-white/80">Ajustes</span>
@@ -618,9 +620,13 @@ export default function AppSidebar() {
           ))}
         </div>
 
-        {/* Clientes section */}
-        <SectionLabel collapsed={collapsed}>Cuentas</SectionLabel>
-        <ClientsSection collapsed={collapsed} />
+        {/* Clientes section — ocultar a CLIENT */}
+        {!isClient && (
+          <>
+            <SectionLabel collapsed={collapsed}>Cuentas</SectionLabel>
+            <ClientsSection collapsed={collapsed} />
+          </>
+        )}
       </nav>
 
       {/* Herramientas — fixed at bottom, never collapses */}

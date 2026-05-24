@@ -36,6 +36,8 @@ export default function TopNav() {
   const userName      = session?.user?.name  || 'Usuario';
   const userImage     = session?.user?.image;
   const workspaceName = (session?.user as any)?.workspaceName || 'Weeklink';
+  const role          = session?.user?.role;
+  const isClient      = role === 'CLIENT';
 
   const initials = userName
     .split(' ')
@@ -158,11 +160,13 @@ export default function TopNav() {
                     <Palette className="h-4 w-4" strokeWidth={1.5} />
                     Apariencia
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
-                    <Zap className="h-4 w-4" strokeWidth={1.5} />
-                    <span className="flex-1">Upgrade</span>
-                    <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">PRO</span>
-                  </DropdownMenuItem>
+                  {!isClient && (
+                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
+                      <Zap className="h-4 w-4" strokeWidth={1.5} />
+                      <span className="flex-1">Upgrade</span>
+                      <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">PRO</span>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-white/[0.06]" />
                 <DropdownMenuGroup>
