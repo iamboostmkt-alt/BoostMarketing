@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'];
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { role } = result.ctx;
+    const isManager = MANAGER_ROLES.includes(role);
 
     const { searchParams } = new URL(req.url);
     const taskId = searchParams.get('taskId');
     if (!taskId) return NextResponse.json({ error: 'taskId requerido' }, { status: 400 });
-
-    const role = session.user.role as string;
-    const isManager = MANAGER_ROLES.includes(role);
 
     const attachments = await db.taskAttachment.findMany({
       where: {
@@ -38,8 +36,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
 
     const body = await req.json();
     const { taskId, fileName, fileUrl, fileType, fileSize, isInternal } = body;
@@ -55,9 +53,9 @@ export async function POST(req: NextRequest) {
     });
     if (!task) return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
 
-    const role = session.user.role as string;
+    const role = result.ctx.role as string;
     const isManager = MANAGER_ROLES.includes(role);
-    const isAssigned = task.assignedUsers.some(au => au.userId === session.user.id) || task.assignedUserId === session.user.id;
+    const isAssigned = task.assignedUsers.some(au => au.userId === result.ctx.userId) || task.assignedUserId === result.ctx.userId;
 
     if (!isManager && !isAssigned) {
       return NextResponse.json({ error: 'Sin acceso a esta tarea' }, { status: 403 });
@@ -66,7 +64,7 @@ export async function POST(req: NextRequest) {
     const attachment = await db.taskAttachment.create({
       data: {
         taskId,
-        userId: session.user.id,
+        userId: result.ctx.userId,
         fileName,
         fileUrl,
         fileType,
@@ -81,15 +79,15 @@ export async function POST(req: NextRequest) {
 
     // Notify task owner and assigned users
     const notifyIds = new Set<string>();
-    if (task.userId !== session.user.id) notifyIds.add(task.userId);
-    if (task.assignedUserId && task.assignedUserId !== session.user.id) notifyIds.add(task.assignedUserId);
-    task.assignedUsers.forEach(au => { if (au.userId !== session.user.id) notifyIds.add(au.userId); });
+    if (task.userId !== result.ctx.userId) notifyIds.add(task.userId);
+    if (task.assignedUserId && task.assignedUserId !== result.ctx.userId) notifyIds.add(task.assignedUserId);
+    task.assignedUsers.forEach(au => { if (au.userId !== result.ctx.userId) notifyIds.add(au.userId); });
 
     if (notifyIds.size > 0) {
       await db.notification.createMany({
         data: Array.from(notifyIds).map(userId => ({
           userId,
-          message: `📎 ${session.user.name} adjuntó "${fileName}" en la tarea`,
+          message: `📎 ${result.ctx.name} adjuntó "${fileName}" en la tarea`,
           type: 'task',
           link: '/dashboard/tasks',
         })),
@@ -106,8 +104,8 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -116,9 +114,9 @@ export async function DELETE(req: NextRequest) {
     const attachment = await db.taskAttachment.findUnique({ where: { id } });
     if (!attachment) return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
 
-    const role = session.user.role as string;
+    const role = result.ctx.role as string;
     const isManager = MANAGER_ROLES.includes(role);
-    const isOwner = attachment.userId === session.user.id;
+    const isOwner = attachment.userId === result.ctx.userId;
 
     if (!isManager && !isOwner) {
       return NextResponse.json({ error: 'Sin permiso para eliminar' }, { status: 403 });
