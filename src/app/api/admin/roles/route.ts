@@ -1,20 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
-  if (session.user.role !== 'ADMIN') return NextResponse.json({ error: 'Solo administradores' }, { status: 403 });
-  return null;
-}
+import { NextRequest, NextResponse } from "next/server";
+import { requireWorkspace } from "@/core/auth/require-workspace";
+import { db } from "@/lib/db";
 
 export async function GET() {
-  const err = await requireAdmin();
-  if (err) return err;
+  const result = await requireWorkspace({ roles: ["ADMIN"] });
+  if (!result.ok) return result.response;
   try {
-    const roles = await db.customRole.findMany({ orderBy: { createdAt: 'desc' } });
+    const roles = await db.customRole.findMany({ orderBy: { createdAt: "desc" } });
     return NextResponse.json({ roles });
   } catch {
     return NextResponse.json({ roles: [] });
@@ -22,49 +14,43 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const err = await requireAdmin();
-  if (err) return err;
-
+  const result = await requireWorkspace({ roles: ["ADMIN"] });
+  if (!result.ok) return result.response;
   const body = await req.json().catch(() => ({}));
   const { name, label, color, description, permissions } = body as {
     name?: string; label?: string; color?: string; description?: string; permissions?: Record<string, boolean>;
   };
-
   if (!name?.trim() || !label?.trim()) {
-    return NextResponse.json({ error: 'Nombre y etiqueta son requeridos' }, { status: 400 });
+    return NextResponse.json({ error: "Nombre y etiqueta son requeridos" }, { status: 400 });
   }
-
   try {
     const role = await db.customRole.create({
       data: {
-        name: name.trim().toUpperCase().replace(/[\s-]+/g, '_'),
+        name: name.trim().toUpperCase().replace(/[\s-]+/g, "_"),
         label: label.trim(),
-        color: color || '#7c3aed',
-        description: description?.trim() || '',
+        color: color || "#7c3aed",
+        description: description?.trim() || "",
         permissions: permissions ?? {},
       },
     });
     return NextResponse.json({ role }, { status: 201 });
   } catch (e: unknown) {
     const err = e as { code?: string };
-    if (err.code === 'P2002') {
-      return NextResponse.json({ error: 'Ya existe un rol con ese nombre' }, { status: 409 });
+    if (err.code === "P2002") {
+      return NextResponse.json({ error: "Ya existe un rol con ese nombre" }, { status: 409 });
     }
     throw e;
   }
 }
 
 export async function PATCH(req: NextRequest) {
-  const err = await requireAdmin();
-  if (err) return err;
-
+  const result = await requireWorkspace({ roles: ["ADMIN"] });
+  if (!result.ok) return result.response;
   const body = await req.json().catch(() => ({}));
   const { id, label, color, description, permissions } = body as {
     id?: string; label?: string; color?: string; description?: string; permissions?: Record<string, boolean>;
   };
-
-  if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
-
+  if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
   const role = await db.customRole.update({
     where: { id },
     data: {
@@ -74,17 +60,14 @@ export async function PATCH(req: NextRequest) {
       ...(permissions !== undefined && { permissions }),
     },
   });
-
   return NextResponse.json({ role });
 }
 
 export async function DELETE(req: NextRequest) {
-  const err = await requireAdmin();
-  if (err) return err;
-
-  const id = new URL(req.url).searchParams.get('id');
-  if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
-
+  const result = await requireWorkspace({ roles: ["ADMIN"] });
+  if (!result.ok) return result.response;
+  const id = new URL(req.url).searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
   await db.customRole.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
