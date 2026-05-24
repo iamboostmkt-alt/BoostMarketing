@@ -14,27 +14,28 @@ export async function GET(req: NextRequest) {
     const { userId, workspaceId } = result.ctx;
 
     const totalContacts = await db.contact.count({
-      where: { userId },
+      where: { userId, workspaceId },
     });
 
     const totalTasks = await db.task.count({
-      where: { userId },
+      where: { userId, workspaceId },
     });
 
     const completedTasks = await db.task.count({
       where: {
         userId,
+        workspaceId,
         status: 'completed',
       },
     });
 
     // âœ… FIX: eliminado "active"
     const activeClients = await db.client.count({
-      where: { userId },
+      where: { userId, workspaceId },
     });
 
     const contacts = await db.contact.findMany({
-      where: { userId },
+      where: { userId, workspaceId },
       select: { value: true },
     });
 
