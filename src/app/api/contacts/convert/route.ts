@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     await db.notification.createMany({
       data: admins.map(a => ({
         userId:      a.id,
-        workspaceId: workspaceId ?? '',
+        workspaceId,
         message:     `${contact.name} fue convertido a cliente activo`,
         type:        'client',
         link:        '/dashboard/clients',

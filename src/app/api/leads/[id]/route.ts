@@ -61,7 +61,7 @@ export async function POST(
       await db.activityLog.create({
         data: {
           userId:      user.id,
-          workspaceId: workspaceId ?? '',
+          workspaceId,
           action:      'CONVERT_LEAD_TO_CLIENT',
           entity:      'Client',
           entityId:    client.id,
