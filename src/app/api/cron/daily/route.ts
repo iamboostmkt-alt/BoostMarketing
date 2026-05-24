@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
   const hace48h = new Date(ahora.getTime() - 48 * 3600000);
 
   const pendingReview = await db.task.findMany({
-    where: { status: TASK_STATUS.INTERNAL_REVIEW, updatedAt: { lt: hace5h } },
+    where: { status: TASK_STATUS.INTERNAL_REVIEW, updatedAt: { lt: hace5h }, workspaceId: { not: undefined } },
     include: { client: { select: { assignedManager: { select: { id: true, email: true, name: true } } } } },
   });
 

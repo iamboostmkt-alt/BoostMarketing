@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
   broadcastRealtime('message.sent', { message: chatMessage, room }).catch(() => undefined);
 
   // Parse @mentions → notify (non-blocking)
-  resolveMentions(text, userId)
+  resolveMentions(text, userId, workspaceId)
     .then((mentionedIds) => {
       if (mentionedIds.length === 0) return;
       return dispatchEvent({

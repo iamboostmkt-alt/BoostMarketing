@@ -176,10 +176,13 @@ export async function dispatchEvent(event: AppEvent): Promise<void> {
 export async function resolveMentions(
   message: string,
   excludeUserId?: string,
+  workspaceId?: string,
 ): Promise<string[]> {
+  const wsFilter = workspaceId ? { workspaceId } : {};
+
   if (/@all\b/i.test(message)) {
     const users = await db.user.findMany({
-      where:  { active: true, role: { not: "CLIENT" } },
+      where:  { active: true, role: { not: "CLIENT" }, ...wsFilter },
       select: { id: true },
     });
     return users.map((u) => u.id).filter((id) => id !== excludeUserId);
@@ -191,6 +194,7 @@ export async function resolveMentions(
   const users = await db.user.findMany({
     where: {
       active: true,
+      ...wsFilter,
       OR: handles.flatMap((h) => [
         { name:  { contains: h, mode: "insensitive" as const } },
         { email: { startsWith: h, mode: "insensitive" as const } },

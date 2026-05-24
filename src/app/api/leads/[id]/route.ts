@@ -10,9 +10,12 @@ export async function POST(
 ) {
   try {
     const user = await getSessionUser();
-    const workspaceId = user?.workspaceId ?? null;
     if (!user || !MANAGER_ROLES.includes(user.role as any)) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+    const workspaceId = user.workspaceId;
+    if (!workspaceId) {
+      return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
     }
 
     const lead = await db.contact.findUnique({ where: { id: params.id } });
@@ -49,7 +52,7 @@ export async function POST(
           company:           lead.company || '',
           phone:             lead.phone   || '',
           assignedManagerId: assignedManagerId || user.id,
-          workspaceId: workspaceId ?? '',
+          workspaceId,
         },
       });
 
