@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 
 const VALID_EMOJI = /^\p{Emoji}/u;
@@ -8,13 +7,12 @@ const ALLOWED_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'DESIGNER', 'MARKETING', 'CLI
 
 // POST — toggle a reaction (add if missing, remove if already there)
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
-  if (!ALLOWED_ROLES.includes(session.user.role ?? '')) {
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+  const { userId, role } = result.ctx;
+  if (!ALLOWED_ROLES.includes(role)) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
   }
-
-  const userId = (session.user as { id: string }).id;
   const body = await req.json();
   const { messageId, emoji } = body;
 

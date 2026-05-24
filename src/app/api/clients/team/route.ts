@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
 
     const { searchParams } = new URL(req.url);
     const clientId = searchParams.get('clientId');

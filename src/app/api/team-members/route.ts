@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
@@ -8,10 +7,9 @@ const INTERNAL_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'DESIGNER', '
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-
-    const role = session.user.role as string;
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { role, workspaceId } = result.ctx;
     if (!INTERNAL_ROLES.includes(role)) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }

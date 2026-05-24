@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 import { log } from '@/lib/logger';
 import { normalizeTaskStatus } from '@/lib/task-status';
-import { getSessionUser } from '@/core/auth/get-session-user';
 import { AccessControl } from '@/core/access/access-control';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
@@ -15,10 +13,10 @@ const taskUserInclude = {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const user = { ...result.ctx, id: result.ctx.userId };
 
-    const user = await getSessionUser();
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     const userId    = user.id;
