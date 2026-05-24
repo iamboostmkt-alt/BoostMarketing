@@ -130,6 +130,9 @@ export async function GET(req: NextRequest) {
       clientId: { in: allClientIds },
       workspaceId,
       archivedAt: null,
+      deletedAt: null,
+      // Solo tareas activas en vista de clientes — mejora performance
+      status: { notIn: ["completed", "approved", "cancelled"] },
       ...(isClient && { visibility: "client_visible" }),
     };
     if (!isAdmin && isPM) {

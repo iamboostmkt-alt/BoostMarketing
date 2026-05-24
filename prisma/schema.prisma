@@ -222,6 +222,7 @@ model Task {
   @@index([workspaceId, status])
   @@index([assignedUserId, status])
   @@index([clientId, status])
+  @@index([clientId, workspaceId])
   @@index([userId, status])
   @@index([dueDate, status])
   @@index([parentTaskId])
