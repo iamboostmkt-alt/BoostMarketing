@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
   const clientId   = req.nextUrl.searchParams.get("clientId");
-  const workspaceId = session.user.workspaceId as string | null;
+  const workspaceId = result.ctx.workspaceId as string | null;
 
   if (!clientId) return NextResponse.json({ error: "clientId requerido" }, { status: 400 });
   // workspaceId opcional — JWT se refresca automaticamente
