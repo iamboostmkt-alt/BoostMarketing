@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { rateLimit } from "@/lib/security/rate-limit";
-import { getServerSession } from "next-auth";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { BCRYPT_ROUNDS } from "@/lib/password";

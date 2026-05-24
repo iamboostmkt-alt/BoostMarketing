@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireWorkspace } from "@/core/auth/require-workspace";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { logAction } from "@/lib/audit";
@@ -14,7 +13,6 @@ import {
   templateEntregaListaParaRevisar,
 } from "@/lib/mailer";
 import { getBranding, type Branding } from "@/lib/branding";
-import { getSessionUser } from "@/core/auth/get-session-user";
 import { AccessControl } from "@/core/access/access-control";
 import { TaskCreateSchema, TaskUpdateSchema, validateBody } from "@/lib/schemas";
 import { rateLimit } from "@/lib/security/rate-limit";
