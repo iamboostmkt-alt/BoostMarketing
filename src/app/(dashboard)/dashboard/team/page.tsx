@@ -186,11 +186,21 @@ export default function TeamPage() {
   const [search,  setSearch]  = useState('');
 
   useEffect(() => {
-    if (session === undefined) return;
-    if (!isAdmin && !isPM) { router.replace('/dashboard'); return; }
+    // Esperar a que la sesión cargue antes de evaluar el rol
+    if (session === undefined || session === null) return;
+    if (session && !isAdmin && !isPM) {
+      router.replace('/dashboard');
+      return;
+    }
     fetch('/api/team/workload')
       .then(r => r.json())
-      .then(d => setMembers(d.users ?? []))
+      .then(d => {
+        if (d.error) {
+          toast.error(d.error);
+          return;
+        }
+        setMembers(d.users ?? []);
+      })
       .catch(() => toast.error('Error al cargar el equipo'))
       .finally(() => setLoading(false));
   }, [isAdmin, isPM, router, session]);

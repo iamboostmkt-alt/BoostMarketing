@@ -12,11 +12,14 @@ export async function GET() {
 
   const workspaceId = (session.user as any).workspaceId as string | null;
 
+  // Seguridad multi-tenant: sin workspaceId no se exponen usuarios de otros workspaces
+  if (!workspaceId) return NextResponse.json({ error: "Workspace no encontrado" }, { status: 400 });
+
   const users = await db.user.findMany({
     where: {
       role: { notIn: ["CLIENT", "UNASSIGNED"] },
       active: true,
-      ...(workspaceId && { workspaceId }),
+      workspaceId,
     },
     select: {
       id: true, name: true, email: true,
