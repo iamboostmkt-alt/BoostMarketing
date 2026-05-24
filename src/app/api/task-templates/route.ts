@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const templates = await db.taskTemplate.findMany({
       where: {
         isActive: true,
-        ...(user.workspaceId ? { workspaceId: user.workspaceId } : {}),
+        workspaceId,
         ...(category && { category }),
       },
       orderBy: { createdAt: 'desc' },
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const template = await db.taskTemplate.create({
       data: {
         userId:        user.id,
-        workspaceId:   user.workspaceId,
+        workspaceId:   _rq.ctx.workspaceId,
         title:         title.trim(),
         description:   description   || '',
         category:      category      || 'general',

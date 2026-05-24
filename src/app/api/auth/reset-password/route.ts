@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     await db.activityLog.create({
       data: {
-        userId: user.id, workspaceId: user.workspaceId,
+        userId: user.id, workspaceId: user.workspaceId ?? '',
         action: 'PASSWORD_RESET',
         entity: 'User', entityId: user.id,
         details: JSON.stringify({ email: user.email }),

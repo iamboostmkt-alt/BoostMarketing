@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/core/auth/get-session-user';
-import { MANAGER_ROLES } from '@/core/constants/roles';
+import { requireWorkspace } from '@/core/auth/require-workspace';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getSessionUser();
-    const workspaceId = user?.workspaceId ?? null;
-    if (!user || !MANAGER_ROLES.includes(user.role as any))
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'] });
+    if (!result.ok) return result.response;
+    const { userId, workspaceId } = result.ctx;
+    const user = { ...result.ctx, id: result.ctx.userId };
 
     const { contactId } = await req.json();
     if (!contactId)
@@ -29,14 +28,14 @@ export async function POST(req: NextRequest) {
     // Crear el cliente
     const client = await db.client.create({
       data: {
-        userId:           user.id,
-        assignedManagerId: user.role === 'PROJECT_MANAGER' ? user.id : null,
+        userId:           userId,
+        assignedManagerId: user.role === 'PROJECT_MANAGER' ? userId : null,
         name:    contact.name,
         email:   contact.email,
         company: contact.company || '',
         phone:   contact.phone   || '',
         status:  'active',
-        workspaceId: workspaceId ?? '',
+        workspaceId,
       },
     });
 
