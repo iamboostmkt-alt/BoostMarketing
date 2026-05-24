@@ -23,7 +23,8 @@ export async function GET(req: NextRequest) {
     };
 
     // ── TASKS ──────────────────────────────────────────────
-    let taskWhere: any = {};
+    const workspaceId = user.workspaceId ?? null;
+    let taskWhere: any = workspaceId ? { workspaceId } : {};
 
     if (isClient) {
       const clientRecord = await db.client.findFirst({

@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
     const milestones = await db.milestone.findMany({
       where: {
         clientId,
+        ...(user.workspaceId ? { workspaceId: user.workspaceId } : {}),
         ...(!isManager && { visibleToClient: true }),
       },
       include: milestoneInclude,

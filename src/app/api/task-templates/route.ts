@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     const templates = await db.taskTemplate.findMany({
       where: {
         isActive: true,
+        ...(user.workspaceId ? { workspaceId: user.workspaceId } : {}),
         ...(category && { category }),
       },
       orderBy: { createdAt: 'desc' },

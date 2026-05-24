@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
     // Si se pasa clientId, archivar todas las completadas/aprobadas del cliente
     let where: any = {
       archivedAt: null,
+      ...(user.workspaceId ? { workspaceId: user.workspaceId } : {}),
       status: { in: ['completed', 'approved'] },
       deliverableStatus: { in: ['completed', 'approved'] },
     };
