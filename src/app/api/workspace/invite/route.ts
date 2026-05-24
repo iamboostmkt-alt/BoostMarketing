@@ -1,7 +1,6 @@
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/security/rate-limit";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { BCRYPT_ROUNDS } from "@/lib/password";
@@ -21,12 +20,10 @@ export async function POST(req: NextRequest) {
   if (!_rl_workspace_invite.success) return _rl_workspace_invite.response;
 
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-    }
+    const result = await requireWorkspace({ roles: ["ADMIN"] });
+    if (!result.ok) return result.response;
 
-    const workspaceId = session.user.workspaceId as string | null;
+    const workspaceId = result.ctx.workspaceId as string | null;
     if (!workspaceId) {
       return NextResponse.json({ error: "Sin workspace asignado." }, { status: 400 });
     }
@@ -66,7 +63,7 @@ export async function POST(req: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
     await sendMail(
       email,
-      `Fuiste invitado a ${session.user.workspaceName ?? "la plataforma"}`,
+      `Fuiste invitado a ${(await import("@/lib/db").then(m => m.db.workspace.findUnique({ where: { id: result.ctx.workspaceId }, select: { name: true } })))?.name ?? "la plataforma"}`,
       `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="color-scheme" content="light only"/></head>
       <body style="margin:0;padding:0;background-color:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f7" style="padding:32px 16px;"><tr><td align="center">
@@ -96,7 +93,7 @@ export async function POST(req: NextRequest) {
 
     await db.activityLog.create({
       data: {
-        userId: session.user.id,
+        userId: result.ctx.userId,
         action: "USER_INVITED",
         entity: "User",
         entityId: user.id,

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 
 // Endpoint legacy — redirige a SiteSettings
@@ -27,10 +26,8 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
-    }
+    const result = await requireWorkspace({ roles: ['ADMIN'] });
+    if (!result.ok) return result.response;
     const body = await req.json();
     const { logoUrl, brandName } = body;
     const existing = await db.siteSettings.findFirst();
