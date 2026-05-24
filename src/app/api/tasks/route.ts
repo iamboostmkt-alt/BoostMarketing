@@ -236,10 +236,10 @@ export async function GET(req: NextRequest) {
   // Fallback — mismo comportamiento que antes
   const tasks = await db.task.findMany({
     where: isClient
-      ? { assignedUserId: userId, archivedAt: null, ...(workspaceId && { workspaceId }) }
+      ? { assignedUserId: userId, archivedAt: null, workspaceId }
       : {
           archivedAt: null,
-          ...(workspaceId && { workspaceId }),
+          workspaceId,
           OR: [
             { userId },
             { assignedUserId: userId },
