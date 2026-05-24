@@ -343,7 +343,9 @@ function TasksContent() {
       }
     } catch (err) {
       console.error('[fetchAll]', err);
-      toast.error('Error al cargar las tareas');
+      toast.error('Error al cargar las tareas. Intenta de nuevo.', {
+        action: { label: 'Reintentar', onClick: () => fetchAll() },
+      });
     } finally { setLoading(false); }
   }, [isManager]);
 

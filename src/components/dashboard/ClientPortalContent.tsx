@@ -744,8 +744,8 @@ export default function ClientPortalContent() {
             if (!requestDate) return;
             setRequestSaving(true);
             try {
-              const session_email = (session?.user as any)?.email ?? '';
-              const session_name  = (session?.user as any)?.name  ?? 'Cliente';
+              const session_email = session?.user?.email ?? '';
+              const session_name  = session?.user?.name  ?? 'Cliente';
               const res = await fetch('/api/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
