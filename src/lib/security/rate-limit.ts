@@ -38,11 +38,12 @@ export async function rateLimit(
     ?? 'unknown';
 
   const limiter = getLimiter(options.identifier ?? 'rl', options.limit, options.windowMs);
-  const { success, limit, remaining, reset } = await limiter.limit(ip);
+  try {
+    const { success, limit, remaining, reset } = await limiter.limit(ip);
 
-  if (!success) {
-    return {
-      success: false,
+    if (!success) {
+      return {
+        success: false,
       response: NextResponse.json(
         { error: 'Demasiadas solicitudes. Intenta de nuevo más tarde.' },
         {
@@ -56,5 +57,10 @@ export async function rateLimit(
       ),
     };
   }
-  return { success: true };
+    return { success: true };
+  } catch (e) {
+    // Redis down — fail open para no bloquear el servicio
+    console.error('[rate-limit] Redis error, failing open:', e);
+    return { success: true };
+  }
 }
