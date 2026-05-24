@@ -43,12 +43,9 @@ function ClientDetail({ client, onClose, onEdit, onDelete, isAdmin }: {
   const sm = STATUS_META[client.status] ?? STATUS_META.inactive;
 
   useEffect(() => {
-    fetch('/api/tasks?scope=clients-with-tasks')
+    fetch('/api/tasks/count?clientId=' + client.id)
       .then(r => r.json())
-      .then(d => {
-        const found = (d.clients ?? []).find((c: any) => c.id === client.id);
-        setTaskCount(found ? found.tasks.length : 0);
-      })
+      .then(d => setTaskCount(d.count ?? 0))
       .catch(() => setTaskCount(0));
   }, [client.id]);
 
