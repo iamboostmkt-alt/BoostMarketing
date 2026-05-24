@@ -1,6 +1,5 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 import { sendMail } from "@/lib/mailer";
 
@@ -10,11 +9,8 @@ export const dynamic = "force-dynamic";
 
 // GET — genera el HTML del reporte (para preview o PDF via print)
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  if (!MANAGER_ROLES.includes(session.user.role as string)) {
-    return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
-  }
+  const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER"] });
+  if (!result.ok) return result.response;
 
   const { searchParams } = new URL(req.url);
   const clientId = searchParams.get("clientId");
@@ -275,11 +271,8 @@ export async function GET(req: NextRequest) {
 
 // POST — enviar reporte por email
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  if (!MANAGER_ROLES.includes(session.user.role as string)) {
-    return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
-  }
+  const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER"] });
+  if (!result.ok) return result.response;
 
   const body = await req.json();
   const { clientId, month, year, recipientEmail } = body;

@@ -1,7 +1,6 @@
 import { sendMail, templateNuevoComentario } from "@/lib/mailer";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { dispatchEvent } from '@/lib/events';
 import { broadcastRealtime } from '@/lib/realtime-server';
@@ -59,12 +58,12 @@ async function resolveAccess(activityId: string, userId: string, role: string, e
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+    const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
-    const userId = (session.user as { id: string }).id;
-    const role   = session.user.role as string;
-    const email  = session.user.email as string;
+    const userId = result.ctx.userId;
+    const role   = result.ctx.role as string;
+    const email  = result.ctx.email as string;
 
     const { searchParams } = new URL(req.url);
     const activityId = searchParams.get('activityId');
@@ -90,12 +89,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+    const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
-    const userId = (session.user as { id: string }).id;
-    const role   = session.user.role as string;
-    const email  = session.user.email as string;
+    const userId = result.ctx.userId;
+    const role   = result.ctx.role as string;
+    const email  = result.ctx.email as string;
 
     const body = await req.json();
     const { activityId, message } = body;
@@ -154,11 +153,11 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+    const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
-    const userId = (session.user as { id: string }).id;
-    const role   = session.user.role as string;
+    const userId = result.ctx.userId;
+    const role   = result.ctx.role as string;
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

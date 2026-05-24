@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 import { dispatchEvent, resolveMentions } from '@/lib/events';
 import { broadcastRealtime } from '@/lib/realtime-server';
@@ -67,12 +66,12 @@ async function checkRoomAccess(
 // ── GET ────────────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
-  const userId = (session.user as { id: string }).id;
-  const role  = session.user.role  as string;
-  const email = session.user.email as string;
+  const userId = ({ id: result.ctx.userId }).id;
+  const role  = result.ctx.role  as string;
+  const email = result.ctx.email as string;
 
   const { searchParams } = new URL(req.url);
   const room = searchParams.get('room') ?? 'TEAM';
@@ -94,13 +93,13 @@ export async function GET(req: NextRequest) {
 // ── POST ───────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
-  const userId = (session.user as { id: string }).id;
-  const role   = session.user.role  as string;
-  const email  = session.user.email as string;
-  const name   = session.user.name  as string | null;
+  const userId = ({ id: result.ctx.userId }).id;
+  const role   = result.ctx.role  as string;
+  const email  = result.ctx.email as string;
+  const name   = result.ctx.name  as string | null;
 
   const body      = await req.json();
   const text      = body.message?.toString().trim() ?? '';
@@ -141,11 +140,11 @@ export async function POST(req: NextRequest) {
 // ── DELETE ─────────────────────────────────────────────────────────────────────
 
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
-  const userId  = (session.user as { id: string }).id;
-  const isAdmin = session.user.role === 'ADMIN';
+  const userId  = ({ id: result.ctx.userId }).id;
+  const isAdmin = result.ctx.role === 'ADMIN';
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
