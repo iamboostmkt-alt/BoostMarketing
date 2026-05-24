@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkspace } from "@/core/auth/require-workspace";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { db } from '@/lib/db';
 import { dispatchEvent, resolveMentions } from '@/lib/events';
 import { broadcastRealtime } from '@/lib/realtime-server';
@@ -66,6 +67,8 @@ async function checkRoomAccess(
 // ── GET ────────────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'chat-get' });
+  if (!rl.success) return rl.response;
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
 

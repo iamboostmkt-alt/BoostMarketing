@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkspace } from "@/core/auth/require-workspace";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
@@ -12,6 +13,8 @@ const milestoneInclude = {
 };
 
 export async function GET(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'milestones-get' });
+  if (!rl.success) return rl.response;
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;

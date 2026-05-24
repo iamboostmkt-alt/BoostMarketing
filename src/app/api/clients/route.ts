@@ -52,6 +52,8 @@ function formatClient(c: Record<string, unknown>) {
 }
 
 export async function GET(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'clients-get' });
+  if (!rl.success) return rl.response;
   const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER", "SALES_REP"] });
   if (!result.ok) return result.response;
   const { userId, workspaceId, role } = result.ctx;

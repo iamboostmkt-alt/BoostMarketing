@@ -1,4 +1,5 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 import { sendMail } from "@/lib/mailer";
@@ -9,6 +10,8 @@ export const dynamic = "force-dynamic";
 
 // GET — genera el HTML del reporte (para preview o PDF via print)
 export async function GET(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 20, windowMs: 60_000, identifier: 'reports-monthly-get' });
+  if (!rl.success) return rl.response;
   const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER"] });
   if (!result.ok) return result.response;
 

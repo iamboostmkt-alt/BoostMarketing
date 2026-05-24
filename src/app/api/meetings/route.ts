@@ -11,6 +11,8 @@ const include = {
 } as const;
 
 export async function GET(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'meetings-get' });
+  if (!rl.success) return rl.response;
   const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER"] });
   if (!result.ok) return result.response;
   const { workspaceId } = result.ctx;

@@ -47,6 +47,8 @@ const clientInclude = {
 };
 
 export async function GET(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'tasks-get' });
+  if (!rl.success) return rl.response;
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
