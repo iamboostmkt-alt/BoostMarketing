@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  if (session.user.role !== "ADMIN") return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
+  const result = await requireWorkspace({ roles: ['ADMIN'] });
+  if (!result.ok) return result.response;
+  const { userId, workspaceId, role } = result.ctx;
+  if (result.ctx.role !== "ADMIN") return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
 
   const { searchParams } = new URL(req.url);
   const page  = parseInt(searchParams.get("page")  ?? "1");

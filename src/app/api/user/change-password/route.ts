@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { BCRYPT_ROUNDS } from "@/lib/password";
@@ -10,10 +10,9 @@ export async function POST(req: NextRequest) {
   const _rl_change_password = await rateLimit(req, { limit: 5, windowMs: 60000, identifier: 'change-password' });
   if (!_rl_change_password.success) return _rl_change_password.response;
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-  const userId = session.user.id;
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+  const { userId, workspaceId } = result.ctx;
   const { currentPassword, newPassword } = await req.json();
 
   if (!currentPassword || !newPassword)

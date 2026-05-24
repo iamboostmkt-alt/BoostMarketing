@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -279,13 +280,11 @@ async function getAssignedEmails(taskId: string): Promise<Set<string>> {
 export async function POST(req: NextRequest) {
   const rl = await rateLimit(req, { limit: 30, windowMs: 60_000, identifier: 'tasks-post' });
   if (!rl.success) return rl.response;
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-  const userId      = session.user.id;
-  const workspaceId = session.user.workspaceId as string | null;
-  const isManager   = MANAGER_ROLES.includes(session.user.role as string);
-  if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+  const { userId, workspaceId, role } = result.ctx;
+  const isManager   = MANAGER_ROLES.includes(result.ctx.role as string);
+  // workspaceId garantizado por requireWorkspace
   const rawBody     = await req.json();
   const validation = validateBody(TaskCreateSchema, rawBody);
   if (!validation.success) {
@@ -306,7 +305,7 @@ export async function POST(req: NextRequest) {
       : [userId];
 
   // Clientes pueden crear tareas vinculadas a su propio clientId
-  const isClient = session.user.role === 'CLIENT';
+  const isClient = result.ctx.role === 'CLIENT';
   let resolvedClientId = isManager ? (clientId || null) : null;
   if (isClient && clientId) resolvedClientId = clientId;
 
@@ -370,13 +369,13 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'tasks-put' });
   if (!rl.success) return rl.response;
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
-  const userId      = session.user.id;
-  const workspaceId = session.user.workspaceId as string | null;
-  const userName    = session.user.name || "Un usuario";
-  const isManager   = MANAGER_ROLES.includes(session.user.role as string);
+  const userId      = result.ctx.userId;
+  const workspaceId = result.ctx.workspaceId;
+  const userName    = result.ctx.name || "Un usuario";
+  const isManager   = MANAGER_ROLES.includes(result.ctx.role as string);
   if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
   const rawBody    = await req.json();
   const validation = validateBody(TaskUpdateSchema, rawBody);
@@ -514,7 +513,7 @@ export async function PUT(req: NextRequest) {
 
       // Último fallback: primer ADMIN del workspace
       if (!pm) {
-        const workspaceId = session.user.workspaceId as string | null;
+        // workspaceId ya disponible desde requireWorkspace
         const admin = await db.user.findFirst({
           where: {
             role: "ADMIN",
@@ -706,10 +705,10 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
 
-  const isManager = MANAGER_ROLES.includes(session.user.role as string);
+  const isManager = MANAGER_ROLES.includes(result.ctx.role as string);
   if (!isManager) return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
 
   const { searchParams } = new URL(req.url);
@@ -729,6 +728,6 @@ export async function DELETE(req: NextRequest) {
 
   await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
   await db.task.delete({ where: { id } });
-  await logAction({ userId: session.user.id, action: "TASK_DELETED", entity: "task", entityId: id });
+  await logAction({ userId: result.ctx.userId, action: "TASK_DELETED", entity: "task", entityId: id });
   return NextResponse.json({ success: true });
 }

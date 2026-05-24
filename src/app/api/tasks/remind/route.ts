@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -8,9 +9,10 @@ import { getBranding } from "@/lib/branding";
 const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  if (!MANAGER_ROLES.includes(session.user.role as string)) {
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+  const { userId, workspaceId, role } = result.ctx;
+  if (!MANAGER_ROLES.includes(result.ctx.role as string)) {
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
   }
 
