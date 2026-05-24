@@ -10,6 +10,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const taskId = searchParams.get('taskId');
     if (!taskId) return NextResponse.json({ error: 'taskId requerido' }, { status: 400 });
+    const { workspaceId } = result.ctx;
+    // Verificar que la tarea pertenece al workspace
+    const task = await db.task.findFirst({ where: { id: taskId, workspaceId } });
+    if (!task) return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
     const logs = await db.deliverableLog.findMany({
       where: { taskId },
       orderBy: { createdAt: 'asc' },

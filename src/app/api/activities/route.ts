@@ -8,17 +8,18 @@ export async function GET(req: NextRequest) {
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
-    const { userId, role } = result.ctx;
+    const { userId, workspaceId, role } = result.ctx;
     const isManager = MANAGER_ROLES.includes(role);
     const isClient  = role === "CLIENT";
 
     const activities = await db.activity.findMany({
-      where: isManager ? {} : isClient ? {
+      where: isManager ? { workspaceId } : isClient ? {
         OR: [
           { assignedUserId: userId },
           { assignedUsers: { some: { userId } } },
         ],
       } : {
+        workspaceId,
         OR: [
           { assignedUserId: userId },
           { createdByUserId: userId },

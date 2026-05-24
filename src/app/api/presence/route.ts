@@ -8,7 +8,9 @@ export async function GET() {
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
 
+  const { workspaceId } = result.ctx;
   const presences = await db.userPresence.findMany({
+    where: { user: { workspaceId } },
     include: {
       user: { select: { id: true, name: true, email: true, color: true, image: true } },
     },

@@ -21,6 +21,7 @@ export async function GET() {
     const managers = await db.user.findMany({
       where: {
         role: 'PROJECT_MANAGER',
+        workspaceId,
         active: true,
       },
       select: {
