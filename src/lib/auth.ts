@@ -170,9 +170,10 @@ export const authOptions: NextAuthOptions = {
         token.picture = session.image ?? undefined;
       }
 
-      // Refrescar datos del token si no tiene workspaceId O si el token es mayor a 1 hora
-      const tokenAge = token.iat ? (Date.now() / 1000) - (token.iat as number) : 0;
-      const needsRefresh = !token.workspaceId || tokenAge > 3600;
+      // Refrescar datos del token si no tiene workspaceId O si han pasado mas de 1 hora desde el ultimo refresh
+      const now = Date.now() / 1000;
+      const lastRefresh = (token.lastRefresh as number) ?? 0;
+      const needsRefresh = !token.workspaceId || (now - lastRefresh) > 3600;
       if (needsRefresh && token.id) {
         try {
           const dbUser = await db.user.findUnique({
@@ -197,6 +198,7 @@ export const authOptions: NextAuthOptions = {
             token.customRoleLabel  = dbUser.customRole?.label ?? null;
             token.customRoleColor  = dbUser.customRole?.color ?? null;
             token.permissions      = (dbUser.customRole?.permissions as Record<string, boolean>) ?? {};
+            token.lastRefresh      = now;
           }
         } catch (e) { console.error("[auth jwt refresh]", e); }
       }
