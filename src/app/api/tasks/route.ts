@@ -474,7 +474,7 @@ export async function PUT(req: NextRequest) {
         await db.notification.create({
           data: {
             userId:  pm.id,
-            message: `⏳ Listo para revisar: "${task.title}"`,
+            message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`,
             type:    "task",
             read:    false,
             link:    "/dashboard/tasks",
@@ -491,7 +491,7 @@ export async function PUT(req: NextRequest) {
                 </td></tr>
                 <tr><td style="padding:32px;background-color:#ffffff;color:#18181b;font-size:15px;line-height:1.6;">
                   <h2 style="color:#18181b;margin:0 0 12px;font-size:20px;">⏳ Tarea lista para revisión</h2>
-                  <p style="color:#6b7280;">El equipo marcó como completada: <strong style="color:#18181b;">${task.title}</strong></p>
+                  <p style="color:#6b7280;"><strong style="color:#18181b;">${userName}</strong> marcó como terminada: <strong style="color:#18181b;">${task.title}</strong></p>
                   <div style="text-align:center;margin-top:24px;">
                     <a href="${process.env.NEXT_PUBLIC_APP_URL ?? ""}/dashboard/tasks" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Revisar ahora</a>
                   </div>

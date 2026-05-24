@@ -62,11 +62,30 @@ export async function GET(req: NextRequest) {
     emailsPorTarea.set(t.id, users.filter(u => seen.has(u.email) ? false : (seen.add(u.email), true)));
   }
 
-  // Notificar asignados con nombre personalizado
+  // Notificar asignados con nombre personalizado — email + notif in-app
   let enviados = 0;
   for (const t of tareasVencidas) {
     const users = emailsPorTarea.get(t.id) ?? [];
     const dueDate = t.dueDate ? new Date(t.dueDate).toLocaleDateString("es-MX") : "";
+
+    // IDs para notif in-app
+    const assignedIds: string[] = [];
+    if (t.assignedUser?.id) assignedIds.push(t.assignedUser.id);
+    t.assignedUsers?.forEach((au: any) => { if (au.user?.id) assignedIds.push(au.user.id); });
+    const uniqueIds = [...new Set(assignedIds)];
+
+    for (const uid of uniqueIds) {
+      await db.notification.create({
+        data: {
+          userId:  uid,
+          message: `🚨 Tu tarea "${t.title}" está vencida`,
+          type:    "task",
+          read:    false,
+          link:    "/dashboard/tasks",
+        },
+      }).catch(() => {});
+    }
+
     for (const u of users) {
       await sendMail(u.email, `🚨 Tarea vencida: ${t.title}`, templateTareaVencida(t.title, dueDate, branding, u.name ?? undefined));
       enviados++;
@@ -117,6 +136,52 @@ export async function GET(req: NextRequest) {
 </body></html>`;
     await sendEmail({ to: manager.email, subject: `🚨 ${tareas.length} tarea${tareas.length > 1 ? "s" : ""} vencida${tareas.length > 1 ? "s" : ""} - BoostMarketing`, html });
     enviados++;
+  }
+
+  // Notificar al PM del milestone cuando una tarea vinculada vence
+  const tareasConMilestone = tareasVencidas.filter((t: any) => t.milestoneId);
+  if (tareasConMilestone.length > 0) {
+    const milestoneIds = [...new Set(tareasConMilestone.map((t: any) => t.milestoneId as string))];
+    const milestones = await db.milestone.findMany({
+      where: { id: { in: milestoneIds } },
+      include: { client: { select: { assignedManagerId: true, assignedManager: { select: { id: true, email: true } } } } },
+    }).catch(() => []);
+    for (const ms of milestones) {
+      const pmId = ms.client?.assignedManager?.id;
+      if (!pmId) continue;
+      const tareasDeMilestone = tareasConMilestone.filter((t: any) => t.milestoneId === ms.id);
+      await db.notification.create({
+        data: {
+          userId:  pmId,
+          message: `🚨 ${tareasDeMilestone.length} tarea${tareasDeMilestone.length > 1 ? "s" : ""} del milestone "${(ms as any).title ?? ms.id}" vencida${tareasDeMilestone.length > 1 ? "s" : ""}`,
+          type:    "task",
+          read:    false,
+          link:    "/dashboard/tasks",
+        },
+      }).catch(() => {});
+    }
+  }
+
+  // Notificar al creador de la tarea padre cuando una subtarea vence
+  const subtareasVencidas = tareasVencidas.filter((t: any) => t.parentTaskId);
+  if (subtareasVencidas.length > 0) {
+    const parentIds = [...new Set(subtareasVencidas.map((t: any) => t.parentTaskId as string))];
+    const parents = await db.task.findMany({
+      where: { id: { in: parentIds } },
+      select: { id: true, title: true, userId: true },
+    }).catch(() => []);
+    for (const parent of parents) {
+      const hijos = subtareasVencidas.filter((t: any) => t.parentTaskId === parent.id);
+      await db.notification.create({
+        data: {
+          userId:  parent.userId,
+          message: `🚨 ${hijos.length} subtarea${hijos.length > 1 ? "s" : ""} de "${parent.title}" vencida${hijos.length > 1 ? "s" : ""}`,
+          type:    "task",
+          read:    false,
+          link:    "/dashboard/tasks",
+        },
+      }).catch(() => {});
+    }
   }
 
   return NextResponse.json({
