@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     // Actualizar el contacto a stage activo
     await db.contact.update({
       where: { id: contactId },
-      data:  { status: 'activo' },
+      data:  { status: 'converted' },
     });
 
     // Crear notificación para admins
