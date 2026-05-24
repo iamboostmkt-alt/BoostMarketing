@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
-import { MANAGER_ROLES } from '@/core/constants/roles';
 
 export async function GET(req: NextRequest) {
   try {
