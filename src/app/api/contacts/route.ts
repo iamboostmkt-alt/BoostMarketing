@@ -1,9 +1,13 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from "@/lib/security/rate-limit";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
+  const _rl_contacts_get = await rateLimit(req, { limit: 30, windowMs: 60000, identifier: 'contacts-get' });
+  if (!_rl_contacts_get.success) return _rl_contacts_get.response;
+
   try {
     const session = await getServerSession(authOptions);
 
@@ -36,6 +40,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const _rl_contacts_post = await rateLimit(req, { limit: 20, windowMs: 60000, identifier: 'contacts-post' });
+  if (!_rl_contacts_post.success) return _rl_contacts_post.response;
+
   try {
     const session = await getServerSession(authOptions);
 

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from "@/lib/security/rate-limit";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const _rl = await rateLimit(req, { limit: 30, windowMs: 60000, identifier: 'profile-get' });
+  if (!_rl.success) return _rl.response;
+
   try {
     const session = await getServerSession(authOptions);
 
@@ -46,6 +50,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  const _rl_profile_patch = await rateLimit(req, { limit: 10, windowMs: 60000, identifier: 'profile-patch' });
+  if (!_rl_profile_patch.success) return _rl_profile_patch.response;
+
   try {
     const session = await getServerSession(authOptions);
 

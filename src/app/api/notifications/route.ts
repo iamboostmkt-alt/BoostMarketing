@@ -1,9 +1,13 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from "@/lib/security/rate-limit";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
+  const _rl_notifications_get = await rateLimit(req, { limit: 60, windowMs: 60000, identifier: 'notifications-get' });
+  if (!_rl_notifications_get.success) return _rl_notifications_get.response;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -44,6 +48,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const _rl = await rateLimit(req, { limit: 30, windowMs: 60000, identifier: 'notifications-patch' });
+  if (!_rl.success) return _rl.response;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -78,6 +85,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const _rl = await rateLimit(req, { limit: 20, windowMs: 60000, identifier: 'notifications-post' });
+  if (!_rl.success) return _rl.response;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -104,6 +114,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const _rl = await rateLimit(req, { limit: 20, windowMs: 60000, identifier: 'notifications-delete' });
+  if (!_rl.success) return _rl.response;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {

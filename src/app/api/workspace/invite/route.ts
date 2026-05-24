@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -16,6 +17,9 @@ const InviteSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const _rl_workspace_invite = await rateLimit(req, { limit: 10, windowMs: 60000, identifier: 'workspace-invite' });
+  if (!_rl_workspace_invite.success) return _rl_workspace_invite.response;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user || session.user.role !== "ADMIN") {

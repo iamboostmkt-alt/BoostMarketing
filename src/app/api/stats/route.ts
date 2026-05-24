@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimit } from "@/lib/security/rate-limit";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
