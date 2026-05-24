@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const session = await requireManager();
   if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   const workspaceId = session.user.workspaceId as string | null;
-  if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
+  // workspaceId opcional — se filtra solo si existe
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
   const where: Record<string, unknown> = { email: { contains: "@internal.boost" }, workspaceId };

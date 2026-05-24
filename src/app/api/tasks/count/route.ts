@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const workspaceId = session.user.workspaceId as string | null;
 
   if (!clientId) return NextResponse.json({ error: "clientId requerido" }, { status: 400 });
-  if (!workspaceId) return NextResponse.json({ error: "Workspace no encontrado" }, { status: 400 });
+  // workspaceId opcional — JWT se refresca automaticamente
 
   const count = await db.task.count({
     where: {

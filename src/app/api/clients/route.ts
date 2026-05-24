@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
     if (!MANAGE_ROLES.includes(role)) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
-    if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
+    // workspaceId puede ser null en registros legacy
 
     const rawBody = await req.json();
     const validation = validateBody(ClientCreateSchema, rawBody);
