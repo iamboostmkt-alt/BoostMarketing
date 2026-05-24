@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
   const notifyUsers = await db.user.findMany({
     where: {
       role: { in: ["ADMIN", "SALES_REP", "PROJECT_MANAGER"] },
-      ...(workspaceId && { workspaceId }),
+      workspaceId: workspaceId ?? '',
     },
     select: { id: true, email: true },
   });

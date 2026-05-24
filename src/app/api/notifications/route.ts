@@ -18,16 +18,16 @@ export async function GET(req: NextRequest) {
 
     const [notifications, total] = await Promise.all([
       db.notification.findMany({
-        where:   { userId, ...(workspaceId ? { workspaceId } : {}) },
+        where:   { userId, workspaceId },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      db.notification.count({ where: { userId, ...(workspaceId ? { workspaceId } : {}) } }),
+      db.notification.count({ where: { userId, workspaceId } }),
     ]);
 
     const unreadCount = await db.notification.count({
-      where: { userId, read: false, ...(workspaceId && { workspaceId }) },
+      where: { userId, read: false, workspaceId },
     });
 
     return NextResponse.json({

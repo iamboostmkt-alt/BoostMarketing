@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     const tasks = await db.task.findMany({
       where: {
         archivedAt: null,
-        ...(workspaceId && { workspaceId }),
+        workspaceId,
         OR: [
           { userId },
           { assignedUserId: userId },
@@ -512,7 +512,7 @@ export async function PUT(req: NextRequest) {
         const admin = await db.user.findFirst({
           where: {
             role: "ADMIN",
-            ...(workspaceId && { workspaceId }),
+            workspaceId,
           },
           select: { id: true, email: true, name: true },
         });
