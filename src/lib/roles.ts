@@ -69,10 +69,12 @@ export const ROUTE_ACCESS: Array<{ pattern: RegExp; allowed: Role[] }> = [
   { pattern: /^\/dashboard\/analytics(\/|$)/, allowed: ["ADMIN", "MARKETING", "PROJECT_MANAGER"] },
   { pattern: /^\/dashboard\/clients(\/|$)/, allowed: ["ADMIN", "PROJECT_MANAGER"] },
   { pattern: /^\/dashboard\/crm(\/|$)/, allowed: ["ADMIN", "MARKETING", "PROJECT_MANAGER", "SALES_REP"] },
+  { pattern: /^\/dashboard\/leads(\/|$)/, allowed: ["ADMIN", "MARKETING", "PROJECT_MANAGER", "SALES_REP"] },
   { pattern: /^\/dashboard\/tasks(\/|$)/, allowed: INTERNAL_TAB },
   { pattern: /^\/dashboard\/calendar(\/|$)/, allowed: ["ADMIN", "PROJECT_MANAGER", "TEAM_MEMBER", "DESIGNER", "MARKETING", "SALES_REP"] },
   { pattern: /^\/dashboard\/chat(\/|$)/, allowed: INTERNAL_TAB },
   { pattern: /^\/dashboard\/client-portal(\/|$)/, allowed: ["CLIENT", "PROJECT_MANAGER", "ADMIN"] },
+  { pattern: /^\/dashboard\/team(\/|$)/, allowed: ["ADMIN", "PROJECT_MANAGER"] },
   { pattern: /^\/dashboard\/waiting-assignment(\/|$)/, allowed: ["UNASSIGNED"] },
   { pattern: /^\/dashboard\/settings(\/|$)/, allowed: INTERNAL_TAB },
 ];
