@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { rateLimit } from "@/lib/security/rate-limit";
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
@@ -9,13 +8,9 @@ export async function GET(req: NextRequest) {
   if (!_rl.success) return _rl.response;
 
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-
-    const userId = session.user.id;
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { userId } = result.ctx;
 
     const user = await db.user.findUnique({
       where: { id: userId },
@@ -54,13 +49,9 @@ export async function PATCH(req: NextRequest) {
   if (!_rl_profile_patch.success) return _rl_profile_patch.response;
 
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-
-    const userId = session.user.id;
+    const result = await requireWorkspace();
+    if (!result.ok) return result.response;
+    const { userId } = result.ctx;
     const body = await req.json();
     const { name, image, color, removeImage } = body;
 

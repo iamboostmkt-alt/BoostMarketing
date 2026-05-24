@@ -1,6 +1,5 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireWorkspace } from "@/core/auth/require-workspace";
 import { getSupabaseAdmin, STORAGE_BUCKET, getPublicUrl } from '@/lib/supabase';
 import { db } from '@/lib/db';
 import { log } from '@/lib/logger';
@@ -10,10 +9,9 @@ const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
   log.api('/api/auth/avatar', 'POST');
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
-
-  const userId = (session.user as { id: string }).id;
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+  const { userId } = result.ctx;
 
   const formData = await req.formData();
   const file = formData.get('file') as File | null;
