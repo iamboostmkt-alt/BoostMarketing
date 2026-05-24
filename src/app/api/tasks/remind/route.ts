@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendMail, templateNuevaTarea } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
 
-const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
+
 
 export async function POST(req: NextRequest) {
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
   const { userId, workspaceId, role } = result.ctx;
-  if (!MANAGER_ROLES.includes(result.ctx.role as string)) {
+  if (!hasRole(result.ctx.role as string, MANAGER_ROLES)) {
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
   }
 

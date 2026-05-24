@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { INTERNAL_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { db } from '@/lib/db';
 import { dispatchEvent, resolveMentions } from '@/lib/events';
 import { broadcastRealtime } from '@/lib/realtime-server';
 
-const INTERNAL_ROLES = ['ADMIN', 'DESIGNER', 'MARKETING', 'PROJECT_MANAGER', 'TEAM_MEMBER'];
+
 const INTERNAL_ROOMS = ['TEAM', 'SUPPORT', 'PROJECT'];
 const PRIVATE_CHAT_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -29,7 +30,7 @@ async function checkRoomAccess(
   if (room === 'PRIVATE') return PRIVATE_CHAT_ROLES.includes(role);
 
   if (INTERNAL_ROOMS.includes(room)) {
-    if (!INTERNAL_ROLES.includes(role)) return false;
+    if (!hasRole(role, INTERNAL_ROLES)) return false;
     if (['TEAM_MEMBER', 'DESIGNER', 'MARKETING'].includes(role) && room !== 'TEAM') return false;
     return true;
   }

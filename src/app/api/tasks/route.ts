@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -17,7 +18,7 @@ import { AccessControl } from "@/core/access/access-control";
 import { TaskCreateSchema, TaskUpdateSchema, validateBody } from "@/lib/schemas";
 import { rateLimit } from "@/lib/security/rate-limit";
 
-const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
+
 
 const userInclude = {
   select: { id: true, name: true, email: true, color: true, image: true },
@@ -282,7 +283,7 @@ export async function POST(req: NextRequest) {
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
   const { userId, workspaceId, role } = result.ctx;
-  const isManager   = MANAGER_ROLES.includes(result.ctx.role as string);
+  const isManager   = hasRole(result.ctx.role as string, MANAGER_ROLES);
   // workspaceId garantizado por requireWorkspace
   const rawBody     = await req.json();
   const validation = validateBody(TaskCreateSchema, rawBody);
@@ -373,7 +374,7 @@ export async function PUT(req: NextRequest) {
   const userId      = result.ctx.userId;
   const workspaceId = result.ctx.workspaceId;
   const userName    = result.ctx.name || "Un usuario";
-  const isManager   = MANAGER_ROLES.includes(result.ctx.role as string);
+  const isManager   = hasRole(result.ctx.role as string, MANAGER_ROLES);
   if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
   const rawBody    = await req.json();
   const validation = validateBody(TaskUpdateSchema, rawBody);
@@ -707,7 +708,7 @@ export async function DELETE(req: NextRequest) {
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
 
-  const isManager = MANAGER_ROLES.includes(result.ctx.role as string);
+  const isManager = hasRole(result.ctx.role as string, MANAGER_ROLES);
   if (!isManager) return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
 
   const { searchParams } = new URL(req.url);

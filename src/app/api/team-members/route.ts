@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
+import { INTERNAL_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
-const INTERNAL_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'DESIGNER', 'MARKETING', 'SALES_REP'];
+
 
 export async function GET() {
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
     const { role, workspaceId } = result.ctx;
-    if (!INTERNAL_ROLES.includes(role)) {
+    if (!hasRole(role, INTERNAL_ROLES)) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 import { log } from '@/lib/logger';
 import { normalizeTaskStatus } from '@/lib/task-status';
 import { AccessControl } from '@/core/access/access-control';
 
-const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
+
 
 const taskUserInclude = {
   select: { id: true, name: true, email: true, color: true, image: true, role: true },
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
     const userId    = user.id;
     const userEmail = user.email;
     const role      = user.role;
-    const isManager = MANAGER_ROLES.includes(role);
+    const isManager = hasRole(role, MANAGER_ROLES);
     const isClient  = role === 'CLIENT';
 
     if (role === 'UNASSIGNED') {

@@ -1,10 +1,11 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 import { sendMail } from "@/lib/mailer";
 
-const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
+
 
 export const dynamic = "force-dynamic";
 

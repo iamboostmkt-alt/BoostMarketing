@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { MANAGER_ROLES_EXT as MANAGER_ROLES } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 import { logAction } from "@/lib/audit";
@@ -7,7 +8,7 @@ import { getBranding } from "@/lib/branding";
 import { ClientCreateSchema, ClientUpdateSchema, validateBody } from "@/lib/schemas";
 import { rateLimit } from "@/lib/security/rate-limit";
 
-const MANAGE_ROLES = ["ADMIN", "PROJECT_MANAGER", "SALES_REP"];
+
 
 const clientSelect = {
   id: true,

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { MANAGER_ROLES_EXT as MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 
-const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER", "SALES_REP"];
+
 
 export async function GET(req: NextRequest) {
   const rl = await rateLimit(req, { limit: 30, windowMs: 60_000, identifier: "contacts-get" });
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
 
-  const where: Record<string, unknown> = MANAGER_ROLES.includes(role)
+  const where: Record<string, unknown> = hasRole(role, MANAGER_ROLES)
     ? { workspaceId }
     : { workspaceId, userId };
   if (status) where.status = status;

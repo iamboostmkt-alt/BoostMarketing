@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { MANAGER_ROLES_EXT as MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 
-const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'];
+
 
 export async function GET(req: NextRequest) {
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
     const { role } = result.ctx;
-    const isManager = MANAGER_ROLES.includes(role);
+    const isManager = hasRole(role, MANAGER_ROLES);
 
     const { searchParams } = new URL(req.url);
     const taskId = searchParams.get('taskId');
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
     if (!task) return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
 
     const role = result.ctx.role as string;
-    const isManager = MANAGER_ROLES.includes(role);
+    const isManager = hasRole(role, MANAGER_ROLES);
     const isAssigned = task.assignedUsers.some(au => au.userId === result.ctx.userId) || task.assignedUserId === result.ctx.userId;
 
     if (!isManager && !isAssigned) {
@@ -116,7 +117,7 @@ export async function DELETE(req: NextRequest) {
     if (!attachment) return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
 
     const role = result.ctx.role as string;
-    const isManager = MANAGER_ROLES.includes(role);
+    const isManager = hasRole(role, MANAGER_ROLES);
     const isOwner = attachment.userId === result.ctx.userId;
 
     if (!isManager && !isOwner) {

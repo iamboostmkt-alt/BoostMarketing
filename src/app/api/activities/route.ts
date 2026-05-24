@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { MANAGER_ROLES_EXT as MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 
-const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'SALES_REP'];
+
 
 export async function GET(req: NextRequest) {
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
     const { userId, workspaceId, role } = result.ctx;
-    const isManager = MANAGER_ROLES.includes(role);
+    const isManager = hasRole(role, MANAGER_ROLES);
     const isClient  = role === "CLIENT";
 
     const activities = await db.activity.findMany({

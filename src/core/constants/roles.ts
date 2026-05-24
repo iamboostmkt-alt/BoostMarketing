@@ -10,6 +10,12 @@ export const ROLES = {
 } as const;
 
 export const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"] as const;
+export const MANAGER_ROLES_EXT = ["ADMIN", "PROJECT_MANAGER", "SALES_REP"] as const;
+
+/** Helper — verifica si un rol pertenece a un grupo sin problemas de tipo readonly */
+export function hasRole(role: string | undefined | null, roles: readonly string[]): boolean {
+  return !!role && (roles as string[]).includes(role);
+}
 
 export const INTERNAL_ROLES = [
   "ADMIN",
