@@ -122,41 +122,54 @@ export async function GET(req: NextRequest) {
     }
 
     const clients = await db.client.findMany({
-      where: clientIds ? { id: { in: clientIds }, ...(workspaceId && { workspaceId }) } : { ...(workspaceId && { workspaceId }) },
+      where: clientIds ? { id: { in: clientIds }, workspaceId } : { workspaceId },
       select: { id: true, name: true, company: true, assignedManagerId: true },
       orderBy: { name: "asc" },
     });
 
-    const result = await Promise.all(
-      clients.map(async (client) => {
-        const taskWhere: any = {
-          clientId: client.id,
-          ...(isClient && { visibility: "client_visible" }),
-        };
-        if (!isAdmin && isPM) {
-          taskWhere.userId = userId;
-        } else if (!isAdmin && !isPM) {
-          taskWhere.OR = [
-            { assignedUserId: userId },
-            { assignedUsers: { some: { userId } } },
-          ];
-        }
-        const tasks = await db.task.findMany({
-          where: taskWhere,
-          include: {
-            assignedUser:  userInclude,
-            assignedUsers: { include: { user: userInclude } },
-            client:        clientInclude,
-          },
-          orderBy: { createdAt: "desc" },
-        });
-        const flattened = flattenTasks(tasks);
-        const filtered  = flattened.filter((t: any) => AccessControl.canViewTask(user, t));
-        return { ...client, tasks: filtered };
-      })
-    );
+    // Query única para todas las tareas de todos los clientes — evita N+1
+    const allClientIds = clients.map((c) => c.id);
+    const taskWhere: any = {
+      clientId: { in: allClientIds },
+      workspaceId,
+      archivedAt: null,
+      ...(isClient && { visibility: "client_visible" }),
+    };
+    if (!isAdmin && isPM) {
+      taskWhere.userId = userId;
+    } else if (!isAdmin && !isPM) {
+      taskWhere.OR = [
+        { assignedUserId: userId },
+        { assignedUsers: { some: { userId } } },
+      ];
+    }
 
-    return NextResponse.json({ clients: result.filter((c) => c.tasks.length > 0) });
+    const allTasks = await db.task.findMany({
+      where: taskWhere,
+      include: {
+        assignedUser:  userInclude,
+        assignedUsers: { include: { user: userInclude } },
+        client:        clientInclude,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const flatAll = flattenTasks(allTasks);
+    const filteredAll = flatAll.filter((t: any) => AccessControl.canViewTask(user, t));
+
+    // Agrupar en memoria por clientId
+    const tasksByClient = new Map<string, any[]>();
+    for (const t of filteredAll) {
+      const cid = t.clientId as string;
+      if (!tasksByClient.has(cid)) tasksByClient.set(cid, []);
+      tasksByClient.get(cid)!.push(t);
+    }
+
+    const result = clients
+      .map((client) => ({ ...client, tasks: tasksByClient.get(client.id) ?? [] }))
+      .filter((c) => c.tasks.length > 0);
+
+    return NextResponse.json({ clients: result });
   }
 
   const parentId = req.nextUrl.searchParams.get("parentId");
