@@ -198,7 +198,7 @@ export const authOptions: NextAuthOptions = {
             token.customRoleColor  = dbUser.customRole?.color ?? null;
             token.permissions      = (dbUser.customRole?.permissions as Record<string, boolean>) ?? {};
           }
-        } catch { (e) => console.error("[auth jwt refresh]", e) }
+        } catch (e) { console.error("[auth jwt refresh]", e); }
       }
 
       return token;
