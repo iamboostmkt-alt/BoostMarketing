@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const clientId   = req.nextUrl.searchParams.get("clientId");
-  const workspaceId = (session.user as any).workspaceId as string | null;
+  const workspaceId = session.user.workspaceId as string | null;
 
   if (!clientId) return NextResponse.json({ error: "clientId requerido" }, { status: 400 });
   if (!workspaceId) return NextResponse.json({ error: "Workspace no encontrado" }, { status: 400 });

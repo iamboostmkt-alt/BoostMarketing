@@ -16,7 +16,7 @@ export async function GET() {
       );
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     const totalContacts = await db.contact.count({
       where: { userId },

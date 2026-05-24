@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const role   = session.user.role as string;
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const body = await req.json();
     const { name, email, company, phone, status, value, notes } = body;
 
@@ -95,7 +95,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const body = await req.json();
     const { id, name, email, company, phone, status, value, notes } = body;
 
@@ -107,7 +107,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const existing = await db.contact.findUnique({ where: { id } });
-    const userRole = (session.user as any).role as string;
+    const userRole = session.user.role as string;
     const canManage = ['ADMIN', 'PROJECT_MANAGER'].includes(userRole);
     if (!existing || (!canManage && existing.userId !== userId)) {
       return NextResponse.json(
@@ -158,7 +158,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 

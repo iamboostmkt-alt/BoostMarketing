@@ -258,8 +258,8 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const userId      = (session.user as any).id;
-  const workspaceId = (session.user as any).workspaceId as string | null;
+  const userId      = session.user.id;
+  const workspaceId = session.user.workspaceId as string | null;
   const isManager   = MANAGER_ROLES.includes(session.user.role as string);
   const rawBody     = await req.json();
   const validation = validateBody(TaskCreateSchema, rawBody);
@@ -281,7 +281,7 @@ export async function POST(req: NextRequest) {
       : [userId];
 
   // Clientes pueden crear tareas vinculadas a su propio clientId
-  const isClient = (session.user as any).role === 'CLIENT';
+  const isClient = session.user.role === 'CLIENT';
   let resolvedClientId = isManager ? (clientId || null) : null;
   if (isClient && clientId) resolvedClientId = clientId;
 
@@ -346,8 +346,8 @@ export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const userId    = (session.user as any).id;
-  const userName  = (session.user as any).name || "Un usuario";
+  const userId    = session.user.id;
+  const userName  = session.user.name || "Un usuario";
   const isManager = MANAGER_ROLES.includes(session.user.role as string);
   const rawBody    = await req.json();
   const validation = validateBody(TaskUpdateSchema, rawBody);
@@ -485,7 +485,7 @@ export async function PUT(req: NextRequest) {
 
       // Último fallback: primer ADMIN del workspace
       if (!pm) {
-        const workspaceId = (session.user as any).workspaceId as string | null;
+        const workspaceId = session.user.workspaceId as string | null;
         const admin = await db.user.findFirst({
           where: {
             role: "ADMIN",
@@ -700,6 +700,6 @@ export async function DELETE(req: NextRequest) {
 
   await db.taskAssignedUser.deleteMany({ where: { taskId: id } });
   await db.task.delete({ where: { id } });
-  await logAction({ userId: (session.user as any).id, action: "TASK_DELETED", entity: "task", entityId: id });
+  await logAction({ userId: session.user.id, action: "TASK_DELETED", entity: "task", entityId: id });
   return NextResponse.json({ success: true });
 }

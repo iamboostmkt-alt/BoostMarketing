@@ -10,8 +10,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId      = (session.user as any).id;
-    const workspaceId = (session.user as any).workspaceId as string | null;
+    const userId      = session.user.id;
+    const workspaceId = session.user.workspaceId as string | null;
     const { searchParams } = new URL(req.url);
     const page  = parseInt(searchParams.get('page')  || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -49,7 +49,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const body   = await req.json();
 
     if (body.all === true) {
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const body   = await req.json();
     const { message, type, link } = body;
 
@@ -109,7 +109,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 

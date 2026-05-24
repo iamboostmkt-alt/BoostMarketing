@@ -10,7 +10,7 @@ export async function GET() {
   if (!["ADMIN", "PROJECT_MANAGER"].includes(role as string))
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
 
-  const workspaceId = (session.user as any).workspaceId as string | null;
+  const workspaceId = session.user.workspaceId as string | null;
 
   // Seguridad multi-tenant: sin workspaceId no se exponen usuarios de otros workspaces
   if (!workspaceId) return NextResponse.json({ error: "Workspace no encontrado" }, { status: 400 });

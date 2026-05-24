@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId  = (session.user as any).id;
+    const userId  = session.user.id;
     const role    = session.user.role as string;
     const isManager = MANAGER_ROLES.includes(role);
     const isClient  = role === "CLIENT";

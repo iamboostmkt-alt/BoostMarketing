@@ -8,20 +8,28 @@ declare module "next-auth" {
       role?: Role;
       lifecycleStatus?: UserLifecycleStatus | null;
       color?: string;
+      image?: string | null;
       customRoleId?: string | null;
-      workspaceId?: string | null;
-    workspaceName?: string | null;
-      workspaceName?: string | null;
       customRoleLabel?: string | null;
       customRoleColor?: string | null;
+      workspaceId?: string | null;
+      workspaceName?: string | null;
       permissions?: Record<string, boolean>;
     } & DefaultSession["user"];
   }
 
   interface User {
+    id?: string;
     role?: Role;
     lifecycleStatus?: UserLifecycleStatus | null;
     color?: string;
+    image?: string | null;
+    customRoleId?: string | null;
+    customRoleLabel?: string | null;
+    customRoleColor?: string | null;
+    workspaceId?: string | null;
+    workspaceName?: string | null;
+    permissions?: Record<string, boolean>;
   }
 }
 
@@ -31,10 +39,12 @@ declare module "next-auth/jwt" {
     role?: Role;
     lifecycleStatus?: UserLifecycleStatus | null;
     color?: string;
+    image?: string | null;
     customRoleId?: string | null;
-    workspaceId?: string | null;
     customRoleLabel?: string | null;
     customRoleColor?: string | null;
+    workspaceId?: string | null;
+    workspaceName?: string | null;
     permissions?: Record<string, boolean>;
   }
 }

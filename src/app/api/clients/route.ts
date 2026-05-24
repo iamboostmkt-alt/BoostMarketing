@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     const userId      = (session.user as { id: string }).id;
-    const workspaceId = (session.user as any).workspaceId as string | null;
+    const workspaceId = session.user.workspaceId as string | null;
     const role        = session.user.role as string;
     const { searchParams } = new URL(req.url);
     const status  = searchParams.get('status');
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     const userId      = (session.user as { id: string }).id;
-    const workspaceId = (session.user as any).workspaceId as string | null;
+    const workspaceId = session.user.workspaceId as string | null;
     const role        = session.user.role as string;
 
     if (!MANAGE_ROLES.includes(role)) {

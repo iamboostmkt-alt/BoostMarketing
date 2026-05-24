@@ -47,7 +47,7 @@ const typeColors: Record<string, string> = {
 export function NotificationsDropdown() {
   const router = useRouter();
   const { data: session } = useSession();
-  const userId = (session?.user as any)?.id;
+  const userId = session?.user?.id;
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount,   setUnreadCount]   = useState(0);
   const [loading,       setLoading]       = useState(true);

@@ -35,7 +35,7 @@ export default function TopNav() {
 
   const userName      = session?.user?.name  || 'Usuario';
   const userImage     = session?.user?.image;
-  const workspaceName = (session?.user as any)?.workspaceName || 'Weeklink';
+  const workspaceName = session?.user?.workspaceName || 'Weeklink';
   const role          = session?.user?.role;
   const isClient      = role === 'CLIENT';
 
@@ -101,7 +101,7 @@ export default function TopNav() {
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={userImage || undefined} alt={userName} />
                   <AvatarFallback
-                    style={{ backgroundColor: ((session?.user as any)?.color || '#7c3aed') + '33', color: (session?.user as any)?.color || '#a78bfa' }}
+                    style={{ backgroundColor: (session?.user?.color || '#7c3aed') + '33', color: session?.user?.color || '#a78bfa' }}
                     className="text-xs font-medium"
                   >
                     {initials}
@@ -118,7 +118,7 @@ export default function TopNav() {
                 <Avatar className="h-9 w-9 shrink-0">
                   <AvatarImage src={userImage || undefined} alt={userName} />
                   <AvatarFallback
-                    style={{ backgroundColor: ((session?.user as any)?.color || '#7c3aed') + '33', color: (session?.user as any)?.color || '#a78bfa' }}
+                    style={{ backgroundColor: (session?.user?.color || '#7c3aed') + '33', color: session?.user?.color || '#a78bfa' }}
                     className="text-xs font-semibold"
                   >
                     {initials}
@@ -126,12 +126,12 @@ export default function TopNav() {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white/90 truncate">{userName}</p>
-                  {(session?.user as any)?.customRoleLabel ? (
+                  {session?.user?.customRoleLabel ? (
                     <span
                       className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium mt-0.5"
-                      style={{ backgroundColor: ((session?.user as any)?.customRoleColor || '#7c3aed') + '22', color: (session?.user as any)?.customRoleColor || '#a78bfa' }}
+                      style={{ backgroundColor: (session?.user?.customRoleColor || '#7c3aed') + '22', color: session?.user?.customRoleColor || '#a78bfa' }}
                     >
-                      {(session?.user as any)?.customRoleLabel}
+                      {session?.user?.customRoleLabel}
                     </span>
                   ) : (
                     <p className="text-[11px] text-white/40 truncate">{session?.user?.email || ''}</p>

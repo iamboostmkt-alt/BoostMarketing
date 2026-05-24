@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado." }, { status: 401 });
     }
 
-    const workspaceId = (session.user as any).workspaceId as string | null;
+    const workspaceId = session.user.workspaceId as string | null;
     if (!workspaceId) {
       return NextResponse.json({ error: "Sin workspace asignado." }, { status: 404 });
     }

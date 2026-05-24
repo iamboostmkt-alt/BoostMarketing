@@ -10,7 +10,7 @@ const MANAGER_ROLES = ["ADMIN", "PROJECT_MANAGER"];
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  if (!MANAGER_ROLES.includes((session.user as any).role)) {
+  if (!MANAGER_ROLES.includes(session.user.role as string)) {
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
   }
 

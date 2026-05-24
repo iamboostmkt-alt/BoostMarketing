@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest) {
     if (!session?.user || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "No autorizado." }, { status: 401 });
     }
-    const workspaceId = (session.user as any).workspaceId as string | null;
+    const workspaceId = session.user.workspaceId as string | null;
     if (!workspaceId) {
       return NextResponse.json({ error: "Sin workspace." }, { status: 400 });
     }

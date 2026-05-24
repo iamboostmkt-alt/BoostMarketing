@@ -521,10 +521,10 @@ export default function AppSidebar() {
   const userName        = session?.user?.name || "Usuario";
   const role            = session?.user?.role;
   const userImage       = session?.user?.image;
-  const userColor       = (session?.user as any)?.color || "#7c3aed";
-  const customRoleLabel = (session?.user as any)?.customRoleLabel ?? null;
-  const customRoleColor = (session?.user as any)?.customRoleColor ?? "#7c3aed";
-  const workspaceName   = (session?.user as any)?.workspaceName || "Mi Workspace";
+  const userColor       = session?.user?.color || "#7c3aed";
+  const customRoleLabel = session?.user?.customRoleLabel ?? null;
+  const customRoleColor = session?.user?.customRoleColor ?? "#7c3aed";
+  const workspaceName   = session?.user?.workspaceName || "Mi Workspace";
 
   const workspaceInitial = workspaceName[0]?.toUpperCase() || "W";
 

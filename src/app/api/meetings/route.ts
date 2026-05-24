@@ -22,7 +22,7 @@ async function requireManager() {
 export async function GET(req: NextRequest) {
   const session = await requireManager();
   if (!session) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-  const workspaceId = (session.user as any).workspaceId as string | null;
+  const workspaceId = session.user.workspaceId as string | null;
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
   const where: Record<string, unknown> = { email: { contains: "@internal.boost" }, ...(workspaceId && { workspaceId }) };
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   const { name, date, notes, meetUrl, assignedUserIds, status } = validation.data;
   const parsed = new Date(date);
   // Auto-asignar al creador
-  const creatorId = (session.user as any).id;
+  const creatorId = session.user.id;
   const allMeetingIds = [...new Set([creatorId, ...(assignedUserIds ?? [])])] as string[];
   const meeting = await db.appointment.create({
     data: {

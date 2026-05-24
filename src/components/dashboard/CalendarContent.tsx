@@ -77,7 +77,7 @@ function CompletedTasksSection({ tasks }: { tasks: any[] }) {
 export default function CalendarContent() {
   const { data: session } = useSession();
   const role      = session?.user?.role ?? '';
-  const userId    = (session?.user as any)?.id ?? '';
+  const userId    = session?.user?.id ?? '';
   const isAdmin   = role === 'ADMIN';
   const isPM      = role === 'PROJECT_MANAGER';
   const isManager = isAdmin || isPM;
