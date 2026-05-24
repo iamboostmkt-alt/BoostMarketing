@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/core/auth/get-session-user';
 import { MANAGER_ROLES } from '@/core/constants/roles';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 // POST público — landing videollamada o registro (sin auth requerida)
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 5, windowMs: 60000, identifier: 'leads-post' });
+  if (!rl.success) return rl.response;
   try {
     const body = await req.json();
     const { name, email, phone, notes, source } = body;

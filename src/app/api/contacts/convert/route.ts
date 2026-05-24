@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
         company: contact.company || '',
         phone:   contact.phone   || '',
         status:  'active',
+        ...(workspaceId && { workspaceId }),
       },
     });
 

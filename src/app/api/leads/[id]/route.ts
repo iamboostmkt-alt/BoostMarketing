@@ -49,6 +49,7 @@ export async function POST(
           company:           lead.company || '',
           phone:             lead.phone   || '',
           assignedManagerId: assignedManagerId || user.id,
+          ...(workspaceId && { workspaceId }),
         },
       });
 
