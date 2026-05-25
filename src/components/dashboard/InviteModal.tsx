@@ -431,7 +431,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
               </div>
 
               {/* Container 2: People with access */}
-              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative" }} className="p-5">
+              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative", minHeight: 420 }} className="p-5">
                 <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
                 <div className="flex items-center gap-2.5 mb-3 relative z-10">
                   <h2 className="text-[14px] font-medium text-white/80">People with access</h2>
@@ -446,7 +446,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                   />
                 </div>
                 <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
-                <div className="max-h-72 overflow-y-auto overflow-x-hidden relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="max-h-80 overflow-y-auto overflow-x-hidden relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : (
