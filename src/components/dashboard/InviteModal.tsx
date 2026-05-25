@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, UserPlus, ChevronDown, Check, Loader2, Search, MoreHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -352,19 +353,21 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     }
   }
 
-  return (
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
+
+  const modalContent = (
     <AnimatePresence>
       {open && (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} onClick={onClose} className="fixed inset-0 bg-black/60 backdrop-blur-[2px]" style={{ zIndex: 60 }} />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(2px)" }} />
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
             onClick={e => e.stopPropagation()}
-            className="fixed left-1/2 top-1/2 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 px-4"
-            style={{ zIndex: 61 }}
+            style={{ position: "fixed", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: 9999, width: "100%", maxWidth: 672, padding: "0 16px" }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3 px-1">
@@ -428,7 +431,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                 <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
 
                 {/* Miembros activos — scroll independiente */}
-                <div className="max-h-56 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="max-h-72 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : (
@@ -496,4 +499,6 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
       )}
     </AnimatePresence>
   );
+
+  return mounted ? createPortal(modalContent, document.body) : null;
 }
