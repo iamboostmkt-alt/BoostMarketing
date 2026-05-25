@@ -234,7 +234,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       if (!isEditing && !isSubtask && pendingSubtasks.length > 0) {
         const newTaskId = resData?.id ?? resData?.task?.id;
         if (newTaskId) {
-          await Promise.all(
+          const subtaskResults = await Promise.allSettled(
             pendingSubtasks.map((sub) =>
               fetch('/api/tasks', {
                 method: 'POST',
@@ -246,15 +246,17 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                   clientId: clientId || null,
                   status: sub.status || 'pending',
                   priority: sub.priority || 'medium',
-                  startDate: sub.startDate || null,
-                  dueDate: sub.dueDate || null,
-                  assignedUserIds: sub.assignedUserIds || [],
+                  startDate: sub.startDate ? new Date(sub.startDate).toISOString() : null,
+                  dueDate: sub.dueDate ? new Date(sub.dueDate).toISOString() : null,
+                  assignedUserIds: Array.isArray(sub.assignedUserIds) ? sub.assignedUserIds : [],
                   visibility: 'internal',
                   type: 'internal_task',
                 }),
               })
             )
           );
+          const failed = subtaskResults.filter(r => r.status === 'rejected').length;
+          if (failed > 0) toast.error(`${failed} subtarea(s) no se pudieron crear`);
         }
       }
       setPendingSubtasks([]);
