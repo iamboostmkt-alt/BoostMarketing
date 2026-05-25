@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Search, Users, Shield, Briefcase, Palette,
-  Megaphone, ShoppingBag, MoreHorizontal,
-  CheckSquare, AlertTriangle, Clock, ChevronRight,
+  Megaphone, ShoppingBag, MoreHorizontal, ChevronDown,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -39,14 +39,86 @@ function initials(name: string) {
 
 const ROLE_ORDER = ['ADMIN', 'PROJECT_MANAGER', 'DESIGNER', 'MARKETING', 'TEAM_MEMBER', 'SALES_REP'];
 
-const ROLE_META: Record<string, { label: string; icon: any; color: string; bg: string }> = {
-  ADMIN:           { label: 'Administrador',   icon: Shield,      color: '#a78bfa', bg: 'bg-purple-500/10' },
-  PROJECT_MANAGER: { label: 'Project Manager', icon: Briefcase,   color: '#38bdf8', bg: 'bg-sky-500/10'    },
-  DESIGNER:        { label: 'Diseño',          icon: Palette,     color: '#f472b6', bg: 'bg-pink-500/10'   },
-  MARKETING:       { label: 'Marketing',       icon: Megaphone,   color: '#34d399', bg: 'bg-emerald-500/10'},
-  TEAM_MEMBER:     { label: 'Equipo',          icon: Users,       color: '#94a3b8', bg: 'bg-slate-500/10'  },
-  SALES_REP:       { label: 'Ventas',          icon: ShoppingBag, color: '#fb923c', bg: 'bg-orange-500/10' },
+const ROLE_META: Record<string, { label: string; icon: any; color: string }> = {
+  ADMIN:           { label: 'Administrador',   icon: Shield,      color: '#a78bfa' },
+  PROJECT_MANAGER: { label: 'Project Manager', icon: Briefcase,   color: '#38bdf8' },
+  DESIGNER:        { label: 'Diseño',          icon: Palette,     color: '#f472b6' },
+  MARKETING:       { label: 'Marketing',       icon: Megaphone,   color: '#34d399' },
+  TEAM_MEMBER:     { label: 'Equipo',          icon: Users,       color: '#94a3b8' },
+  SALES_REP:       { label: 'Ventas',          icon: ShoppingBag, color: '#fb923c' },
 };
+
+const ROLE_VALUES = ['ADMIN','PROJECT_MANAGER','DESIGNER','MARKETING','TEAM_MEMBER','SALES_REP'] as const;
+
+function RoleSelect({ value, onChange }: { value: string; onChange: (r: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function out(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
+    }
+    if (isOpen) document.addEventListener('mousedown', out);
+    return () => document.removeEventListener('mousedown', out);
+  }, [isOpen]);
+  const meta = ROLE_META[value] ?? ROLE_META['TEAM_MEMBER'];
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setIsOpen(v => !v)}
+        className="flex items-center gap-1 transition-all"
+        style={{
+          height: 26, padding: '0 10px', borderRadius: 20,
+          background: isOpen ? 'rgba(124,58,237,0.08)' : '#1a1a1f',
+          border: isOpen ? '1px solid rgba(124,58,237,0.40)' : '1px solid rgba(255,255,255,0.08)',
+          fontSize: 11, fontWeight: 500,
+          color: isOpen ? 'rgba(255,255,255,0.85)' : meta.color,
+        }}
+        onMouseEnter={e => { if (!isOpen) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'; }}
+        onMouseLeave={e => { if (!isOpen) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+      >
+        <span>{meta.label}</span>
+        <ChevronDown style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.25)', marginLeft: 4, transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }} />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full z-50 mt-1.5 overflow-hidden shadow-2xl"
+            style={{ minWidth: 160, background: '#16161e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '4px 0' }}
+          >
+            {ROLE_VALUES.map(r => {
+              const m = ROLE_META[r];
+              const isSelected = r === value;
+              return (
+                <button
+                  key={r}
+                  onClick={() => { onChange(r); setIsOpen(false); }}
+                  className="relative flex w-full items-center transition-colors"
+                  style={{
+                    padding: '7px 12px', fontSize: 12,
+                    background: isSelected ? '#1a1a1a' : 'transparent',
+                    color: isSelected ? '#a78bfa' : 'rgba(255,255,255,0.60)',
+                    fontWeight: isSelected ? 500 : 400,
+                  }}
+                  onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.90)'; } }}
+                  onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.60)'; } }}
+                >
+                  {isSelected && <div className="pointer-events-none absolute inset-y-0 right-0 w-full" style={{ background: 'linear-gradient(to left, rgba(124,58,237,0.25) 0%, rgba(124,58,237,0.05) 50%, transparent 100%)' }} />}
+                  {isSelected && <div className="absolute left-0 top-0 h-full" style={{ width: 2, background: '#7c3aed' }} />}
+                  <span className="relative z-10" style={{ color: isSelected ? '#a78bfa' : m.color }}>{m.label}</span>
+                  {isSelected && <div className="absolute right-3 top-1/2 -translate-y-1/2" style={{ width: 6, height: 6, borderRadius: '50%', background: '#8b5cf6' }} />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 const STATUS_DOT: Record<string, string> = {
   in_progress:       'bg-cyan-400',
@@ -72,106 +144,98 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
   onRoleChange: (id: string, role: string) => void;
   isAdmin: boolean;
 }) {
-  const [showTasks, setShowTasks] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [roleChanged, setRoleChanged] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const meta  = ROLE_META[member.role] ?? ROLE_META['TEAM_MEMBER'];
-  const Icon  = meta.icon;
-  const pct   = workloadPct(member.activeTasks.length);
-  const color = workloadColor(pct);
   const label = member.customRole?.label ?? meta.label;
   const badge = member.customRole?.color ?? meta.color;
 
-  const overdue = member.activeTasks.filter(t =>
-    t.dueDate && new Date(t.dueDate) < new Date() &&
-    !['completed','approved'].includes(t.status)
-  ).length;
+  useEffect(() => {
+    if (!menuOpen) return;
+    function out(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', out);
+    return () => document.removeEventListener('mousedown', out);
+  }, [menuOpen]);
+
+  function handleRoleSelect(r: string) {
+    onRoleChange(member.id, r);
+    setRoleChanged(true);
+    setTimeout(() => setRoleChanged(false), 300);
+  }
 
   return (
-    <div className="glass-card rounded-xl p-4 flex flex-col gap-3 transition-all duration-150 hover:border-white/[0.1]">
-      <div className="flex items-start gap-3">
-        <div className="relative shrink-0">
-          <Avatar className="h-11 w-11">
-            <AvatarImage src={member.image ?? undefined} alt={member.name} />
-            <AvatarFallback
-              style={{ backgroundColor: (member.color || '#7c3aed') + '33', color: member.color || '#a78bfa' }}
-              className="text-sm font-semibold"
-            >
-              {initials(member.name)}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white/90 truncate">{member.name}</p>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <Icon className="w-3 h-3 shrink-0" style={{ color: badge }} />
-            <span className="text-[11px] truncate" style={{ color: badge }}>{label}</span>
-          </div>
-          <p className="text-[11px] text-white/25 truncate mt-0.5">{member.email}</p>
-        </div>
-        {isAdmin && (
-          <button
-            onClick={() => onRoleChange(member.id, member.role)}
-            className="shrink-0 p-1.5 rounded-lg text-white/20 hover:text-white/60 hover:bg-white/[0.05] transition-colors"
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.15 }}
+      whileHover={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
+      className="flex items-center justify-between rounded-lg px-2 py-2.5"
+    >
+      <div className="flex items-center gap-3">
+        <Avatar className="h-9 w-9 shrink-0">
+          <AvatarImage src={member.image ?? undefined} alt={member.name} />
+          <AvatarFallback
+            style={{ backgroundColor: (member.color || '#7c3aed') + '33', color: member.color || '#a78bfa' }}
+            className="text-xs font-semibold"
           >
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
+            {initials(member.name)}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="text-[13px] font-medium text-white/85">{member.name}</p>
+          <p className="text-[12px] text-white/30">{member.email}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <motion.div animate={roleChanged ? { scale: [1, 1.06, 1] } : {}} transition={{ duration: 0.2 }}>
+          {isAdmin
+            ? <RoleSelect value={member.role} onChange={handleRoleSelect} />
+            : <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium" style={{ background: badge + '18', color: badge, border: '1px solid ' + badge + '30' }}>{label}</span>
+          }
+        </motion.div>
+        {isAdmin && (
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              className="flex h-8 w-8 items-center justify-center rounded-md text-white/25 transition-colors hover:bg-white/[0.05] hover:text-white/50"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-[10px] border border-white/[0.08] bg-[#16161e] py-1 shadow-xl"
+                >
+                  <button
+                    onClick={() => { setMenuOpen(false); onRoleChange(member.id, member.role); }}
+                    className="flex w-full items-center px-3 py-2 text-left text-[12px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white"
+                  >
+                    Cambiar rol
+                  </button>
+                  <div className="my-1 h-px bg-white/[0.06]" />
+                  <button
+                    onClick={() => { setMenuOpen(false); toast.error('Eliminar miembro próximamente'); }}
+                    className="flex w-full items-center px-3 py-2 text-left text-[12px] text-red-400 transition-colors hover:bg-red-500/[0.08]"
+                  >
+                    Eliminar miembro
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         )}
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-white/30">Carga de trabajo</span>
-          <div className="flex items-center gap-2">
-            {overdue > 0 && (
-              <span className="flex items-center gap-1 text-[10px] text-red-400">
-                <AlertTriangle className="w-3 h-3" />{overdue} vencida{overdue > 1 ? 's' : ''}
-              </span>
-            )}
-            <span className="text-[11px] font-medium" style={{ color }}>
-              {member.activeTasks.length} tarea{member.activeTasks.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
-        <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${pct}%`, backgroundColor: color }}
-          />
-        </div>
-      </div>
-
-      {member.activeTasks.length > 0 && (
-        <button
-          onClick={() => setShowTasks(v => !v)}
-          className="flex items-center justify-between text-[11px] text-white/25 hover:text-white/50 transition-colors"
-        >
-          <span className="flex items-center gap-1.5">
-            <CheckSquare className="w-3 h-3" />
-            Ver tareas activas
-          </span>
-          <ChevronRight className={"w-3 h-3 transition-transform " + (showTasks ? 'rotate-90' : '')} />
-        </button>
-      )}
-
-      {showTasks && (
-        <div className="space-y-1.5 border-t border-white/[0.05] pt-2">
-          {member.activeTasks.slice(0, 4).map(task => (
-            <div key={task.id} className="flex items-center gap-2">
-              <span className={"w-1.5 h-1.5 rounded-full shrink-0 " + (STATUS_DOT[task.status] ?? 'bg-white/20')} />
-              <span className="text-[11px] text-white/50 truncate flex-1">{task.title}</span>
-              {task.dueDate && (
-                <span className={"text-[10px] shrink-0 " + (new Date(task.dueDate) < new Date() ? 'text-red-400' : 'text-white/20')}>
-                  <Clock className="w-2.5 h-2.5 inline mr-0.5" />
-                  {new Date(task.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
-                </span>
-              )}
-            </div>
-          ))}
-          {member.activeTasks.length > 4 && (
-            <p className="text-[10px] text-white/20 pl-3.5">+{member.activeTasks.length - 4} más</p>
-          )}
-        </div>
-      )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -301,24 +365,46 @@ export default function TeamPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
-          {groups.map(g => {
-            const Icon = g.meta.icon;
-            return (
-              <div key={g.role}>
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon className="w-4 h-4" style={{ color: g.meta.color }} />
-                  <span className="text-sm font-medium text-white/60">{g.meta.label}</span>
-                  <span className="text-xs text-white/20 bg-white/[0.05] px-2 py-0.5 rounded-full">{g.members.length}</span>
+        <div className="space-y-6">
+          {/* Sección: invite + contador */}
+          <div className="rounded-xl border border-white/[0.06] bg-[#16161e] p-5 px-6">
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="text-[14px] font-medium text-white/80">Personas con acceso</h2>
+              <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-2.5 py-0.5 text-[11px] font-medium text-purple-300">
+                {members.length} miembro{members.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            {groups.map(g => {
+              const Icon = g.meta.icon;
+              return (
+                <div key={g.role} className="mb-4 last:mb-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon className="w-3.5 h-3.5" style={{ color: g.meta.color }} />
+                    <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: g.meta.color + 'aa' }}>{g.meta.label}</span>
+                    <span className="text-[10px] text-white/20 bg-white/[0.05] px-1.5 py-0.5 rounded-full">{g.members.length}</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    <AnimatePresence mode="popLayout">
+                      {g.members.map((m, i) => (
+                        <motion.div
+                          key={m.id}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.15, delay: i * 0.03 }}
+                        >
+                          <MemberCard member={m} onRoleChange={handleRoleChange} isAdmin={isAdmin} />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                  {g.role !== groups[groups.length - 1].role && (
+                    <div className="mt-3 h-px bg-white/[0.04]" />
+                  )}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {g.members.map(m => (
-                    <MemberCard key={m.id} member={m} onRoleChange={handleRoleChange} isAdmin={isAdmin} />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
