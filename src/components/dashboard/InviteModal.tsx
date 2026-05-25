@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, UserPlus, ChevronDown, Check, Loader2, Search } from "lucide-react";
+import { X, UserPlus, ChevronDown, Check, Loader2, Search, MoreHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ROLES = [
@@ -53,14 +53,14 @@ function RolePill({ value, onChange, size = "sm" }: {
   }, [isOpen]);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative" ref={ref} style={{ zIndex: isOpen ? 100 : 1 }}>
       <button
         type="button"
         onClick={() => setIsOpen(v => !v)}
         className="flex items-center gap-1 transition-all whitespace-nowrap"
         style={{
-          height: isLarge ? 38 : 26,
-          padding: isLarge ? "0 14px" : "0 10px",
+          height: isLarge ? 36 : 24,
+          padding: isLarge ? "0 12px" : "0 8px",
           borderRadius: 20,
           background: isOpen ? "rgba(124,58,237,0.08)" : "rgba(255,255,255,0.04)",
           border: isOpen ? "1px solid rgba(124,58,237,0.40)" : "1px solid rgba(255,255,255,0.08)",
@@ -72,7 +72,7 @@ function RolePill({ value, onChange, size = "sm" }: {
         onMouseLeave={e => { if (!isOpen) e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
       >
         <span>{label}</span>
-        <ChevronDown style={{ width: isLarge ? 14 : 12, height: isLarge ? 14 : 12, color: "rgba(255,255,255,0.25)", marginLeft: 4, transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }} />
+        <ChevronDown style={{ width: isLarge ? 13 : 11, height: isLarge ? 13 : 11, color: "rgba(255,255,255,0.25)", marginLeft: 3, transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }} />
       </button>
       <AnimatePresence>
         {isOpen && (
@@ -81,8 +81,7 @@ function RolePill({ value, onChange, size = "sm" }: {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full z-[60] mt-1.5 overflow-hidden shadow-2xl"
-            style={{ minWidth: 160, background: "#0f0f17", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "4px 0" }}
+            style={{ position: "absolute", right: 0, top: "100%", zIndex: 9999, minWidth: 160, background: "#0f0f17", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "4px 0", marginTop: 6, boxShadow: "0 20px 40px rgba(0,0,0,0.6)" }}
           >
             {ROLES.map(r => {
               const isSelected = r.value === value;
@@ -107,6 +106,85 @@ function RolePill({ value, onChange, size = "sm" }: {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  const roleLabel = member.customRole?.label || ROLES.find(r => r.value === member.role)?.label || member.role;
+  const roleColor = member.customRole?.color || "#a78bfa";
+  const roleBg = (member.customRole?.color || "#7c3aed") + "15";
+  const roleBorder = (member.customRole?.color || "#7c3aed") + "25";
+
+  React.useEffect(() => {
+    function out(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    if (menuOpen) document.addEventListener("mousedown", out);
+    return () => document.removeEventListener("mousedown", out);
+  }, [menuOpen]);
+
+  return (
+    <motion.div
+      layout
+      whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
+      className="flex items-center justify-between rounded-lg px-1.5 py-2"
+    >
+      <div className="flex items-center gap-2.5">
+        <Avatar className="h-8 w-8 shrink-0">
+          <AvatarImage src={member.image ?? undefined} alt={member.name} />
+          <AvatarFallback style={{ backgroundColor: (member.color || "#7c3aed") + "33", color: member.color || "#a78bfa" }} className="text-[11px] font-semibold">
+            {initials(member.name)}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="text-[13px] font-medium text-white/80">{member.name}</p>
+          <p className="text-[11px] text-white/25">{member.email}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap"
+          style={{ color: roleColor, background: roleBg, borderColor: roleBorder }}>
+          {roleLabel}
+        </span>
+        {isAdmin && (
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-white/20 transition-colors hover:bg-white/[0.05] hover:text-white/50"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </button>
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                  transition={{ duration: 0.13 }}
+                  style={{ position: "absolute", right: 0, top: "100%", zIndex: 9999, width: 160, background: "#0f0f17", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "4px 0", marginTop: 4, boxShadow: "0 16px 32px rgba(0,0,0,0.6)" }}
+                >
+                  <button
+                    onClick={() => setMenuOpen(false)}
+                    className="flex w-full items-center px-3 py-2 text-left text-[12px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white"
+                  >
+                    Cambiar rol
+                  </button>
+                  <div className="my-1 h-px bg-white/[0.06]" />
+                  <button
+                    onClick={() => setMenuOpen(false)}
+                    className="flex w-full items-center px-3 py-2 text-left text-[12px] text-red-400 transition-colors hover:bg-red-500/[0.08]"
+                  >
+                    Eliminar miembro
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }
 
@@ -174,22 +252,12 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     }
   }
 
-  const cardStyle: React.CSSProperties = {
-    background: "linear-gradient(135deg, #0a0a0f 0%, #0e0e14 60%, #0a0a0f 100%)",
+  const cardBase: React.CSSProperties = {
+    background: "linear-gradient(135deg, #0a0a0f 0%, #0e0e14 100%)",
     border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: 16,
+    borderRadius: 14,
     position: "relative",
     overflow: "hidden",
-  };
-
-  const glowStyle: React.CSSProperties = {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 180,
-    height: 120,
-    background: "radial-gradient(ellipse at bottom right, rgba(99,51,200,0.18) 0%, rgba(30,10,80,0.10) 50%, transparent 100%)",
-    pointerEvents: "none",
   };
 
   return (
@@ -197,9 +265,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
       {open && (
         <>
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             onClick={onClose}
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px]"
@@ -209,9 +275,9 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="fixed left-1/2 top-1/2 z-50 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 px-4"
+            className="fixed left-1/2 top-1/2 z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 px-4"
           >
-            {/* Header fuera de los containers */}
+            {/* Header */}
             <div className="flex items-center justify-between mb-3 px-1">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.04]">
@@ -229,8 +295,9 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
 
             <div className="space-y-2">
               {/* Container 1: Invite members */}
-              <div style={cardStyle} className="p-5">
-                <div style={glowStyle} />
+              <div style={cardBase} className="p-5">
+                {/* Glow morado — sin borde blanco */}
+                <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.12) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%" }} />
                 <h2 className="text-[14px] font-medium text-white/85 relative z-10">Invite members</h2>
                 <p className="mt-0.5 text-[12px] text-white/35 relative z-10">Add new members by entering their email address</p>
                 <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center relative z-10">
@@ -251,7 +318,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                     whileHover={{ backgroundColor: "#6d28d9" }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.15 }}
-                    className="flex h-[36px] items-center gap-2 rounded-lg bg-[#7c3aed] px-5 text-[13px] font-medium text-white disabled:opacity-60 whitespace-nowrap"
+                    className="flex h-[36px] items-center gap-1.5 rounded-lg bg-[#7c3aed] px-5 text-[13px] font-medium text-white disabled:opacity-60 whitespace-nowrap"
                   >
                     {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : success ? <><Check className="h-3.5 w-3.5" />Enviado</> : "Invite"}
                   </motion.button>
@@ -267,8 +334,8 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
               </div>
 
               {/* Container 2: People with access */}
-              <div style={cardStyle} className="p-5">
-                <div style={glowStyle} />
+              <div style={cardBase} className="p-5">
+                <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.12) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%" }} />
                 <div className="flex items-center gap-2.5 mb-3 relative z-10">
                   <h2 className="text-[14px] font-medium text-white/80">People with access</h2>
                   <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-[11px] font-medium text-purple-300">
@@ -286,46 +353,22 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                   />
                 </div>
                 <div className="h-px bg-white/[0.05] mb-2 relative z-10" />
-                <div className="max-h-48 overflow-y-auto space-y-0.5 relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="max-h-56 overflow-y-auto space-y-0.5 relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
-                    <div className="py-5 text-center text-[12px] text-white/25">Cargando...</div>
+                    <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : filtered.length === 0 ? (
-                    <div className="py-5 text-center text-[12px] text-white/25">No members found</div>
+                    <div className="py-6 text-center text-[12px] text-white/25">No members found</div>
                   ) : (
                     <AnimatePresence mode="popLayout">
                       {filtered.map((member, i) => (
                         <motion.div
                           key={member.id}
-                          layout
                           initial={{ opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
                           transition={{ duration: 0.12, delay: i * 0.025 }}
-                          whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
-                          className="flex items-center justify-between rounded-lg px-1.5 py-2"
                         >
-                          <div className="flex items-center gap-2.5">
-                            <Avatar className="h-8 w-8 shrink-0">
-                              <AvatarImage src={member.image ?? undefined} alt={member.name} />
-                              <AvatarFallback style={{ backgroundColor: (member.color || "#7c3aed") + "33", color: member.color || "#a78bfa" }} className="text-[11px] font-semibold">
-                                {initials(member.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-[13px] font-medium text-white/80">{member.name}</p>
-                              <p className="text-[11px] text-white/25">{member.email}</p>
-                            </div>
-                          </div>
-                          <span
-                            className="text-[11px] font-medium px-2.5 py-0.5 rounded-full border whitespace-nowrap"
-                            style={{
-                              color: member.customRole?.color || "#a78bfa",
-                              background: (member.customRole?.color || "#7c3aed") + "15",
-                              borderColor: (member.customRole?.color || "#7c3aed") + "25",
-                            }}
-                          >
-                            {member.customRole?.label || ROLES.find(r => r.value === member.role)?.label || member.role}
-                          </span>
+                          <MemberRow member={member} isAdmin={true} />
                         </motion.div>
                       ))}
                     </AnimatePresence>
