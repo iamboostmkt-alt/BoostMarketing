@@ -233,6 +233,9 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       }
       if (!isEditing && !isSubtask && pendingSubtasks.length > 0) {
         const newTaskId = resData?.id ?? resData?.task?.id;
+        console.log('[TaskForm] resData:', JSON.stringify(resData));
+        console.log('[TaskForm] newTaskId:', newTaskId);
+        console.log('[TaskForm] pendingSubtasks:', pendingSubtasks.length);
         if (newTaskId) {
           const subtaskResults = await Promise.allSettled(
             pendingSubtasks.map((sub) =>
