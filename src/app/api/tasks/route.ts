@@ -435,6 +435,25 @@ export async function PUT(req: NextRequest) {
     include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },
   });
 
+  // BUG-01 fix: propagar completed/approved a subtareas pendientes de revisión
+  if (status && ["completed", "approved"].includes(normalizeTaskStatus(status)) && existing.status !== normalizeTaskStatus(status)) {
+    const subtasks = await db.task.findMany({
+      where: {
+        parentTaskId: id,
+        workspaceId,
+        archivedAt: null,
+        status: { notIn: ["completed", "approved", "cancelled"] },
+      },
+      select: { id: true },
+    });
+    if (subtasks.length > 0) {
+      await db.task.updateMany({
+        where: { id: { in: subtasks.map((s: { id: string }) => s.id) } },
+        data: { status: normalizeTaskStatus(status) },
+      });
+    }
+  }
+
   // Log de cambio de status para deliverables
   if (task.isDeliverable && status && existing.status !== task.status) {
     await db.deliverableLog.create({
