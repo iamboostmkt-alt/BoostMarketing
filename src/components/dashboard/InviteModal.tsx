@@ -3,6 +3,12 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+
+function RoleDropdownPortal({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+  return mounted ? createPortal(children, document.body) : null;
+}
 import { X, UserPlus, ChevronDown, Check, Loader2, Search, MoreHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -63,7 +69,7 @@ function RolePill({ value, onChange, size = "sm" }: {
   const [isOpen, setIsOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
   const btnRef = React.useRef<HTMLButtonElement>(null);
-  const [dropPos, setDropPos] = React.useState({ top: 0, left: 0 });
+  const [dropPos, setDropPos] = React.useState({ top: 0, left: 0, width: 0 });
   const label = ROLES.find(r => r.value === value)?.label ?? value;
   const isLarge = size === "lg";
 
@@ -76,6 +82,10 @@ function RolePill({ value, onChange, size = "sm" }: {
   }, [isOpen]);
 
   function handleOpen() {
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setDropPos({ top: rect.bottom + 6, left: rect.right - 160, width: rect.width });
+    }
     setIsOpen(v => !v);
   }
 
