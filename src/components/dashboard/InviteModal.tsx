@@ -384,7 +384,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
             onClick={e => e.stopPropagation()}
-            style={{ position: "relative", zIndex: 9991, width: "100%", maxWidth: 640, padding: "0 16px" }}
+            style={{ position: "relative", zIndex: 9991, width: "100%", maxWidth: 680, padding: "0 16px" }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3 px-1">
@@ -446,7 +446,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                   />
                 </div>
                 <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
-                <div className="max-h-56 overflow-y-auto overflow-x-hidden relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="max-h-72 overflow-y-auto overflow-x-hidden relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : (
