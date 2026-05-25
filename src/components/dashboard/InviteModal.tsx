@@ -25,9 +25,29 @@ interface Member {
   customRole?: { label: string; color: string } | null;
 }
 
+interface PendingInvite {
+  email: string;
+  role: RoleValue;
+  name: string;
+  invitedAt: number;
+}
+
 interface InviteModalProps {
   open: boolean;
   onClose: () => void;
+}
+
+const STORAGE_KEY = "weeklink_pending_invites";
+
+function getStoredInvites(): PendingInvite[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveInvites(invites: PendingInvite[]) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(invites)); } catch {}
 }
 
 function initials(name: string) {
@@ -53,7 +73,7 @@ function RolePill({ value, onChange, size = "sm" }: {
   }, [isOpen]);
 
   return (
-    <div className="relative" ref={ref} style={{ zIndex: isOpen ? 100 : 1 }}>
+    <div className="relative" ref={ref} style={{ zIndex: isOpen ? 200 : 1 }}>
       <button
         type="button"
         onClick={() => setIsOpen(v => !v)}
@@ -81,7 +101,7 @@ function RolePill({ value, onChange, size = "sm" }: {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            style={{ position: "absolute", right: 0, top: "100%", zIndex: 9999, minWidth: 160, background: "#0f0f17", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "4px 0", marginTop: 6, boxShadow: "0 20px 40px rgba(0,0,0,0.6)" }}
+            style={{ position: "fixed", zIndex: 9999, minWidth: 160, background: "#0f0f17", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "4px 0", boxShadow: "0 20px 40px rgba(0,0,0,0.7)" }}
           >
             {ROLES.map(r => {
               const isSelected = r.value === value;
@@ -114,8 +134,8 @@ function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
   const menuRef = React.useRef<HTMLDivElement>(null);
   const roleLabel = member.customRole?.label || ROLES.find(r => r.value === member.role)?.label || member.role;
   const roleColor = member.customRole?.color || "#a78bfa";
-  const roleBg = (member.customRole?.color || "#7c3aed") + "15";
-  const roleBorder = (member.customRole?.color || "#7c3aed") + "25";
+  const roleBg    = (member.customRole?.color || "#7c3aed") + "15";
+  const roleBorder= (member.customRole?.color || "#7c3aed") + "25";
 
   React.useEffect(() => {
     function out(e: MouseEvent) {
@@ -163,19 +183,13 @@ function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.97 }}
                   transition={{ duration: 0.13 }}
-                  style={{ position: "absolute", right: 0, top: "100%", zIndex: 9999, width: 160, background: "#0f0f17", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "4px 0", marginTop: 4, boxShadow: "0 16px 32px rgba(0,0,0,0.6)" }}
+                  style={{ position: "fixed", zIndex: 9999, width: 160, background: "#0f0f17", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "4px 0", boxShadow: "0 16px 32px rgba(0,0,0,0.6)" }}
                 >
-                  <button
-                    onClick={() => setMenuOpen(false)}
-                    className="flex w-full items-center px-3 py-2 text-left text-[12px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white"
-                  >
+                  <button onClick={() => setMenuOpen(false)} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white">
                     Cambiar rol
                   </button>
                   <div className="my-1 h-px bg-white/[0.06]" />
-                  <button
-                    onClick={() => setMenuOpen(false)}
-                    className="flex w-full items-center px-3 py-2 text-left text-[12px] text-red-400 transition-colors hover:bg-red-500/[0.08]"
-                  >
+                  <button onClick={() => setMenuOpen(false)} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-red-400 transition-colors hover:bg-red-500/[0.08]">
                     Eliminar miembro
                   </button>
                 </motion.div>
@@ -183,6 +197,81 @@ function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
             </AnimatePresence>
           </div>
         )}
+      </div>
+    </motion.div>
+  );
+}
+
+function InvitedRow({ invite, onRemove }: { invite: PendingInvite; onRemove: (email: string) => void }) {
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  const roleLabel = ROLES.find(r => r.value === invite.role)?.label || invite.role;
+  const inv = initials(invite.name);
+
+  React.useEffect(() => {
+    function out(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    if (menuOpen) document.addEventListener("mousedown", out);
+    return () => document.removeEventListener("mousedown", out);
+  }, [menuOpen]);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
+      className="flex items-center justify-between rounded-lg px-1.5 py-2"
+    >
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-medium text-white/40"
+          style={{ border: "1.5px dashed rgba(255,255,255,0.18)", background: "transparent" }}>
+          {inv}
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <p className="text-[13px] font-medium text-white/55">{invite.name}</p>
+            <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400">
+              Invited
+            </span>
+          </div>
+          <p className="text-[11px] text-white/25">{invite.email}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap"
+          style={{ color: "rgba(255,255,255,0.40)", background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}>
+          {roleLabel}
+        </span>
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(v => !v)}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-white/20 transition-colors hover:bg-white/[0.05] hover:text-white/50"
+          >
+            <MoreHorizontal className="h-3.5 w-3.5" />
+          </button>
+          <AnimatePresence>
+            {menuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                transition={{ duration: 0.13 }}
+                style={{ position: "fixed", zIndex: 9999, width: 160, background: "#0f0f17", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "4px 0", boxShadow: "0 16px 32px rgba(0,0,0,0.6)" }}
+              >
+                <button onClick={() => { setMenuOpen(false); }} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white">
+                  Reenviar invitación
+                </button>
+                <div className="my-1 h-px bg-white/[0.06]" />
+                <button onClick={() => { onRemove(invite.email); setMenuOpen(false); }} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-red-400 transition-colors hover:bg-red-500/[0.08]">
+                  Cancelar invitación
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );
@@ -197,13 +286,28 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
   const [search,   setSearch]   = React.useState("");
   const [members,  setMembers]  = React.useState<Member[]>([]);
   const [loadingMembers, setLoadingMembers] = React.useState(false);
+  const [pendingInvites, setPendingInvites] = React.useState<PendingInvite[]>([]);
 
+  // Cargar invitados pendientes del localStorage
+  React.useEffect(() => {
+    if (open) setPendingInvites(getStoredInvites());
+  }, [open]);
+
+  // Cargar miembros al abrir — filtrar los que ya aceptaron
   React.useEffect(() => {
     if (!open) return;
     setLoadingMembers(true);
     fetch("/api/team/workload")
       .then(r => r.json())
-      .then(d => setMembers(d.users ?? []))
+      .then(d => {
+        const activeMembers: Member[] = d.users ?? [];
+        setMembers(activeMembers);
+        // Limpiar invitados que ya son miembros activos
+        const activeEmails = new Set(activeMembers.map(m => m.email.toLowerCase()));
+        const filtered = getStoredInvites().filter(i => !activeEmails.has(i.email.toLowerCase()));
+        setPendingInvites(filtered);
+        saveInvites(filtered);
+      })
       .catch(() => {})
       .finally(() => setLoadingMembers(false));
   }, [open]);
@@ -223,25 +327,55 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     return () => document.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
-  const filtered = members.filter(m =>
+  const filteredMembers = members.filter(m =>
     m.name.toLowerCase().includes(search.toLowerCase()) ||
     m.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const filteredInvited = pendingInvites.filter(i =>
+    i.name.toLowerCase().includes(search.toLowerCase()) ||
+    i.email.toLowerCase().includes(search.toLowerCase())
+  );
+
+  function removeInvite(email: string) {
+    const updated = pendingInvites.filter(i => i.email !== email);
+    setPendingInvites(updated);
+    saveInvites(updated);
+  }
 
   async function handleInvite() {
     setError(null);
     if (!email.trim()) { setError("El correo es obligatorio."); return; }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) { setError("Correo inválido."); return; }
+
+    // Verificar si ya está invitado
+    if (pendingInvites.some(i => i.email.toLowerCase() === email.toLowerCase())) {
+      setError("Ya hay una invitación pendiente para ese correo."); return;
+    }
+
     setLoading(true);
     try {
+      const name = email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
       const res = await fetch("/api/workspace/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: email.split("@")[0], email: email.trim(), role }),
+        body: JSON.stringify({ name, email: email.trim(), role }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Error al invitar."); return; }
+
+      // Guardar como pendiente en localStorage
+      const newInvite: PendingInvite = {
+        email: email.trim().toLowerCase(),
+        role,
+        name,
+        invitedAt: Date.now(),
+      };
+      const updated = [...pendingInvites, newInvite];
+      setPendingInvites(updated);
+      saveInvites(updated);
+
       setSuccess(true);
       setEmail("");
       setTimeout(() => setSuccess(false), 2000);
@@ -259,6 +393,10 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     position: "relative",
     overflow: "hidden",
   };
+
+  const glow = (
+    <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.12) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%" }} />
+  );
 
   return (
     <AnimatePresence>
@@ -294,10 +432,9 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
             </div>
 
             <div className="space-y-2">
-              {/* Container 1: Invite members */}
+              {/* Container 1: Invite */}
               <div style={cardBase} className="p-5">
-                {/* Glow morado — sin borde blanco */}
-                <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.12) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%" }} />
+                {glow}
                 <h2 className="text-[14px] font-medium text-white/85 relative z-10">Invite members</h2>
                 <p className="mt-0.5 text-[12px] text-white/35 relative z-10">Add new members by entering their email address</p>
                 <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center relative z-10">
@@ -335,11 +472,11 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
 
               {/* Container 2: People with access */}
               <div style={cardBase} className="p-5">
-                <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.12) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%" }} />
+                {glow}
                 <div className="flex items-center gap-2.5 mb-3 relative z-10">
                   <h2 className="text-[14px] font-medium text-white/80">People with access</h2>
                   <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-[11px] font-medium text-purple-300">
-                    {members.length} members
+                    {members.length + pendingInvites.length} members
                   </span>
                 </div>
                 <div className="relative mb-2.5 z-10">
@@ -352,26 +489,44 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                     className="h-[34px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] pl-9 pr-3.5 text-[13px] text-white/70 placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10"
                   />
                 </div>
-                <div className="h-px bg-white/[0.05] mb-2 relative z-10" />
-                <div className="max-h-56 overflow-y-auto space-y-0.5 relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
+
+                <div className="max-h-64 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
-                  ) : filtered.length === 0 ? (
-                    <div className="py-6 text-center text-[12px] text-white/25">No members found</div>
                   ) : (
-                    <AnimatePresence mode="popLayout">
-                      {filtered.map((member, i) => (
-                        <motion.div
-                          key={member.id}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.12, delay: i * 0.025 }}
-                        >
-                          <MemberRow member={member} isAdmin={true} />
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
+                    <>
+                      {/* Miembros activos */}
+                      <div className="space-y-0.5">
+                        <AnimatePresence mode="popLayout">
+                          {filteredMembers.map((member, i) => (
+                            <motion.div key={member.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.12, delay: i * 0.02 }}>
+                              <MemberRow member={member} isAdmin={true} />
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Invitados pendientes */}
+                      {filteredInvited.length > 0 && (
+                        <>
+                          <div className="mt-3 mb-1 px-1.5 text-[11px] font-medium text-white/35">
+                            Invited people
+                          </div>
+                          <div className="space-y-0.5">
+                            <AnimatePresence mode="popLayout">
+                              {filteredInvited.map(invite => (
+                                <InvitedRow key={invite.email} invite={invite} onRemove={removeInvite} />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </>
+                      )}
+
+                      {filteredMembers.length === 0 && filteredInvited.length === 0 && (
+                        <div className="py-6 text-center text-[12px] text-white/25">No members found</div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
