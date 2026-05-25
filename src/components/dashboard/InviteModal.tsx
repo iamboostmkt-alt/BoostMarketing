@@ -382,8 +382,8 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
 
             <div className="space-y-2">
               {/* Container 1: Invite */}
-              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative", overflow: "hidden" }} className="p-5">
-                <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%" }} />
+              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative" }} className="p-5">
+                <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
                 <h2 className="text-[14px] font-medium text-white/85 relative z-10">Invite members</h2>
                 <p className="mt-0.5 text-[12px] text-white/35 relative z-10">Add new members by entering their email address</p>
                 <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center relative z-10">
@@ -409,8 +409,8 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
               </div>
 
               {/* Container 2: People with access */}
-              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative", overflow: "hidden" }} className="p-5">
-                <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%" }} />
+              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative" }} className="p-5">
+                <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
                 <div className="flex items-center gap-2.5 mb-3 relative z-10">
                   <h2 className="text-[14px] font-medium text-white/80">People with access</h2>
                   <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-[11px] font-medium text-purple-300">
@@ -425,7 +425,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                 </div>
                 <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
 
-                <div className="max-h-80 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="max-h-96 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : (
@@ -441,19 +441,44 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                       </div>
 
                       {/* Invited people — siempre visible */}
-                      <div className="mt-3 mb-1 px-1.5 text-[11px] font-medium text-white/35">
+                      <div className="mt-4 mb-2 px-1.5 text-[11px] font-medium text-white/35 uppercase tracking-widest">
                         Invited people
                       </div>
                       <div className="space-y-0.5">
-                        {filteredInvited.length === 0 ? (
-                          <div className="px-1.5 py-3 text-[12px] text-white/20 italic">No hay invitaciones pendientes</div>
-                        ) : (
-                          <AnimatePresence mode="popLayout">
-                            {filteredInvited.map(invite => (
+                        <AnimatePresence mode="popLayout">
+                          {filteredInvited.length === 0 ? (
+                            <motion.div
+                              key="empty-invited"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="flex items-center justify-between rounded-lg px-1.5 py-2 opacity-40"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-medium text-white/30"
+                                  style={{ border: "1.5px dashed rgba(255,255,255,0.12)", background: "transparent" }}>
+                                  RR
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-[13px] font-medium text-white/30">Ronald Richards</p>
+                                    <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400/60">Invited</span>
+                                  </div>
+                                  <p className="text-[11px] text-white/15">ronald@email.com</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border whitespace-nowrap"
+                                style={{ color: "rgba(255,255,255,0.20)", background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)", fontSize: 11 }}>
+                                <span>Team Member</span>
+                                <ChevronDown style={{ width: 10, height: 10 }} />
+                              </div>
+                            </motion.div>
+                          ) : (
+                            filteredInvited.map(invite => (
                               <InvitedRow key={invite.email} invite={invite} onRemove={removeInvite} />
-                            ))}
-                          </AnimatePresence>
-                        )}
+                            ))
+                          )}
+                        </AnimatePresence>
                       </div>
 
                       {filteredMembers.length === 0 && filteredInvited.length === 0 && search && (
