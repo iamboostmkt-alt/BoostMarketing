@@ -84,9 +84,13 @@ function RolePill({ value, onChange, size = "sm" }: {
   function handleOpen() {
     if (btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
-      setDropPos({ top: rect.bottom + 6, left: rect.right - 160, width: rect.width });
+      const newPos = { top: rect.bottom + 6, left: Math.max(8, rect.right - 160), width: rect.width };
+      setDropPos(newPos);
+      // Abrir después de que las coords estén listas
+      requestAnimationFrame(() => setIsOpen(v => !v));
+    } else {
+      setIsOpen(v => !v);
     }
-    setIsOpen(v => !v);
   }
 
   return (
