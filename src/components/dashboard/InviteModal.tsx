@@ -353,21 +353,59 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     }
   }
 
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => { setMounted(true); }, []);
+  const dialogRef = React.useRef<HTMLDialogElement>(null);
 
-  const modalContent = (
-    <AnimatePresence>
-      {open && (
-        <>
-          <div style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(0,0,0,0.70)", backdropFilter: "blur(2px)" }} onClick={onClose} />
-          <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", pointerEvents: "none" }}>
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open) {
+      dialog.showModal();
+    } else {
+      dialog.close();
+    }
+  }, [open]);
+
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    function handleCancel(e: Event) { e.preventDefault(); onClose(); }
+    function handleClick(e: MouseEvent) {
+      const rect = dialog!.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+        onClose();
+      }
+    }
+    dialog.addEventListener("cancel", handleCancel);
+    dialog.addEventListener("click", handleClick);
+    return () => {
+      dialog.removeEventListener("cancel", handleCancel);
+      dialog.removeEventListener("click", handleClick);
+    };
+  }, [onClose]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      style={{
+        border: "none",
+        background: "transparent",
+        padding: 0,
+        margin: "auto",
+        width: "100%",
+        maxWidth: 640,
+        outline: "none",
+        overflow: "visible",
+      }}
+      className="backdrop:bg-black/65 backdrop:backdrop-blur-sm"
+    >
+      <AnimatePresence>
+        {open && (
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ position: "relative", width: "100%", maxWidth: 640, pointerEvents: "all" }}
+            style={{ width: "100%", padding: "0 16px" }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3 px-1">
@@ -429,9 +467,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                   />
                 </div>
                 <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
-
-                {/* Miembros activos — scroll independiente */}
-                <div className="max-h-72 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="max-h-56 overflow-y-auto overflow-x-hidden relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : (
@@ -449,27 +485,14 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                     </div>
                   )}
                 </div>
-
-                {/* Invited people — siempre visible, fuera del scroll */}
                 <div className="mt-3 relative z-10">
-                  <div className="mb-1.5 px-1.5 text-[11px] font-medium text-white/35 uppercase tracking-widest">
-                    Invited people
-                  </div>
+                  <div className="mb-1.5 px-1.5 text-[11px] font-medium text-white/35 uppercase tracking-widest">Invited people</div>
                   <div className="space-y-0.5">
                     <AnimatePresence mode="popLayout">
                       {filteredInvited.length === 0 ? (
-                        <motion.div
-                          key="empty-invited"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="flex items-center justify-between rounded-lg px-1.5 py-2 opacity-40"
-                        >
+                        <motion.div key="empty-invited" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-between rounded-lg px-1.5 py-2 opacity-40">
                           <div className="flex items-center gap-2.5">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-medium text-white/30"
-                              style={{ border: "1.5px dashed rgba(255,255,255,0.12)", background: "transparent" }}>
-                              RR
-                            </div>
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-medium text-white/30" style={{ border: "1.5px dashed rgba(255,255,255,0.12)", background: "transparent" }}>RR</div>
                             <div>
                               <div className="flex items-center gap-2">
                                 <p className="text-[13px] font-medium text-white/30">Ronald Richards</p>
@@ -478,8 +501,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                               <p className="text-[11px] text-white/15">ronald@email.com</p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border whitespace-nowrap"
-                            style={{ color: "rgba(255,255,255,0.20)", background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)", fontSize: 11 }}>
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border whitespace-nowrap" style={{ color: "rgba(255,255,255,0.20)", background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)", fontSize: 11 }}>
                             <span>Team Member</span>
                             <ChevronDown style={{ width: 10, height: 10 }} />
                           </div>
@@ -495,11 +517,8 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
               </div>
             </div>
           </motion.div>
-          </div>
-        </>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </dialog>
   );
-
-  return mounted ? createPortal(modalContent, document.body) : null;
 }
