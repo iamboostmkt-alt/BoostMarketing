@@ -75,10 +75,6 @@ function RolePill({ value, onChange, size = "sm" }: {
   }, [isOpen]);
 
   function handleOpen() {
-    if (btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      setDropPos({ top: rect.bottom + 6, left: rect.right - 160 });
-    }
     setIsOpen(v => !v);
   }
 
@@ -112,7 +108,7 @@ function RolePill({ value, onChange, size = "sm" }: {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.13 }}
-            style={{ position: "fixed", top: dropPos.top, left: dropPos.left, zIndex: 99999, minWidth: 160, background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 12, padding: "4px 0", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
+            style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 9999, minWidth: 160, background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 12, padding: "4px 0", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
           >
             {ROLES.map(r => {
               const isSelected = r.value === value;
@@ -159,10 +155,6 @@ function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
   }, [menuOpen]);
 
   function handleMenu() {
-    if (btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      setMenuPos({ top: rect.bottom + 4, left: rect.right - 160 });
-    }
     setMenuOpen(v => !v);
   }
 
@@ -185,7 +177,7 @@ function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
           {roleLabel}
         </span>
         {isAdmin && (
-          <div ref={menuRef}>
+          <div ref={menuRef} style={{ position: "relative" }}>
             <button ref={btnRef} onClick={handleMenu} className="flex h-7 w-7 items-center justify-center rounded-md text-white/20 transition-colors hover:bg-white/[0.05] hover:text-white/50">
               <MoreHorizontal className="h-3.5 w-3.5" />
             </button>
@@ -196,7 +188,7 @@ function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4, scale: 0.97 }}
                   transition={{ duration: 0.12 }}
-                  style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 99999, width: 160, background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 10, padding: "4px 0", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
+                  style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 9999, width: 160, background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 10, padding: "4px 0", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
                 >
                   <button onClick={() => setMenuOpen(false)} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white">Cambiar rol</button>
                   <div className="my-1 h-px bg-white/[0.06]" />
@@ -227,10 +219,6 @@ function InvitedRow({ invite, onRemove }: { invite: PendingInvite; onRemove: (em
   }, [menuOpen]);
 
   function handleMenu() {
-    if (btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      setMenuPos({ top: rect.bottom + 4, left: rect.right - 160 });
-    }
     setMenuOpen(v => !v);
   }
 
@@ -249,10 +237,12 @@ function InvitedRow({ invite, onRemove }: { invite: PendingInvite; onRemove: (em
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap" style={{ color: "rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}>
-          {roleLabel}
-        </span>
-        <div ref={menuRef}>
+        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border whitespace-nowrap cursor-default"
+          style={{ color: "rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)", fontSize: 11, fontWeight: 500 }}>
+          <span>{roleLabel}</span>
+          <ChevronDown style={{ width: 10, height: 10, color: "rgba(255,255,255,0.20)" }} />
+        </div>
+        <div ref={menuRef} style={{ position: "relative" }}>
           <button ref={btnRef} onClick={handleMenu} className="flex h-7 w-7 items-center justify-center rounded-md text-white/20 transition-colors hover:bg-white/[0.05] hover:text-white/50">
             <MoreHorizontal className="h-3.5 w-3.5" />
           </button>
@@ -263,7 +253,7 @@ function InvitedRow({ invite, onRemove }: { invite: PendingInvite; onRemove: (em
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -4, scale: 0.97 }}
                 transition={{ duration: 0.12 }}
-                style={{ position: "fixed", top: menuPos.top, left: menuPos.left, zIndex: 99999, width: 160, background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 10, padding: "4px 0", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
+                style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 9999, width: 160, background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 10, padding: "4px 0", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
               >
                 <button onClick={() => setMenuOpen(false)} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white">Reenviar invitación</button>
                 <div className="my-1 h-px bg-white/[0.06]" />
@@ -435,7 +425,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                 </div>
                 <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
 
-                <div className="max-h-72 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="max-h-80 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : (
