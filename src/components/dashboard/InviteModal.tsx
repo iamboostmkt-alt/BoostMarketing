@@ -425,67 +425,67 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                 </div>
                 <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
 
-                <div className="max-h-96 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                {/* Miembros activos — scroll independiente */}
+                <div className="max-h-44 overflow-y-auto relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : (
-                    <>
-                      <div className="space-y-0.5">
-                        <AnimatePresence mode="popLayout">
-                          {filteredMembers.map((member, i) => (
-                            <motion.div key={member.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.12, delay: i * 0.02 }}>
-                              <MemberRow member={member} isAdmin={true} />
-                            </motion.div>
-                          ))}
-                        </AnimatePresence>
-                      </div>
-
-                      {/* Invited people — siempre visible */}
-                      <div className="mt-4 mb-2 px-1.5 text-[11px] font-medium text-white/35 uppercase tracking-widest">
-                        Invited people
-                      </div>
-                      <div className="space-y-0.5">
-                        <AnimatePresence mode="popLayout">
-                          {filteredInvited.length === 0 ? (
-                            <motion.div
-                              key="empty-invited"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              className="flex items-center justify-between rounded-lg px-1.5 py-2 opacity-40"
-                            >
-                              <div className="flex items-center gap-2.5">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-medium text-white/30"
-                                  style={{ border: "1.5px dashed rgba(255,255,255,0.12)", background: "transparent" }}>
-                                  RR
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-[13px] font-medium text-white/30">Ronald Richards</p>
-                                    <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400/60">Invited</span>
-                                  </div>
-                                  <p className="text-[11px] text-white/15">ronald@email.com</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border whitespace-nowrap"
-                                style={{ color: "rgba(255,255,255,0.20)", background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)", fontSize: 11 }}>
-                                <span>Team Member</span>
-                                <ChevronDown style={{ width: 10, height: 10 }} />
-                              </div>
-                            </motion.div>
-                          ) : (
-                            filteredInvited.map(invite => (
-                              <InvitedRow key={invite.email} invite={invite} onRemove={removeInvite} />
-                            ))
-                          )}
-                        </AnimatePresence>
-                      </div>
-
-                      {filteredMembers.length === 0 && filteredInvited.length === 0 && search && (
+                    <div className="space-y-0.5">
+                      <AnimatePresence mode="popLayout">
+                        {filteredMembers.map((member, i) => (
+                          <motion.div key={member.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.12, delay: i * 0.02 }}>
+                            <MemberRow member={member} isAdmin={true} />
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                      {filteredMembers.length === 0 && search && (
                         <div className="py-4 text-center text-[12px] text-white/25">No members found</div>
                       )}
-                    </>
+                    </div>
                   )}
+                </div>
+
+                {/* Invited people — siempre visible, fuera del scroll */}
+                <div className="mt-3 relative z-10">
+                  <div className="mb-1.5 px-1.5 text-[11px] font-medium text-white/35 uppercase tracking-widest">
+                    Invited people
+                  </div>
+                  <div className="space-y-0.5">
+                    <AnimatePresence mode="popLayout">
+                      {filteredInvited.length === 0 ? (
+                        <motion.div
+                          key="empty-invited"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center justify-between rounded-lg px-1.5 py-2 opacity-40"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-medium text-white/30"
+                              style={{ border: "1.5px dashed rgba(255,255,255,0.12)", background: "transparent" }}>
+                              RR
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-[13px] font-medium text-white/30">Ronald Richards</p>
+                                <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400/60">Invited</span>
+                              </div>
+                              <p className="text-[11px] text-white/15">ronald@email.com</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border whitespace-nowrap"
+                            style={{ color: "rgba(255,255,255,0.20)", background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)", fontSize: 11 }}>
+                            <span>Team Member</span>
+                            <ChevronDown style={{ width: 10, height: 10 }} />
+                          </div>
+                        </motion.div>
+                      ) : (
+                        filteredInvited.map(invite => (
+                          <InvitedRow key={invite.email} invite={invite} onRemove={removeInvite} />
+                        ))
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
             </div>
