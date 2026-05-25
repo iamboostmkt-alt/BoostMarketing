@@ -666,11 +666,7 @@ export default function AppSidebar() {
           </div>
         )}
         <div className="space-y-0.5">
-          <NavItemButton
-            item={{ href: "/dashboard/email", label: "Email", icon: Mail, disabled: true }}
-            isActive={isActive("/dashboard/email")}
-            collapsed={collapsed}
-          />
+          {/* Email — pendiente BR-email, ruta no existe aún */}
           <SettingsDropdown collapsed={collapsed} />
         </div>
       </div>
