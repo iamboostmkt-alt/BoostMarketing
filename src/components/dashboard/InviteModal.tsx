@@ -114,12 +114,14 @@ function RolePill({ value, onChange, size = "sm" }: {
       </button>
       <AnimatePresence>
         {isOpen && (
+          <RoleDropdownPortal>
           <motion.div
             initial={{ opacity: 0, y: -4, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.13 }}
-            style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 9999, minWidth: 160, background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 12, padding: "4px 0", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
+            onClick={e => e.stopPropagation()}
+            style={{ position: "fixed", top: dropPos.top, left: dropPos.left, zIndex: 999999, minWidth: 160, background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 12, padding: "4px 0", boxShadow: "0 16px 40px rgba(0,0,0,0.9)" }}
           >
             {ROLES.map(r => {
               const isSelected = r.value === value;
@@ -141,6 +143,7 @@ function RolePill({ value, onChange, size = "sm" }: {
               );
             })}
           </motion.div>
+          </RoleDropdownPortal>
         )}
       </AnimatePresence>
     </div>
