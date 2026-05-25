@@ -360,19 +360,14 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     <AnimatePresence>
       {open && (
         <>
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            onClick={onClose}
-            style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(2px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}
-          >
+          <div style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(0,0,0,0.70)", backdropFilter: "blur(2px)" }} onClick={onClose} />
+          <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", pointerEvents: "none" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-            onClick={e => e.stopPropagation()}
-            style={{ position: "relative", zIndex: 9999, width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto" }}
+            style={{ position: "relative", width: "100%", maxWidth: 640, pointerEvents: "all" }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3 px-1">
@@ -500,7 +495,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
               </div>
             </div>
           </motion.div>
-          </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
