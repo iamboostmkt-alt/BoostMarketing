@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getRoleLabel } from '@/lib/roles';
+import { InviteModal } from '@/components/dashboard/InviteModal';
 
 interface ActiveTask {
   id: string;
@@ -184,6 +185,7 @@ export default function TeamPage() {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [search,  setSearch]  = useState('');
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     // Esperar a que la sesión cargue antes de evaluar el rol
@@ -234,6 +236,7 @@ export default function TeamPage() {
   }
 
   return (
+    <>
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -246,7 +249,7 @@ export default function TeamPage() {
         </div>
         {isAdmin && (
           <button
-            onClick={() => router.push('/dashboard/admin/invite')}
+            onClick={() => setInviteOpen(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand hover:bg-brand-dark text-white text-sm font-medium transition-colors self-start"
           >
             <Users className="w-4 h-4" />
@@ -319,5 +322,7 @@ export default function TeamPage() {
         </div>
       )}
     </div>
+    <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+    </>
   );
 }

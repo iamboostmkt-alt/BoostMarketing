@@ -34,6 +34,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { canAccessRoute, getRoleLabel } from "@/lib/roles";
 import { useSidebar } from "./SidebarContext";
+import { InviteModal } from "./InviteModal";
 
 type NavItem = {
   href: string;
@@ -192,10 +193,10 @@ function UserDropdown({
 
 // ─── Workspace Switcher ────────────────────────────────────────────────────────
 function WorkspaceSwitcher({
-  name, initial, color, image, collapsed, role, workspaceName,
+  name, initial, color, image, collapsed, role, workspaceName, onInvite,
 }: {
   name: string; initial: string; color: string; image?: string | null;
-  collapsed: boolean; role?: string; workspaceName: string;
+  collapsed: boolean; role?: string; workspaceName: string; onInvite: () => void;
 }) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
@@ -277,10 +278,13 @@ function WorkspaceSwitcher({
               <span className="text-xs text-white/60 group-hover:text-white/80">Ajustes</span>
             </Link>
             {isAdmin && (
-              <Link href="/dashboard/admin" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
-                <span className="text-white/40 group-hover:text-white/60 text-sm">👥</span>
+              <button
+                onClick={() => { setOpen(false); onInvite(); }}
+                className="flex w-full items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group"
+              >
+                <span className="text-white/40 group-hover:text-purple-400 text-sm">👥</span>
                 <span className="text-xs text-white/60 group-hover:text-white/80">Invitar usuario</span>
-              </Link>
+              </button>
             )}
           </div>
         </div>
@@ -538,6 +542,8 @@ export default function AppSidebar() {
   const isClient   = role === "CLIENT";
   const isAdmin    = role === "ADMIN";
   const isManagerRole = ["ADMIN", "PROJECT_MANAGER"].includes(role ?? "");
+
+  const [inviteOpen, setInviteOpen] = React.useState(false);
   const filteredNavItems = navItems.filter((item) => {
     if (item.roles) return item.roles.includes(role ?? "");
     if (isClient) return !!item.clientOnly;
@@ -598,6 +604,7 @@ export default function AppSidebar() {
           collapsed={collapsed}
           role={role}
           workspaceName={workspaceName}
+          onInvite={() => setInviteOpen(true)}
         />
       </div>
 
@@ -637,13 +644,13 @@ export default function AppSidebar() {
                     <div className="h-2 w-2 rounded-full bg-sky-400/60" />
                     <span className="truncate">Ver equipo</span>
                   </Link>
-                  <Link
-                    href="/dashboard/admin/invite"
+                  <button
+                    onClick={() => setInviteOpen(true)}
                     className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] text-purple-400/70 transition-colors hover:text-purple-400"
                   >
                     <Plus className="h-3 w-3" />
                     <span>Invitar miembro</span>
-                  </Link>
+                  </button>
                 </div>
               </div>
             )}
@@ -697,6 +704,9 @@ export default function AppSidebar() {
       >
         {sidebarContent}
       </aside>
+
+      {/* Invite Modal — disponible desde cualquier punto del sidebar */}
+      <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </>
   );
 }
