@@ -392,7 +392,8 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
         padding: 0,
         margin: "auto",
         width: "100%",
-        maxWidth: 640,
+        maxWidth: 660,
+        maxHeight: "92vh",
         outline: "none",
         overflow: "visible",
       }}
@@ -467,7 +468,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                   />
                 </div>
                 <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
-                <div className="max-h-56 overflow-y-auto overflow-x-hidden relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="max-h-72 overflow-y-auto overflow-x-hidden relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : (
