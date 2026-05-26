@@ -91,16 +91,32 @@ function RealTaskCard({ task, compact = false }: { task: Task; compact?: boolean
   if (compact) {
     return (
       <motion.div
-        className="relative overflow-hidden rounded-lg border border-white/[0.06] px-3 py-2"
+        className="relative overflow-hidden rounded-xl border border-white/[0.06] px-3 py-2.5"
         style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0e14 100%)' }}
         whileHover={{ borderColor: 'rgba(124,58,237,0.2)' }}
       >
         <div className="absolute top-0 left-0 h-full w-0.5 rounded-full" style={{ background: bar }} />
-        <div className="pl-2 flex items-center justify-between gap-2">
-          <span className="text-[11px] text-white/85 truncate flex-1">{task.title}</span>
-          <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={style}>
-            {(statusLabels[task.status] || task.status).split(' ')[0]}
-          </span>
+        <div className="pl-2">
+          <div className="flex items-center justify-between gap-2 mb-0.5">
+            <span className="text-[12px] font-medium text-white/85 truncate flex-1">{task.title}</span>
+            <span className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-medium" style={style}>
+              {(statusLabels[task.status] || task.status).split(' ')[0]}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {task.dueDate && (
+              <span className={`text-[10px] flex items-center gap-1 ${new Date(task.dueDate) < new Date() ? 'text-red-400' : 'text-white/30'}`}>
+                <Clock className="h-3 w-3" />
+                {new Date(task.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+              </span>
+            )}
+            {task.client?.name && (
+              <span className="text-[10px] text-violet-400/50 truncate">{task.client.name}</span>
+            )}
+            <span className={`text-[10px] font-medium ml-auto ${priorityColors[task.priority] || 'text-white/30'}`}>
+              {priorityLabels[task.priority] || task.priority}
+            </span>
+          </div>
         </div>
       </motion.div>
     );
@@ -352,11 +368,11 @@ export default function DashboardPage() {
               return (
                 <motion.div
                   key={s.label}
-                  className="flex-1 rounded-[14px] border border-white/[0.06] p-4 group hover:border-white/[0.1] transition-colors"
+                  className="flex-1 rounded-[14px] border border-white/[0.06] p-5 group hover:border-white/[0.1] transition-colors"
                   style={{
                     background: 'linear-gradient(135deg, #080808 0%, #0e0e14 100%)',
                     minWidth: '180px',
-                    maxWidth: '260px',
+                    maxWidth: '280px',
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -399,13 +415,13 @@ export default function DashboardPage() {
       case 'my_tasks':
         return (
           <div className="flex flex-col gap-2">
-            <div className="overflow-y-auto custom-scrollbar space-y-2"
-              style={{ maxHeight: '300px' }}>
+            <div className="overflow-y-auto custom-scrollbar space-y-1.5"
+              style={{ maxHeight: '280px' }}>
               {loadingTasks
-                ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)
+                ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)
                 : activeTasks.length === 0
                   ? <p className="text-xs text-white/30 text-center py-6">Sin tareas activas 🎉</p>
-                  : activeTasks.slice(0, 3).map(t => <RealTaskCard key={t.id} task={t} compact={false} />)
+                  : activeTasks.slice(0, 4).map(t => <RealTaskCard key={t.id} task={t} compact={true} />)
               }
             </div>
             {!loadingTasks && activeTasks.length > 0 && (
@@ -656,7 +672,7 @@ export default function DashboardPage() {
   const draggableSections = sections.filter(s => s.id !== 'stats' && (s.visible || editMode));
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col">
 
       {/* ══ ZONA 1: Header fijo — greeting arriba, botones debajo ══ */}
       <div className="shrink-0 pb-4 pt-1">
@@ -765,64 +781,58 @@ export default function DashboardPage() {
       )}
 
       {/* ══ ZONA 3: Grid de secciones — flex-1 con scroll interno por card ══ */}
-      {/* ══ ZONA 3: Filas calculadas — sin grid CSS en Reorder para evitar encimamiento ══
-          Estrategia: calcular filas manualmente, un Reorder.Group por fila.
-          Cada fila suma spans hasta 12. Al cambiar ancho se recalculan las filas.
-          El drag es solo dentro de cada fila (axis="x").
-          Para reordenar entre filas se usa el handle vertical del SectionWrapper. */}
+      {/* ══ ZONA 3: Grid con Reorder vertical + CSS grid por fila ══
+          Un solo Reorder.Group axis="y" — reordena filas completas.
+          Dentro de cada fila, las secciones se distribuyen con flex.
+          El resize de ancho recalcula automáticamente las filas. */}
       {(() => {
-        // Calcular filas: agrupar secciones hasta completar 12 columnas
+        // Agrupar en filas respetando span máximo 12
         const rows: typeof draggableSections[] = [];
-        let currentRow: typeof draggableSections = [];
-        let currentSpan = 0;
-
-        draggableSections.forEach(section => {
-          const span = widthToSpan[section.width];
-          if (currentSpan + span > 12 && currentRow.length > 0) {
-            rows.push(currentRow);
-            currentRow = [section];
-            currentSpan = span;
-          } else {
-            currentRow.push(section);
-            currentSpan += span;
-          }
+        let cur: typeof draggableSections = [];
+        let curSpan = 0;
+        draggableSections.forEach(s => {
+          const sp = widthToSpan[s.width];
+          if (curSpan + sp > 12 && cur.length > 0) {
+            rows.push(cur); cur = [s]; curSpan = sp;
+          } else { cur.push(s); curSpan += sp; }
         });
-        if (currentRow.length > 0) rows.push(currentRow);
+        if (cur.length > 0) rows.push(cur);
+
+        // IDs de filas para Reorder (usa el primer ID de cada fila como key)
+        const rowKeys = rows.map(r => r[0].id);
 
         return (
-          <div className="space-y-4">
-            {rows.map((row, rowIdx) => (
-              <Reorder.Group
-                key={row.map(s => s.id).join('-')}
-                axis="x"
+          <Reorder.Group
+            axis="y"
+            as="div"
+            values={rowKeys}
+            onReorder={(newRowKeys) => {
+              setSections(prev => {
+                const map = new Map(prev.map(s => [s.id, s]));
+                const fixed = prev.filter(s => s.id === 'stats');
+                // Reordenar filas completas según nuevo orden de rowKeys
+                const rowMap = new Map(rows.map(r => [r[0].id, r]));
+                const reordered = newRowKeys.flatMap(k => (rowMap.get(k) || []).map(s => map.get(s.id)!)).filter(Boolean);
+                const hidden = prev.filter(s => s.id !== 'stats' && !s.visible && !editMode);
+                return [...fixed, ...reordered, ...hidden];
+              });
+            }}
+            className="space-y-4"
+          >
+            {rows.map((row) => (
+              <Reorder.Item
+                key={row[0].id}
+                value={row[0].id}
                 as="div"
-                values={row.map(s => s.id)}
-                onReorder={(newOrder) => {
-                  setSections(prev => {
-                    const map = new Map(prev.map(s => [s.id, s]));
-                    const fixed = prev.filter(s => s.id === 'stats');
-                    // Reconstruir el array manteniendo el orden de filas
-                    const allDraggable = draggableSections.map(s => s.id);
-                    const rowStart = rows.slice(0, rowIdx).reduce((acc, r) => acc + r.length, 0);
-                    const newAll = [...allDraggable];
-                    newOrder.forEach((id, i) => { newAll[rowStart + i] = id; });
-                    const reordered = newAll.map(id => map.get(id)!).filter(Boolean);
-                    const hidden = prev.filter(s => s.id !== 'stats' && !s.visible && !editMode);
-                    return [...fixed, ...reordered, ...hidden];
-                  });
-                }}
+                dragListener={editMode}
                 className="flex gap-4"
               >
                 {row.map(section => {
-                  const spanPct = (widthToSpan[section.width] / 12) * 100;
+                  const pct = (widthToSpan[section.width] / 12) * 100;
                   return (
-                    <Reorder.Item
+                    <div
                       key={section.id}
-                      value={section.id}
-                      as="div"
-                      dragListener={editMode}
-                      style={{ width: `calc(${spanPct}% - 0.5rem)`, minWidth: 0, flexShrink: 0 }}
-                      transition={{ layout: { duration: 0.2, ease: 'easeInOut' } }}
+                      style={{ width: `calc(${pct}% - ${(row.length - 1) * 16 / row.length}px)`, minWidth: 0, flexShrink: 0 }}
                     >
                       <SectionWrapper
                         id={section.id}
@@ -838,12 +848,12 @@ export default function DashboardPage() {
                       >
                         {renderSection(section.id, section.width)}
                       </SectionWrapper>
-                    </Reorder.Item>
+                    </div>
                   );
                 })}
-              </Reorder.Group>
+              </Reorder.Item>
             ))}
-          </div>
+          </Reorder.Group>
         );
       })()}
     </div>
