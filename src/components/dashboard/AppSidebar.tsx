@@ -680,7 +680,7 @@ export default function AppSidebar() {
       {/* Desktop sidebar */}
       <aside
         style={{ width: collapsed ? 72 : 240, background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
-        className="hidden md:flex flex-col border-r border-white/[0.06] h-screen sticky top-0 overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
+        className="hidden md:flex flex-col border-r border-white/[0.06] overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
       >
         {sidebarContent}
       </aside>
