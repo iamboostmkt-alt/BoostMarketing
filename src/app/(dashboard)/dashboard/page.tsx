@@ -343,34 +343,50 @@ export default function DashboardPage() {
     switch (id) {
       case 'stats':
         return (
-          <div className={`grid gap-3 ${isCompact ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'}`}>
+          <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
             {statCards.map(s => {
               const Icon = s.icon;
               return (
-                <div key={s.label} className="rounded-xl p-4 border border-white/[0.06] hover:border-white/[0.1] transition-colors group"
-                  style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0e14 60%, #0a0a0f 100%)' }}>
+                <motion.div
+                  key={s.label}
+                  className="flex-1 rounded-[14px] border border-white/[0.06] p-4 group hover:border-white/[0.1] transition-colors"
+                  style={{
+                    background: 'linear-gradient(135deg, #080808 0%, #0e0e14 100%)',
+                    minWidth: '160px',
+                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {/* Glow */}
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: 'radial-gradient(circle, rgba(88,28,220,0.15) 0%, transparent 70%)', filter: 'blur(12px)' }} />
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] font-medium text-white/35 uppercase tracking-wide truncate pr-1">{s.label}</p>
+                    <span className="text-[11px] text-white/35 truncate pr-2">{s.label}</span>
                     {s.change && (
-                      <div className={`flex items-center gap-0.5 text-[10px] font-medium shrink-0 ${s.up ? 'text-green-400/70' : 'text-red-400/70'}`}>
-                        {s.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                        {s.change}
-                      </div>
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${s.up ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        {s.up ? '+' : ''}{s.change}
+                      </span>
                     )}
                   </div>
-                  <div className="flex items-end justify-between">
-                    {loadingStats ? <Skeleton className="h-8 w-16" /> : (
-                      <motion.p key={String(s.value)} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2 }} className="text-2xl font-semibold text-white leading-none">
+                  <div className="flex items-end justify-between gap-2">
+                    {loadingStats ? <Skeleton className="h-9 w-16" /> : (
+                      <motion.span
+                        key={String(s.value)}
+                        className="text-3xl font-semibold text-white/90 leading-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.4 }}
+                      >
                         {s.value}
-                      </motion.p>
+                      </motion.span>
                     )}
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity"
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                       style={{ background: s.color + '1a' }}>
-                      <Icon className="w-3.5 h-3.5" style={{ color: s.color }} />
+                      <Icon className="w-4 h-4" style={{ color: s.color }} />
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -631,77 +647,72 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full min-h-0">
 
-      {/* ══ ZONA 1: Header fijo — greeting + badge + quick actions + editar ══ */}
-      <div
-        className="shrink-0 pb-5 pt-1"
-        style={{ background: 'radial-gradient(ellipse at 80% 0%, #160830 0%, #0e0e14 50%, transparent 100%)' }}
-      >
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          {/* Izquierda: greeting */}
-          <div>
-            <motion.h1
-              className="text-2xl font-semibold text-white/90"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {greeting},{' '}
-              <span style={{ background: 'linear-gradient(90deg, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                {userName.split(' ')[0]}
+      {/* ══ ZONA 1: Header fijo — greeting arriba, botones debajo ══ */}
+      <div className="shrink-0 pb-4 pt-1">
+
+        {/* Fila 1: greeting + badge */}
+        <div className="mb-3">
+          <motion.h1
+            className="text-2xl font-semibold text-white/90"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {greeting},{' '}
+            <span style={{ background: 'linear-gradient(90deg, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              {userName.split(' ')[0]}
+            </span>
+          </motion.h1>
+          <div className="mt-1 flex items-center gap-3">
+            <span className="text-[13px] text-white/35 capitalize">{fmtDate}</span>
+            {userRole && (
+              <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+                style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa' }}>
+                {roleBadge[userRole] || userRole}
               </span>
-            </motion.h1>
-            <div className="mt-1 flex items-center gap-3">
-              <span className="text-[13px] text-white/35 capitalize">{fmtDate}</span>
-              {userRole && (
-                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
-                  style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa' }}>
-                  {roleBadge[userRole] || userRole}
-                </span>
-              )}
-            </div>
+            )}
           </div>
+        </div>
 
-          {/* Derecha: quick actions + editar */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Quick actions estilo v0 */}
-            {quickActions.map(action => {
-              const Icon = action.icon;
-              return (
-                <Link key={action.label} href={action.href}>
-                  <motion.button
-                    className="flex h-9 items-center gap-2 rounded-lg px-4 text-[12px] transition-colors"
-                    style={action.solid
-                      ? { background: '#7c3aed', color: '#fff' }
-                      : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.08)' }
-                    }
-                    whileHover={{ scale: 1.02, ...(action.solid ? { background: '#6d28d9' } : { background: 'rgba(255,255,255,0.07)' }) }}
-                    whileTap={{ scale: 0.97 }}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {action.label}
-                  </motion.button>
-                </Link>
-              );
-            })}
+        {/* Fila 2: quick actions debajo del greeting — estilo v0 */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {quickActions.map(action => {
+            const Icon = action.icon;
+            return (
+              <Link key={action.label} href={action.href}>
+                <motion.button
+                  className="flex h-9 items-center gap-2 rounded-lg px-4 text-[12px] transition-colors"
+                  style={action.solid
+                    ? { background: '#7c3aed', color: '#fff' }
+                    : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.08)' }
+                  }
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Icon className="h-4 w-4" />
+                  {action.label}
+                </motion.button>
+              </Link>
+            );
+          })}
 
-            {/* Separador */}
-            <div className="h-5 w-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+          {/* Separador */}
+          <div className="h-5 w-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
 
-            {/* Editar / Guardar layout */}
-            <motion.button
-              onClick={() => setEditMode(e => !e)}
-              className="flex h-9 items-center gap-2 rounded-lg px-3 text-[12px] transition-colors"
-              style={editMode
-                ? { background: '#7c3aed', color: '#fff' }
-                : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.06)' }
-              }
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              {editMode ? <CheckSquare className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-              {editMode ? 'Guardar' : 'Editar'}
-            </motion.button>
-          </div>
+          {/* Editar / Guardar */}
+          <motion.button
+            onClick={() => setEditMode(e => !e)}
+            className="flex h-9 items-center gap-2 rounded-lg px-3 text-[12px] transition-colors"
+            style={editMode
+              ? { background: '#7c3aed', color: '#fff' }
+              : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.06)' }
+            }
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            {editMode ? <CheckSquare className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+            {editMode ? 'Guardar' : 'Editar'}
+          </motion.button>
         </div>
       </div>
 
@@ -744,9 +755,11 @@ export default function DashboardPage() {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
-          gap: '1rem',
+          columnGap: '1rem',
+          rowGap: '1rem',
           gridAutoFlow: 'row dense',
           alignItems: 'start',
+          alignContent: 'start',
         }}
       >
         {draggableSections.map(section => (
@@ -755,8 +768,12 @@ export default function DashboardPage() {
             value={section.id}
             as="div"
             dragListener={editMode}
-            layout="position"
-            style={{ gridColumn: `span ${widthToSpan[section.width]}`, minWidth: 0 }}
+            layout
+            style={{
+              gridColumn: `span ${Math.min(widthToSpan[section.width], 12)}`,
+              minWidth: 0,
+              overflow: 'hidden',
+            }}
             transition={{ layout: { duration: 0.2, ease: 'easeInOut' } }}
           >
             <SectionWrapper
