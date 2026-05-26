@@ -30,6 +30,7 @@ const SECTION_TITLES: Record<string, string> = {
   recent_activity:   'Actividad reciente',
   overdue_tasks:     'Tareas vencidas',
   completed_tasks:   'Completadas recientemente',
+  recent_messages:   'Mensajes recientes',
 };
 
 const DEFAULT_WIDTHS_MANAGER: Record<string, SectionWidth> = {
@@ -38,6 +39,7 @@ const DEFAULT_WIDTHS_MANAGER: Record<string, SectionWidth> = {
   upcoming_meetings: '1/3',
   my_tasks:          '1/2',
   recent_activity:   '1/2',
+  recent_messages:   '1/2',
 };
 
 const DEFAULT_WIDTHS_MEMBER: Record<string, SectionWidth> = {
@@ -46,10 +48,11 @@ const DEFAULT_WIDTHS_MEMBER: Record<string, SectionWidth> = {
   upcoming_meetings: '1/3',
   completed_tasks:   '1/3',
   overdue_tasks:     '1/3',
+  recent_messages:   '1/3',
 };
 
-const SECTIONS_MANAGER = ['stats', 'team_tasks', 'upcoming_meetings', 'my_tasks', 'recent_activity'];
-const SECTIONS_MEMBER  = ['stats', 'my_tasks', 'upcoming_meetings', 'completed_tasks', 'overdue_tasks'];
+const SECTIONS_MANAGER = ['stats', 'team_tasks', 'upcoming_meetings', 'my_tasks', 'recent_activity', 'recent_messages'];
+const SECTIONS_MEMBER  = ['stats', 'my_tasks', 'upcoming_meetings', 'completed_tasks', 'overdue_tasks', 'recent_messages'];
 
 interface SectionState {
   id: string;
@@ -63,6 +66,14 @@ interface AdminUser {
   name: string | null;
   email: string;
   color: string;
+}
+
+interface ChatMessage {
+  id: string;
+  message: string;
+  room: string;
+  createdAt: string;
+  user: { id: string; name: string | null; email: string; color: string; image: string | null };
 }
 
 function userInitials(name: string | null, email: string) {
@@ -194,6 +205,8 @@ export default function DashboardPage() {
   const [teamUserFilter,  setTeamUserFilter]  = useState('all');
   const [teamStatusFilter,setTeamStatusFilter]= useState('all');
   const [deletingMeet,    setDeletingMeet]    = useState<string | null>(null);
+  const [chatMessages,    setChatMessages]    = useState<ChatMessage[]>([]);
+  const [loadingChat,     setLoadingChat]     = useState(true);
   const [editMode,        setEditMode]        = useState(false);
   const [sections,        setSections]        = useState<SectionState[]>([]);
   const [greeting,        setGreeting]        = useState('Hola');
@@ -266,6 +279,13 @@ export default function DashboardPage() {
       const m = (meets?.meetings || []).filter((x: any) => new Date(x.date) >= new Date());
       setMeetings([...a, ...m].sort((a: any, b: any) => +new Date(a.date) - +new Date(b.date)));
     }).finally(() => setLoadingMeet(false));
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/chat?room=TEAM')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.messages) setChatMessages(d.messages.slice(-8).reverse()); })
+      .finally(() => setLoadingChat(false));
   }, []);
 
   const updateSection = useCallback((id: string, updates: Partial<SectionState>) => {
@@ -509,6 +529,74 @@ export default function DashboardPage() {
         return (
           <div className="max-h-72 overflow-y-auto">
             <ActivityTimeline />
+          </div>
+        );
+
+      case 'recent_messages':
+        return (
+          <div className="divide-y divide-white/[0.04]">
+            {loadingChat
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 py-3">
+                    <Skeleton className="h-7 w-7 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-3 w-1/3" />
+                      <Skeleton className="h-2.5 w-2/3" />
+                    </div>
+                  </div>
+                ))
+              : chatMessages.length === 0
+                ? (
+                  <div className="flex flex-col items-center justify-center py-6 gap-2">
+                    <p className="text-xs text-white/30">Sin mensajes recientes</p>
+                    <Link href="/dashboard/chat">
+                      <button className="text-[11px] text-violet-400/70 hover:text-violet-400 transition-colors">
+                        Ir al chat →
+                      </button>
+                    </Link>
+                  </div>
+                )
+                : chatMessages.map(msg => {
+                    const initials = userInitials(msg.user.name, msg.user.email);
+                    const timeAgo = (() => {
+                      const diff = Date.now() - new Date(msg.createdAt).getTime();
+                      const mins = Math.floor(diff / 60000);
+                      if (mins < 1) return 'ahora';
+                      if (mins < 60) return `hace ${mins}m`;
+                      const hrs = Math.floor(mins / 60);
+                      if (hrs < 24) return `hace ${hrs}h`;
+                      return `hace ${Math.floor(hrs / 24)}d`;
+                    })();
+                    return (
+                      <div key={msg.id} className="flex items-start gap-3 py-3 hover:bg-white/[0.02] transition-colors -mx-1 px-1 rounded-lg">
+                        <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-[10px] font-medium"
+                          style={{ backgroundColor: (msg.user.color || '#7c3aed') + '33', color: msg.user.color || '#7c3aed' }}>
+                          {initials}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-2 mb-0.5">
+                            <span className="text-[12px] font-medium text-white/80">
+                              {msg.user.name || msg.user.email.split('@')[0]}
+                            </span>
+                            <span className="text-[10px] text-white/25">{timeAgo}</span>
+                          </div>
+                          <p className={`text-[11px] text-white/50 ${isCompact ? 'truncate' : 'line-clamp-2'}`}>
+                            {msg.message}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+            }
+            {!loadingChat && chatMessages.length > 0 && (
+              <div className="pt-2">
+                <Link href="/dashboard/chat">
+                  <button className="w-full text-[11px] text-white/30 hover:text-violet-400 transition-colors py-1 text-center">
+                    Ver chat completo →
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
         );
 
