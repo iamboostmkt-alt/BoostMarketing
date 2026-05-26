@@ -280,8 +280,9 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    const url = isManager ? '/api/tasks?limit=10' : '/api/tasks?scope=mine';
-    fetch(url).then(r => r.ok ? r.json() : null)
+    // scope=mine siempre — "Mis tareas" muestra solo las del usuario actual
+    // team_tasks usa scope=all por separado
+    fetch('/api/tasks?scope=mine').then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setTasks(d.tasks || d || []); }).finally(() => setLoadingTasks(false));
   }, [isManager]);
 
@@ -995,8 +996,7 @@ export default function DashboardPage() {
         isManager={isManager}
         onSuccess={() => {
           setTaskFormOpen(false);
-          const url = isManager ? '/api/tasks?limit=10' : '/api/tasks?scope=mine';
-          fetch(url).then(r => r.ok ? r.json() : null).then(d => { if (d) setTasks(d.tasks || d || []); });
+          fetch('/api/tasks?scope=mine').then(r => r.ok ? r.json() : null).then(d => { if (d) setTasks(d.tasks || d || []); });
         }}
       />
       <ClientForm
