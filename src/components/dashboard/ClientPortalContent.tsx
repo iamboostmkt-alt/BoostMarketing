@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Calendar, CheckSquare, Clock,
   CheckCircle2, Loader2, AlertCircle, User, Building2, Eye, MessageCircle, Video, Plus,
@@ -126,7 +126,8 @@ export default function ClientPortalContent() {
   const isManager         = MANAGER_ROLES.includes(currentUserRole as any);
 
   // ── Estado UI ────────────────────────────────────────────────────────────
-  const [previewClientId, setPreviewClientId] = useState<string>('');
+  const searchParams = useSearchParams();
+  const [previewClientId, setPreviewClientId] = useState<string>(searchParams?.get('clientId') || '');
   const [clients,         setClients]         = useState<ClientSummary[]>([]);
   const [selectedDay,     setSelectedDay]     = useState<Date | null>(null);
   const [formDate,        setFormDate]        = useState<Date | null>(null);
