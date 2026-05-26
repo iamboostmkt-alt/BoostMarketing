@@ -105,7 +105,25 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
   });
 
-  const clients = raw.map((c) => formatClient(c as unknown as Record<string, unknown>));
+  const clientIds = raw.map((c) => c.id);
+  const taskCounts = await db.task.groupBy({
+    by: ["clientId"],
+    where: { clientId: { in: clientIds }, deletedAt: null, archivedAt: null, status: { notIn: ["completed", "approved", "cancelled"] } },
+    _count: { id: true },
+  });
+  const completedCounts = await db.task.groupBy({
+    by: ["clientId"],
+    where: { clientId: { in: clientIds }, deletedAt: null, archivedAt: null, status: { in: ["completed", "approved"] } },
+    _count: { id: true },
+  });
+  const taskCountMap = Object.fromEntries(taskCounts.map((t: any) => [t.clientId, t._count.id]));
+  const completedMap = Object.fromEntries(completedCounts.map((t: any) => [t.clientId, t._count.id]));
+  const clients = raw.map((c) => {
+    const total = taskCountMap[c.id] ?? 0;
+    const completed = completedMap[c.id] ?? 0;
+    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    return { ...formatClient(c as unknown as Record<string, unknown>), activeTasks: total, completedTasks: completed, progress };
+  });
   return NextResponse.json({ clients });
 }
 
