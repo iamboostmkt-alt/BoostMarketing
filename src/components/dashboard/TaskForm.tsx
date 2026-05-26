@@ -233,8 +233,8 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       if (!res.ok) {
         throw new Error(resData.error || 'Error al guardar la tarea');
       }
-      if (!isEditing && !isSubtask && pendingSubtasks.length > 0) {
-        const newTaskId = resData?.id ?? resData?.task?.id;
+      if (!isSubtask && pendingSubtasks.length > 0) {
+        const newTaskId = isEditing ? task!.id : (resData?.id ?? resData?.task?.id);
         console.log('[TaskForm] resData:', JSON.stringify(resData));
         console.log('[TaskForm] newTaskId:', newTaskId);
         console.log('[TaskForm] pendingSubtasks:', pendingSubtasks.length);
@@ -546,8 +546,8 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 </ul>
               )}
 
-              {/* Input nueva subtarea — solo en creación */}
-              {!isEditing && (
+              {/* Input nueva subtarea — en creación y edición */}
+              {!isSubtask && (
                 <div className="flex gap-2">
                   <input
                     type="text"
