@@ -19,6 +19,9 @@ import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
 import { SectionWrapper, widthToSpan, type SectionWidth } from '@/components/dashboard/dashboard-components';
 import type { DashboardStats, Task, Appointment } from '@/lib/types';
 import { statusLabels, priorityLabels, priorityColors, statusStyleMap } from '@/lib/theme-maps';
+import TaskForm from '@/components/dashboard/TaskForm';
+import ClientForm from '@/components/dashboard/ClientForm';
+import { InviteModal } from '@/components/dashboard/InviteModal';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -227,6 +230,10 @@ export default function DashboardPage() {
   const [sections,        setSections]        = useState<SectionState[]>([]);
   const [greeting,        setGreeting]        = useState('Hola');
   const [fmtDate,         setFmtDate]         = useState('');
+  // Modales de acción rápida
+  const [taskFormOpen,    setTaskFormOpen]    = useState(false);
+  const [clientFormOpen,  setClientFormOpen]  = useState(false);
+  const [inviteOpen,      setInviteOpen]      = useState(false);
 
   const userName   = session?.user?.name || 'Usuario';
   const userRole   = session?.user?.role as string | undefined;
@@ -673,12 +680,14 @@ export default function DashboardPage() {
   // Quick actions por rol (estilo v0)
   const quickActions = isManager
     ? [
-        { label: 'Nueva tarea',    href: '/dashboard/tasks?action=create',        icon: Plus,       solid: false },
-        { label: 'Nueva reunión',  href: '/dashboard/appointments?action=create', icon: Video,      solid: false },
-        { label: 'Nuevo cliente',  href: '/dashboard/clients?action=create',      icon: UserCircle, solid: false },
+        { label: 'Nueva tarea',   icon: Plus,       onClick: () => setTaskFormOpen(true)   },
+        { label: 'Nueva reunión', icon: Video,      onClick: () => router.push('/dashboard/calendar') },
+        { label: 'Nuevo cliente', icon: UserCircle, onClick: () => setClientFormOpen(true) },
+        { label: 'Invitar',       icon: Users,      onClick: () => setInviteOpen(true)     },
       ]
     : [
-        { label: 'Nueva tarea',    href: '/dashboard/tasks?action=create',        icon: Plus,       solid: false },
+        { label: 'Nueva tarea',   icon: Plus,       onClick: () => setTaskFormOpen(true)   },
+        { label: 'Invitar',       icon: Users,      onClick: () => setInviteOpen(true)     },
       ];
 
   const draggableSections = sections.filter(s => s.id !== 'stats' && (s.visible || editMode));
@@ -736,20 +745,17 @@ export default function DashboardPage() {
           {quickActions.map(action => {
             const Icon = action.icon;
             return (
-              <Link key={action.label} href={action.href}>
-                <motion.button
-                  className="flex h-9 items-center gap-2 rounded-lg px-4 text-[12px] transition-colors"
-                  style={action.solid
-                    ? { background: '#7c3aed', color: '#fff' }
-                    : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.08)' }
-                  }
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  <Icon className="h-4 w-4" />
-                  {action.label}
-                </motion.button>
-              </Link>
+              <motion.button
+                key={action.label}
+                onClick={action.onClick}
+                className="flex h-9 items-center gap-2 rounded-lg px-4 text-[12px] transition-colors"
+                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.08)' }}
+                whileHover={{ scale: 1.02, background: 'rgba(255,255,255,0.07)' }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Icon className="h-4 w-4" />
+                {action.label}
+              </motion.button>
             );
           })}
 
@@ -972,6 +978,50 @@ export default function DashboardPage() {
           );
         })()
       )}
+
+      {/* ══ Modales de acción rápida ══ */}
+      <TaskForm
+        open={taskFormOpen}
+        onOpenChange={setTaskFormOpen}
+        isManager={isManager}
+        onSuccess={() => {
+          setTaskFormOpen(false);
+          const url = isManager ? '/api/tasks?limit=10' : '/api/tasks?scope=mine';
+          fetch(url).then(r => r.ok ? r.json() : null).then(d => { if (d) setTasks(d.tasks || d || []); });
+        }}
+      />
+      <ClientForm
+        open={clientFormOpen}
+        onOpenChange={setClientFormOpen}
+        isAdmin={userRole === 'ADMIN'}
+        onSuccess={() => setClientFormOpen(false)}
+      />
+      <InviteModal
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+      />
+
+      {/* ══ Modales de acción rápida ══ */}
+      <TaskForm
+        open={taskFormOpen}
+        onOpenChange={setTaskFormOpen}
+        isManager={isManager}
+        onSuccess={() => {
+          setTaskFormOpen(false);
+          const url = isManager ? '/api/tasks?limit=10' : '/api/tasks?scope=mine';
+          fetch(url).then(r => r.ok ? r.json() : null).then(d => { if (d) setTasks(d.tasks || d || []); });
+        }}
+      />
+      <ClientForm
+        open={clientFormOpen}
+        onOpenChange={setClientFormOpen}
+        isAdmin={userRole === 'ADMIN'}
+        onSuccess={() => setClientFormOpen(false)}
+      />
+      <InviteModal
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+      />
     </div>
   );
 }
