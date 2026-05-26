@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
@@ -161,7 +162,7 @@ function ClientDetail({ client, onClose, onEdit, onDelete, isAdmin }: {
   );
 }
 
-function ClientCard({ client, onClick }: { client: Client; onClick: () => void }) {
+function ClientCard({ client, onClick, onPortal }: { client: Client; onClick: () => void; onPortal: () => void }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const sm = STATUS_META[client.status] ?? STATUS_META.inactive;
   const assignedUsers = (client as any).assignedUsers ?? [];
@@ -281,7 +282,7 @@ function ClientCard({ client, onClick }: { client: Client; onClick: () => void }
                   >
                     <div className="py-1">
                       {["Ver portal", "Editar", "Asignar PM"].map(item => (
-                        <button key={item} onClick={() => { setMenuOpen(false); onClick(); }}
+                        <button key={item} onClick={() => { setMenuOpen(false); item === "Ver portal" ? onPortal() : onClick(); }}
                           className="w-full px-3 py-2 text-left text-[12px] text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/90">
                           {item}
                         </button>
@@ -320,6 +321,7 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deleteTarget,  setDeleteTarget]  = useState<Client | null>(null);
   const [deleting,      setDeleting]      = useState(false);
+  const router = useRouter();
   const [selected,      setSelected]      = useState<Client | null>(null);
 
   const fetchClients = useCallback(async () => {
@@ -412,7 +414,7 @@ export default function ClientsPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-36 rounded-xl" />)}
         </div>
       ) : filtered.length === 0 ? (
@@ -428,7 +430,7 @@ export default function ClientsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map(client => (
-            <ClientCard key={client.id} client={client} onClick={() => setSelected(client)} />
+            <ClientCard key={client.id} client={client} onClick={() => setSelected(client)} onPortal={() => router.push('/dashboard/client-portal?clientId=' + client.id)} />
           ))}
         </div>
       )}
