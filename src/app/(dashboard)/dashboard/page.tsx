@@ -394,16 +394,19 @@ export default function DashboardPage() {
 
       case 'my_tasks':
         return (
-          <div className={isCompact ? 'space-y-1' : 'space-y-2'}>
-            {loadingTasks
-              ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
-              : activeTasks.length === 0
-                ? <p className="text-xs text-white/30 text-center py-6">Sin tareas activas 🎉</p>
-                : activeTasks.slice(0, isCompact ? 8 : 5).map(t => <RealTaskCard key={t.id} task={t} compact={isCompact} />)
-            }
-            {!loadingTasks && activeTasks.length > 5 && (
+          <div className="flex flex-col gap-2">
+            <div className={`overflow-y-auto custom-scrollbar ${isCompact ? 'space-y-1' : 'space-y-2'}`}
+              style={{ maxHeight: isCompact ? '280px' : '320px' }}>
+              {loadingTasks
+                ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
+                : activeTasks.length === 0
+                  ? <p className="text-xs text-white/30 text-center py-6">Sin tareas activas 🎉</p>
+                  : activeTasks.slice(0, isCompact ? 6 : 4).map(t => <RealTaskCard key={t.id} task={t} compact={isCompact} />)
+              }
+            </div>
+            {!loadingTasks && activeTasks.length > 0 && (
               <Link href="/dashboard/tasks">
-                <button className="w-full text-[11px] text-white/30 hover:text-violet-400 transition-colors py-1.5 text-center">
+                <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1 text-center border-t border-white/[0.04] pt-2">
                   Ver todas ({activeTasks.length}) →
                 </button>
               </Link>
@@ -413,24 +416,26 @@ export default function DashboardPage() {
 
       case 'overdue_tasks':
         return (
-          <div className={isCompact ? 'space-y-1' : 'space-y-2'}>
+          <div className={`overflow-y-auto custom-scrollbar ${isCompact ? 'space-y-1' : 'space-y-2'}`}
+            style={{ maxHeight: '260px' }}>
             {loadingTasks
               ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
               : overdueTasks.length === 0
                 ? <p className="text-xs text-white/30 text-center py-6">Sin tareas vencidas ✓</p>
-                : overdueTasks.slice(0, isCompact ? 6 : 4).map(t => <RealTaskCard key={t.id} task={t} compact={isCompact} />)
+                : overdueTasks.slice(0, isCompact ? 5 : 3).map(t => <RealTaskCard key={t.id} task={t} compact={isCompact} />)
             }
           </div>
         );
 
       case 'completed_tasks':
         return (
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-white/[0.04] overflow-y-auto custom-scrollbar"
+            style={{ maxHeight: '260px' }}>
             {loadingTasks
               ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-8 w-full my-1" />)
               : completedRecent.length === 0
                 ? <p className="text-xs text-white/30 text-center py-6">Sin completadas esta semana</p>
-                : completedRecent.slice(0, 10).map(t => (
+                : completedRecent.slice(0, 5).map(t => (
                     <div key={t.id} className="flex items-center gap-3 py-2.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-green-400/60 shrink-0" />
                       <span className="flex-1 text-xs text-white/40 line-through truncate">{t.title}</span>
@@ -471,7 +476,7 @@ export default function DashboardPage() {
                 </Select>
               )}
             </div>
-            <div className="divide-y divide-white/[0.04] max-h-72 overflow-y-auto custom-scrollbar">
+            <div className="divide-y divide-white/[0.04] overflow-y-auto custom-scrollbar" style={{ maxHeight: "280px" }}>
               {loadingTeam
                 ? Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-3 py-3">
@@ -481,7 +486,7 @@ export default function DashboardPage() {
                   ))
                 : filteredTeamTasks.length === 0
                   ? <p className="text-xs text-white/30 text-center py-6">No hay tareas con estos filtros</p>
-                  : filteredTeamTasks.slice(0, 20).map(task => {
+                  : filteredTeamTasks.slice(0, 8).map(task => {
                       const owner = task.user;
                       const assignee = task.assignedUser;
                       return (
@@ -543,14 +548,14 @@ export default function DashboardPage() {
 
       case 'recent_activity':
         return (
-          <div className="max-h-72 overflow-y-auto">
+          <div className="max-h-72 overflow-y-auto custom-scrollbar">
             <ActivityTimeline />
           </div>
         );
 
       case 'recent_messages':
         return (
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-white/[0.04] overflow-y-auto custom-scrollbar" style={{ maxHeight: "280px" }}>
             {loadingChat
               ? Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-3 py-3">
