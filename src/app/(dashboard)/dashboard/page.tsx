@@ -455,7 +455,7 @@ export default function DashboardPage() {
                 </Select>
               )}
             </div>
-            <div className="divide-y divide-white/[0.04] max-h-72 overflow-y-auto">
+            <div className="divide-y divide-white/[0.04] max-h-72 overflow-y-auto custom-scrollbar">
               {loadingTeam
                 ? Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-3 py-3">
@@ -605,91 +605,144 @@ export default function DashboardPage() {
     }
   };
 
+  const roleBadge: Record<string, string> = {
+    ADMIN: 'Admin',
+    PROJECT_MANAGER: 'Project Manager',
+    TEAM_MEMBER: 'Team Member',
+    DESIGNER: 'Designer',
+    MARKETING: 'Marketing',
+    SALES: 'Sales Rep',
+    CLIENT: 'Client',
+  };
+
+  // Secciones fijas (fuera del grid draggable) vs draggables
+  const fixedSections  = sections.filter(s => s.id === 'stats');
+  const draggableSections = sections.filter(s => s.id !== 'stats' && (s.visible || editMode));
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <p className="text-xs text-white/30 capitalize mb-0.5">{fmtDate}</p>
-          <h2 className="text-xl font-medium text-white">
-            {greeting},{' '}
-            <span style={{ background: 'linear-gradient(90deg, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              {userName.split(' ')[0]}
-            </span>
-          </h2>
+    <div className="space-y-0">
+
+      {/* ── Header sticky ── */}
+      <div
+        className="sticky top-0 z-30 px-0 pb-4 pt-1"
+        style={{ background: 'radial-gradient(ellipse at 100% 0%, #160830 0%, #0e0e14 40%, #080808 70%)' }}
+      >
+        {/* Fila 1: greeting + acciones */}
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+          <div>
+            <p className="text-xs text-white/30 capitalize mb-0.5">{fmtDate}</p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-medium text-white">
+                {greeting},{' '}
+                <span style={{ background: 'linear-gradient(90deg, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  {userName.split(' ')[0]}
+                </span>
+              </h2>
+              {userRole && (
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.25)' }}>
+                  {roleBadge[userRole] || userRole}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/tasks?action=create">
+              <Button size="sm" className="gap-1.5 text-white text-xs h-8" style={{ background: '#7c3aed' }}>
+                <Plus className="w-3.5 h-3.5" />Nueva tarea
+              </Button>
+            </Link>
+            <Link href="/dashboard/appointments?action=create">
+              <Button size="sm" variant="outline"
+                className="gap-1.5 text-white/60 hover:text-white border-white/[0.1] text-xs h-8">
+                <Video className="w-3.5 h-3.5" />Nueva reunión
+              </Button>
+            </Link>
+            {editMode ? (
+              <Button size="sm"
+                className="gap-1.5 text-white text-xs h-8"
+                style={{ background: 'rgba(124,58,237,0.3)', border: '1px solid rgba(124,58,237,0.5)' }}
+                onClick={() => setEditMode(false)}>
+                <CheckSquare className="w-3.5 h-3.5" />Guardar
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline"
+                className="gap-1.5 text-white/40 hover:text-white/70 border-white/[0.08] text-xs h-8"
+                onClick={() => setEditMode(true)}>
+                <Pencil className="w-3.5 h-3.5" />Editar
+              </Button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Link href="/dashboard/tasks?action=create">
-            <Button size="sm" className="gap-1.5 text-white" style={{ background: '#7c3aed' }}>
-              <Plus className="w-3.5 h-3.5" />Nueva tarea
-            </Button>
-          </Link>
-          <Button size="sm" variant="outline"
-            className={`gap-1.5 border-white/[0.1] transition-all ${editMode ? 'text-violet-400 border-violet-500/40' : 'text-white/50 hover:text-white'}`}
-            style={{ background: editMode ? 'rgba(124,58,237,0.08)' : undefined }}
-            onClick={() => setEditMode(e => !e)}>
-            {editMode ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
-            {editMode ? 'Listo' : 'Editar layout'}
-          </Button>
-        </div>
+
+        {/* Stats fijos — siempre visibles, no draggables */}
+        {fixedSections.map(s => (
+          <div key={s.id}>
+            {renderSection(s.id, s.width)}
+          </div>
+        ))}
+
+        {editMode && (
+          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+            className="mt-3 rounded-xl border border-violet-500/20 px-4 py-2.5 text-xs text-violet-300/70 flex items-center gap-2"
+            style={{ background: 'rgba(124,58,237,0.06)' }}>
+            <GripVertical className="w-3.5 h-3.5 text-violet-400/60 shrink-0" />
+            <span><span className="font-medium text-violet-300">Modo edición:</span> Arrastra · Handle derecho para ancho · Ojo para ocultar</span>
+          </motion.div>
+        )}
       </div>
 
-      {editMode && (
-        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-violet-500/20 px-4 py-3 text-xs text-violet-300/70"
-          style={{ background: 'rgba(124,58,237,0.06)' }}>
-          <span className="font-medium text-violet-300">Modo edición:</span>{' '}
-          Arrastra secciones para reordenar · Handle derecho para cambiar ancho · Ojo para ocultar
-        </motion.div>
-      )}
-
+      {/* ── Secciones draggables ── */}
+      {/* Fix drop bug: NO usar style grid en Reorder.Group — usar wrapper div con CSS grid */}
       <Reorder.Group
         axis="y"
         as="div"
-        values={sections.filter(s => s.visible || editMode).map(s => s.id)}
+        values={draggableSections.map(s => s.id)}
         onReorder={(newOrder) => {
           setSections(prev => {
             const map = new Map(prev.map(s => [s.id, s]));
+            const fixed = prev.filter(s => s.id === 'stats');
             const reordered = newOrder.map(id => map.get(id)!).filter(Boolean);
-            const hidden = prev.filter(s => !s.visible && !editMode);
-            return [...reordered, ...hidden];
+            const hidden = prev.filter(s => s.id !== 'stats' && !s.visible && !editMode);
+            return [...fixed, ...reordered, ...hidden];
           });
         }}
+        className="dashboard-grid"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(12, 1fr)',
+          gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
           gap: '1rem',
           gridAutoFlow: 'row dense',
+          alignItems: 'start',
         }}
       >
-        {sections
-          .filter(s => s.visible || editMode)
-          .map(section => (
-            <Reorder.Item
-              key={section.id}
-              value={section.id}
-              as="div"
-              dragListener={editMode}
-              layout
-              style={{ gridColumn: `span ${widthToSpan[section.width]}` }}
-              transition={{ layout: { duration: 0.25, ease: 'easeInOut' } }}
+        {draggableSections.map(section => (
+          <Reorder.Item
+            key={section.id}
+            value={section.id}
+            as="div"
+            dragListener={editMode}
+            dragConstraints={{ top: 0 }}
+            layout="position"
+            style={{ gridColumn: `span ${widthToSpan[section.width]}` }}
+            transition={{ layout: { duration: 0.2, ease: 'easeInOut' } }}
+          >
+            <SectionWrapper
+              id={section.id}
+              title={SECTION_TITLES[section.id] || section.id}
+              editMode={editMode}
+              isVisible={section.visible}
+              isCollapsed={section.collapsed}
+              width={section.width}
+              onToggleVisibility={() => updateSection(section.id, { visible: !section.visible })}
+              onToggleCollapse={() => updateSection(section.id, { collapsed: !section.collapsed })}
+              onWidthChange={(w) => updateSection(section.id, { width: w })}
+              contentMode={getContentMode(section.width)}
             >
-              <SectionWrapper
-                id={section.id}
-                title={SECTION_TITLES[section.id] || section.id}
-                editMode={editMode}
-                isVisible={section.visible}
-                isCollapsed={section.collapsed}
-                width={section.width}
-                onToggleVisibility={() => updateSection(section.id, { visible: !section.visible })}
-                onToggleCollapse={() => updateSection(section.id, { collapsed: !section.collapsed })}
-                onWidthChange={(w) => updateSection(section.id, { width: w })}
-                contentMode={getContentMode(section.width)}
-              >
-                {renderSection(section.id, section.width)}
-              </SectionWrapper>
-            </Reorder.Item>
-          ))
-        }
+              {renderSection(section.id, section.width)}
+            </SectionWrapper>
+          </Reorder.Item>
+        ))}
       </Reorder.Group>
     </div>
   );
