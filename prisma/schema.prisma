@@ -46,6 +46,7 @@ model Workspace {
   activityLogs  ActivityLog[]
   contacts      Contact[]
   chatMessages  ChatMessage[]
+  chatUnreads   ChatUnread[]
   taskTemplates      TaskTemplate[]
   customRoles        CustomRole[]
   analyticsSnapshots AnalyticsSnapshot[]
@@ -123,6 +124,7 @@ model User {
   customRole             CustomRole?               @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
   chatMessages           ChatMessage[]
   chatReactions          ChatReaction[]
+  chatUnreads           ChatUnread[]
   managedClients         Client[]                  @relation("ClientManager")
   activityComments       ActivityComment[]
   appointmentAssignments AppointmentAssignedUser[]
@@ -655,4 +657,21 @@ model AnalyticsSnapshot {
 
   @@unique([workspaceId, period, type])
   @@map("analytics_snapshots")
+}
+
+model ChatUnread {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  workspaceId String   @map("workspace_id")
+  room        String   // "TEAM" | "SUPPORT" | "PROJECT" | "PRIVATE" | clientId
+  count       Int      @default(0)
+  lastReadAt  DateTime @default(now()) @map("last_read_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId, room])
+  @@index([userId, workspaceId])
+  @@map("chat_unreads")
 }

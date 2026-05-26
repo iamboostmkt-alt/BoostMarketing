@@ -126,6 +126,20 @@ export async function POST(req: NextRequest) {
 
   broadcastRealtime('message.sent', { message: chatMessage, room }).catch(() => undefined);
 
+  // Incrementar no leídos para todos excepto el emisor
+  db.user.findMany({
+    where: { workspaceId, id: { not: userId } },
+    select: { id: true },
+  }).then(members =>
+    Promise.all(members.map(m =>
+      db.chatUnread.upsert({
+        where:  { userId_workspaceId_room: { userId: m.id, workspaceId, room } },
+        update: { count: { increment: 1 } },
+        create: { userId: m.id, workspaceId, room, count: 1 },
+      })
+    ))
+  ).catch(() => undefined);
+
   // Parse @mentions → notify (non-blocking)
   resolveMentions(text, userId, workspaceId)
     .then((mentionedIds) => {
