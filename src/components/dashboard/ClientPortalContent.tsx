@@ -407,7 +407,7 @@ export default function ClientPortalContent() {
                     <div className="mb-2 grid grid-cols-3 gap-1.5 rounded-lg bg-white/[0.03] p-2">
                       {[
                         { val: activeTasks, label: 'tareas' },
-                        { val: assignedUsers.length, label: 'equipo' },
+                        { val: (c as any).meetings ?? 0, label: 'reuniones' },
                         { val: 0, label: 'vencidas' },
                       ].map((s, si) => (
                         <div key={si} className="text-center">

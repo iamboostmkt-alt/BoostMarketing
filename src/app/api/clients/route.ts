@@ -118,11 +118,17 @@ export async function GET(req: NextRequest) {
   });
   const taskCountMap = Object.fromEntries(taskCounts.map((t: any) => [t.clientId, t._count.id]));
   const completedMap = Object.fromEntries(completedCounts.map((t: any) => [t.clientId, t._count.id]));
+  const meetingCounts = await db.appointment.groupBy({
+    by: ["clientId"],
+    where: { clientId: { in: clientIds } },
+    _count: { id: true },
+  });
+  const meetingCountMap = Object.fromEntries(meetingCounts.map((t: any) => [t.clientId, t._count.id]));
   const clients = raw.map((c) => {
     const total = taskCountMap[c.id] ?? 0;
     const completed = completedMap[c.id] ?? 0;
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-    return { ...formatClient(c as unknown as Record<string, unknown>), activeTasks: total, completedTasks: completed, progress };
+    return { ...formatClient(c as unknown as Record<string, unknown>), activeTasks: total, completedTasks: completed, progress, meetings: meetingCountMap[c.id] ?? 0 };
   });
   return NextResponse.json({ clients });
 }
