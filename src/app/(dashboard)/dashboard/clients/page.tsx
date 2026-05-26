@@ -183,66 +183,90 @@ function ClientCard({ client, onClick }: { client: Client; onClick: () => void }
       onClick={onClick}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, borderColor: 'rgba(124,58,237,0.25)' }}
+      whileHover={{ y: -2, borderColor: "rgba(124,58,237,0.25)" }}
       transition={{ duration: 0.2 }}
       className="relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] cursor-pointer transition-colors"
-      style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0e14 60%, #0a0a0f 100%)' }}
+      style={{ background: "linear-gradient(135deg, #080808 0%, #0e0e14 60%, #0a0a0f 100%)" }}
     >
-      <div className="pointer-events-none absolute bottom-0 right-0 h-[140px] w-[180px] blur-2xl"
-        style={{ background: 'radial-gradient(ellipse at center, rgba(88,28,220,0.18), transparent 70%)' }} />
-      <div className="relative h-20 w-full" style={{ background: 'linear-gradient(180deg, #0e0e14 0%, #130820 100%)' }} />
-      <div className="relative z-10 -mt-7 px-4">
-        <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full border-2 border-[#0a0a0f] text-sm font-semibold"
-          style={{ backgroundColor: color + '25', color }}>
+      {/* Glow */}
+      <div className="pointer-events-none absolute bottom-0 right-0 h-[120px] w-[150px] blur-2xl"
+        style={{ background: "radial-gradient(ellipse at center, rgba(88,28,220,0.18), transparent 70%)" }} />
+      {/* Banner */}
+      <div className="relative h-14 w-full" style={{ background: "linear-gradient(180deg, #0e0e14 0%, #130820 100%)" }} />
+      {/* Avatar + equipo */}
+      <div className="relative z-10 -mt-5 px-3 flex items-end justify-between">
+        <div className="flex h-[42px] w-[42px] items-center justify-center rounded-full border-2 border-[#0a0a0f] text-xs font-semibold"
+          style={{ backgroundColor: color + "25", color }}>
           {initials(client.name)}
         </div>
+        {/* Equipo stack */}
+        {assignedUsers.length > 0 && (
+          <div className="flex -space-x-1.5 mb-0.5">
+            {assignedUsers.slice(0, 4).map((u: any, i: number) => (
+              <div key={i} className="flex h-6 w-6 items-center justify-center rounded-full border border-[#0a0a0f] text-[8px] font-semibold overflow-hidden"
+                style={{ backgroundColor: (u.color || "#7c3aed") + "33", color: u.color || "#a78bfa" }}>
+                {u.image ? <img src={u.image} alt={u.name} className="w-full h-full object-cover" /> : initials(u.name || u.email)}
+              </div>
+            ))}
+            {assignedUsers.length > 4 && (
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#0a0a0f] bg-white/[0.08] text-[8px] text-white/50">
+                +{assignedUsers.length - 4}
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      <div className="relative z-10 flex flex-1 flex-col px-4 pt-2 pb-4">
-        <div className="mb-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-[15px] font-bold text-white/90 truncate">{client.name}</h3>
-            <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium border"
+      {/* Content */}
+      <div className="relative z-10 flex flex-1 flex-col px-3 pt-1.5 pb-3">
+        <div className="mb-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h3 className="text-[13px] font-bold text-white/90 truncate">{client.name}</h3>
+            <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium border"
               style={{ background: st.bg, color: st.text, borderColor: st.border }}>
               {sm.label}
             </span>
           </div>
-          {(client as any).company && <p className="mt-0.5 text-[12px] text-white/40 truncate">{(client as any).company}</p>}
+          {(client as any).company && <p className="text-[11px] text-white/35 truncate">{(client as any).company}</p>}
+          <p className="text-[10px] text-white/20 truncate mt-0.5">{client.email}</p>
         </div>
-        <div className="mb-3 grid grid-cols-3 gap-2 rounded-lg bg-white/[0.03] p-2.5">
+        {/* Stats */}
+        <div className="mb-2 grid grid-cols-3 gap-1.5 rounded-lg bg-white/[0.03] p-2">
           {[
-            { val: activeTasks, label: 'tareas' },
-            { val: assignedUsers.length, label: 'equipo' },
-            { val: 0, label: 'vencidas' },
+            { val: activeTasks, label: "tareas" },
+            { val: assignedUsers.length, label: "equipo" },
+            { val: 0, label: "vencidas" },
           ].map((s, i) => (
             <div key={i} className="text-center">
-              <div className="text-[18px] font-semibold text-white/85">{s.val}</div>
-              <div className="text-[10px] text-white/30">{s.label}</div>
+              <div className="text-[15px] font-semibold text-white/85">{s.val}</div>
+              <div className="text-[9px] text-white/30">{s.label}</div>
             </div>
           ))}
         </div>
-        <div className="mb-3">
+        {/* Progress */}
+        <div className="mb-2">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-[10px] text-white/40">Progreso</span>
-            <span className="text-[10px] font-medium text-white/60">{progress}%</span>
+            <span className="text-[9px] text-white/40">Progreso</span>
+            <span className="text-[9px] font-medium text-white/60">{progress}%</span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+          <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.08]">
             <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progress}%`, backgroundColor: progressColor }} />
           </div>
         </div>
+        {/* PM + menu */}
         <div className="mt-auto flex items-center justify-between">
           {pm ? (
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-medium"
-                style={{ backgroundColor: pmColor + '33', color: pmColor }}>
-                {pmIni}
+            <div className="flex items-center gap-1.5">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full overflow-hidden text-[8px] font-medium shrink-0"
+                style={{ backgroundColor: pmColor + "33", color: pmColor }}>
+                {pm.image ? <img src={pm.image} alt={pm.name} className="w-full h-full object-cover" /> : pmIni}
               </div>
-              <span className="text-[11px] text-white/40 truncate max-w-[100px]">{pm.name}</span>
+              <span className="text-[10px] text-white/40 truncate max-w-[90px]">{pm.name}</span>
             </div>
-          ) : <span className="text-[10px] text-white/20">Sin PM</span>}
+          ) : <span className="text-[9px] text-white/20">Sin PM</span>}
           <div className="relative" onClick={e => e.stopPropagation()}>
             <button onClick={() => setMenuOpen(v => !v)}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white/60">
-              <MoreHorizontal className="h-4 w-4" />
+              className="flex h-6 w-6 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white/60">
+              <MoreHorizontal className="h-3.5 w-3.5" />
             </button>
             <AnimatePresence>
               {menuOpen && (
@@ -256,7 +280,7 @@ function ClientCard({ client, onClick }: { client: Client; onClick: () => void }
                     className="absolute bottom-full right-0 z-20 mb-1 w-36 overflow-hidden rounded-lg border border-white/[0.08] bg-[#141418] shadow-xl"
                   >
                     <div className="py-1">
-                      {['Ver portal', 'Editar', 'Asignar PM'].map(item => (
+                      {["Ver portal", "Editar", "Asignar PM"].map(item => (
                         <button key={item} onClick={() => { setMenuOpen(false); onClick(); }}
                           className="w-full px-3 py-2 text-left text-[12px] text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/90">
                           {item}
@@ -278,6 +302,7 @@ function ClientCard({ client, onClick }: { client: Client; onClick: () => void }
     </motion.div>
   );
 }
+
 
 
 export default function ClientsPage() {
