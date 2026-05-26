@@ -819,7 +819,8 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : (
-        // Modo edición: Reorder por filas calculadas
+        // Modo edición: grid CSS + botones ↑↓ para mover secciones
+        // El grid recalcula filas automáticamente al mover
         (() => {
           const rows: typeof draggableSections[] = [];
           let cur: typeof draggableSections = [];
@@ -832,40 +833,107 @@ export default function DashboardPage() {
           });
           if (cur.length > 0) rows.push(cur);
 
+          // Mover sección a una posición específica en el array
+          const moveSection = (id: string, direction: 'up' | 'down') => {
+            setSections(prev => {
+              const fixed = prev.filter(s => s.id === 'stats');
+              const draggable = prev.filter(s => s.id !== 'stats');
+              const idx = draggable.findIndex(s => s.id === id);
+              if (idx === -1) return prev;
+              const newDraggable = [...draggable];
+              if (direction === 'up' && idx > 0) {
+                [newDraggable[idx], newDraggable[idx - 1]] = [newDraggable[idx - 1], newDraggable[idx]];
+              } else if (direction === 'down' && idx < newDraggable.length - 1) {
+                [newDraggable[idx], newDraggable[idx + 1]] = [newDraggable[idx + 1], newDraggable[idx]];
+              }
+              return [...fixed, ...newDraggable];
+            });
+          };
+
+          // Mover sección a otra fila directamente
+          const moveSectionToRow = (id: string, targetRowIdx: number) => {
+            setSections(prev => {
+              const fixed = prev.filter(s => s.id === 'stats');
+              const draggable = prev.filter(s => s.id !== 'stats');
+              const idx = draggable.findIndex(s => s.id === id);
+              if (idx === -1) return prev;
+              const section = draggable[idx];
+              const newDraggable = draggable.filter(s => s.id !== id);
+              // Insertar al inicio de la fila destino
+              const rowStart = rows.slice(0, targetRowIdx).reduce((a, r) => a + r.length, 0);
+              const insertAt = Math.min(rowStart, newDraggable.length);
+              newDraggable.splice(insertAt, 0, section);
+              return [...fixed, ...newDraggable];
+            });
+          };
+
           return (
             <div className="space-y-4">
               {rows.map((row, ri) => (
-                <Reorder.Group
+                <motion.div
                   key={row.map(s => s.id).join('-')}
-                  axis="x"
-                  as="div"
-                  values={row.map(s => s.id)}
-                  onReorder={(newOrder) => {
-                    setSections(prev => {
-                      const map = new Map(prev.map(s => [s.id, s]));
-                      const fixed = prev.filter(s => s.id === 'stats');
-                      const allIds = draggableSections.map(s => s.id);
-                      const rowStart = rows.slice(0, ri).reduce((a, r) => a + r.length, 0);
-                      const newAll = [...allIds];
-                      newOrder.forEach((id, i) => { newAll[rowStart + i] = id; });
-                      const reordered = newAll.map(id => map.get(id)!).filter(Boolean);
-                      const hidden = prev.filter(s => s.id !== 'stats' && !s.visible);
-                      return [...fixed, ...reordered, ...hidden];
-                    });
-                  }}
-                  className="flex gap-4"
+                  layout
+                  className="flex gap-4 relative"
                 >
-                  {row.map(section => {
+                  {/* Drop zone indicator */}
+                  <div className="absolute -top-2 left-0 right-0 h-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: 'rgba(124,58,237,0.3)' }} />
+
+                  {row.map((section, si) => {
                     const pct = (widthToSpan[section.width] / 12) * 100;
-                    const gapCorrection = (row.length - 1) * 16 / row.length;
+                    const gapCorr = (row.length - 1) * 16 / row.length;
+                    const globalIdx = draggableSections.findIndex(s => s.id === section.id);
+                    const isFirst = globalIdx === 0;
+                    const isLast = globalIdx === draggableSections.length - 1;
+
                     return (
-                      <Reorder.Item
+                      <motion.div
                         key={section.id}
-                        value={section.id}
-                        as="div"
-                        dragListener={true}
-                        style={{ width: `calc(${pct}% - ${gapCorrection}px)`, minWidth: 0, flexShrink: 0 }}
+                        layout
+                        style={{ width: `calc(${pct}% - ${gapCorr}px)`, minWidth: 0, flexShrink: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeInOut' }}
                       >
+                        {/* Controles de posición en editMode */}
+                        <div className="flex items-center justify-between mb-1.5 px-1">
+                          <div className="flex items-center gap-1">
+                            {/* Mover a fila anterior */}
+                            {ri > 0 && (
+                              <button
+                                onClick={() => moveSectionToRow(section.id, ri - 1)}
+                                className="flex items-center gap-1 text-[10px] text-white/30 hover:text-violet-400 transition-colors px-1.5 py-0.5 rounded border border-white/[0.06] hover:border-violet-500/30"
+                                title="Mover a fila anterior"
+                              >
+                                ↑ Subir fila
+                              </button>
+                            )}
+                            {/* Mover a fila siguiente */}
+                            {ri < rows.length - 1 && (
+                              <button
+                                onClick={() => moveSectionToRow(section.id, ri + 1)}
+                                className="flex items-center gap-1 text-[10px] text-white/30 hover:text-violet-400 transition-colors px-1.5 py-0.5 rounded border border-white/[0.06] hover:border-violet-500/30"
+                                title="Mover a fila siguiente"
+                              >
+                                ↓ Bajar fila
+                              </button>
+                            )}
+                          </div>
+                          {/* Mover izq/der dentro de la fila */}
+                          <div className="flex items-center gap-1">
+                            {!isFirst && (
+                              <button onClick={() => moveSection(section.id, 'up')}
+                                className="text-[10px] text-white/25 hover:text-violet-400 transition-colors w-5 h-5 flex items-center justify-center rounded border border-white/[0.06]">
+                                ←
+                              </button>
+                            )}
+                            {!isLast && (
+                              <button onClick={() => moveSection(section.id, 'down')}
+                                className="text-[10px] text-white/25 hover:text-violet-400 transition-colors w-5 h-5 flex items-center justify-center rounded border border-white/[0.06]">
+                                →
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
                         <SectionWrapper
                           id={section.id}
                           title={SECTION_TITLES[section.id] || section.id}
@@ -880,10 +948,10 @@ export default function DashboardPage() {
                         >
                           {renderSection(section.id, section.width)}
                         </SectionWrapper>
-                      </Reorder.Item>
+                      </motion.div>
                     );
                   })}
-                </Reorder.Group>
+                </motion.div>
               ))}
             </div>
           );
