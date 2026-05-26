@@ -212,9 +212,12 @@ export default function DashboardPage() {
   const [greeting,        setGreeting]        = useState('Hola');
   const [fmtDate,         setFmtDate]         = useState('');
 
-  const userName  = session?.user?.name || 'Usuario';
-  const userRole  = session?.user?.role as string | undefined;
-  const isManager = MANAGER_ROLES.includes(userRole ?? '');
+  const userName   = session?.user?.name || 'Usuario';
+  const userRole   = session?.user?.role as string | undefined;
+  const userImage  = session?.user?.image as string | undefined;
+  const userColor  = (session?.user as any)?.color as string | undefined;
+  const isManager  = MANAGER_ROLES.includes(userRole ?? '');
+  const userInitialsHeader = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   useEffect(() => {
     const h = new Date().getHours();
@@ -655,27 +658,44 @@ export default function DashboardPage() {
       {/* ══ ZONA 1: Header fijo — greeting arriba, botones debajo ══ */}
       <div className="shrink-0 pb-4 pt-1">
 
-        {/* Fila 1: greeting + badge */}
-        <div className="mb-3">
-          <motion.h1
-            className="text-2xl font-semibold text-white/90"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {greeting},{' '}
-            <span style={{ background: 'linear-gradient(90deg, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              {userName.split(' ')[0]}
-            </span>
-          </motion.h1>
-          <div className="mt-1 flex items-center gap-3">
-            <span className="text-[13px] text-white/35 capitalize">{fmtDate}</span>
-            {userRole && (
-              <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
-                style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa' }}>
-                {roleBadge[userRole] || userRole}
+        {/* Fila 1: avatar + greeting + badge */}
+        <div className="mb-3 flex items-center gap-4">
+          {/* Avatar usuario */}
+          <Avatar className="h-11 w-11 shrink-0 ring-2 ring-white/[0.06] rounded-xl">
+            <AvatarImage src={userImage || undefined} alt={userName} className="rounded-xl object-cover" />
+            <AvatarFallback
+              className="rounded-xl text-sm font-semibold"
+              style={{
+                backgroundColor: (userColor || '#7c3aed') + '33',
+                color: userColor || '#a78bfa',
+              }}
+            >
+              {userInitialsHeader}
+            </AvatarFallback>
+          </Avatar>
+
+          {/* Texto */}
+          <div>
+            <motion.h1
+              className="text-2xl font-semibold text-white/90"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {greeting},{' '}
+              <span style={{ background: 'linear-gradient(90deg, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                {userName.split(' ')[0]}
               </span>
-            )}
+            </motion.h1>
+            <div className="mt-0.5 flex items-center gap-3">
+              <span className="text-[13px] text-white/35 capitalize">{fmtDate}</span>
+              {userRole && (
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+                  style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa' }}>
+                  {roleBadge[userRole] || userRole}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
