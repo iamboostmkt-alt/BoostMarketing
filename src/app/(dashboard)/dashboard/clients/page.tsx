@@ -1,4 +1,6 @@
 'use client';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
@@ -160,68 +162,123 @@ function ClientDetail({ client, onClose, onEdit, onDelete, isAdmin }: {
 }
 
 function ClientCard({ client, onClick }: { client: Client; onClick: () => void }) {
+  const [menuOpen, setMenuOpen] = React.useState(false);
   const sm = STATUS_META[client.status] ?? STATUS_META.inactive;
   const assignedUsers = (client as any).assignedUsers ?? [];
   const pm = (client as any).assignedManager;
-
+  const color = (client as any).color || '#7c3aed';
+  const pmColor = pm?.color || '#7c3aed';
+  const pmIni = pm ? initials(pm.name || pm.email) : '';
+  const activeTasks = (client as any).activeTasks ?? 0;
+  const progress = (client as any).progress ?? 0;
+  const progressColor = progress >= 75 ? '#10b981' : progress >= 40 ? '#f59e0b' : '#ef4444';
+  const statusStyle: Record<string, { bg: string; text: string; border: string }> = {
+    active:   { bg: 'rgba(34,197,94,0.12)',   text: '#4ade80', border: 'rgba(34,197,94,0.20)'   },
+    prospect: { bg: 'rgba(234,179,8,0.12)',   text: '#facc15', border: 'rgba(234,179,8,0.20)'   },
+    inactive: { bg: 'rgba(148,163,184,0.10)', text: '#94a3b8', border: 'rgba(148,163,184,0.15)' },
+  };
+  const st = statusStyle[client.status] || statusStyle['inactive'];
   return (
-    <div onClick={onClick} className="glass-card rounded-xl p-4 flex flex-col gap-3 cursor-pointer transition-all duration-150 hover:border-white/[0.12] hover:bg-white/[0.02]">
-      <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-xl bg-brand/10 flex items-center justify-center text-sm font-semibold text-brand-light shrink-0">
+    <motion.div
+      onClick={onClick}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2, borderColor: 'rgba(124,58,237,0.25)' }}
+      transition={{ duration: 0.2 }}
+      className="relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] cursor-pointer transition-colors"
+      style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0e14 60%, #0a0a0f 100%)' }}
+    >
+      <div className="pointer-events-none absolute bottom-0 right-0 h-[140px] w-[180px] blur-2xl"
+        style={{ background: 'radial-gradient(ellipse at center, rgba(88,28,220,0.18), transparent 70%)' }} />
+      <div className="relative h-20 w-full" style={{ background: 'linear-gradient(180deg, #0e0e14 0%, #130820 100%)' }} />
+      <div className="relative z-10 -mt-7 px-4">
+        <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full border-2 border-[#0a0a0f] text-sm font-semibold"
+          style={{ backgroundColor: color + '25', color }}>
           {initials(client.name)}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white/90 truncate">{client.name}</p>
-          {(client as any).company && <p className="text-[11px] text-white/40 truncate">{(client as any).company}</p>}
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className={"w-1.5 h-1.5 rounded-full " + sm.dot} />
-            <span className={"text-[10px] " + sm.color}>{sm.label}</span>
+      </div>
+      <div className="relative z-10 flex flex-1 flex-col px-4 pt-2 pb-4">
+        <div className="mb-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-[15px] font-bold text-white/90 truncate">{client.name}</h3>
+            <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium border"
+              style={{ background: st.bg, color: st.text, borderColor: st.border }}>
+              {sm.label}
+            </span>
+          </div>
+          {(client as any).company && <p className="mt-0.5 text-[12px] text-white/40 truncate">{(client as any).company}</p>}
+        </div>
+        <div className="mb-3 grid grid-cols-3 gap-2 rounded-lg bg-white/[0.03] p-2.5">
+          {[
+            { val: activeTasks, label: 'tareas' },
+            { val: assignedUsers.length, label: 'equipo' },
+            { val: 0, label: 'vencidas' },
+          ].map((s, i) => (
+            <div key={i} className="text-center">
+              <div className="text-[18px] font-semibold text-white/85">{s.val}</div>
+              <div className="text-[10px] text-white/30">{s.label}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mb-3">
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-[10px] text-white/40">Progreso</span>
+            <span className="text-[10px] font-medium text-white/60">{progress}%</span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progress}%`, backgroundColor: progressColor }} />
           </div>
         </div>
-        <MoreHorizontal className="w-4 h-4 text-white/15 shrink-0 mt-0.5" />
-      </div>
-
-      <div className="flex items-center gap-2 text-[11px] text-white/30">
-        <Mail className="w-3 h-3 shrink-0" />
-        <span className="truncate">{client.email}</span>
-      </div>
-
-      <div className="flex items-center justify-between">
-        {pm ? (
-          <div className="flex items-center gap-1.5">
-            <Avatar className="h-5 w-5">
-              <AvatarImage src={pm.image} />
-              <AvatarFallback style={{ backgroundColor: (pm.color || '#7c3aed') + '33', color: pm.color || '#a78bfa' }} className="text-[8px] font-semibold">
-                {initials(pm.name || pm.email)}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-[10px] text-white/35 truncate max-w-[100px]">{pm.name}</span>
-          </div>
-        ) : (
-          <span className="text-[10px] text-white/20 flex items-center gap-1">
-            <UserCheck className="w-3 h-3" />Sin PM
-          </span>
-        )}
-        {assignedUsers.length > 0 && (
-          <div className="flex -space-x-1.5">
-            {assignedUsers.slice(0, 3).map((u: any) => (
-              <Avatar key={u.id} className="h-5 w-5 ring-1 ring-[#0f0f13]">
-                <AvatarFallback style={{ backgroundColor: (u.color || '#7c3aed') + '33', color: u.color || '#a78bfa' }} className="text-[7px] font-semibold">
-                  {initials(u.name || u.email)}
-                </AvatarFallback>
-              </Avatar>
-            ))}
-            {assignedUsers.length > 3 && (
-              <div className="h-5 w-5 rounded-full ring-1 ring-[#0f0f13] bg-white/[0.06] flex items-center justify-center">
-                <span className="text-[7px] text-white/40">+{assignedUsers.length - 3}</span>
+        <div className="mt-auto flex items-center justify-between">
+          {pm ? (
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-medium"
+                style={{ backgroundColor: pmColor + '33', color: pmColor }}>
+                {pmIni}
               </div>
-            )}
+              <span className="text-[11px] text-white/40 truncate max-w-[100px]">{pm.name}</span>
+            </div>
+          ) : <span className="text-[10px] text-white/20">Sin PM</span>}
+          <div className="relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setMenuOpen(v => !v)}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white/60">
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+            <AnimatePresence>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                    transition={{ duration: 0.12 }}
+                    className="absolute bottom-full right-0 z-20 mb-1 w-36 overflow-hidden rounded-lg border border-white/[0.08] bg-[#141418] shadow-xl"
+                  >
+                    <div className="py-1">
+                      {['Ver portal', 'Editar', 'Asignar PM'].map(item => (
+                        <button key={item} onClick={() => { setMenuOpen(false); onClick(); }}
+                          className="w-full px-3 py-2 text-left text-[12px] text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/90">
+                          {item}
+                        </button>
+                      ))}
+                      <div className="my-1 border-t border-white/[0.06]" />
+                      <button onClick={() => setMenuOpen(false)}
+                        className="w-full px-3 py-2 text-left text-[12px] text-red-400 transition-colors hover:bg-red-500/10">
+                        Archivar
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
+
 
 export default function ClientsPage() {
   const { data: session } = useSession();
