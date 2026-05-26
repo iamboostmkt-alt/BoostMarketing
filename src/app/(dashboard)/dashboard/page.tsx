@@ -671,8 +671,9 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col max-w-full overflow-x-hidden">
 
-      {/* ══ ZONA 1: Header fijo — greeting arriba, botones debajo ══ */}
-      <div className="shrink-0 pb-4 pt-1">
+      {/* ══ ZONA 1: Header sticky dentro del scroll ══ */}
+      <div className="sticky top-0 z-20 pb-4 pt-1 -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8"
+        style={{ background: 'radial-gradient(ellipse at 80% 0%, #160830 0%, #0e0e14 40%, #080808 80%)' }}>
 
         {/* Fila 1: avatar + greeting + badge */}
         <div className="mb-3 flex items-center gap-4">
@@ -757,8 +758,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ══ ZONA 2: Stats fijos — max 260px por card ══ */}
-      <div className="shrink-0 pb-4">
+      {/* ══ ZONA 2: Stats sticky debajo del header ══ */}
+      <div className="sticky z-10 pb-4 -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8"
+        style={{ top: 'var(--header-h, 120px)', background: 'radial-gradient(ellipse at 80% 0%, #160830 0%, #0e0e14 40%, #080808 80%)' }}>
         {renderSection('stats', 'full')}
       </div>
 
