@@ -82,10 +82,12 @@ function fmtDate(iso: string | null | undefined) {
 
 function getTasksForDay(tasks: Task[], day: Date): Task[] {
   return tasks.filter((t) => {
+    // Subtareas sin fecha no aparecen en el calendario (BUG-03)
+    if (t.parentTaskId && !t.dueDate && !t.startDate) return false;
     if (t.dueDate   && sameLocalDay(t.dueDate,   day)) return true;
     if (t.startDate && sameLocalDay(t.startDate, day)) return true;
-    // Fallback: si no tiene fecha, usar createdAt para que aparezca en el día de creación
-    if (!t.dueDate && !t.startDate && t.createdAt && sameLocalDay(t.createdAt, day)) return true;
+    // Fallback createdAt solo para tareas madre (no subtareas)
+    if (!t.parentTaskId && !t.dueDate && !t.startDate && t.createdAt && sameLocalDay(t.createdAt, day)) return true;
     return false;
   });
 }
