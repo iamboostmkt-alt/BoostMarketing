@@ -615,85 +615,119 @@ export default function DashboardPage() {
     CLIENT: 'Client',
   };
 
-  // Secciones fijas (fuera del grid draggable) vs draggables
-  const fixedSections  = sections.filter(s => s.id === 'stats');
+  // Quick actions por rol (estilo v0)
+  const quickActions = isManager
+    ? [
+        { label: 'Nueva tarea',    href: '/dashboard/tasks?action=create',        icon: Plus,     solid: true  },
+        { label: 'Nueva reunión',  href: '/dashboard/appointments?action=create', icon: Video,    solid: false },
+        { label: 'Nuevo cliente',  href: '/dashboard/clients?action=create',      icon: UserCircle, solid: false },
+      ]
+    : [
+        { label: 'Nueva tarea',    href: '/dashboard/tasks?action=create',        icon: Plus,     solid: true  },
+      ];
+
   const draggableSections = sections.filter(s => s.id !== 'stats' && (s.visible || editMode));
 
   return (
-    <div className="space-y-0">
+    <div className="flex flex-col h-full min-h-0">
 
-      {/* ── Header sticky ── */}
+      {/* ══ ZONA 1: Header fijo — greeting + badge + quick actions + editar ══ */}
       <div
-        className="sticky top-0 z-30 px-0 pb-4 pt-1"
-        style={{ background: 'radial-gradient(ellipse at 100% 0%, #160830 0%, #0e0e14 40%, #080808 70%)' }}
+        className="shrink-0 pb-5 pt-1"
+        style={{ background: 'radial-gradient(ellipse at 80% 0%, #160830 0%, #0e0e14 50%, transparent 100%)' }}
       >
-        {/* Fila 1: greeting + acciones */}
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          {/* Izquierda: greeting */}
           <div>
-            <p className="text-xs text-white/30 capitalize mb-0.5">{fmtDate}</p>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-medium text-white">
-                {greeting},{' '}
-                <span style={{ background: 'linear-gradient(90deg, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  {userName.split(' ')[0]}
-                </span>
-              </h2>
+            <motion.h1
+              className="text-2xl font-semibold text-white/90"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {greeting},{' '}
+              <span style={{ background: 'linear-gradient(90deg, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                {userName.split(' ')[0]}
+              </span>
+            </motion.h1>
+            <div className="mt-1 flex items-center gap-3">
+              <span className="text-[13px] text-white/35 capitalize">{fmtDate}</span>
               {userRole && (
-                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.25)' }}>
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+                  style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa' }}>
                   {roleBadge[userRole] || userRole}
                 </span>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/dashboard/tasks?action=create">
-              <Button size="sm" className="gap-1.5 text-white text-xs h-8" style={{ background: '#7c3aed' }}>
-                <Plus className="w-3.5 h-3.5" />Nueva tarea
-              </Button>
-            </Link>
-            <Link href="/dashboard/appointments?action=create">
-              <Button size="sm" variant="outline"
-                className="gap-1.5 text-white/60 hover:text-white border-white/[0.1] text-xs h-8">
-                <Video className="w-3.5 h-3.5" />Nueva reunión
-              </Button>
-            </Link>
-            {editMode ? (
-              <Button size="sm"
-                className="gap-1.5 text-white text-xs h-8"
-                style={{ background: 'rgba(124,58,237,0.3)', border: '1px solid rgba(124,58,237,0.5)' }}
-                onClick={() => setEditMode(false)}>
-                <CheckSquare className="w-3.5 h-3.5" />Guardar
-              </Button>
-            ) : (
-              <Button size="sm" variant="outline"
-                className="gap-1.5 text-white/40 hover:text-white/70 border-white/[0.08] text-xs h-8"
-                onClick={() => setEditMode(true)}>
-                <Pencil className="w-3.5 h-3.5" />Editar
-              </Button>
-            )}
+
+          {/* Derecha: quick actions + editar */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Quick actions estilo v0 */}
+            {quickActions.map(action => {
+              const Icon = action.icon;
+              return (
+                <Link key={action.label} href={action.href}>
+                  <motion.button
+                    className="flex h-9 items-center gap-2 rounded-lg px-4 text-[12px] transition-colors"
+                    style={action.solid
+                      ? { background: '#7c3aed', color: '#fff' }
+                      : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.08)' }
+                    }
+                    whileHover={{ scale: 1.02, ...(action.solid ? { background: '#6d28d9' } : { background: 'rgba(255,255,255,0.07)' }) }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {action.label}
+                  </motion.button>
+                </Link>
+              );
+            })}
+
+            {/* Separador */}
+            <div className="h-5 w-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+            {/* Editar / Guardar layout */}
+            <motion.button
+              onClick={() => setEditMode(e => !e)}
+              className="flex h-9 items-center gap-2 rounded-lg px-3 text-[12px] transition-colors"
+              style={editMode
+                ? { background: '#7c3aed', color: '#fff' }
+                : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.06)' }
+              }
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              {editMode ? <CheckSquare className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+              {editMode ? 'Guardar' : 'Editar'}
+            </motion.button>
           </div>
         </div>
-
-        {/* Stats fijos — siempre visibles, no draggables */}
-        {fixedSections.map(s => (
-          <div key={s.id}>
-            {renderSection(s.id, s.width)}
-          </div>
-        ))}
-
-        {editMode && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-            className="mt-3 rounded-xl border border-violet-500/20 px-4 py-2.5 text-xs text-violet-300/70 flex items-center gap-2"
-            style={{ background: 'rgba(124,58,237,0.06)' }}>
-            <GripVertical className="w-3.5 h-3.5 text-violet-400/60 shrink-0" />
-            <span><span className="font-medium text-violet-300">Modo edición:</span> Arrastra · Handle derecho para ancho · Ojo para ocultar</span>
-          </motion.div>
-        )}
       </div>
 
-      {/* ── Secciones draggables ── */}
-      {/* Fix drop bug: NO usar style grid en Reorder.Group — usar wrapper div con CSS grid */}
+      {/* ══ ZONA 2: Stats fijos — 4 counters, max-w para no deformarse ══ */}
+      <div className="shrink-0 pb-4">
+        <div style={{ maxWidth: '100%', minWidth: 0 }}>
+          {renderSection('stats', sections.find(s => s.id === 'stats')?.width || 'full')}
+        </div>
+      </div>
+
+      {/* Edit mode hint */}
+      {editMode && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="shrink-0 mb-3 rounded-xl border border-violet-500/20 px-4 py-2.5 text-xs text-violet-300/70 flex items-center gap-2"
+          style={{ background: 'rgba(124,58,237,0.06)' }}
+        >
+          <GripVertical className="w-3.5 h-3.5 text-violet-400/60 shrink-0" />
+          <span>
+            <span className="font-medium text-violet-300">Modo edición:</span>{' '}
+            Arrastra secciones · Handle derecho para cambiar ancho · Ojo para ocultar
+          </span>
+        </motion.div>
+      )}
+
+      {/* ══ ZONA 3: Grid de secciones — flex-1 con scroll interno por card ══ */}
       <Reorder.Group
         axis="y"
         as="div"
@@ -707,7 +741,6 @@ export default function DashboardPage() {
             return [...fixed, ...reordered, ...hidden];
           });
         }}
-        className="dashboard-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
@@ -722,9 +755,8 @@ export default function DashboardPage() {
             value={section.id}
             as="div"
             dragListener={editMode}
-            dragConstraints={{ top: 0 }}
             layout="position"
-            style={{ gridColumn: `span ${widthToSpan[section.width]}` }}
+            style={{ gridColumn: `span ${widthToSpan[section.width]}`, minWidth: 0 }}
             transition={{ layout: { duration: 0.2, ease: 'easeInOut' } }}
           >
             <SectionWrapper
