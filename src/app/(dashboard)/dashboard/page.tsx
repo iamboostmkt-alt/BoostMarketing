@@ -414,12 +414,29 @@ export default function DashboardPage() {
         return (
           <div className="flex flex-col gap-2">
             <div className="overflow-y-auto custom-scrollbar space-y-1.5"
-              style={{ maxHeight: '280px' }}>
+              style={{ maxHeight: '320px' }}>
               {loadingTasks
-                ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)
+                ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)
                 : activeTasks.length === 0
                   ? <p className="text-xs text-white/30 text-center py-6">Sin tareas activas 🎉</p>
-                  : activeTasks.slice(0, 4).map(t => <RealTaskCard key={t.id} task={t} compact={true} />)
+                  : activeTasks.slice(0, 4).map(t => (
+                      <div key={t.id} className="flex items-center gap-2.5">
+                        {/* Avatar con inicial */}
+                        <div className="h-7 w-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold"
+                          style={{
+                            backgroundColor: (t.assignedUser?.color || t.user?.color || '#7c3aed') + '33',
+                            color: t.assignedUser?.color || t.user?.color || '#a78bfa',
+                          }}>
+                          {userInitials(
+                            t.assignedUser?.name ?? t.user?.name ?? null,
+                            t.assignedUser?.email ?? t.user?.email ?? ''
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <RealTaskCard task={t} compact={true} />
+                        </div>
+                      </div>
+                    ))
               }
             </div>
             {!loadingTasks && activeTasks.length > 0 && (
@@ -434,8 +451,7 @@ export default function DashboardPage() {
 
       case 'overdue_tasks':
         return (
-          <div className={`overflow-y-auto custom-scrollbar ${isCompact ? 'space-y-1' : 'space-y-2'}`}
-            style={{ maxHeight: '260px' }}>
+          <div className={`overflow-y-auto custom-scrollbar ${isCompact ? 'space-y-1' : 'space-y-2'}`}>
             {loadingTasks
               ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
               : overdueTasks.length === 0
@@ -447,8 +463,7 @@ export default function DashboardPage() {
 
       case 'completed_tasks':
         return (
-          <div className="divide-y divide-white/[0.04] overflow-y-auto custom-scrollbar"
-            style={{ maxHeight: '260px' }}>
+          <div className="divide-y divide-white/[0.04]">
             {loadingTasks
               ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-8 w-full my-1" />)
               : completedRecent.length === 0
@@ -494,7 +509,7 @@ export default function DashboardPage() {
                 </Select>
               )}
             </div>
-            <div className="divide-y divide-white/[0.04] overflow-y-auto custom-scrollbar" style={{ maxHeight: "280px" }}>
+            <div className="divide-y divide-white/[0.04] overflow-y-auto custom-scrollbar" style={{ maxHeight: "260px" }}>
               {loadingTeam
                 ? Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-3 py-3">
@@ -567,14 +582,14 @@ export default function DashboardPage() {
 
       case 'recent_activity':
         return (
-          <div className="max-h-72 overflow-y-auto custom-scrollbar">
+          <div className="overflow-y-auto custom-scrollbar" style={{ maxHeight: "260px" }}>
             <ActivityTimeline />
           </div>
         );
 
       case 'recent_messages':
         return (
-          <div className="divide-y divide-white/[0.04] overflow-y-auto custom-scrollbar" style={{ maxHeight: "280px" }}>
+          <div className="divide-y divide-white/[0.04] overflow-y-auto custom-scrollbar" style={{ maxHeight: "260px" }}>
             {loadingChat
               ? Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-3 py-3">
