@@ -426,7 +426,7 @@ export default function DashboardPage() {
                 ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)
                 : activeTasks.length === 0
                   ? <p className="text-xs text-white/30 text-center py-6">Sin tareas activas 🎉</p>
-                  : activeTasks.slice(0, 4).map(t => (
+                  : activeTasks.slice(0, 6).map(t => (
                       <div key={t.id} className="flex items-center gap-2.5">
                         {/* Avatar con inicial */}
                         <div className="h-7 w-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold"
@@ -979,27 +979,7 @@ export default function DashboardPage() {
         })()
       )}
 
-      {/* ══ Modales de acción rápida ══ */}
-      <TaskForm
-        open={taskFormOpen}
-        onOpenChange={setTaskFormOpen}
-        isManager={isManager}
-        onSuccess={() => {
-          setTaskFormOpen(false);
-          const url = isManager ? '/api/tasks?limit=10' : '/api/tasks?scope=mine';
-          fetch(url).then(r => r.ok ? r.json() : null).then(d => { if (d) setTasks(d.tasks || d || []); });
-        }}
-      />
-      <ClientForm
-        open={clientFormOpen}
-        onOpenChange={setClientFormOpen}
-        isAdmin={userRole === 'ADMIN'}
-        onSuccess={() => setClientFormOpen(false)}
-      />
-      <InviteModal
-        open={inviteOpen}
-        onClose={() => setInviteOpen(false)}
-      />
+
 
       {/* ══ Modales de acción rápida ══ */}
       <TaskForm
