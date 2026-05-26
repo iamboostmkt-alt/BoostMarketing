@@ -261,7 +261,13 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               })
             )
           );
+          console.log('[TaskForm] subtaskResults:', JSON.stringify(subtaskResults.map(r => r.status === 'fulfilled' ? { ok: true } : { ok: false, reason: String((r as any).reason) })));
           const failed = subtaskResults.filter(r => r.status === 'rejected').length;
+          const fulfilled = subtaskResults.filter(r => r.status === 'fulfilled') as PromiseFulfilledResult<Response>[];
+          for (const f of fulfilled) {
+            const data = await f.value.json().catch(() => ({}));
+            console.log('[TaskForm] subtask response:', f.value.status, JSON.stringify(data));
+          }
           if (failed > 0) toast.error(`${failed} subtarea(s) no se pudieron crear`);
         }
       }
