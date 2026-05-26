@@ -355,7 +355,8 @@ export default function DashboardPage() {
                   className="flex-1 rounded-[14px] border border-white/[0.06] p-4 group hover:border-white/[0.1] transition-colors"
                   style={{
                     background: 'linear-gradient(135deg, #080808 0%, #0e0e14 100%)',
-                    minWidth: '160px',
+                    minWidth: '180px',
+                    maxWidth: '260px',
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -398,18 +399,18 @@ export default function DashboardPage() {
       case 'my_tasks':
         return (
           <div className="flex flex-col gap-2">
-            <div className={`overflow-y-auto custom-scrollbar ${isCompact ? 'space-y-1' : 'space-y-2'}`}
-              style={{ maxHeight: isCompact ? '280px' : '320px' }}>
+            <div className="overflow-y-auto custom-scrollbar space-y-2"
+              style={{ maxHeight: '300px' }}>
               {loadingTasks
-                ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
+                ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)
                 : activeTasks.length === 0
                   ? <p className="text-xs text-white/30 text-center py-6">Sin tareas activas 🎉</p>
-                  : activeTasks.slice(0, isCompact ? 6 : 4).map(t => <RealTaskCard key={t.id} task={t} compact={isCompact} />)
+                  : activeTasks.slice(0, 3).map(t => <RealTaskCard key={t.id} task={t} compact={false} />)
               }
             </div>
             {!loadingTasks && activeTasks.length > 0 && (
               <Link href="/dashboard/tasks">
-                <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1 text-center border-t border-white/[0.04] pt-2">
+                <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1.5 text-center border-t border-white/[0.04]">
                   Ver todas ({activeTasks.length}) →
                 </button>
               </Link>
@@ -496,8 +497,10 @@ export default function DashboardPage() {
                         <div key={task.id} className="flex items-center gap-3 py-2.5 hover:bg-white/[0.02] transition-colors rounded-lg -mx-1 px-1">
                           <Avatar className="h-8 w-8 shrink-0">
                             <AvatarImage src={(owner as any)?.image || undefined} />
-                            <AvatarFallback className="text-xs font-medium"
-                              style={{ backgroundColor: (owner?.color || '#7c3aed') + '33', color: owner?.color || '#7c3aed' }}>
+                            <AvatarFallback
+                              className="text-xs font-bold"
+                              style={{ backgroundColor: (owner?.color || '#7c3aed') + '40', color: owner?.color || '#a78bfa' }}>
+                              {userInitials(owner?.name ?? null, owner?.email ?? '')}
                               {userInitials(owner?.name ?? null, owner?.email ?? '')}
                             </AvatarFallback>
                           </Avatar>
@@ -642,12 +645,12 @@ export default function DashboardPage() {
   // Quick actions por rol (estilo v0)
   const quickActions = isManager
     ? [
-        { label: 'Nueva tarea',    href: '/dashboard/tasks?action=create',        icon: Plus,     solid: true  },
-        { label: 'Nueva reunión',  href: '/dashboard/appointments?action=create', icon: Video,    solid: false },
+        { label: 'Nueva tarea',    href: '/dashboard/tasks?action=create',        icon: Plus,       solid: false },
+        { label: 'Nueva reunión',  href: '/dashboard/appointments?action=create', icon: Video,      solid: false },
         { label: 'Nuevo cliente',  href: '/dashboard/clients?action=create',      icon: UserCircle, solid: false },
       ]
     : [
-        { label: 'Nueva tarea',    href: '/dashboard/tasks?action=create',        icon: Plus,     solid: true  },
+        { label: 'Nueva tarea',    href: '/dashboard/tasks?action=create',        icon: Plus,       solid: false },
       ];
 
   const draggableSections = sections.filter(s => s.id !== 'stats' && (s.visible || editMode));
@@ -741,11 +744,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ══ ZONA 2: Stats fijos — 4 counters, max-w para no deformarse ══ */}
+      {/* ══ ZONA 2: Stats fijos — max 260px por card ══ */}
       <div className="shrink-0 pb-4">
-        <div style={{ maxWidth: '100%', minWidth: 0 }}>
-          {renderSection('stats', sections.find(s => s.id === 'stats')?.width || 'full')}
-        </div>
+        {renderSection('stats', 'full')}
       </div>
 
       {/* Edit mode hint */}
@@ -764,60 +765,87 @@ export default function DashboardPage() {
       )}
 
       {/* ══ ZONA 3: Grid de secciones — flex-1 con scroll interno por card ══ */}
-      <Reorder.Group
-        axis="y"
-        as="div"
-        values={draggableSections.map(s => s.id)}
-        onReorder={(newOrder) => {
-          setSections(prev => {
-            const map = new Map(prev.map(s => [s.id, s]));
-            const fixed = prev.filter(s => s.id === 'stats');
-            const reordered = newOrder.map(id => map.get(id)!).filter(Boolean);
-            const hidden = prev.filter(s => s.id !== 'stats' && !s.visible && !editMode);
-            return [...fixed, ...reordered, ...hidden];
-          });
-        }}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
-          columnGap: '1rem',
-          rowGap: '1rem',
-          gridAutoFlow: 'row dense',
-          alignItems: 'start',
-          alignContent: 'start',
-        }}
-      >
-        {draggableSections.map(section => (
-          <Reorder.Item
-            key={section.id}
-            value={section.id}
-            as="div"
-            dragListener={editMode}
-            layout
-            style={{
-              gridColumn: `span ${Math.min(widthToSpan[section.width], 12)}`,
-              minWidth: 0,
-              overflow: 'hidden',
-            }}
-            transition={{ layout: { duration: 0.2, ease: 'easeInOut' } }}
-          >
-            <SectionWrapper
-              id={section.id}
-              title={SECTION_TITLES[section.id] || section.id}
-              editMode={editMode}
-              isVisible={section.visible}
-              isCollapsed={section.collapsed}
-              width={section.width}
-              onToggleVisibility={() => updateSection(section.id, { visible: !section.visible })}
-              onToggleCollapse={() => updateSection(section.id, { collapsed: !section.collapsed })}
-              onWidthChange={(w) => updateSection(section.id, { width: w })}
-              contentMode={getContentMode(section.width)}
-            >
-              {renderSection(section.id, section.width)}
-            </SectionWrapper>
-          </Reorder.Item>
-        ))}
-      </Reorder.Group>
+      {/* ══ ZONA 3: Filas calculadas — sin grid CSS en Reorder para evitar encimamiento ══
+          Estrategia: calcular filas manualmente, un Reorder.Group por fila.
+          Cada fila suma spans hasta 12. Al cambiar ancho se recalculan las filas.
+          El drag es solo dentro de cada fila (axis="x").
+          Para reordenar entre filas se usa el handle vertical del SectionWrapper. */}
+      {(() => {
+        // Calcular filas: agrupar secciones hasta completar 12 columnas
+        const rows: typeof draggableSections[] = [];
+        let currentRow: typeof draggableSections = [];
+        let currentSpan = 0;
+
+        draggableSections.forEach(section => {
+          const span = widthToSpan[section.width];
+          if (currentSpan + span > 12 && currentRow.length > 0) {
+            rows.push(currentRow);
+            currentRow = [section];
+            currentSpan = span;
+          } else {
+            currentRow.push(section);
+            currentSpan += span;
+          }
+        });
+        if (currentRow.length > 0) rows.push(currentRow);
+
+        return (
+          <div className="space-y-4">
+            {rows.map((row, rowIdx) => (
+              <Reorder.Group
+                key={row.map(s => s.id).join('-')}
+                axis="x"
+                as="div"
+                values={row.map(s => s.id)}
+                onReorder={(newOrder) => {
+                  setSections(prev => {
+                    const map = new Map(prev.map(s => [s.id, s]));
+                    const fixed = prev.filter(s => s.id === 'stats');
+                    // Reconstruir el array manteniendo el orden de filas
+                    const allDraggable = draggableSections.map(s => s.id);
+                    const rowStart = rows.slice(0, rowIdx).reduce((acc, r) => acc + r.length, 0);
+                    const newAll = [...allDraggable];
+                    newOrder.forEach((id, i) => { newAll[rowStart + i] = id; });
+                    const reordered = newAll.map(id => map.get(id)!).filter(Boolean);
+                    const hidden = prev.filter(s => s.id !== 'stats' && !s.visible && !editMode);
+                    return [...fixed, ...reordered, ...hidden];
+                  });
+                }}
+                className="flex gap-4"
+              >
+                {row.map(section => {
+                  const spanPct = (widthToSpan[section.width] / 12) * 100;
+                  return (
+                    <Reorder.Item
+                      key={section.id}
+                      value={section.id}
+                      as="div"
+                      dragListener={editMode}
+                      style={{ width: `calc(${spanPct}% - 0.5rem)`, minWidth: 0, flexShrink: 0 }}
+                      transition={{ layout: { duration: 0.2, ease: 'easeInOut' } }}
+                    >
+                      <SectionWrapper
+                        id={section.id}
+                        title={SECTION_TITLES[section.id] || section.id}
+                        editMode={editMode}
+                        isVisible={section.visible}
+                        isCollapsed={section.collapsed}
+                        width={section.width}
+                        onToggleVisibility={() => updateSection(section.id, { visible: !section.visible })}
+                        onToggleCollapse={() => updateSection(section.id, { collapsed: !section.collapsed })}
+                        onWidthChange={(w) => updateSection(section.id, { width: w })}
+                        contentMode={getContentMode(section.width)}
+                      >
+                        {renderSection(section.id, section.width)}
+                      </SectionWrapper>
+                    </Reorder.Item>
+                  );
+                })}
+              </Reorder.Group>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
