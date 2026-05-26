@@ -28,11 +28,14 @@ export default function ChatWithChannels() {
   const [unreads,      setUnreads]      = useState<Record<string, number>>({});
 
   useEffect(() => {
-    fetch('/api/clients?limit=50').then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.clients) setClients(d.clients); });
+    // Solo managers pueden ver clientes en el chat
+    if (canPrivate) {
+      fetch('/api/clients?limit=50').then(r => r.ok ? r.json() : null)
+        .then(d => { if (d?.clients) setClients(d.clients); });
+    }
     fetch('/api/chat/unread').then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.unreads) setUnreads(d.unreads); });
-  }, []);
+  }, [canPrivate]);
 
   useEffect(() => {
     const handler = (data: any) => {

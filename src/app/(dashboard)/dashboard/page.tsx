@@ -297,15 +297,23 @@ export default function DashboardPage() {
   }, [isManager]);
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/appointments?upcoming=1').then(r => r.ok ? r.json() : null),
-      fetch('/api/meetings').then(r => r.ok ? r.json() : null),
-    ]).then(([appts, meets]) => {
+    // appointments solo para managers, meetings para todos
+    const fetches = isManager
+      ? [
+          fetch('/api/appointments?upcoming=1').then(r => r.ok ? r.json() : null),
+          fetch('/api/meetings').then(r => r.ok ? r.json() : null),
+        ]
+      : [
+          Promise.resolve(null),
+          fetch('/api/meetings').then(r => r.ok ? r.json() : null),
+        ];
+
+    Promise.all(fetches).then(([appts, meets]) => {
       const a = appts?.appointments || [];
       const m = (meets?.meetings || []).filter((x: any) => new Date(x.date) >= new Date());
       setMeetings([...a, ...m].sort((a: any, b: any) => +new Date(a.date) - +new Date(b.date)));
     }).finally(() => setLoadingMeet(false));
-  }, []);
+  }, [isManager]);
 
   useEffect(() => {
     fetch('/api/chat?room=TEAM')
