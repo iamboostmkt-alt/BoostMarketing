@@ -670,7 +670,7 @@ export default function DashboardPage() {
   const draggableSections = sections.filter(s => s.id !== 'stats' && (s.visible || editMode));
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col max-w-full overflow-x-hidden">
 
       {/* ══ ZONA 1: Header fijo — greeting arriba, botones debajo ══ */}
       <div className="shrink-0 pb-4 pt-1">
@@ -791,12 +791,14 @@ export default function DashboardPage() {
             gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
             gap: '1rem',
             gridAutoFlow: 'row dense',
+            minWidth: 0,
+            overflow: 'hidden',
           }}
         >
           {draggableSections.map(section => (
             <div
               key={section.id}
-              style={{ gridColumn: `span ${widthToSpan[section.width]}`, minWidth: 0 }}
+              style={{ gridColumn: `span ${widthToSpan[section.width]}`, minWidth: 0, overflow: 'hidden' }}
             >
               <SectionWrapper
                 id={section.id}
