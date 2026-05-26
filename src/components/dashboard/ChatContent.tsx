@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
-import { Send, Trash2, MessageSquare, Smile, Users } from 'lucide-react';
+import { Send, Trash2, MessageSquare, Smile, Users, Plus, CheckSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -204,6 +204,9 @@ export default function ChatContent({
   const [sending,     setSending]     = useState(false);
   const [emojiOpen,   setEmojiOpen]   = useState(false);
   const [teamUsers,   setTeamUsers]   = useState<TeamUser[]>([]);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [taskMsg,     setTaskMsg]     = useState<string | null>(null);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // @mention state
   const [mentionQuery,  setMentionQuery]  = useState<string | null>(null);
@@ -263,6 +266,18 @@ export default function ChatContent({
     });
   }, [room]);
 
+  // Escuchar typing de otros
+  useEffect(() => {
+    return bus.on<{ room: string; typing: boolean; name: string }>(RT_EVENTS.PRESENCE_UPDATED, (payload) => {
+      if (payload.room !== room) return;
+      setTypingUsers(prev =>
+        payload.typing
+          ? prev.includes(payload.name) ? prev : [...prev, payload.name]
+          : prev.filter(n => n !== payload.name)
+      );
+    });
+  }, [room]);
+
   useEffect(() => {
     if (messages.length > prevLengthRef.current) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -285,6 +300,13 @@ export default function ChatContent({
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value  = e.target.value;
     setInput(value);
+
+    // Emitir "está escribiendo" via realtime
+    bus.emit(RT_EVENTS.PRESENCE_UPDATED, { room, typing: true, name: (session?.user?.name || 'Alguien') });
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = setTimeout(() => {
+      bus.emit(RT_EVENTS.PRESENCE_UPDATED, { room, typing: false, name: (session?.user?.name || 'Alguien') });
+    }, 2000);
 
     const cursor = e.target.selectionStart ?? value.length;
     const before = value.slice(0, cursor);
@@ -468,6 +490,7 @@ export default function ChatContent({
 
                 {/* Hover actions */}
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0 self-start mt-0.5">
+                  <button type="button" onClick={() => setTaskMsg(msg.message)} className="p-1 rounded hover:bg-violet-500/10 text-white/20 hover:text-violet-400 transition-colors" title="Crear tarea"><Plus className="w-3.5 h-3.5" /></button>
                   <div className="relative">
                     <button
                       type="button"
@@ -515,6 +538,53 @@ export default function ChatContent({
         })}
         <div ref={bottomRef} />
       </div>
+
+      {/* Indicador está escribiendo */}
+      {typingUsers.length > 0 && (
+        <div className="flex items-center gap-2 px-4 py-1 text-[11px] text-white/35 italic shrink-0">
+          <div className="flex gap-0.5 items-end">
+            {[0,1,2].map(i => (
+              <span key={i} className="w-1 h-1 rounded-full bg-white/30 animate-bounce"
+                style={{ animationDelay: `${i*0.15}s` }} />
+            ))}
+          </div>
+          {typingUsers.length === 1
+            ? `${typingUsers[0]} está escribiendo...`
+            : `${typingUsers.slice(0,-1).join(', ')} y ${typingUsers.at(-1)} están escribiendo...`}
+        </div>
+      )}
+
+      {/* Modal crear tarea desde mensaje */}
+      {taskMsg && (
+        <div className="mx-3 mb-2 p-3 rounded-xl border border-violet-500/30 shrink-0" style={{ background: 'rgba(124,58,237,0.08)' }}>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium text-violet-300 flex items-center gap-1.5">
+              <CheckSquare className="w-3.5 h-3.5" />Crear tarea
+            </span>
+            <button onClick={() => setTaskMsg(null)} className="text-white/30 hover:text-white/60 text-xs">✕</button>
+          </div>
+          <p className="text-[11px] text-white/50 mb-2 line-clamp-2">"{taskMsg}"</p>
+          <div className="flex gap-2">
+            <button onClick={async () => {
+              try {
+                const res = await fetch('/api/tasks', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ title: taskMsg.slice(0,100), description: `Desde chat:
+${taskMsg}`, status: 'pending', priority: 'medium', visibility: 'internal' }),
+                });
+                if (res.ok) { toast.success('Tarea creada ✓'); setTaskMsg(null); }
+                else toast.error('Error al crear tarea');
+              } catch { toast.error('Error'); }
+            }} className="flex-1 py-1.5 rounded-lg text-white text-[11px] font-medium" style={{ background: '#7c3aed' }}>
+              Crear tarea
+            </button>
+            <button onClick={() => setTaskMsg(null)} className="px-3 py-1.5 rounded-lg text-white/40 text-[11px] border border-white/[0.08] hover:text-white">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Input + @mention dropdown */}
           <form onSubmit={handleSend} className="mt-2 md:mt-4 shrink-0 pb-[env(safe-area-inset-bottom)]">
