@@ -687,7 +687,6 @@ export default function DashboardPage() {
       ]
     : [
         { label: 'Nueva tarea',   icon: Plus,       onClick: () => setTaskFormOpen(true)   },
-        { label: 'Invitar',       icon: Users,      onClick: () => setInviteOpen(true)     },
       ];
 
   const draggableSections = sections.filter(s => s.id !== 'stats' && (s.visible || editMode));
