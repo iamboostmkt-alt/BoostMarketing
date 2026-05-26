@@ -160,7 +160,7 @@ export default function TopNav() {
                     <Palette className="h-4 w-4" strokeWidth={1.5} />
                     Apariencia
                   </DropdownMenuItem>
-                  {!isClient && (
+                  {session?.user?.role === 'ADMIN' && (
                     <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
                       <Zap className="h-4 w-4" strokeWidth={1.5} />
                       <span className="flex-1">Upgrade</span>
