@@ -514,8 +514,7 @@ export default function DashboardPage() {
                             <AvatarFallback
                               className="text-xs font-bold"
                               style={{ backgroundColor: (owner?.color || '#7c3aed') + '40', color: owner?.color || '#a78bfa' }}>
-                              {userInitials(owner?.name ?? null, owner?.email ?? '')}
-                              {userInitials(owner?.name ?? null, owner?.email ?? '')}
+                              {owner ? userInitials(owner.name ?? null, owner.email ?? '') : '?'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
