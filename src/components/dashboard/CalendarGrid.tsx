@@ -285,22 +285,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                 )}
               </div>
 
-              {/* Range task bars */}
-              <div className="w-full space-y-px">
-                {dayRangeTasks.slice(0, 2).map((task, i) => {
-                  const barProps = getRangeBarProps(task, day, days);
-                  if (!barProps) return null;
-                  const { roundLeft, roundRight } = barProps;
-                  const color = rangeColors[task.priority] || 'bg-violet-400/20';
-                  return (
-                    <div
-                      key={`range-${task.id}-${i}`}
-                      className={`h-1.5 ${color} ${roundLeft ? 'rounded-l-full ml-0.5' : '-ml-1'} ${roundRight ? 'rounded-r-full mr-0.5' : '-mr-1'}`}
-                      title={task.title}
-                    />
-                  );
-                })}
-              </div>
+              {/* Range task bars — removido BUG-08 */}
 
               {/* Bottom indicators */}
               <div className="relative z-10 flex items-center gap-0.5 mt-auto flex-wrap justify-center w-full pt-0.5">
