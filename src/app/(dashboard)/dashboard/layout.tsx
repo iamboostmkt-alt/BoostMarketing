@@ -54,7 +54,7 @@ export default function DashboardLayout({
               {/* Main content */}
               <main className="flex-1 overflow-hidden flex flex-col">
                 <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ background: "radial-gradient(ellipse at 100% 100%, #160830 0%, #0e0e14 30%, #080808 60%, #080808 100%)" }}>
-                  <div className="p-4 md:p-6 lg:p-8 h-full">
+                  <div className="p-4 md:p-6 lg:p-8">
                     <Suspense fallback={null}>
                       <ForbiddenBanner />
                     </Suspense>

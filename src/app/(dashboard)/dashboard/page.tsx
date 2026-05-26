@@ -362,17 +362,15 @@ export default function DashboardPage() {
     switch (id) {
       case 'stats':
         return (
-          <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {statCards.map(s => {
               const Icon = s.icon;
               return (
                 <motion.div
                   key={s.label}
-                  className="flex-1 rounded-[14px] border border-white/[0.06] p-5 group hover:border-white/[0.1] transition-colors"
+                  className="rounded-[14px] border border-white/[0.06] p-5 group hover:border-white/[0.1] transition-colors"
                   style={{
                     background: 'linear-gradient(135deg, #080808 0%, #0e0e14 100%)',
-                    minWidth: '180px',
-                    maxWidth: '280px',
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
