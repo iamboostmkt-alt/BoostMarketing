@@ -323,84 +323,116 @@ export default function ClientPortalContent() {
 
   // ── Guards ───────────────────────────────────────────────────────────────
   if (isManager && !previewClientId) {
+    const getProgressColor = (p: number) => p >= 75 ? '#10b981' : p >= 40 ? '#f59e0b' : '#ef4444';
+    const statusConfig: Record<string, { label: string; bg: string; text: string; border: string }> = {
+      active:   { label: 'Activo',    bg: 'rgba(34,197,94,0.12)',   text: '#4ade80', border: 'rgba(34,197,94,0.20)'   },
+      prospect: { label: 'Prospecto', bg: 'rgba(234,179,8,0.12)',   text: '#facc15', border: 'rgba(234,179,8,0.20)'   },
+      inactive: { label: 'Inactivo',  bg: 'rgba(148,163,184,0.10)', text: '#94a3b8', border: 'rgba(148,163,184,0.15)' },
+    };
     return (
-      <div className="space-y-4">
+      <div className="space-y-5">
         {AdminSelectorBar}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Portal cliente</p>
-              <h1 className="text-xl font-medium text-white">Cuentas</h1>
-              <p className="text-white/40 text-sm mt-0.5">{clients.length} cuenta{clients.length !== 1 ? 's' : ''}</p>
-            </div>
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-white/90">Gestión de Cuentas</h1>
+            <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-xs font-medium text-purple-300">{clients.length}</span>
           </div>
-          {clients.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-              <Eye className="w-10 h-10 text-white/15" />
-              <p className="text-white/40 text-sm">No hay cuentas disponibles.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {clients.map((c, i) => {
-                const initials = c.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
-                const color = c.color || '#7c3aed';
-                const statusLabel = c.status === 'active' ? 'Activo' : c.status === 'prospect' ? 'Prospecto' : 'Inactivo';
-                const statusColor = c.status === 'active' ? { bg: 'rgba(34,197,94,0.12)', text: '#4ade80', border: 'rgba(34,197,94,0.20)' }
-                  : c.status === 'prospect' ? { bg: 'rgba(234,179,8,0.12)', text: '#facc15', border: 'rgba(234,179,8,0.20)' }
-                  : { bg: 'rgba(148,163,184,0.10)', text: '#94a3b8', border: 'rgba(148,163,184,0.15)' };
-                return (
-                  <motion.div
-                    key={c.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.15, delay: i * 0.04 }}
-                    whileHover={{ y: -2, borderColor: 'rgba(124,58,237,0.25)' }}
-                    onClick={() => setPreviewClientId(c.id)}
-                    className="cursor-pointer rounded-2xl border border-white/[0.06] overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0e14 60%, #0a0a0f 100%)', position: 'relative' }}
-                  >
-                    {/* Glow */}
-                    <div style={{ position: 'absolute', bottom: -20, right: -20, width: 180, height: 140, background: 'radial-gradient(ellipse at center, rgba(88,28,220,0.18) 0%, transparent 70%)', pointerEvents: 'none', borderRadius: '50%' }} />
-                    {/* Banner */}
-                    <div style={{ height: 72, background: `linear-gradient(135deg, #0e0e14 0%, #130820 50%, ${color}22 100%)`, position: 'relative' }}>
-                      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 80% 50%, rgba(124,58,237,0.12) 0%, transparent 70%)' }} />
+        </div>
+        {/* Search */}
+        <div className="relative max-w-xs">
+          <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <input type="text" placeholder="Buscar cliente..." className="h-9 w-full rounded-lg border border-white/[0.06] bg-white/[0.03] pl-9 pr-4 text-[13px] text-white/80 placeholder:text-white/30 focus:border-purple-500/40 focus:outline-none focus:ring-1 focus:ring-purple-500/20" />
+        </div>
+        {/* Grid */}
+        {clients.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+            <p className="text-white/40 text-sm">No hay cuentas disponibles.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {clients.map((c, i) => {
+              const ini = c.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+              const color = c.color || '#7c3aed';
+              const st = statusConfig[c.status || 'active'] || statusConfig['active'];
+              const pmIni = c.assignedManager?.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '';
+              const pmColor = c.assignedManager?.color || '#7c3aed';
+              return (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04, duration: 0.3 }}
+                  whileHover={{ y: -2, borderColor: 'rgba(124,58,237,0.25)' }}
+                  onClick={() => setPreviewClientId(c.id)}
+                  className="relative flex aspect-square cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/[0.06] transition-colors"
+                  style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0e14 60%, #0a0a0f 100%)' }}
+                >
+                  {/* Glow */}
+                  <div className="pointer-events-none absolute bottom-0 right-0 h-[140px] w-[180px] blur-2xl"
+                    style={{ background: 'radial-gradient(ellipse at center, rgba(88,28,220,0.18), transparent 70%)' }} />
+                  {/* Banner */}
+                  <div className="relative h-20 w-full" style={{ background: 'linear-gradient(180deg, #0e0e14 0%, #130820 100%)' }} />
+                  {/* Avatar */}
+                  <div className="relative z-10 -mt-7 px-4">
+                    <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full border-2 border-[#0a0a0f] text-sm font-semibold"
+                      style={{ backgroundColor: color + '25', color }}>
+                      {ini}
                     </div>
-                    {/* Avatar */}
-                    <div style={{ marginTop: -20, paddingLeft: 16, position: 'relative', zIndex: 10 }}>
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold border-2 border-[#080808]"
-                        style={{ backgroundColor: color + '33', color }}>
-                        {initials}
-                      </div>
-                    </div>
-                    {/* Content */}
-                    <div className="px-4 pb-4 pt-2 relative z-10">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div className="min-w-0">
-                          <p className="text-[14px] font-semibold text-white/90 truncate">{c.name}</p>
-                          {c.company && <p className="text-[11px] text-white/35 truncate">{c.company}</p>}
-                        </div>
-                        <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium border whitespace-nowrap"
-                          style={{ background: statusColor.bg, color: statusColor.text, borderColor: statusColor.border }}>
-                          {statusLabel}
+                  </div>
+                  {/* Content */}
+                  <div className="relative z-10 flex flex-1 flex-col px-4 pt-2">
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-[15px] font-bold text-white/90 truncate">{c.name}</h3>
+                        <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium border"
+                          style={{ background: st.bg, color: st.text, borderColor: st.border }}>
+                          {st.label}
                         </span>
                       </div>
-                      {/* PM */}
-                      {c.assignedManager && (
-                        <div className="flex items-center gap-1.5 mt-2">
-                          <div className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold"
-                            style={{ backgroundColor: (c.assignedManager.color || '#7c3aed') + '33', color: c.assignedManager.color || '#a78bfa' }}>
-                            {c.assignedManager.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
-                          </div>
-                          <span className="text-[11px] text-white/30 truncate">{c.assignedManager.name}</span>
-                        </div>
-                      )}
+                      <p className="mt-0.5 text-[12px] text-white/40 truncate">{c.company}</p>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                    {/* Stats */}
+                    <div className="mb-3 grid grid-cols-3 gap-2 rounded-lg bg-white/[0.03] p-2.5">
+                      {[
+                        { val: (c as any).activeTasks?.length ?? 0, label: 'tareas' },
+                        { val: 0, label: 'reuniones' },
+                        { val: 0, label: 'vencidas' },
+                      ].map((s, si) => (
+                        <div key={si} className="text-center">
+                          <div className="text-[18px] font-semibold text-white/85">{s.val}</div>
+                          <div className="text-[10px] text-white/30">{s.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Progress */}
+                    <div className="mb-3">
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="text-[10px] text-white/40">Progreso</span>
+                        <span className="text-[10px] font-medium text-white/60">—</span>
+                      </div>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+                        <div className="h-full rounded-full" style={{ width: '0%', backgroundColor: '#10b981' }} />
+                      </div>
+                    </div>
+                    {/* PM */}
+                    <div className="mt-auto flex items-center justify-between pb-3">
+                      {c.assignedManager ? (
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-medium"
+                            style={{ backgroundColor: pmColor + '33', color: pmColor }}>
+                            {pmIni}
+                          </div>
+                          <span className="text-[11px] text-white/40 truncate">{c.assignedManager.name}</span>
+                        </div>
+                      ) : <div />}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }
