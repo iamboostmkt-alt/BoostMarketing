@@ -236,9 +236,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
       }
       if (!isSubtask && pendingSubtasks.length > 0) {
         const newTaskId = isEditing ? task!.id : (resData?.id ?? resData?.task?.id);
-        console.log('[TaskForm] resData:', JSON.stringify(resData));
-        console.log('[TaskForm] newTaskId:', newTaskId);
-        console.log('[TaskForm] pendingSubtasks:', pendingSubtasks.length);
+
         if (newTaskId) {
           const subtaskResults = await Promise.allSettled(
             pendingSubtasks.map((sub) =>
@@ -261,13 +259,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               })
             )
           );
-          console.log('[TaskForm] subtaskResults:', JSON.stringify(subtaskResults.map(r => r.status === 'fulfilled' ? { ok: true } : { ok: false, reason: String((r as any).reason) })));
           const failed = subtaskResults.filter(r => r.status === 'rejected').length;
-          const fulfilled = subtaskResults.filter(r => r.status === 'fulfilled') as PromiseFulfilledResult<Response>[];
-          for (const f of fulfilled) {
-            const data = await f.value.json().catch(() => ({}));
-            console.log('[TaskForm] subtask response:', f.value.status, JSON.stringify(data));
-          }
           if (failed > 0) toast.error(`${failed} subtarea(s) no se pudieron crear`);
         }
       }
