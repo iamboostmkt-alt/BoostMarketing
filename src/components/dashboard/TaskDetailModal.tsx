@@ -476,6 +476,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
           open={newSubtaskOpen}
           onOpenChange={(v) => { setNewSubtaskOpen(v); if (!v) setEditingSubtask(null); }}
           parentTaskId={editingSubtask ? undefined : task.id}
+          parentTaskTitle={editingSubtask ? undefined : task.title}
           task={editingSubtask}
           initialClientId={task.clientId ?? null}
           isManager={isManager}

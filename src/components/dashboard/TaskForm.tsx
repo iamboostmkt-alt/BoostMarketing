@@ -51,9 +51,10 @@ interface TaskFormProps {
   initialDate?: Date | null;
   initialClientId?: string | null;
   parentTaskId?: string | null;
+  parentTaskTitle?: string | null;
 }
 
-export default function TaskForm({ open, onOpenChange, task, isManager = false, onSuccess, initialDate, initialClientId, parentTaskId }: TaskFormProps) {
+export default function TaskForm({ open, onOpenChange, task, isManager = false, onSuccess, initialDate, initialClientId, parentTaskId, parentTaskTitle }: TaskFormProps) {
   const isEditing = !!task;
   const isSubtask = !!(parentTaskId || task?.parentTaskId);
 
@@ -292,6 +293,11 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">
             {isEditing ? 'Editar Tarea' : isSubtask ? 'Nueva Subtarea' : isManager ? 'Nueva Tarea' : 'Solicitar Entrega'}
           </p>
+          {isSubtask && isManager && parentTaskTitle && (
+            <p className="text-[11px] text-white/40 mt-0.5 flex items-center gap-1">
+              <span className="text-white/20">↳</span> Subtarea de: <span className="text-purple-400/70 font-medium truncate">{parentTaskTitle}</span>
+            </p>
+          )}
           {isManager && !isEditing && (
             <div className="space-y-1.5 pt-2 pb-3 border-b border-white/[0.06]">
               <div className="flex items-center justify-between">
