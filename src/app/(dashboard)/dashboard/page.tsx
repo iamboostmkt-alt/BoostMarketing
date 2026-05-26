@@ -779,81 +779,113 @@ export default function DashboardPage() {
       )}
 
       {/* ══ ZONA 3: Grid de secciones — flex-1 con scroll interno por card ══ */}
-      {/* ══ ZONA 3: Grid con Reorder vertical + CSS grid por fila ══
-          Un solo Reorder.Group axis="y" — reordena filas completas.
-          Dentro de cada fila, las secciones se distribuyen con flex.
-          El resize de ancho recalcula automáticamente las filas. */}
-      {(() => {
-        // Agrupar en filas respetando span máximo 12
-        const rows: typeof draggableSections[] = [];
-        let cur: typeof draggableSections = [];
-        let curSpan = 0;
-        draggableSections.forEach(s => {
-          const sp = widthToSpan[s.width];
-          if (curSpan + sp > 12 && cur.length > 0) {
-            rows.push(cur); cur = [s]; curSpan = sp;
-          } else { cur.push(s); curSpan += sp; }
-        });
-        if (cur.length > 0) rows.push(cur);
-
-        // IDs de filas para Reorder (usa el primer ID de cada fila como key)
-        const rowKeys = rows.map(r => r[0].id);
-
-        return (
-          <Reorder.Group
-            axis="y"
-            as="div"
-            values={rowKeys}
-            onReorder={(newRowKeys) => {
-              setSections(prev => {
-                const map = new Map(prev.map(s => [s.id, s]));
-                const fixed = prev.filter(s => s.id === 'stats');
-                // Reordenar filas completas según nuevo orden de rowKeys
-                const rowMap = new Map(rows.map(r => [r[0].id, r]));
-                const reordered = newRowKeys.flatMap(k => (rowMap.get(k) || []).map(s => map.get(s.id)!)).filter(Boolean);
-                const hidden = prev.filter(s => s.id !== 'stats' && !s.visible && !editMode);
-                return [...fixed, ...reordered, ...hidden];
-              });
-            }}
-            className="space-y-4"
-          >
-            {rows.map((row) => (
-              <Reorder.Item
-                key={row[0].id}
-                value={row[0].id}
-                as="div"
-                dragListener={editMode}
-                className="flex gap-4"
+      {/* ══ ZONA 3: Grid CSS puro — sin Reorder para evitar bugs layout ══
+          Grid de 12 columnas. Cada sección ocupa su span.
+          En editMode se activa el drag (Reorder).
+          Máximo 8 secciones visibles en layout 2 filas x 4 cols. */}
+      {!editMode ? (
+        // Modo normal: CSS grid puro, sin framer-motion layout
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
+            gap: '1rem',
+            gridAutoFlow: 'row dense',
+          }}
+        >
+          {draggableSections.map(section => (
+            <div
+              key={section.id}
+              style={{ gridColumn: `span ${widthToSpan[section.width]}`, minWidth: 0 }}
+            >
+              <SectionWrapper
+                id={section.id}
+                title={SECTION_TITLES[section.id] || section.id}
+                editMode={false}
+                isVisible={section.visible}
+                isCollapsed={section.collapsed}
+                width={section.width}
+                onToggleVisibility={() => updateSection(section.id, { visible: !section.visible })}
+                onToggleCollapse={() => updateSection(section.id, { collapsed: !section.collapsed })}
+                onWidthChange={(w) => updateSection(section.id, { width: w })}
+                contentMode={getContentMode(section.width)}
               >
-                {row.map(section => {
-                  const pct = (widthToSpan[section.width] / 12) * 100;
-                  return (
-                    <div
-                      key={section.id}
-                      style={{ width: `calc(${pct}% - ${(row.length - 1) * 16 / row.length}px)`, minWidth: 0, flexShrink: 0 }}
-                    >
-                      <SectionWrapper
-                        id={section.id}
-                        title={SECTION_TITLES[section.id] || section.id}
-                        editMode={editMode}
-                        isVisible={section.visible}
-                        isCollapsed={section.collapsed}
-                        width={section.width}
-                        onToggleVisibility={() => updateSection(section.id, { visible: !section.visible })}
-                        onToggleCollapse={() => updateSection(section.id, { collapsed: !section.collapsed })}
-                        onWidthChange={(w) => updateSection(section.id, { width: w })}
-                        contentMode={getContentMode(section.width)}
+                {renderSection(section.id, section.width)}
+              </SectionWrapper>
+            </div>
+          ))}
+        </div>
+      ) : (
+        // Modo edición: Reorder por filas calculadas
+        (() => {
+          const rows: typeof draggableSections[] = [];
+          let cur: typeof draggableSections = [];
+          let curSpan = 0;
+          draggableSections.forEach(s => {
+            const sp = widthToSpan[s.width];
+            if (curSpan + sp > 12 && cur.length > 0) {
+              rows.push(cur); cur = [s]; curSpan = sp;
+            } else { cur.push(s); curSpan += sp; }
+          });
+          if (cur.length > 0) rows.push(cur);
+
+          return (
+            <div className="space-y-4">
+              {rows.map((row, ri) => (
+                <Reorder.Group
+                  key={row.map(s => s.id).join('-')}
+                  axis="x"
+                  as="div"
+                  values={row.map(s => s.id)}
+                  onReorder={(newOrder) => {
+                    setSections(prev => {
+                      const map = new Map(prev.map(s => [s.id, s]));
+                      const fixed = prev.filter(s => s.id === 'stats');
+                      const allIds = draggableSections.map(s => s.id);
+                      const rowStart = rows.slice(0, ri).reduce((a, r) => a + r.length, 0);
+                      const newAll = [...allIds];
+                      newOrder.forEach((id, i) => { newAll[rowStart + i] = id; });
+                      const reordered = newAll.map(id => map.get(id)!).filter(Boolean);
+                      const hidden = prev.filter(s => s.id !== 'stats' && !s.visible);
+                      return [...fixed, ...reordered, ...hidden];
+                    });
+                  }}
+                  className="flex gap-4"
+                >
+                  {row.map(section => {
+                    const pct = (widthToSpan[section.width] / 12) * 100;
+                    const gapCorrection = (row.length - 1) * 16 / row.length;
+                    return (
+                      <Reorder.Item
+                        key={section.id}
+                        value={section.id}
+                        as="div"
+                        dragListener={true}
+                        style={{ width: `calc(${pct}% - ${gapCorrection}px)`, minWidth: 0, flexShrink: 0 }}
                       >
-                        {renderSection(section.id, section.width)}
-                      </SectionWrapper>
-                    </div>
-                  );
-                })}
-              </Reorder.Item>
-            ))}
-          </Reorder.Group>
-        );
-      })()}
+                        <SectionWrapper
+                          id={section.id}
+                          title={SECTION_TITLES[section.id] || section.id}
+                          editMode={true}
+                          isVisible={section.visible}
+                          isCollapsed={section.collapsed}
+                          width={section.width}
+                          onToggleVisibility={() => updateSection(section.id, { visible: !section.visible })}
+                          onToggleCollapse={() => updateSection(section.id, { collapsed: !section.collapsed })}
+                          onWidthChange={(w) => updateSection(section.id, { width: w })}
+                          contentMode={getContentMode(section.width)}
+                        >
+                          {renderSection(section.id, section.width)}
+                        </SectionWrapper>
+                      </Reorder.Item>
+                    );
+                  })}
+                </Reorder.Group>
+              ))}
+            </div>
+          );
+        })()
+      )}
     </div>
   );
 }

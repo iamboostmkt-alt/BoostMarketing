@@ -51,17 +51,15 @@ export default function DashboardLayout({
               {/* Top navigation */}
               <TopNav />
 
-              {/* Main content */}
-              <main className="flex-1 overflow-hidden flex flex-col">
-                <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ background: "radial-gradient(ellipse at 100% 100%, #160830 0%, #0e0e14 30%, #080808 60%, #080808 100%)" }}>
-                  <div className="p-4 md:p-6 lg:p-8">
-                    <Suspense fallback={null}>
-                      <ForbiddenBanner />
-                    </Suspense>
-                    <ErrorBoundary>
-                      {children}
-                    </ErrorBoundary>
-                  </div>
+              {/* Main content — scroll aquí, TopNav queda fijo arriba */}
+              <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar" style={{ background: "radial-gradient(ellipse at 100% 100%, #160830 0%, #0e0e14 30%, #080808 60%, #080808 100%)" }}>
+                <div className="p-4 md:p-6 lg:p-8">
+                  <Suspense fallback={null}>
+                    <ForbiddenBanner />
+                  </Suspense>
+                  <ErrorBoundary>
+                    {children}
+                  </ErrorBoundary>
                 </div>
               </main>
             </div>
