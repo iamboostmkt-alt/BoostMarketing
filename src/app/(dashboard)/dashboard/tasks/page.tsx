@@ -656,7 +656,7 @@ function TasksContent() {
               tasks: c.tasks.map((t: any) => t.id === savedTask.id ? { ...t, ...savedTask } : t),
             })));
           } else {
-            // Creación — agregar al inicio sin recargar
+            // Creación — si tiene subtareas pendientes hacer fetchAll para cargarlas todas
             if (!savedTask.parentTaskId) {
               setMyTasks(prev => [savedTask, ...prev]);
               setAllTasks(prev => [savedTask, ...prev]);
@@ -667,6 +667,8 @@ function TasksContent() {
                     : c
                 ));
               }
+              // Refetch para cargar subtareas creadas
+              setTimeout(() => fetchAll(), 500);
             }
           }
         }}
