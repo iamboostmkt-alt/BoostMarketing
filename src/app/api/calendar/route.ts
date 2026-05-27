@@ -129,22 +129,25 @@ export async function GET(req: NextRequest) {
       };
 
       if (isManager) {
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
         appointments = await db.appointment.findMany({
-          where:   { NOT: { email: { endsWith: '@internal.boost' } } },
+          where:   { NOT: { email: { endsWith: '@internal.boost' } }, date: { gte: todayStart } },
           include: apptInclude,
           orderBy: { date: 'asc' },
         });
         meetings = await db.appointment.findMany({
-          where:   { email: { endsWith: '@internal.boost' } },
+          where:   { email: { endsWith: '@internal.boost' }, date: { gte: todayStart } },
           include: apptInclude,
           orderBy: { date: 'asc' },
         });
       } else {
-        // Team: solo donde está asignado
+        // Team: solo donde está asignado y desde hoy
+        const todayStartTeam = new Date(); todayStartTeam.setHours(0,0,0,0);
         appointments = await db.appointment.findMany({
           where: {
             NOT: { email: { endsWith: '@internal.boost' } },
             assignedUsers: { some: { userId: user.id } },
+            date: { gte: todayStartTeam },
           },
           include: apptInclude,
           orderBy: { date: 'asc' },
@@ -153,6 +156,7 @@ export async function GET(req: NextRequest) {
           where: {
             email: { endsWith: '@internal.boost' },
             assignedUsers: { some: { userId: user.id } },
+            date: { gte: todayStartTeam },
           },
           include: apptInclude,
           orderBy: { date: 'asc' },
