@@ -710,9 +710,9 @@ export default function DashboardPage() {
         style={{ background: 'transparent' }}>
 
         {/* Fila 1: avatar + greeting + badge */}
-        <div className="mb-3 flex items-center gap-5">
+        <div className="mb-3 flex items-center gap-2">
           {/* Avatar usuario */}
-          <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/[0.08] rounded-xl overflow-hidden">
+          <Avatar className="h-9 w-9 shrink-0 ring-1 ring-white/[0.08] rounded-xl overflow-hidden">
             <AvatarImage src={userImage || undefined} alt={userName} className="rounded-xl object-cover" />
             <AvatarFallback
               className="rounded-xl text-sm font-semibold"
