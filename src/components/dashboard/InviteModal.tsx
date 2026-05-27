@@ -245,7 +245,7 @@ function InvitedRow({ invite, onRemove }: { invite: PendingInvite; onRemove: (em
         <div>
           <div className="flex items-center gap-2">
             <p className="text-[13px] font-medium text-white/55">{invite.name}</p>
-            <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400">Invited</span>
+            <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400">Invitado</span>
           </div>
           <p className="text-[11px] text-white/25">{invite.email}</p>
         </div>
@@ -406,8 +406,8 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
               {/* Container 1: Invite */}
               <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative" }} className="p-5">
                 <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
-                <h2 className="text-[14px] font-medium text-white/85 relative z-10">Invite members</h2>
-                <p className="mt-0.5 text-[12px] text-white/35 relative z-10">Add new members by entering their email address</p>
+                <h2 className="text-[14px] font-medium text-white/85 relative z-10">Invitar miembros</h2>
+                <p className="mt-0.5 text-[12px] text-white/35 relative z-10">Agrega nuevos miembros con su correo electrónico</p>
                 <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center relative z-10">
                   <input
                     type="email" placeholder="Email address" value={email}
@@ -436,12 +436,12 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                 <div className="flex items-center gap-2.5 mb-3 relative z-10">
                   <h2 className="text-[14px] font-medium text-white/80">People with access</h2>
                   <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-[11px] font-medium text-purple-300">
-                    {members.length + pendingInvites.length} members
+                    {members.length + pendingInvites.length} miembros
                   </span>
                 </div>
                 <div className="relative mb-2.5 z-10">
                   <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/20" />
-                  <input type="text" placeholder="Search members..." value={search} onChange={e => setSearch(e.target.value)}
+                  <input type="text" placeholder="Buscar miembros..." value={search} onChange={e => setSearch(e.target.value)}
                     className="h-[34px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] pl-9 pr-3.5 text-[13px] text-white/70 placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10"
                   />
                 </div>
@@ -459,13 +459,13 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                         ))}
                       </AnimatePresence>
                       {filteredMembers.length === 0 && search && (
-                        <div className="py-4 text-center text-[12px] text-white/25">No members found</div>
+                        <div className="py-4 text-center text-[12px] text-white/25">No se encontraron miembros</div>
                       )}
                     </div>
                   )}
                 </div>
                 <div className="mt-3 relative z-10">
-                  <div className="mb-1.5 px-1.5 text-[11px] font-medium text-white/35 uppercase tracking-widest">Invited people</div>
+                  <div className="mb-1.5 px-1.5 text-[11px] font-medium text-white/35 uppercase tracking-widest">Invitaciones pendientes</div>
                   <div className="space-y-0.5">
                     <AnimatePresence mode="popLayout">
                       {filteredInvited.length === 0 ? (
@@ -475,7 +475,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                             <div>
                               <div className="flex items-center gap-2">
                                 <p className="text-[13px] font-medium text-white/30">Ronald Richards</p>
-                                <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400/60">Invited</span>
+                                <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400/60">Invitado</span>
                               </div>
                               <p className="text-[11px] text-white/15">ronald@email.com</p>
                             </div>
