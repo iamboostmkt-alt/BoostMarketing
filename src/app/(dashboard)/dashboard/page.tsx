@@ -386,9 +386,10 @@ export default function DashboardPage() {
                   key={s.label}
                   className="rounded-[14px] border border-white/[0.06] p-5 group hover:border-white/[0.08] transition-all"
                   style={{
-                    background: 'rgba(8,8,8,0.75)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
+                    background: 'rgba(10,10,14,0.85)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255,255,255,0.06)',
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -707,11 +708,7 @@ export default function DashboardPage() {
 
       {/* ══ ZONA 1: Header sticky dentro del scroll ══ */}
       <div className="sticky top-0 z-20 pb-4 pt-1 -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8"
-        style={{
-          background: 'rgba(10,10,10,0.80)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-        }}>
+        style={{ background: 'transparent' }}>
 
         {/* Fila 1: avatar + greeting + badge */}
         <div className="mb-3 flex items-center gap-4">
@@ -752,6 +749,19 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
+          {/* Avatar — derecha */}
+          <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/[0.08] rounded-xl overflow-hidden">
+            <AvatarImage src={userImage || undefined} alt={userName} className="rounded-xl object-cover" />
+            <AvatarFallback
+              className="rounded-xl text-sm font-semibold"
+              style={{
+                backgroundColor: (userColor || '#7c3aed') + '33',
+                color: userColor || '#a78bfa',
+              }}
+            >
+              {userInitialsHeader}
+            </AvatarFallback>
+          </Avatar>
         </div>
 
         {/* Fila 2: quick actions debajo del greeting — estilo v0 */}
