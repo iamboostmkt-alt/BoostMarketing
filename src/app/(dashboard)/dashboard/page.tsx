@@ -710,7 +710,7 @@ export default function DashboardPage() {
         style={{ background: 'transparent' }}>
 
         {/* Fila 1: avatar + greeting + badge */}
-        <div className="mb-3 flex items-center gap-2.5">
+        <div className="mb-3 flex items-center gap-5">
           {/* Avatar usuario */}
           <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/[0.08] rounded-xl overflow-hidden">
             <AvatarImage src={userImage || undefined} alt={userName} className="rounded-xl object-cover" />
@@ -791,7 +791,7 @@ export default function DashboardPage() {
 
       {/* ══ ZONA 2: Stats sticky debajo del header ══ */}
       <div className="sticky z-10 pb-4 -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8"
-        style={{ top: 'var(--header-h, 120px)', background: 'radial-gradient(ellipse at 80% 0%, #160830 0%, #0e0e14 40%, #080808 80%)' }}>
+        style={{ top: 'var(--header-h, 120px)', background: 'transparent' }}>
         {renderSection('stats', 'full')}
       </div>
 
