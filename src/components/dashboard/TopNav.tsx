@@ -110,11 +110,22 @@ export default function TopNav() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-56 border-white/[0.08] text-white p-0 overflow-hidden" style={{ background: "#080808" }}
+              className="w-60 border-white/[0.08] text-white p-0 overflow-hidden relative"
+              style={{
+                background: 'rgba(8,8,8,0.85)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+              }}
               align="end"
             >
+              {/* Glow morado-azulado esquina inferior derecha */}
+              <div className="absolute bottom-0 right-0 w-32 h-32 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(ellipse at bottom right, rgba(88,28,220,0.12) 0%, rgba(59,130,246,0.06) 50%, transparent 70%)',
+                  filter: 'blur(8px)',
+                }} />
               {/* Header: Avatar + nombre + rol */}
-              <div className="flex items-center gap-3 px-3 py-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-white/[0.06]">
                 <Avatar className="h-9 w-9 shrink-0">
                   <AvatarImage src={userImage || undefined} alt={userName} />
                   <AvatarFallback
