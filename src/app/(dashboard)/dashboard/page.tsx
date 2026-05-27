@@ -386,9 +386,7 @@ export default function DashboardPage() {
                   key={s.label}
                   className="rounded-[14px] border border-white/[0.06] p-5 group hover:border-white/[0.08] transition-all overflow-hidden"
                   style={{
-                    background: 'rgba(10,10,14,0.90)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
+                    background: 'linear-gradient(135deg, #080808 0%, #0e0e14 100%)',
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
