@@ -384,20 +384,19 @@ export default function DashboardPage() {
               return (
                 <motion.div
                   key={s.label}
-                  className="rounded-[14px] border border-white/[0.06] p-5 group hover:border-white/[0.08] transition-all"
+                  className="rounded-[14px] border border-white/[0.06] p-5 group hover:border-white/[0.08] transition-all overflow-hidden"
                   style={{
-                    background: 'rgba(10,10,14,0.85)',
+                    background: 'rgba(10,10,14,0.90)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255,255,255,0.06)',
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {/* Glow */}
-                  <div className="absolute -right-6 -bottom-6 h-20 w-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: 'radial-gradient(circle, rgba(88,28,220,0.15) 0%, transparent 70%)', filter: 'blur(12px)' }} />
+                  {/* Glow — contenido por overflow-hidden del padre */}
+                  <div className="absolute right-0 bottom-0 w-20 h-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: 'radial-gradient(circle at bottom right, rgba(88,28,220,0.18) 0%, transparent 70%)' }} />
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] text-white/35 truncate pr-2">{s.label}</span>
                     {s.change && (
@@ -749,19 +748,6 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-          {/* Avatar — derecha */}
-          <Avatar className="h-10 w-10 shrink-0 ring-1 ring-white/[0.08] rounded-xl overflow-hidden">
-            <AvatarImage src={userImage || undefined} alt={userName} className="rounded-xl object-cover" />
-            <AvatarFallback
-              className="rounded-xl text-sm font-semibold"
-              style={{
-                backgroundColor: (userColor || '#7c3aed') + '33',
-                color: userColor || '#a78bfa',
-              }}
-            >
-              {userInitialsHeader}
-            </AvatarFallback>
-          </Avatar>
         </div>
 
         {/* Fila 2: quick actions debajo del greeting — estilo v0 */}
