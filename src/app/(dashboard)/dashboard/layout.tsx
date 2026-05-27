@@ -42,7 +42,7 @@ export default function DashboardLayout({
       <RealtimeProvider>
       <TooltipProvider delayDuration={0}>
         <SidebarProvider>
-          <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(160deg, #0a0a0f 0%, #0d0d14 40%, #0a0a0a 100%)" }}>
+          <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}>
             {/* Sidebar */}
             <AppSidebar />
 
@@ -54,7 +54,7 @@ export default function DashboardLayout({
               </div>
 
               {/* Main content — ÚNICO área scrolleable */}
-              <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar" style={{ background: "linear-gradient(160deg, #0a0a0f 0%, #0d0d14 40%, #0a0a0a 100%)" }}>
+              <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}>
                 <div className="p-4 md:p-6 lg:p-8">
                   <Suspense fallback={null}>
                     <ForbiddenBanner />
