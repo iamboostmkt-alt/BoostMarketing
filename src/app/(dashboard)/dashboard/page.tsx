@@ -245,7 +245,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const h = new Date().getHours();
     if (h < 12) setGreeting('Buenos días');
-    else if (h < 18) setGreeting('Buenas tardes');
+    else if (h < 19) setGreeting('Buenas tardes');
     else setGreeting('Buenas noches');
     setFmtDate(new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }));
   }, []);
@@ -710,7 +710,7 @@ export default function DashboardPage() {
         {/* Fila 1: avatar + greeting + badge */}
         <div className="mb-3 flex items-center gap-4">
           {/* Avatar usuario */}
-          <Avatar className="h-11 w-11 shrink-0 ring-2 ring-white/[0.06] rounded-xl">
+          <Avatar className="h-11 w-11 shrink-0 ring-2 ring-white/[0.06] rounded-xl ml-1">
             <AvatarImage src={userImage || undefined} alt={userName} className="rounded-xl object-cover" />
             <AvatarFallback
               className="rounded-xl text-sm font-semibold"

@@ -139,54 +139,76 @@ export default function TopNav() {
                 </div>
               </div>
 
-              {/* Menu items */}
-              <div className="p-1">
-                <DropdownMenuGroup>
+              {/* Menu items — iconos coloreados al hover estilo sidebar */}
+              <div className="p-1.5">
+                <DropdownMenuGroup className="space-y-0.5">
                   <DropdownMenuItem
-                    className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3"
+                    className="group flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] focus:text-white focus:bg-white/[0.06] cursor-pointer transition-colors"
                     onClick={() => router.push('/dashboard/settings')}
                   >
-                    <User className="h-4 w-4" strokeWidth={1.5} />
-                    Mi perfil
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-violet-500/10 group-hover:bg-violet-500/20 transition-colors">
+                      <User className="h-3.5 w-3.5 text-violet-400" strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[13px]">Mi perfil</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3"
+                    className="group flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] focus:text-white focus:bg-white/[0.06] cursor-pointer transition-colors"
                     onClick={() => router.push('/dashboard/settings')}
                   >
-                    <Settings className="h-4 w-4" strokeWidth={1.5} />
-                    Ajustes
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-slate-500/10 group-hover:bg-slate-500/20 transition-colors">
+                      <Settings className="h-3.5 w-3.5 text-slate-400" strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[13px]">Ajustes</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
-                    <Palette className="h-4 w-4" strokeWidth={1.5} />
-                    Apariencia
+                  <DropdownMenuItem
+                    className="group flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] focus:text-white focus:bg-white/[0.06] cursor-pointer transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-pink-500/10 group-hover:bg-pink-500/20 transition-colors">
+                      <Palette className="h-3.5 w-3.5 text-pink-400" strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[13px]">Apariencia</span>
                   </DropdownMenuItem>
                   {session?.user?.role === 'ADMIN' && (
-                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
-                      <Zap className="h-4 w-4" strokeWidth={1.5} />
-                      <span className="flex-1">Upgrade</span>
-                      <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">PRO</span>
+                    <DropdownMenuItem
+                      className="group flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] focus:text-white focus:bg-white/[0.06] cursor-pointer transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors">
+                        <Zap className="h-3.5 w-3.5 text-amber-400" strokeWidth={1.5} />
+                      </div>
+                      <span className="text-[13px] flex-1">Upgrade</span>
+                      <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full font-medium">PRO</span>
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-white/[0.06]" />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
-                    <HelpCircle className="h-4 w-4" strokeWidth={1.5} />
-                    Soporte
+                <DropdownMenuSeparator className="bg-white/[0.06] my-1.5" />
+                <DropdownMenuGroup className="space-y-0.5">
+                  <DropdownMenuItem
+                    className="group flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] focus:text-white focus:bg-white/[0.06] cursor-pointer transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-cyan-500/10 group-hover:bg-cyan-500/20 transition-colors">
+                      <HelpCircle className="h-3.5 w-3.5 text-cyan-400" strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[13px]">Soporte</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/[0.05] cursor-pointer gap-3">
-                    <Command className="h-4 w-4" strokeWidth={1.5} />
-                    <span className="flex-1">Atajos</span>
+                  <DropdownMenuItem
+                    className="group flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] focus:text-white focus:bg-white/[0.06] cursor-pointer transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-white/[0.06] group-hover:bg-white/[0.1] transition-colors">
+                      <Command className="h-3.5 w-3.5 text-white/50" strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[13px] flex-1">Atajos</span>
                     <span className="text-[10px] text-white/25 font-mono">⌘K</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-white/[0.06]" />
+                <DropdownMenuSeparator className="bg-white/[0.06] my-1.5" />
                 <DropdownMenuItem
-                  className="text-red-400/80 focus:text-red-400 focus:bg-red-500/10 cursor-pointer gap-3"
+                  className="group flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors text-red-400/80 hover:text-red-400 hover:bg-red-500/10 focus:text-red-400 focus:bg-red-500/10"
                   onClick={() => signOut({ callbackUrl: '/' })}
                 >
-                  <LogOut className="h-4 w-4" strokeWidth={1.5} />
-                  Cerrar sesión
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-red-500/10 group-hover:bg-red-500/20 transition-colors">
+                    <LogOut className="h-3.5 w-3.5 text-red-400" strokeWidth={1.5} />
+                  </div>
+                  <span className="text-[13px]">Cerrar sesión</span>
                 </DropdownMenuItem>
               </div>
             </DropdownMenuContent>
