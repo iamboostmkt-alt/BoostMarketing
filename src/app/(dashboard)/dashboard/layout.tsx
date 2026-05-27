@@ -42,17 +42,19 @@ export default function DashboardLayout({
       <RealtimeProvider>
       <TooltipProvider delayDuration={0}>
         <SidebarProvider>
-          <div className="flex h-screen overflow-hidden" style={{ background: "radial-gradient(ellipse at 100% 100%, #160830 0%, #0e0e14 30%, #080808 60%, #080808 100%)" }}>
+          <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(160deg, #0a0a0f 0%, #0d0d14 40%, #0a0a0a 100%)" }}>
             {/* Sidebar */}
             <AppSidebar />
 
             {/* Main area */}
-            <div className="flex flex-1 flex-col min-w-0">
-              {/* Top navigation */}
-              <TopNav />
+            <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+              {/* Top navigation — shrink-0 garantiza que no scrollea */}
+              <div className="shrink-0">
+                <TopNav />
+              </div>
 
-              {/* Main content — scroll aquí, TopNav queda fijo arriba */}
-              <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar" style={{ background: "radial-gradient(ellipse at 100% 100%, #160830 0%, #0e0e14 30%, #080808 60%, #080808 100%)" }}>
+              {/* Main content — ÚNICO área scrolleable */}
+              <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar" style={{ background: "linear-gradient(160deg, #0a0a0f 0%, #0d0d14 40%, #0a0a0a 100%)" }}>
                 <div className="p-4 md:p-6 lg:p-8">
                   <Suspense fallback={null}>
                     <ForbiddenBanner />
