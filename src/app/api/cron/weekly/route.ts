@@ -83,5 +83,14 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // ─── Cleanup leads sin convertir +7 días ───────────────────────────────
+  const cutoffLeads = new Date(ahora); cutoffLeads.setDate(cutoffLeads.getDate() - 7);
+  let totalLeadsDeleted = 0;
+  for (const ws of workspaces) {
+    const deleted = await db.contact.deleteMany({ where: { status: "lead", workspaceId: ws.id, createdAt: { lt: cutoffLeads } } });
+    totalLeadsDeleted += deleted.count;
+  }
+  results.leadsDeleted = totalLeadsDeleted;
+
   return NextResponse.json({ ok: true, timestamp: ahora.toISOString(), ...results });
 }

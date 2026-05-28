@@ -164,6 +164,20 @@ export async function GET(req: NextRequest) {
   results.softDeletedTasks = softDeleted.count;
 
 
+  // ─── 5b. Cleanup archivos de tareas completadas +15 días ───────────────────
+  const cutoffFiles = new Date(ahora.getTime() - 15 * 24 * 60 * 60 * 1000);
+  const doneTasks = await db.task.findMany({
+    where: { status: { in: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED] }, updatedAt: { lt: cutoffFiles }, workspaceId: { not: undefined } },
+    select: { id: true },
+  });
+  if (doneTasks.length > 0) {
+    const doneIds = doneTasks.map(t => t.id);
+    const markedFiles = await db.taskAttachment.updateMany({ where: { taskId: { in: doneIds }, status: "active" }, data: { status: "pending_delete" } });
+    const cutoffDelete = new Date(ahora.getTime() - 2 * 24 * 60 * 60 * 1000);
+    const deletedFiles = await db.taskAttachment.deleteMany({ where: { status: "pending_delete", createdAt: { lt: cutoffDelete } } });
+    results.fileCleanup = { marked: markedFiles.count, deleted: deletedFiles.count };
+  } else { results.fileCleanup = { marked: 0, deleted: 0 }; }
+
   // ─── 6. Marcar presencias obsoletas como offline (+15 min sin heartbeat) ────
   const cutoffPresence = new Date(ahora.getTime() - 15 * 60 * 1000);
   const offlineCount = await db.userPresence.updateMany({
