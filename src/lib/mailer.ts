@@ -235,7 +235,7 @@ export function templateVideollamadaConfirmada(clientName: string, date: string,
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">🎥 Videollamada confirmada</h2>
     <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong>, tu videollamada ha sido confirmada.</p>
     ${infoBox(`
-      <p style="margin:0 0 8px;color:rgba(255,255,255,0.4);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">📅 Detalles de la reunión</p>
+      <p style="margin:0 0 8px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">📅 Detalles de la reunión</p>
       <p style="margin:0 0 6px;color:white;font-size:16px;font-weight:600;">${date}</p>
       ${meetUrl ? `<p style="margin:6px 0 0;"><a href="${meetUrl}" style="color:${color};font-size:14px;">${meetUrl}</a></p>` : ''}
     `, color)}
@@ -253,7 +253,7 @@ export function templateNuevaCita(clientName: string, clientEmail: string, date:
       <p style="margin:0 0 8px;color:white;"><span style="color:#9ca3af;font-size:13px;">👤 NOMBRE</span><br/><strong>${clientName}</strong></p>
       <p style="margin:0 0 8px;color:white;"><span style="color:#9ca3af;font-size:13px;">📧 EMAIL</span><br/><strong>${clientEmail}</strong></p>
       <p style="margin:0 ${notes ? '0 8px' : ''};color:white;"><span style="color:#9ca3af;font-size:13px;">📅 FECHA</span><br/><strong>${date}</strong></p>
-      ${notes ? `<p style="margin:0;color:rgba(255,255,255,0.6);font-size:14px;">📝 ${notes}</p>` : ''}
+      ${notes ? `<p style="margin:0;color:#4b5563;font-size:14px;">📝 ${notes}</p>` : ''}
     `, color)}
     ${btn(`${APP_URL}/dashboard/calendar`, 'Ver en Dashboard', color)}`;
   return b ? emailLayout(content, b) : content;
@@ -264,7 +264,7 @@ export function templateCitaCancelada(clientName: string, date: string, b?: Bran
   const content = `
     <h2 style="color:white;margin:0 0 8px;font-size:20px;">❌ Cita cancelada</h2>
     <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong></p>
-    ${infoBox(`<p style="margin:0;color:rgba(255,255,255,0.7);">Tu cita del <strong style="color:white;">${date}</strong> ha sido cancelada.<br/><span style="font-size:13px;color:rgba(255,255,255,0.4);">Por favor contáctanos para reagendar.</span></p>`, color)}
+    ${infoBox(`<p style="margin:0;color:#374151;">Tu cita del <strong style="color:white;">${date}</strong> ha sido cancelada.<br/><span style="font-size:13px;color:#6b7280;">Por favor contáctanos para reagendar.</span></p>`, color)}
     ${btn(APP_URL, 'Reagendar', color)}`;
   return b ? emailLayout(content, b) : content;
 }
@@ -289,7 +289,7 @@ export function templateFeedbackCliente(
     </p>
     ${infoBox(`
       <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">${taskTitle}</p>
-      ${message ? `<p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:13px;">"${message}"</p>` : ''}
+      ${message ? `<p style="margin:6px 0 0;color:#4b5563;font-size:13px;">"${message}"</p>` : ''}
     `, cfg.color)}
     ${btn(`${APP_URL}/dashboard/tasks`, 'Ver en Dashboard', cfg.color)}`;
   return b ? emailLayout(content, b) : content;
@@ -307,9 +307,9 @@ export function templateTareaEditada(taskTitle: string, cambios: Array<{campo: s
     <p style="color:#6b7280;margin:0 0 20px;"><strong style="color:#18181b;">${taskTitle}</strong></p>
     <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
       <thead><tr style="background:#f9fafb;">
-        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">CAMPO</th>
-        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">ANTES</th>
-        <th style="padding:10px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.4);">AHORA</th>
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;">CAMPO</th>
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;">ANTES</th>
+        <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;">AHORA</th>
       </tr></thead>
       <tbody>${filas}</tbody>
     </table>
@@ -320,11 +320,11 @@ export function templateTareaEditada(taskTitle: string, cambios: Array<{campo: s
 export function templateNuevaReunion(userName: string, meetingTitle: string, date: string, meetUrl?: string, b?: Branding) {
   const color = b?.brandColor || '#7c3aed';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">📅 Nueva reunión asignada</h2>
-    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${userName}</strong>, se te asignó a una reunión</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">📅 Nueva reunión asignada</h2>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:#18181b;">${userName}</strong>, se te asignó a una reunión</p>
     ${infoBox(`
       <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">🗓 ${meetingTitle}</p>
-      <p style="margin:0;color:rgba(255,255,255,0.6);font-size:14px;">${date}</p>
+      <p style="margin:0;color:#4b5563;font-size:14px;">${date}</p>
       ${meetUrl ? `<p style="margin:6px 0 0;"><a href="${meetUrl}" style="color:${color};font-size:14px;">${meetUrl}</a></p>` : ''}
     `, color)}
     ${meetUrl ? btn(meetUrl, 'Unirse a la Reunión', color) : ''}`;
@@ -337,9 +337,9 @@ export function templateRecordatorioVideollamada(params: { name: string; dateStr
   const label = minutesBefore >= 1440 ? '24 horas' : minutesBefore >= 60 ? '1 hora' : '15 minutos';
   const content = `
     <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">⏰ Recordatorio de videollamada</h2>
-    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${name}</strong>, tu reunión comienza en <strong style="color:${color};">${label}</strong></p>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:#18181b;">${name}</strong>, tu reunión comienza en <strong style="color:${color};">${label}</strong></p>
     ${infoBox(`
-      <p style="margin:0 0 6px;color:rgba(255,255,255,0.4);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">📅 Fecha y hora</p>
+      <p style="margin:0 0 6px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">📅 Fecha y hora</p>
       <p style="margin:0;color:white;font-size:16px;font-weight:600;">${dateStr}</p>
     `, color)}
     ${meetUrl ? btn(meetUrl, '🔗 Unirse a la Reunión', color) : ''}
