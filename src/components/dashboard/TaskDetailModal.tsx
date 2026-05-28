@@ -165,7 +165,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
         // Correo de felicitación (non-blocking)
         fetch('/api/tasks/celebrate', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ taskId: task.id, parentCompleted, assigneeIds: uniqueAssignees }),
+          body: JSON.stringify({ taskId: task.id, parentCompleted, assigneeIds: uniqueAssignees, pmId: (task as any).userId }),
         }).catch(() => {});
       }
 

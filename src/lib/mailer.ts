@@ -503,15 +503,16 @@ export function templateFelicitacion(
   userName: string,
   taskTitle: string,
   isParentComplete: boolean,
-  b?: Branding
+  b?: Branding,
+  role?: 'pm' | 'team'
 ) {
   const color = '#10b981';
   const emoji = isParentComplete ? '🏆' : '⭐';
-  const headline = isParentComplete
-    ? '¡Proyecto completado!'
-    : '¡Entrega aprobada!';
+  const headline = isParentComplete ? '¡Proyecto completado!' : '¡Entrega aprobada!';
   const subtext = isParentComplete
-    ? `El proyecto <strong style="color:#18181b;">${taskTitle}</strong> fue completado exitosamente. ¡Excelente trabajo en equipo!`
+    ? role === 'pm'
+      ? `El proyecto <strong style="color:#18181b;">${taskTitle}</strong> fue completado exitosamente. ¡Felicita a tus colaboradores por el gran trabajo!`
+      : `El proyecto <strong style="color:#18181b;">${taskTitle}</strong> fue aprobado. ¡Excelente trabajo en equipo, sigue así!`
     : `Tu entrega en <strong style="color:#18181b;">${taskTitle}</strong> fue aprobada por el PM. ¡Sigue así!`;
   const content = `
     <div style="text-align:center;padding:24px 0 16px;">
