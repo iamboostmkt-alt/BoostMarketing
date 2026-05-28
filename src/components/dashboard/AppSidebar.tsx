@@ -44,6 +44,7 @@ type NavItem = {
   clientOnly?: boolean;
   roles?: string[];
   disabled?: boolean;
+  badge?: number;
 };
 
 const navItems: NavItem[] = [
@@ -308,10 +309,12 @@ function NavItemButton({
   item,
   isActive,
   collapsed,
+  badge,
 }: {
   item: NavItem;
   isActive: boolean;
   collapsed: boolean;
+  badge?: number;
 }) {
   const Icon = item.icon;
   const [isHovered, setIsHovered] = React.useState(false);
@@ -371,7 +374,11 @@ function NavItemButton({
       {!collapsed && (
         <>
           <span className="relative z-10 flex-1 truncate">{item.label}</span>
-          {(isActive || isHovered) && (
+          {badge && badge > 0 ? (
+            <span className="relative z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white" style={{ background: '#7c3aed' }}>
+              {badge > 99 ? '99+' : badge}
+            </span>
+          ) : (isActive || isHovered) && (
             <ChevronRight className="relative z-10 h-3 w-3 text-white/20" />
           )}
         </>
@@ -391,7 +398,11 @@ function NavItemButton({
 }
 
 // ─── Clients Section ───────────────────────────────────────────────────────────
-function ClientsSection({ collapsed }: { collapsed: boolean }) {
+function ClientsSection({ collapsed, clients, isAdmin }: {
+  collapsed: boolean;
+  clients: Array<{id: string; name: string; color?: string}>;
+  isAdmin: boolean;
+}) {
   const [open, setOpen] = React.useState(true);
   if (collapsed) return null;
   return (
@@ -426,13 +437,26 @@ function ClientsSection({ collapsed }: { collapsed: boolean }) {
                 <div className="h-2 w-2 rounded-full bg-purple-400/60" />
                 <span className="truncate">Gestión de cuentas</span>
               </Link>
-              <Link
-                href="/dashboard/clients/new"
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] text-purple-400/70 transition-colors hover:text-purple-400"
-              >
-                <Plus className="h-3 w-3" />
-                <span>Nueva cuenta</span>
-              </Link>
+              {/* Cuentas reales */}
+              {clients.map(c => (
+                <Link
+                  key={c.id}
+                  href={`/dashboard/client-portal?clientId=${c.id}`}
+                  className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/40 transition-colors hover:bg-white/[0.04] hover:text-white/70"
+                >
+                  <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: c.color || '#7c3aed' }} />
+                  <span className="truncate">{c.name}</span>
+                </Link>
+              ))}
+              {isAdmin && (
+                <Link
+                  href="/dashboard/clients/new"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] text-purple-400/70 transition-colors hover:text-purple-400"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Nueva cuenta</span>
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
@@ -544,6 +568,25 @@ export default function AppSidebar() {
   const isManagerRole = ["ADMIN", "PROJECT_MANAGER"].includes(role ?? "");
 
   const [inviteOpen, setInviteOpen] = React.useState(false);
+  const [chatUnread, setChatUnread] = React.useState(0);
+  const [clients, setClients] = React.useState<Array<{id: string; name: string; color?: string}>>([]);
+
+  React.useEffect(() => {
+    if (isClient) return;
+    // Cargar no leídos del chat
+    fetch('/api/chat/unread').then(r => r.ok ? r.json() : null).then(d => {
+      if (d?.unreads) {
+        const total = Object.values(d.unreads as Record<string,number>).reduce((a,b) => a+b, 0);
+        setChatUnread(total);
+      }
+    }).catch(() => {});
+    // Cargar cuentas según rol
+    if (isAdmin || isManagerRole) {
+      fetch('/api/clients?sidebar=1').then(r => r.ok ? r.json() : null).then(d => {
+        if (d?.clients) setClients(d.clients.slice(0, 8));
+      }).catch(() => {});
+    }
+  }, [isClient, isAdmin, isManagerRole]);
   const filteredNavItems = navItems.filter((item) => {
     if (item.roles) return item.roles.includes(role ?? "");
     if (isClient) return !!item.clientOnly;
@@ -618,16 +661,13 @@ export default function AppSidebar() {
               item={item}
               isActive={isActive(item.href)}
               collapsed={collapsed}
+              badge={item.href === '/dashboard/chat' ? chatUnread : undefined}
             />
           ))}
         </div>
 
-        {/* Cuentas — label dinámico: "Clientes" para ADMIN, "Cuentas" para PM */}
         {(isAdmin || isManagerRole) && (
-          <>
-            <SectionLabel collapsed={collapsed}>{isAdmin ? "Clientes" : "Cuentas"}</SectionLabel>
-            <ClientsSection collapsed={collapsed} />
-          </>
+          <ClientsSection collapsed={collapsed} clients={clients} isAdmin={isAdmin} />
         )}
 
         {/* Teams — solo ADMIN y PM */}
