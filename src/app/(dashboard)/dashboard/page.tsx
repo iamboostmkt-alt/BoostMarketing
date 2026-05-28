@@ -265,7 +265,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!userRole) return;
-    const key = `weeklink_sections_v3_${userRole}`;
+    const key = `weeklink_sections_v4_${userRole}`;
     const saved = localStorage.getItem(key);
     if (saved) {
       try { setSections(JSON.parse(saved)); return; } catch {}
@@ -279,7 +279,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!userRole || sections.length === 0) return;
-    localStorage.setItem(`weeklink_sections_v3_${userRole}`, JSON.stringify(sections));
+    localStorage.setItem(`weeklink_sections_v4_${userRole}`, JSON.stringify(sections));
   }, [sections, userRole]);
 
   useEffect(() => {
