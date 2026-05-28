@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Hash, LifeBuoy, Briefcase, Lock, ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
 import ChatContent from '@/components/dashboard/ChatContent';
+import SupportTicket from '@/components/dashboard/SupportTicket';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
 
 interface ClientOption { id: string; name: string; company: string; }
@@ -42,7 +43,9 @@ export default function ChatWithChannels() {
       if (room) setUnreads(prev => ({ ...prev, [room]: (prev[room] || 0) + 1 }));
     };
     window.addEventListener('chat:unread', handleUnread);
-    return () => window.removeEventListener('chat:unread', handleUnread);
+    const isSupport = activeId === 'SUPPORT' && !['ADMIN'].includes(role ?? '');
+
+  return () => window.removeEventListener('chat:unread', handleUnread);
   }, [canPrivate]);
 
   useEffect(() => {
@@ -51,7 +54,9 @@ export default function ChatWithChannels() {
         setUnreads(prev => ({ ...prev, [data.room]: (prev[data.room] || 0) + 1 }));
     };
     const unsub = bus.on(RT_EVENTS.MESSAGE_SENT, handler);
-    return () => unsub();
+    const isSupport = activeId === 'SUPPORT' && !['ADMIN'].includes(role ?? '');
+
+  return () => unsub();
   }, [activeId]);
 
   const selectChannel = (id: string) => {
@@ -167,6 +172,8 @@ export default function ChatWithChannels() {
     </div>
   );
 
+  const isSupport = activeId === 'SUPPORT' && !['ADMIN'].includes(role ?? '');
+
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
       {/* Sidebar desktop */}
@@ -203,7 +210,13 @@ export default function ChatWithChannels() {
           </div>
         </div>
 
-        <ChatContent key={activeId} room={activeId} title={activeTitle} subtitle={activeSubtitle} />
+        {isSupport ? (
+          <div className="flex-1 overflow-y-auto p-4">
+            <SupportTicket onClose={() => setActiveId('TEAM')} />
+          </div>
+        ) : (
+          <ChatContent key={activeId} room={activeId} title={activeTitle} subtitle={activeSubtitle} />
+        )}
       </div>
     </div>
   );

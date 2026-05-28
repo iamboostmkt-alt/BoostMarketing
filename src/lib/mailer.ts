@@ -476,3 +476,26 @@ export function templateEscalacionPM(
   return b ? emailLayout(content, b) : content;
 }
 
+export function templateMensajeClienteSinLeer(
+  pmName: string,
+  clientName: string,
+  previewText: string,
+  portalUrl: string,
+  b?: Branding
+) {
+  const color = b?.brandColor || '#7c3aed';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">💬 Tienes un mensaje nuevo</h2>
+    <p style="color:#6b7280;font-size:15px;margin:0 0 20px;">
+      Hola <strong style="color:#18181b;">${pmName}</strong>,
+      tienes un mensaje de <strong style="color:#18181b;">${clientName}</strong> que aún no has leído.
+      Revisa por favor.
+    </p>
+    ${infoBox(`
+      <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Último mensaje</p>
+      <p style="margin:0;color:#18181b;font-size:14px;font-style:italic;">"${previewText}"</p>
+    `, color)}
+    ${btn(portalUrl, 'Ver conversación →', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+

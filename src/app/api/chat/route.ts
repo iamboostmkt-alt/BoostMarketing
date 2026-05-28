@@ -5,6 +5,8 @@ import { rateLimit } from "@/lib/security/rate-limit";
 import { db } from '@/lib/db';
 import { dispatchEvent, resolveMentions } from '@/lib/events';
 import { broadcastRealtime } from '@/lib/realtime-server';
+import { sendMail, templateMensajeClienteSinLeer } from '@/lib/mailer';
+import { getBranding } from '@/lib/branding';
 
 
 const INTERNAL_ROOMS = ['TEAM', 'SUPPORT', 'PROJECT'];
@@ -31,6 +33,9 @@ async function checkRoomAccess(
 
   if (INTERNAL_ROOMS.includes(room)) {
     if (!hasRole(role, INTERNAL_ROLES)) return false;
+    // SUPPORT: todos los roles internos pueden escribir tickets
+    if (room === 'SUPPORT') return true;
+    // PROJECT/PRIVATE: solo PM y ADMIN
     if (['TEAM_MEMBER', 'DESIGNER', 'MARKETING'].includes(role) && room !== 'TEAM') return false;
     return true;
   }
@@ -125,6 +130,59 @@ export async function POST(req: NextRequest) {
   });
 
   broadcastRealtime('message.sent', { message: chatMessage, room }).catch(() => undefined);
+
+  // Si es room de cliente (clientId) y lo escribió el cliente → notificar PM si no ha leído
+  if (role === 'CLIENT' && !['TEAM','SUPPORT','PROJECT','PRIVATE'].includes(room)) {
+    const UNREAD_EMAIL_THRESHOLD = 3; // correo solo si lleva 3+ no leídos sin abrir
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || '';
+    (async () => {
+      const client = await db.client.findFirst({
+        where: { id: room, workspaceId },
+        select: { id: true, name: true, assignedManagerId: true },
+      });
+      if (!client) return;
+      // Nombre del cliente: buscar en contactos por email
+      const contact = await db.contact.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' }, workspaceId },
+        select: { name: true },
+      });
+      const clientDisplayName = contact?.name ?? client.name ?? 'Tu cliente';
+      // Obtener PM asignado y usuarios asignados al cliente
+      type PMUser = { id: string; name: string | null; email: string | null };
+      const pmList: PMUser[] = [];
+      if (client.assignedManagerId) {
+        const pm = await db.user.findUnique({
+          where: { id: client.assignedManagerId },
+          select: { id: true, name: true, email: true },
+        });
+        if (pm) pmList.push(pm);
+      }
+      const assignedUsers = await db.clientAssignedUser.findMany({
+        where: { clientId: room },
+        include: { user: { select: { id: true, name: true, email: true } } },
+      });
+      assignedUsers.forEach(au => {
+        if (!pmList.find(p => p.id === au.user.id)) pmList.push(au.user);
+      });
+      const branding = await getBranding();
+      for (const pm of pmList) {
+        if (!pm.email || pm.email.endsWith('@boostmkt.com')) continue;
+        const unread = await db.chatUnread.findFirst({
+          where: { userId: pm.id, workspaceId, room },
+          select: { count: true },
+        });
+        const count = unread?.count ?? 0;
+        if (count === 1 || count % UNREAD_EMAIL_THRESHOLD === 0) {
+          const portalUrl = `${appUrl}/dashboard/client-portal?clientId=${room}`;
+          sendMail(
+            pm.email,
+            `💬 Mensaje de ${clientDisplayName} — revisa por favor`,
+            templateMensajeClienteSinLeer(pm.name ?? 'PM', clientDisplayName, text.slice(0, 120), portalUrl, branding)
+          ).catch(() => undefined);
+        }
+      }
+    })().catch(() => undefined);
+  }
 
   // Incrementar no leídos para todos excepto el emisor
   db.user.findMany({
