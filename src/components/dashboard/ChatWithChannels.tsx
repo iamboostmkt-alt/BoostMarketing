@@ -35,6 +35,14 @@ export default function ChatWithChannels() {
     }
     fetch('/api/chat/unread').then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.unreads) setUnreads(d.unreads); });
+
+    // Escuchar badges en tiempo real desde ChatContent
+    const handleUnread = (e: Event) => {
+      const room = (e as CustomEvent).detail?.room;
+      if (room) setUnreads(prev => ({ ...prev, [room]: (prev[room] || 0) + 1 }));
+    };
+    window.addEventListener('chat:unread', handleUnread);
+    return () => window.removeEventListener('chat:unread', handleUnread);
   }, [canPrivate]);
 
   useEffect(() => {

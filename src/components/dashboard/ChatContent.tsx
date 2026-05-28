@@ -258,7 +258,11 @@ export default function ChatContent({
 
   useEffect(() => {
     return bus.on<{ message: ChatMessage; room: string }>(RT_EVENTS.MESSAGE_SENT, (payload) => {
-      if (payload.room !== room) return;
+      if (payload.room !== room) {
+        // Actualizar badge en ChatWithChannels via evento custom
+        window.dispatchEvent(new CustomEvent('chat:unread', { detail: { room: payload.room } }));
+        return;
+      }
       setMessages((prev) => {
         if (prev.some((m) => m.id === payload.message.id)) return prev;
         return [...prev, payload.message];
@@ -301,11 +305,11 @@ export default function ChatContent({
     const value  = e.target.value;
     setInput(value);
 
-    // Emitir "está escribiendo" via realtime
-    bus.emit(RT_EVENTS.PRESENCE_UPDATED, { room, typing: true, name: (session?.user?.name || 'Alguien') });
+    // Emitir "está escribiendo" via Supabase Realtime (otros usuarios)
+    fetch('/api/chat/typing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ room, typing: true }) }).catch(() => {});
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     typingTimerRef.current = setTimeout(() => {
-      bus.emit(RT_EVENTS.PRESENCE_UPDATED, { room, typing: false, name: (session?.user?.name || 'Alguien') });
+      fetch('/api/chat/typing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ room, typing: false }) }).catch(() => {});
     }, 2000);
 
     const cursor = e.target.selectionStart ?? value.length;
@@ -570,8 +574,7 @@ export default function ChatContent({
                 const res = await fetch('/api/tasks', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ title: taskMsg.slice(0,100), description: `Desde chat:
-${taskMsg}`, status: 'pending', priority: 'medium', visibility: 'internal' }),
+                  body: JSON.stringify({ title: taskMsg.slice(0,100), description: `Desde chat:\n${taskMsg}`, status: 'pending', priority: 'medium', visibility: 'internal', workspaceId: (session?.user as any)?.workspaceId }),
                 });
                 if (res.ok) { toast.success('Tarea creada ✓'); setTaskMsg(null); }
                 else toast.error('Error al crear tarea');
