@@ -88,9 +88,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       .then(d => setSubtasks(d.tasks || []));
   }, [open, task?.id]);
 
-  // También recargar al expandir (por si hay cambios)
+  // Recargar subtareas al expandir solo si aún no se cargaron
   useEffect(() => {
-    if (!subtasksOpen || !task) return;
+    if (!subtasksOpen || !task || subtasks.length > 0) return;
     fetch(`/api/tasks?parentId=${task.id}`)
       .then(r => r.json())
       .then(d => setSubtasks(d.tasks || []));
@@ -108,9 +108,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
-      alert(`Recordatorio enviado a ${data.enviados} usuario${data.enviados !== 1 ? 's' : ''}`);
+      toast.success(`Recordatorio enviado a ${data.enviados} usuario${data.enviados !== 1 ? 's' : ''} ✓`);
     } catch (err: any) {
-      alert(err.message || 'Error al enviar recordatorio');
+      toast.error(err.message || 'Error al enviar recordatorio');
     } finally {
       setReminding(false);
     }
@@ -141,7 +141,11 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
     if (!task) return;
     setLoadingFiles(true);
     try {
-      const res = await fetch(`/api/task-attachments?taskId=${task.id}`);
+      const isParent = !task.parentTaskId;
+      const url = isParent
+        ? `/api/task-attachments?taskId=${task.id}&includeSubtasks=true`
+        : `/api/task-attachments?taskId=${task.id}`;
+      const res = await fetch(url);
       const data = await res.json();
       setAttachments(data.attachments || []);
     } finally {
@@ -357,7 +361,15 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                       <FileIcon type={a.fileType} />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-white/80 truncate">{a.fileName}</p>
-                        <p className="text-[10px] text-white/30">{fmtSize(a.fileSize)} · {a.user.name || 'Usuario'} · {fmtDate(a.createdAt)}</p>
+                        <p className="text-[10px] text-white/30">
+                          {fmtSize(a.fileSize)} · {a.user.name || 'Usuario'} · {fmtDate(a.createdAt)}
+                          {(a as any).task?.parentTaskId === null && (a as any).task?.id !== task?.id && (
+                            <span className="ml-1 text-violet-400/60">↳ {(a as any).task?.title}</span>
+                          )}
+                          {(a as any).task?.parentTaskId && (
+                            <span className="ml-1 text-violet-400/60">↳ {(a as any).task?.title}</span>
+                          )}
+                        </p>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => window.open(a.fileUrl, '_blank')} className="p-1 hover:bg-white/[0.08] rounded text-white/40 hover:text-white"><Download className="w-3 h-3" /></button>

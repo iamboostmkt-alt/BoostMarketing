@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MANAGER_ROLES_EXT as MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
+import { sendMail, templateArchivoSubido } from '@/lib/mailer';
+import { getBranding } from '@/lib/branding';
 
 
 
@@ -16,14 +18,26 @@ export async function GET(req: NextRequest) {
     const taskId = searchParams.get('taskId');
     if (!taskId) return NextResponse.json({ error: 'taskId requerido' }, { status: 400 });
 
+    const includeSubtasks = searchParams.get('includeSubtasks') === 'true';
+
+    let taskIds = [taskId];
+    if (includeSubtasks) {
+      const subtasks = await db.task.findMany({
+        where: { parentTaskId: taskId },
+        select: { id: true, title: true },
+      });
+      taskIds = [taskId, ...subtasks.map(s => s.id)];
+    }
+
     const attachments = await db.taskAttachment.findMany({
       where: {
-        taskId,
+        taskId: { in: taskIds },
         status: 'active',
         ...(!isManager && { isInternal: false }),
       },
       include: {
         user: { select: { id: true, name: true, image: true, color: true } },
+        task: { select: { id: true, title: true, parentTaskId: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -95,6 +109,27 @@ export async function POST(req: NextRequest) {
         })),
         skipDuplicates: true,
       });
+    }
+
+    // Correo al PM/creador de la tarea
+    if (notifyIds.size > 0) {
+      getBranding().then(async (b) => {
+        const recipients = await db.user.findMany({
+          where: { id: { in: Array.from(notifyIds) } },
+          select: { email: true, name: true },
+        });
+        const parentTitle = task.parentTaskId
+          ? (await db.task.findUnique({ where: { id: task.parentTaskId }, select: { title: true } }))?.title
+          : undefined;
+        for (const r of recipients) {
+          if (!r.email || r.email.endsWith('@boostmkt.com')) continue;
+          await sendMail(
+            r.email,
+            `📎 Nuevo archivo en tarea: ${task.title}`,
+            templateArchivoSubido(task.title, result.ctx.name ?? 'Un miembro', fileName, fileUrl, parentTitle, b)
+          );
+        }
+      }).catch(console.error);
     }
 
     return NextResponse.json({ attachment }, { status: 201 });
