@@ -97,6 +97,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
   }, [subtasksOpen, task?.id]);
   const [reminding, setReminding] = useState(false);
   const [showCompleteAfterUpload, setShowCompleteAfterUpload] = useState(false);
+  const [reviewingFile, setReviewingFile]   = useState<string | null>(null); // fileId activo
+  const [reviewComment, setReviewComment]   = useState('');
+  const [reviewLoading, setReviewLoading]   = useState(false);
 
   async function handleRemind() {
     if (!task) return;
@@ -114,6 +117,75 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       toast.error(err.message || 'Error al enviar recordatorio');
     } finally {
       setReminding(false);
+    }
+  }
+
+  async function handleFileReview(action: 'approved' | 'comments' | 'new_version', fileId: string, fileName: string) {
+    if (!task) return;
+    setReviewLoading(true);
+    try {
+      const clientId = task.clientId;
+      const newStatus = action === 'approved' ? (task.status === 'client_review' ? 'approved' : task.status)
+        : action === 'comments' ? 'changes_requested'
+        : 'in_progress';
+
+      // Cambiar status de la tarea
+      if (action !== 'approved' || task.status === 'client_review') {
+        if (onStatusChange) await onStatusChange(task.id, newStatus);
+      }
+
+      // Mensaje al chat del room del cliente (solo equipo lo ve)
+      if (clientId) {
+        const msgMap = {
+          approved:    `✅ Archivo aprobado: "${fileName}"`,
+          comments:    `💬 Comentarios sobre "${fileName}": ${reviewComment}`,
+          new_version: `🔄 Se solicita nueva versión de: "${fileName}"`,
+        };
+        await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ room: clientId, message: msgMap[action] }),
+        });
+      }
+
+      // Notificar a asignados según si están vinculados al cliente
+      const taskAssignees: string[] = [];
+      if (task.assignedUserId) taskAssignees.push(task.assignedUserId);
+      (task as any).assignedUsers?.forEach((au: any) => { if (au.userId) taskAssignees.push(au.userId); });
+      const uniqueAssignees = [...new Set(taskAssignees)];
+
+      if (uniqueAssignees.length > 0) {
+        const msgNotif = action === 'approved' ? `✅ Tu entrega fue aprobada: "${task.title}"`
+          : action === 'comments' ? `💬 El PM dejó comentarios en: "${task.title}"`
+          : `🔄 Se solicita nueva versión en: "${task.title}"`;
+
+        if (clientId) {
+          // Verificar cuáles están asignados a la cuenta del cliente
+          const clientUsers = await fetch(`/api/clients/${clientId}/users`).then(r => r.ok ? r.json() : { userIds: [] }).catch(() => ({ userIds: [] }));
+          const clientUserIds: string[] = clientUsers.userIds ?? [];
+          for (const uid of uniqueAssignees) {
+            if (clientUserIds.includes(uid)) {
+              // Está en la cuenta → ya recibió el mensaje del chat del room
+              await fetch('/api/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: uid, message: msgNotif, type: 'task', link: '/dashboard/tasks' }) });
+            } else {
+              // No está en la cuenta → notificación a su inbox
+              await fetch('/api/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: uid, message: msgNotif, type: 'task', link: '/dashboard/tasks' }) });
+            }
+          }
+        } else {
+          for (const uid of uniqueAssignees) {
+            await fetch('/api/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: uid, message: msgNotif, type: 'task', link: '/dashboard/tasks' }) });
+          }
+        }
+      }
+
+      setReviewingFile(null);
+      setReviewComment('');
+      toast.success(action === 'approved' ? 'Entrega aprobada ✓' : action === 'comments' ? 'Comentarios enviados ✓' : 'Nueva versión solicitada ✓');
+    } catch {
+      toast.error('Error al procesar revisión');
+    } finally {
+      setReviewLoading(false);
     }
   }
 
@@ -168,8 +240,15 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
   async function handleDelete(id: string) {
     setDeletingId(id);
     try {
-      await fetch(`/api/task-attachments?id=${id}`, { method: 'DELETE' });
-      setAttachments(prev => prev.filter(a => a.id !== id));
+      const res = await fetch(`/api/task-attachments?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setAttachments(prev => prev.filter(a => a.id !== id));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || 'Error al eliminar archivo');
+      }
+    } catch {
+      toast.error('Error de conexión al eliminar');
     } finally {
       setDeletingId(null);
     }
@@ -438,10 +517,41 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => window.open(a.fileUrl, '_blank')} className="p-1 hover:bg-white/[0.08] rounded text-white/40 hover:text-white"><Download className="w-3 h-3" /></button>
+                        {isManager && (
+                          <button onClick={() => { setReviewingFile(reviewingFile === a.id ? null : a.id); setReviewComment(''); }}
+                            className="p-1 hover:bg-violet-500/20 rounded text-white/40 hover:text-violet-400" title="Revisar entrega">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          </button>
+                        )}
                         <button onClick={() => handleDelete(a.id)} disabled={deletingId === a.id} className="p-1 hover:bg-red-500/20 rounded text-white/40 hover:text-red-400">
                           {deletingId === a.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                         </button>
                       </div>
+                      {/* Panel revisión PM */}
+                      {isManager && reviewingFile === a.id && (
+                        <div className="mt-2 p-3 rounded-xl border border-violet-500/20 space-y-2 col-span-full w-full" style={{ background: 'rgba(124,58,237,0.06)' }}>
+                          <div className="flex gap-2">
+                            <button onClick={() => handleFileReview('approved', a.id, a.fileName)} disabled={reviewLoading}
+                              className="flex-1 py-1.5 rounded-lg text-[11px] font-medium text-green-300 border border-green-500/30 hover:bg-green-500/10 transition-colors">
+                              ✅ Aprobado
+                            </button>
+                            <button onClick={() => handleFileReview('new_version', a.id, a.fileName)} disabled={reviewLoading}
+                              className="flex-1 py-1.5 rounded-lg text-[11px] font-medium text-amber-300 border border-amber-500/30 hover:bg-amber-500/10 transition-colors">
+                              🔄 Nueva versión
+                            </button>
+                          </div>
+                          <div className="space-y-1.5">
+                            <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
+                              placeholder="Escribe un comentario..." rows={2}
+                              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-white/70 placeholder:text-white/20 resize-none focus:outline-none focus:border-violet-500/40" />
+                            <button onClick={() => { if (reviewComment.trim()) handleFileReview('comments', a.id, a.fileName); else toast.error('Escribe un comentario'); }}
+                              disabled={reviewLoading || !reviewComment.trim()}
+                              className="w-full py-1.5 rounded-lg text-[11px] font-medium text-blue-300 border border-blue-500/30 hover:bg-blue-500/10 transition-colors disabled:opacity-40">
+                              💬 Enviar comentarios
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                   {attachments.length === 0 && !loadingFiles && (
