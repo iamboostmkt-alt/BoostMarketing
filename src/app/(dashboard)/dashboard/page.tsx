@@ -28,18 +28,22 @@ const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 const SECTION_TITLES: Record<string, string> = {
   stats:             'Estadísticas',
   my_tasks:          'Mis tareas',
+  recent_tasks:      'Tareas recientes',
   team_tasks:        'Equipo de trabajo',
   upcoming_meetings: 'Próximas reuniones',
   recent_activity:   'Actividad reciente',
   overdue_tasks:     'Tareas vencidas',
   completed_tasks:   'Completadas recientemente',
   recent_messages:   'Mensajes recientes',
+  entregas_revision: 'Entregas en revisión',
 };
 
 const DEFAULT_WIDTHS_MANAGER: Record<string, SectionWidth> = {
   stats:             'full',
-  team_tasks:        '2/3',
+  recent_tasks:      '1/2',
+  entregas_revision: '1/3',
   upcoming_meetings: '1/3',
+  team_tasks:        '2/3',
   my_tasks:          '1/2',
   recent_activity:   '1/2',
   recent_messages:   '1/2',
@@ -54,7 +58,7 @@ const DEFAULT_WIDTHS_MEMBER: Record<string, SectionWidth> = {
   recent_messages:   '1/3',
 };
 
-const SECTIONS_MANAGER = ['stats', 'team_tasks', 'upcoming_meetings', 'my_tasks', 'recent_activity', 'recent_messages'];
+const SECTIONS_MANAGER = ['stats', 'recent_tasks', 'entregas_revision', 'upcoming_meetings', 'team_tasks', 'recent_activity', 'recent_messages'];
 const SECTIONS_MEMBER  = ['stats', 'my_tasks', 'upcoming_meetings', 'completed_tasks', 'overdue_tasks', 'recent_messages'];
 
 interface SectionState {
@@ -225,6 +229,8 @@ export default function DashboardPage() {
   const [teamStatusFilter,setTeamStatusFilter]= useState('all');
   const [deletingMeet,    setDeletingMeet]    = useState<string | null>(null);
   const [chatMessages,    setChatMessages]    = useState<ChatMessage[]>([]);
+  const [taskTab,         setTaskTab]         = useState<'pending'|'in_progress'|'completed'>('pending');
+  const [deliverables,    setDeliverables]    = useState<Task[]>([]);
   const [loadingChat,     setLoadingChat]     = useState(true);
   const [editMode,        setEditMode]        = useState(false);
   const [sections,        setSections]        = useState<SectionState[]>([]);
@@ -322,6 +328,16 @@ export default function DashboardPage() {
       .then(d => { if (d?.messages) setChatMessages(d.messages.slice(-8).reverse()); })
       .finally(() => setLoadingChat(false));
   }, []);
+
+  useEffect(() => {
+    if (!isManager) return;
+    fetch('/api/tasks?scope=all')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        const all = d?.tasks || [];
+        setDeliverables(all.filter((t: Task) => t.status === 'internal_review' || t.status === 'client_review'));
+      });
+  }, [isManager]);
 
   const updateSection = useCallback((id: string, updates: Partial<SectionState>) => {
     setSections(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
@@ -584,14 +600,46 @@ export default function DashboardPage() {
 
       case 'upcoming_meetings':
         return (
-          <div className={isCompact ? 'space-y-1' : 'space-y-2'}>
+          <div className="space-y-1 overflow-y-auto custom-scrollbar" style={{ maxHeight: '280px' }}>
             {loadingMeet
-              ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)
-              : meetings.length === 0
+              ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)
+              : meetings.filter(m => new Date(m.date) >= now).length === 0
                 ? <p className="text-xs text-white/30 text-center py-6">Sin reuniones próximas</p>
-                : meetings.filter(m => new Date(m.date) >= now).slice(0, isCompact ? 5 : 4).map(m => (
-                    <MeetingCard key={m.id} meeting={m} compact={isCompact} />
-                  ))
+                : meetings.filter(m => new Date(m.date) >= now).slice(0, 5).map(m => {
+                    const d = new Date(m.date);
+                    const timeStr = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                    const dateStr = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
+                    const isToday = d.toDateString() === now.toDateString();
+                    return (
+                      <div key={m.id} className="flex items-center gap-3 py-2.5 px-2 rounded-xl hover:bg-white/[0.03] transition-colors group">
+                        <div className="w-16 shrink-0 text-right">
+                          <p className="text-sm font-semibold text-white/80">{timeStr}</p>
+                          <p className="text-[10px] text-white/30">{isToday ? 'Hoy' : dateStr}</p>
+                        </div>
+                        <div className="w-px h-8 rounded-full shrink-0" style={{ background: 'rgba(124,58,237,0.4)' }} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-white/85 truncate">{m.name}</p>
+                          {(m as any).assignedUsers?.length > 0 && (
+                            <div className="flex -space-x-1 mt-1">
+                              {(m as any).assignedUsers.slice(0, 3).map((au: any) => (
+                                <div key={au.userId || au.id} className="h-4 w-4 rounded-full border border-[#0a0a0a] flex items-center justify-center text-[8px] font-bold"
+                                  style={{ backgroundColor: (au.user?.color || '#7c3aed') + '55', color: au.user?.color || '#a78bfa' }}>
+                                  {userInitials(au.user?.name ?? null, au.user?.email ?? '')}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {(m as any).meetUrl && (
+                          <a href={(m as any).meetUrl} target="_blank" rel="noopener noreferrer"
+                            className="shrink-0 text-[10px] px-2 py-1 rounded-lg border border-sky-500/20 text-sky-300 hover:bg-sky-500/20 transition-all opacity-0 group-hover:opacity-100"
+                            style={{ background: 'rgba(14,165,233,0.08)' }}>
+                            Unirse
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })
             }
           </div>
         );
@@ -668,6 +716,103 @@ export default function DashboardPage() {
                 </Link>
               </div>
             )}
+          </div>
+        );
+
+      case 'recent_tasks': {
+        const tabTasks = {
+          pending:     tasks.filter(t => t.status === 'pending'),
+          in_progress: tasks.filter(t => t.status === 'in_progress'),
+          completed:   tasks.filter(t => t.status === 'completed' || t.status === 'approved'),
+        };
+        const tabs = [
+          { id: 'pending' as const,     label: 'Pendientes',  count: tabTasks.pending.length },
+          { id: 'in_progress' as const, label: 'En progreso', count: tabTasks.in_progress.length },
+          { id: 'completed' as const,   label: 'Completadas', count: tabTasks.completed.length },
+        ];
+        return (
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-1">
+              {tabs.map(tab => (
+                <button key={tab.id} onClick={() => setTaskTab(tab.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${taskTab === tab.id ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                  style={taskTab === tab.id ? { background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)' } : { border: '1px solid transparent' }}>
+                  {tab.label}
+                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${taskTab === tab.id ? 'bg-violet-500/30 text-violet-300' : 'bg-white/[0.06] text-white/30'}`}>
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="space-y-1.5 overflow-y-auto custom-scrollbar" style={{ maxHeight: '280px' }}>
+              {loadingTasks
+                ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)
+                : tabTasks[taskTab].length === 0
+                  ? <p className="text-xs text-white/30 text-center py-6">Sin tareas en este estado</p>
+                  : tabTasks[taskTab].slice(0, 8).map(t => (
+                      <div key={t.id} className="flex items-center gap-2.5">
+                        <div className="h-7 w-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold"
+                          style={{ backgroundColor: (t.assignedUser?.color || '#7c3aed') + '33', color: t.assignedUser?.color || '#a78bfa' }}>
+                          {userInitials(t.assignedUser?.name ?? t.user?.name ?? null, t.assignedUser?.email ?? t.user?.email ?? '')}
+                        </div>
+                        <div className="flex-1 min-w-0"><RealTaskCard task={t} compact={true} /></div>
+                      </div>
+                    ))
+              }
+            </div>
+            <Link href="/dashboard/tasks">
+              <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1.5 text-center border-t border-white/[0.04]">
+                Ver todas las tareas →
+              </button>
+            </Link>
+          </div>
+        );
+      }
+
+      case 'entregas_revision':
+        return (
+          <div className="space-y-2 overflow-y-auto custom-scrollbar" style={{ maxHeight: '280px' }}>
+            {deliverables.length === 0
+              ? <p className="text-xs text-white/30 text-center py-6">Sin entregas en revisión</p>
+              : deliverables.slice(0, 5).map(t => {
+                  const imgAttachment = (t as any).attachments?.find((a: any) => a.fileType?.startsWith('image/'));
+                  const timeAgo = (() => {
+                    const diff = Date.now() - new Date(t.updatedAt || t.createdAt).getTime();
+                    const hrs = Math.floor(diff / 3600000);
+                    if (hrs < 1) return 'Hace menos de 1h';
+                    if (hrs < 24) return `Hace ${hrs} hora${hrs !== 1 ? 's' : ''}`;
+                    return `Hace ${Math.floor(hrs / 24)} día${Math.floor(hrs/24) !== 1 ? 's' : ''}`;
+                  })();
+                  const assignee = t.assignedUser ?? t.user;
+                  return (
+                    <div key={t.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-white/[0.05] hover:border-violet-500/20 transition-all"
+                      style={{ background: 'rgba(255,255,255,0.02)' }}>
+                      <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-white/[0.06] flex items-center justify-center">
+                        {imgAttachment
+                          ? <img src={imgAttachment.fileUrl} alt={t.title} className="w-full h-full object-cover" />
+                          : <CheckSquare className="w-5 h-5 text-white/20" />
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-white/85 truncate">{t.title}</p>
+                        <p className="text-[10px] text-white/35 truncate">{t.client?.name || 'Sin cliente'}</p>
+                        <p className="text-[10px] text-white/25 mt-0.5">
+                          Por {assignee?.name || assignee?.email?.split('@')[0] || 'Usuario'} · {timeAgo}
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-medium"
+                        style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
+                        En revisión
+                      </span>
+                    </div>
+                  );
+                })
+            }
+            <Link href="/dashboard/tasks">
+              <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1.5 text-center border-t border-white/[0.04]">
+                Ver todas →
+              </button>
+            </Link>
           </div>
         );
 
