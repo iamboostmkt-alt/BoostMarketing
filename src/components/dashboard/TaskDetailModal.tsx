@@ -172,7 +172,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
   if (!task) return null;
   const statusStyle = statusStyleMap[task.status] ?? { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' };
-  const statusLbl = statusLabels[task.status] ?? task.status;
+  const statusLbl = !isManager
+    ? ({ pending: 'Por hacer', in_progress: 'En curso', internal_review: 'Listo ✓', changes_requested: 'Con observaciones', client_review: 'En revisión', approved: 'Aprobado', completed: 'Completado' } as Record<string,string>)[task.status] ?? statusLabels[task.status] ?? task.status
+    : statusLabels[task.status] ?? task.status;
   const assignees = resolveAssignees(task);
   const overdue   = isOverdue(task.dueDate) && task.status !== 'completed';
   const imageAttachments = attachments.filter(a => a.fileType.startsWith('image/'));
@@ -202,22 +204,56 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                       <svg className="w-2.5 h-2.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     {statusDropOpen && (
-                      <div className="absolute top-full left-0 mt-1 z-50 bg-[#16161e] border border-white/[0.08] rounded-xl shadow-2xl p-1 min-w-[160px]">
-                        {taskStatuses.map((s) => (
-                          <button
-                            key={s.id}
-                            onClick={async () => {
-                              setStatusDropOpen(false);
-                              if (onStatusChange) await onStatusChange(task.id, s.id);
-                            }}
-                            className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s.id ? 'opacity-100' : 'opacity-60'}`}
-                          >
-                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s.id] || { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}>
-                              {s.label}
-                            </span>
-                            {task.status === s.id && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                          </button>
-                        ))}
+                      <div className="absolute top-full left-0 mt-1 z-50 bg-[#16161e] border border-white/[0.08] rounded-xl shadow-2xl p-1 min-w-[180px]">
+                        {isManager ? (
+                          <>
+                            <p className="px-3 pt-1.5 pb-0.5 text-[9px] font-semibold text-white/20 uppercase tracking-wider">Progreso</p>
+                            {(['pending','in_progress'] as const).map(s => (
+                              <button key={s} onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, s); }}
+                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'pending':'Por hacer','in_progress':'En curso'} as Record<string,string>)[s]}</span>
+                                {task.status === s && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                              </button>
+                            ))}
+                            <div className="my-1 border-t border-white/[0.05]" />
+                            <p className="px-3 pt-1 pb-0.5 text-[9px] font-semibold text-white/20 uppercase tracking-wider">Revisión</p>
+                            {(['internal_review','client_review','changes_requested'] as const).map(s => (
+                              <button key={s} onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, s); }}
+                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'internal_review':'Revisión interna','client_review':'En revisión cliente','changes_requested':'Cambios pedidos'} as Record<string,string>)[s]}</span>
+                                {task.status === s && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                              </button>
+                            ))}
+                            <div className="my-1 border-t border-white/[0.05]" />
+                            <p className="px-3 pt-1 pb-0.5 text-[9px] font-semibold text-white/20 uppercase tracking-wider">Cierre</p>
+                            {(['approved','scheduled','published','completed'] as const).map(s => (
+                              <button key={s} onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, s); }}
+                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'approved':'Aprobado','scheduled':'Programado','published':'Publicado','completed':'Completado'} as Record<string,string>)[s]}</span>
+                                {task.status === s && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                              </button>
+                            ))}
+                          </>
+                        ) : (
+                          <>
+                            {task.status === 'changes_requested' && (
+                              <button onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, 'in_progress'); }}
+                                className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] opacity-80">
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap['in_progress']}>Retomar</span>
+                              </button>
+                            )}
+                            {(['pending','in_progress','internal_review'] as const).filter(s => s !== 'internal_review' || task.status !== 'changes_requested').map(s => (
+                              <button key={s} onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, s); }}
+                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'pending':'Por hacer','in_progress':'En curso','internal_review':'Listo ✓'} as Record<string,string>)[s]}</span>
+                                {task.status === s && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                              </button>
+                            ))}
+                            {task.status === 'changes_requested' && (
+                              <p className="px-3 py-2 text-[10px] text-yellow-400/60 italic">Con observaciones del PM</p>
+                            )}
+                          </>
+                        )}
                       </div>
                     )}
                   </div>

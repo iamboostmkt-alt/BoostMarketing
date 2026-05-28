@@ -342,7 +342,7 @@ export async function POST(req: NextRequest) {
       isDeliverable:  parentTaskId ? false : (isClient ? true : (isManager && resolvedClientId ? true : false)),
       deliverableStatus: parentTaskId ? null : (isClient ? 'draft' : (isManager && resolvedClientId ? 'client_review' : null)),
       // REGLA 3: si tiene cliente asignado -> auto in_progress
-      status: resolvedClientId && !parentTaskId ? 'in_progress' : 'pending',
+      status: 'pending',
       references:     Array.isArray(references) ? references : [],
       parentTaskId:   parentTaskId || null,
       milestoneId:    milestoneId  || null,
