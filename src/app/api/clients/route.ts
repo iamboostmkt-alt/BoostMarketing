@@ -63,6 +63,18 @@ export async function GET(req: NextRequest) {
   const status  = searchParams.get("status");
   const segment = searchParams.get("segment");
   const search  = searchParams.get("search")?.trim() ?? "";
+  const sidebar = searchParams.get("sidebar") === "1";
+
+  // Modo sidebar: devolver solo id, name, color para el nav
+  if (sidebar) {
+    const sidebarClients = await db.client.findMany({
+      where: { workspaceId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+      take: 10,
+    });
+    return NextResponse.json({ clients: sidebarClients });
+  }
 
   const where: Record<string, unknown> = { workspaceId };
 
