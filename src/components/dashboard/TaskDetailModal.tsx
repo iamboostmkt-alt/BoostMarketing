@@ -120,18 +120,53 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
     }
   }
 
-  async function handleFileReview(action: 'approved' | 'comments' | 'new_version', fileId: string, fileName: string) {
+  async function handleFileReview(action: 'approved' | 'comments' | 'new_version', fileId: string, fileName: string, subtaskId?: string) {
     if (!task) return;
     setReviewLoading(true);
     try {
-      const clientId = task.clientId;
-      const newStatus = action === 'approved' ? (task.status === 'client_review' ? 'approved' : task.status)
+      const clientId = (task as any).clientId;
+      // Determinar si el archivo es de subtarea o tarea padre
+      const targetTaskId = subtaskId ?? task.id;
+      const isSubtask = !!subtaskId;
+
+      const newStatus = action === 'approved' ? 'approved'
         : action === 'comments' ? 'changes_requested'
         : 'in_progress';
 
-      // Cambiar status de la tarea
-      if (action !== 'approved' || task.status === 'client_review') {
-        if (onStatusChange) await onStatusChange(task.id, newStatus);
+      // Cambiar status de la tarea/subtarea correcta
+      if (onStatusChange) await onStatusChange(targetTaskId, newStatus);
+
+      // Si aprobamos una subtarea, verificar si todas están aprobadas → completar padre
+      let parentCompleted = false;
+      if (action === 'approved' && isSubtask) {
+        const siblingsRes = await fetch(`/api/tasks?parentId=${task.id}`);
+        const siblingsData = siblingsRes.ok ? await siblingsRes.json() : { tasks: [] };
+        const siblings: any[] = siblingsData.tasks || [];
+        const allDone = siblings.every((s: any) => s.id === targetTaskId || ['approved','completed'].includes(s.status));
+        if (allDone && siblings.length > 0) {
+          if (onStatusChange) await onStatusChange(task.id, 'completed');
+          parentCompleted = true;
+        }
+      }
+
+      // Notificación + correo de felicitación
+      if (action === 'approved') {
+        const taskAssignees: string[] = [];
+        if ((task as any).assignedUserId) taskAssignees.push((task as any).assignedUserId);
+        (task as any).assignedUsers?.forEach((au: any) => { if (au.userId) taskAssignees.push(au.userId); });
+        const uniqueAssignees = [...new Set(taskAssignees)];
+        const celebTitle = parentCompleted ? task.title : `${task.title}${isSubtask ? ' (subtarea)' : ''}`;
+        for (const uid of uniqueAssignees) {
+          await fetch('/api/notifications', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: uid, message: parentCompleted ? `🏆 ¡Proyecto completado! "${task.title}"` : `⭐ Tu entrega fue aprobada: "${task.title}"`, type: 'task', link: '/dashboard/tasks' }),
+          });
+        }
+        // Correo de felicitación (non-blocking)
+        fetch('/api/tasks/celebrate', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taskId: task.id, parentCompleted, assigneeIds: uniqueAssignees }),
+        }).catch(() => {});
       }
 
       // Mensaje al chat del room del cliente (solo equipo lo ve)
@@ -531,11 +566,11 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                       {isManager && reviewingFile === a.id && (
                         <div className="mt-2 p-3 rounded-xl border border-violet-500/20 space-y-2 col-span-full w-full" style={{ background: 'rgba(124,58,237,0.06)' }}>
                           <div className="flex gap-2">
-                            <button onClick={() => handleFileReview('approved', a.id, a.fileName)} disabled={reviewLoading}
+                            <button onClick={() => handleFileReview('approved', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined)} disabled={reviewLoading}
                               className="flex-1 py-1.5 rounded-lg text-[11px] font-medium text-green-300 border border-green-500/30 hover:bg-green-500/10 transition-colors">
                               ✅ Aprobado
                             </button>
-                            <button onClick={() => handleFileReview('new_version', a.id, a.fileName)} disabled={reviewLoading}
+                            <button onClick={() => handleFileReview('new_version', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined)} disabled={reviewLoading}
                               className="flex-1 py-1.5 rounded-lg text-[11px] font-medium text-amber-300 border border-amber-500/30 hover:bg-amber-500/10 transition-colors">
                               🔄 Nueva versión
                             </button>
@@ -544,7 +579,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                             <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
                               placeholder="Escribe un comentario..." rows={2}
                               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-white/70 placeholder:text-white/20 resize-none focus:outline-none focus:border-violet-500/40" />
-                            <button onClick={() => { if (reviewComment.trim()) handleFileReview('comments', a.id, a.fileName); else toast.error('Escribe un comentario'); }}
+                            <button onClick={() => { if (reviewComment.trim()) handleFileReview('comments', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined); else toast.error('Escribe un comentario'); }}
                               disabled={reviewLoading || !reviewComment.trim()}
                               className="w-full py-1.5 rounded-lg text-[11px] font-medium text-blue-300 border border-blue-500/30 hover:bg-blue-500/10 transition-colors disabled:opacity-40">
                               💬 Enviar comentarios

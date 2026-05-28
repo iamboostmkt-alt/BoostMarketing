@@ -499,3 +499,34 @@ export function templateMensajeClienteSinLeer(
   return b ? emailLayout(content, b) : content;
 }
 
+export function templateFelicitacion(
+  userName: string,
+  taskTitle: string,
+  isParentComplete: boolean,
+  b?: Branding
+) {
+  const color = '#10b981';
+  const emoji = isParentComplete ? '🏆' : '⭐';
+  const headline = isParentComplete
+    ? '¡Proyecto completado!'
+    : '¡Entrega aprobada!';
+  const subtext = isParentComplete
+    ? `El proyecto <strong style="color:#18181b;">${taskTitle}</strong> fue completado exitosamente. ¡Excelente trabajo en equipo!`
+    : `Tu entrega en <strong style="color:#18181b;">${taskTitle}</strong> fue aprobada por el PM. ¡Sigue así!`;
+  const content = `
+    <div style="text-align:center;padding:24px 0 16px;">
+      <div style="font-size:48px;margin-bottom:12px;">${emoji}</div>
+      <h2 style="color:#18181b;margin:0 0 8px;font-size:22px;font-weight:700;">${headline}</h2>
+      <p style="color:#6b7280;font-size:15px;margin:0 0 24px;">Hola <strong style="color:#18181b;">${userName}</strong>, ${subtext}</p>
+    </div>
+    ${infoBox(`
+      <p style="margin:0;color:#18181b;font-weight:600;font-size:15px;">✅ ${taskTitle}</p>
+      <p style="margin:6px 0 0;color:${color};font-size:13px;font-weight:500;">${isParentComplete ? 'Proyecto completado al 100%' : 'Entrega aprobada'}</p>
+    `, color)}
+    <div style="text-align:center;margin:20px 0;padding:16px;background:#f0fdf4;border-radius:12px;">
+      <p style="margin:0;color:${color};font-weight:700;font-size:16px;">¡Felicitaciones! 🎉</p>
+    </div>
+    ${btn(APP_URL + '/dashboard/tasks', 'Ver mis tareas', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
