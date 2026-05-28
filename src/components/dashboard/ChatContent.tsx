@@ -557,38 +557,11 @@ export default function ChatContent({
                     {renderMessage(msg.message)}
                   </p>
                 </div>
-                {/* Emoji picker trigger oculto */}
-                <div className="hidden">
-                  <button id={`epicker-${msg.id}`} type="button"
-                    className="p-1 rounded text-white/20"
-                    title="Reaccionar"
-                      title="Reaccionar"
-                    >
-                      <Smile className="w-3.5 h-3.5" />
-                    </button>
-                    <div className="absolute bottom-full right-0 mb-1 hidden group-hover:flex gap-1 bg-[#1c1c26] border border-white/[0.08] rounded-xl p-1.5 shadow-xl z-50 flex-wrap max-w-[200px]">
-                      {QUICK_EMOJIS.map((e) => (
-                        <button
-                          key={e}
-                          type="button"
-                          onClick={() => handleReaction(msg.id, e)}
-                          className="text-base hover:scale-125 transition-transform p-0.5"
-                        >
-                          {e}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {(isMe || isAdmin) && (
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(msg.id)}
-                      className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-400/10"
-                      title="Eliminar mensaje"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                {/* Emoji picker inline */}
+                <div className="relative hidden" id={`epicker-${msg.id}`}>
+                  <button type="button" className="p-1 rounded text-white/20">
+                    <Smile className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
 
