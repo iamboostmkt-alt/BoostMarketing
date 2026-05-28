@@ -501,45 +501,67 @@ export default function ChatContent({
                   <div className="flex-1 h-px bg-violet-500/30" />
                 </div>
               )}
-              <div className="flex items-start gap-3 group px-2 py-1 rounded-lg hover:bg-white/[0.03] transition-colors">
+              <div className="flex items-start gap-3 group px-3 py-0.5 rounded-xl transition-all duration-150 relative"
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.025)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                style={{ background: 'transparent' }}>
+                {/* Hover actions flotantes */}
+                <div className="absolute right-3 -top-3.5 opacity-0 group-hover:opacity-100 transition-all duration-150 z-10 flex items-center gap-0.5 rounded-lg border border-white/[0.08] px-1 py-0.5"
+                  style={{ background: '#141824', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+                  <button type="button" onClick={() => { const el = document.getElementById(`epicker-${msg.id}`); el?.click(); }}
+                    className="p-1.5 rounded-md text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Reaccionar">
+                    <Smile className="w-3.5 h-3.5" />
+                  </button>
+                  <button type="button" onClick={() => onOpenThread?.(msg)}
+                    className="p-1.5 rounded-md text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Ver hilo">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                  </button>
+                  <button type="button" onClick={() => setTaskMsg(msg.message)}
+                    className="p-1.5 rounded-md text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Crear tarea">
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                  {(isMe || isAdmin) && (
+                    <button type="button" onClick={() => handleDelete(msg.id)}
+                      className="p-1.5 rounded-md text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Eliminar">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
                 {!isSame ? (
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5 overflow-hidden"
-                    style={{ backgroundColor: msg.user.color || '#7c3aed' }}
-                  >
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5 overflow-hidden ring-1 ring-white/[0.06]"
+                    style={{ backgroundColor: msg.user.color || '#7c3aed' }}>
                     {msg.user.image
                       ? <img src={msg.user.image} alt="" className="w-full h-full object-cover" />
                       : getInitials(msg.user.name, msg.user.email)}
                   </div>
                 ) : (
-                  <div className="w-8 shrink-0" />
+                  <div className="w-8 shrink-0 flex items-center justify-center">
+                    <span className="text-[10px] text-white/15 opacity-0 group-hover:opacity-100 transition-opacity leading-none">
+                      {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
                 )}
-
                 <div className="flex-1 min-w-0">
                   {!isSame && (
                     <div className="flex items-baseline gap-2 mb-0.5">
-                      <span className="text-sm font-semibold text-white truncate">
+                      <span className="text-[13px] font-semibold text-white/90">
                         {msg.user.name || msg.user.email}
-                        {isMe && <span className="text-brand-light ml-1 font-normal text-xs">(tú)</span>}
+                        {isMe && <span className="ml-1.5 text-[10px] font-normal text-violet-400/70">tú</span>}
                       </span>
-                      <span className="text-[11px] text-white/30 shrink-0">
+                      <span className="text-[11px] text-white/25">
                         {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true, locale: es })}
                       </span>
                     </div>
                   )}
-                  <p className="text-sm text-white/80 break-words leading-relaxed">
+                  <p className="text-[13.5px] text-white/75 break-words leading-[1.55]">
                     {renderMessage(msg.message)}
                   </p>
                 </div>
-
-                {/* Hover actions */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0 self-start mt-0.5">
-                  <button type="button" onClick={() => setTaskMsg(msg.message)} className="p-1 rounded hover:bg-violet-500/10 text-white/20 hover:text-violet-400 transition-colors" title="Crear tarea"><Plus className="w-3.5 h-3.5" /></button>
-                  <button type="button" onClick={() => onOpenThread?.(msg)} className="p-1 rounded hover:bg-violet-500/10 text-white/20 hover:text-violet-400 transition-colors" title="Ver hilo"><MessageSquare className="w-3.5 h-3.5" /></button>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      className="p-1 rounded text-white/20 hover:text-white/70 hover:bg-white/[0.08]"
+                {/* Emoji picker trigger oculto */}
+                <div className="hidden">
+                  <button id={`epicker-${msg.id}`} type="button"
+                    className="p-1 rounded text-white/20"
+                    title="Reaccionar"
                       title="Reaccionar"
                     >
                       <Smile className="w-3.5 h-3.5" />
