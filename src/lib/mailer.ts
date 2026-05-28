@@ -423,3 +423,30 @@ export function templateEntregaListaParaRevisar(taskTitle: string, clientName: s
     ${btn(`${APP_URL}/dashboard/tasks`, 'Revisar entrega', color)}`;
   return b ? emailLayout(content, b) : content;
 }
+
+export function templateArchivoSubido(
+  taskTitle: string,
+  uploaderName: string,
+  fileName: string,
+  fileUrl: string,
+  parentTitle?: string,
+  b?: Branding
+) {
+  const color = b?.brandColor || '#7c3aed';
+  const parentRow = parentTitle
+    ? `<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Tarea padre</p><p style="margin:0 0 10px;color:#6b7280;font-size:13px;font-weight:600;">${parentTitle}</p>`
+    : '';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">&#128206; Archivo subido para revisión</h2>
+    <p style="color:#6b7280;margin:0 0 20px;"><strong style="color:#18181b;">${uploaderName}</strong> subió un archivo y está esperando tu revisión.</p>
+    ${infoBox(
+      parentRow +
+      `<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Tarea</p>` +
+      `<p style="margin:0 0 10px;color:#18181b;font-weight:700;font-size:16px;">${taskTitle}</p>` +
+      `<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Archivo</p>` +
+      `<p style="margin:0;"><a href="${fileUrl}" style="color:${color};font-size:14px;font-weight:600;">&#128196; ${fileName}</a></p>`,
+      color
+    )}
+    ${btn(APP_URL + '/dashboard/tasks', 'Revisar entrega', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
