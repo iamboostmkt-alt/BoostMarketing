@@ -238,8 +238,6 @@ export default function DashboardPage() {
   const [deliverables,    setDeliverables]    = useState<Task[]>([]);
   const [activeClients,   setActiveClients]   = useState<Array<{id:string;name:string;company:string;progress:number;activeTasks:number;completedTasks:number}>>([]);
   const [activityData,    setActivityData]    = useState<Array<{day:string;completed:number;created:number}>>([]);
-  const [activeClients,   setActiveClients]   = useState<Array<{id:string;name:string;company:string;progress:number;activeTasks:number;completedTasks:number}>>([]);
-  const [activityData,    setActivityData]    = useState<Array<{day:string;completed:number;created:number}>>([]);
   const [loadingChat,     setLoadingChat]     = useState(true);
   const [editMode,        setEditMode]        = useState(false);
   const [sections,        setSections]        = useState<SectionState[]>([]);
