@@ -61,6 +61,7 @@ export async function GET(req: NextRequest) {
   const isManager = isAdmin || isPM;
   const isClient  = role === "CLIENT";
   const scope     = req.nextUrl.searchParams.get("scope");
+  const filterClientId = req.nextUrl.searchParams.get("clientId") ?? undefined;
 
   if (scope === "mine") {
     let clientRecord: { id: string } | null = null;
@@ -194,7 +195,7 @@ export async function GET(req: NextRequest) {
     const limit  = Math.min(parseInt(req.nextUrl.searchParams.get("limit") ?? "50"), 100);
 
     // ADMIN ve todo — PM solo ve tareas de sus clientes asignados
-    let whereAll: any = { archivedAt: null, workspaceId };
+    let whereAll: any = { archivedAt: null, workspaceId, ...(filterClientId && { clientId: filterClientId }) };
     if (!isAdmin) {
       const managedClients = await db.client.findMany({
         where: { assignedManagerId: userId },

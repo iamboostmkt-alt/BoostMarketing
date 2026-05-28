@@ -437,11 +437,11 @@ function ClientsSection({ collapsed, clients, isAdmin }: {
                 <div className="h-2 w-2 rounded-full bg-purple-400/60" />
                 <span className="truncate">Gestión de cuentas</span>
               </Link>
-              {/* Cuentas reales */}
+              {/* Cuentas reales — PM/Admin van al portal, Team va a tareas filtradas */}
               {clients.map(c => (
                 <Link
                   key={c.id}
-                  href={`/dashboard/client-portal?clientId=${c.id}`}
+                  href={isAdmin ? `/dashboard/client-portal?clientId=${c.id}` : `/dashboard/tasks?clientId=${c.id}`}
                   className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/40 transition-colors hover:bg-white/[0.04] hover:text-white/70"
                 >
                   <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: c.color || '#7c3aed' }} />

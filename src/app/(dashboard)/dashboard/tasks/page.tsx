@@ -320,18 +320,28 @@ function TasksContent() {
   const [deleting, setDeleting]             = useState(false);
   const [viewingTask, setViewingTask]       = useState<Task | null>(null);
   const [expandedClient, setExpandedClient] = useState<string | null>(null);
+  const filterClientId = searchParams.get('clientId') ?? null;
+  const [filterClientName, setFilterClientName] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get('action') === 'create') { setEditingTask(null); setFormOpen(true); }
-  }, [searchParams]);
+    if (filterClientId) {
+      fetch('/api/clients?sidebar=1').then(r => r.ok ? r.json() : null).then(d => {
+        const found = d?.clients?.find((c: any) => c.id === filterClientId);
+        if (found) setFilterClientName(found.name);
+      }).catch(() => {});
+    } else {
+      setFilterClientName(null);
+    }
+  }, [searchParams, filterClientId]);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
       const [mineRes, clientsRes, allRes] = await Promise.all([
-        fetch('/api/tasks?scope=mine'),
+        fetch(`/api/tasks?scope=mine${filterClientId ? `&clientId=${filterClientId}` : ''}`),
         fetch('/api/tasks?scope=clients-with-tasks'),
-        isManager ? fetch('/api/tasks?scope=all') : Promise.resolve(null),
+        isManager ? fetch(`/api/tasks?scope=all${filterClientId ? `&clientId=${filterClientId}` : ''}`) : Promise.resolve(null),
       ]);
       if (mineRes.ok)    { const d = await mineRes.json();    setMyTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId)); }
       if (clientsRes.ok) { const d = await clientsRes.json(); setClientsWithTasks(d.clients ?? []); }
@@ -532,6 +542,15 @@ function TasksContent() {
         </div>
       </div>
 
+      {/* Banner filtro por cuenta */}
+      {filterClientId && filterClientName && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-violet-500/20 text-xs" style={{ background: 'rgba(124,58,237,0.08)' }}>
+          <div className="h-1.5 w-1.5 rounded-full bg-violet-400" />
+          <span className="text-white/60">Filtrando por cuenta:</span>
+          <span className="text-violet-300 font-medium">{filterClientName}</span>
+          <a href="/dashboard/tasks" className="ml-auto text-white/30 hover:text-white/60 transition-colors">✕ Quitar filtro</a>
+        </div>
+      )}
       {/* Tabs */}
       <div className="flex gap-2 border-b border-white/[0.06] pb-0">
         {tabs.map((tab) => {
