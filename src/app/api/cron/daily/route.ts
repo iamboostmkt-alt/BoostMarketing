@@ -75,18 +75,24 @@ export async function GET(req: NextRequest) {
 
   // ─── 2b. Recordatorio reuniones próximas 24h ─────────────────────────────
   const mananaFin = new Date(ahora); mananaFin.setDate(mananaFin.getDate() + 1); mananaFin.setHours(23, 59, 59, 999);
-  const reunionesManana = await db.meeting.findMany({
-    where: { date: { gte: manana, lte: mananaFin }, deletedAt: null, workspaceId: { not: undefined } },
-    include: { attendees: { include: { user: { select: { id: true, email: true, name: true } } } } },
+  const reunionesManana = await db.activity.findMany({
+    where: { startDate: { gte: manana, lte: mananaFin }, workspaceId: { not: undefined } },
+    include: {
+      assignedUser: { select: { id: true, email: true, name: true } },
+      assignedUsers: { include: { user: { select: { id: true, email: true, name: true } } } },
+    },
   });
   let meetingReminders = 0;
   for (const m of reunionesManana) {
-    const dateStr = new Date(m.date).toLocaleString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-    for (const a of m.attendees) {
-      const u = a.user;
-      if (!u?.email || u.email.endsWith("@boostmkt.com")) continue;
+    const dateStr = new Date(m.startDate).toLocaleString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    const musers: Array<{ id: string; email: string; name: string | null }> = [];
+    if (m.assignedUser?.email) musers.push({ id: m.assignedUser.id, email: m.assignedUser.email, name: m.assignedUser.name });
+    m.assignedUsers?.forEach((au: any) => { if (au.user?.email) musers.push({ id: au.user.id, email: au.user.email, name: au.user.name }); });
+    const uniqueMusers = musers.filter((u, i, arr) => arr.findIndex(x => x.id === u.id) === i);
+    for (const u of uniqueMusers) {
+      if (u.email.endsWith("@boostmkt.com")) continue;
       await db.notification.create({ data: { userId: u.id, workspaceId: m.workspaceId, message: `Recordatorio: "${m.title}" mañana`, type: "meeting", read: false, link: "/dashboard/calendar" } }).catch(() => {});
-      await sendMail(u.email, `⏰ Recordatorio de reunión mañana: ${m.title}`, templateRecordatorioVideollamada({ name: u.name ?? "equipo", dateStr, meetUrl: m.meetUrl ?? "", minutesBefore: 1440 }, branding));
+      await sendMail(u.email, `⏰ Recordatorio de reunión mañana: ${m.title}`, templateRecordatorioVideollamada({ name: u.name ?? "equipo", dateStr, meetUrl: "", minutesBefore: 1440 }, branding));
       meetingReminders++;
     }
   }
