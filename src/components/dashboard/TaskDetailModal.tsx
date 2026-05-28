@@ -96,6 +96,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       .then(d => setSubtasks(d.tasks || []));
   }, [subtasksOpen, task?.id]);
   const [reminding, setReminding] = useState(false);
+  const [showCompleteAfterUpload, setShowCompleteAfterUpload] = useState(false);
 
   async function handleRemind() {
     if (!task) return;
@@ -133,6 +134,12 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
         })
       ));
       fetchAttachments();
+      // Para team: preguntar si quiere marcar como completada
+      if (!isManager && task.status !== 'completed' && task.status !== 'internal_review') {
+        setShowCompleteAfterUpload(true);
+      } else {
+        toast.success('Archivo subido ✓');
+      }
     },
     onUploadError: (err) => { console.error('Upload error:', err); },
   });
@@ -324,44 +331,75 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
             {/* Attachments */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Paperclip className="w-3.5 h-3.5 text-white/40" />
-                  <p className="text-[10px] text-white/30 uppercase tracking-wider">Archivos adjuntos {attachments.length > 0 && `(${attachments.length})`}</p>
-                </div>
-                <label className="cursor-pointer">
-                  <input type="file" multiple accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={e => {
-                      const ALLOWED_MIME = [
-                        'image/jpeg','image/png','image/gif','image/webp',
-                        'application/pdf',
-                        'application/msword',
-                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                      ];
-                      const MAX_SIZE: Record<string, number> = {
-                        'application/pdf': 16 * 1024 * 1024,
-                      };
-                      const DEFAULT_MAX = 8 * 1024 * 1024;
-                      const files = Array.from(e.target.files || []).filter(f => {
-                        if (!ALLOWED_MIME.includes(f.type)) {
-                          toast.error(`Tipo no permitido: ${f.name}`);
-                          return false;
-                        }
-                        const maxSize = MAX_SIZE[f.type] ?? DEFAULT_MAX;
-                        if (f.size > maxSize) {
-                          toast.error(`${f.name} supera el límite (${f.type === 'application/pdf' ? '16MB' : '8MB'})`);
-                          return false;
-                        }
-                        return true;
-                      });
-                      if (files.length) startUpload(files);
-                      e.target.value = '';
-                    }} disabled={isUploading} />
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-md text-white/60 hover:text-white text-xs transition-colors">
-                    {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-                    {isUploading ? 'Subiendo...' : 'Adjuntar'}
+              {/* Input file reutilizable */}
+              <input id="file-upload-input" type="file" multiple accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={e => {
+                const ALLOWED_MIME = ['image/jpeg','image/png','image/gif','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                const MAX_SIZE: Record<string, number> = { 'application/pdf': 16*1024*1024 };
+                const DEFAULT_MAX = 8*1024*1024;
+                const files = Array.from(e.target.files || []).filter(f => {
+                  if (!ALLOWED_MIME.includes(f.type)) { toast.error(`Tipo no permitido: ${f.name}`); return false; }
+                  const maxSize = MAX_SIZE[f.type] ?? DEFAULT_MAX;
+                  if (f.size > maxSize) { toast.error(`${f.name} supera el límite`); return false; }
+                  return true;
+                });
+                if (files.length) startUpload(files);
+                e.target.value = '';
+              }} disabled={isUploading} />
+
+              {/* TEAM: botón prominente de entrega */}
+              {!isManager && (
+                <label htmlFor="file-upload-input" className="cursor-pointer block">
+                  <div className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-violet-500/30 hover:border-violet-500/60 bg-violet-500/[0.04] hover:bg-violet-500/[0.08] transition-all group">
+                    {isUploading
+                      ? <><Loader2 className="w-4 h-4 text-violet-400 animate-spin" /><span className="text-sm text-violet-300">Subiendo...</span></>
+                      : <><Upload className="w-4 h-4 text-violet-400/70 group-hover:text-violet-400 transition-colors" /><span className="text-sm font-medium text-violet-300/70 group-hover:text-violet-300 transition-colors">Subir entrega</span></>
+                    }
                   </div>
                 </label>
-              </div>
+              )}
+
+              {/* Modal confirmar completar tras subir archivo — solo team */}
+              {showCompleteAfterUpload && (
+                <div className="rounded-xl border border-violet-500/30 p-3.5 space-y-3" style={{ background: 'rgba(124,58,237,0.08)' }}>
+                  <p className="text-xs font-medium text-white/80">✅ Archivo subido — ¿marcar tarea como completada?</p>
+                  <div className="flex gap-2">
+                    <button onClick={async () => {
+                      setShowCompleteAfterUpload(false);
+                      if (onStatusChange) await onStatusChange(task!.id, 'internal_review');
+                      toast.success('Tarea enviada a revisión ✓');
+                    }} className="flex-1 py-1.5 rounded-lg text-xs font-medium text-white transition-all" style={{ background: '#7c3aed' }}>
+                      Sí, enviar a revisión
+                    </button>
+                    <button onClick={() => { setShowCompleteAfterUpload(false); toast.success('Archivo subido ✓'); }}
+                      className="px-3 py-1.5 rounded-lg text-xs text-white/40 border border-white/[0.08] hover:text-white transition-colors">
+                      No por ahora
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* PM/ADMIN: header con botón adjuntar pequeño */}
+              {isManager && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Paperclip className="w-3.5 h-3.5 text-white/40" />
+                    <p className="text-[10px] text-white/30 uppercase tracking-wider">Archivos adjuntos {attachments.length > 0 && `(${attachments.length})`}</p>
+                  </div>
+                  <label htmlFor="file-upload-input" className="cursor-pointer">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-md text-white/60 hover:text-white text-xs transition-colors">
+                      {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                      {isUploading ? 'Subiendo...' : 'Adjuntar'}
+                    </div>
+                  </label>
+                </div>
+              )}
+              {/* TEAM: label archivos pequeño */}
+              {!isManager && attachments.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Paperclip className="w-3 h-3 text-white/30" />
+                  <p className="text-[10px] text-white/25 uppercase tracking-wider">Archivos ({attachments.length})</p>
+                </div>
+              )}
 
               {/* Image previews */}
               {imageAttachments.length > 0 && (
