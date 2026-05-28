@@ -212,10 +212,14 @@ export default function ChatContent({
   const [mentionQuery,  setMentionQuery]  = useState<string | null>(null);
   const [mentionIndex,  setMentionIndex]  = useState(0);
 
-  const bottomRef     = useRef<HTMLDivElement>(null);
-  const inputRef      = useRef<HTMLInputElement>(null);
-  const prevLengthRef = useRef(0);
-  const emojiRef      = useRef<HTMLDivElement>(null);
+  const bottomRef       = useRef<HTMLDivElement>(null);
+  const inputRef        = useRef<HTMLInputElement>(null);
+  const prevLengthRef   = useRef(0);
+  const emojiRef        = useRef<HTMLDivElement>(null);
+  const scrollRef       = useRef<HTMLDivElement>(null);
+  const firstUnreadRef  = useRef<HTMLDivElement>(null);
+  const [unreadCount,   setUnreadCount]   = useState(0);
+  const [initialScroll, setInitialScroll] = useState(false);
 
   // ── Fetch team users for @mention picker ─────────────────────────────────
   useEffect(() => {
@@ -254,6 +258,14 @@ export default function ChatContent({
     } catch { /* silent */ }
   }, [room]);
 
+  useEffect(() => {
+    setInitialScroll(false);
+    setUnreadCount(0);
+    fetch('/api/chat/unread')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.unreads?.[room]) setUnreadCount(d.unreads[room]); });
+  }, [room]);
+
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
 
   useEffect(() => {
@@ -282,12 +294,25 @@ export default function ChatContent({
     });
   }, [room]);
 
+  // Scroll al primer no leído al cargar — luego scroll al fondo en mensajes nuevos
   useEffect(() => {
+    if (messages.length === 0) return;
+    if (!initialScroll) {
+      setInitialScroll(true);
+      if (unreadCount > 0 && firstUnreadRef.current) {
+        firstUnreadRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        bottomRef.current?.scrollIntoView({ behavior: 'instant' as ScrollBehavior });
+      }
+      return;
+    }
     if (messages.length > prevLengthRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      const el = scrollRef.current;
+      const atBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 120 : true;
+      if (atBottom) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
     prevLengthRef.current = messages.length;
-  }, [messages]);
+  }, [messages, initialScroll, unreadCount]);
 
   useEffect(() => {
     if (!emojiOpen) return;
@@ -443,7 +468,7 @@ export default function ChatContent({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1 pr-1 -mx-2 px-2 min-h-0">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar space-y-1 pr-1 -mx-2 px-2 min-h-0">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-12">
             <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center">
@@ -456,11 +481,22 @@ export default function ChatContent({
         )}
 
         {messages.map((msg, idx) => {
+          const firstUnreadIdx = unreadCount > 0 ? messages.length - unreadCount : -1;
+          const isFirstUnread = idx === firstUnreadIdx;
           const isMe   = msg.userId === myId;
           const isSame = idx > 0 && messages[idx - 1].userId === msg.userId;
 
           return (
             <div key={msg.id} className={isSame ? 'mt-0.5' : 'mt-3'}>
+              {isFirstUnread && (
+                <div ref={firstUnreadRef} className="flex items-center gap-2 my-3 px-1">
+                  <div className="flex-1 h-px bg-violet-500/30" />
+                  <span className="text-[10px] font-medium text-violet-400/70 whitespace-nowrap">
+                    {unreadCount} mensaje{unreadCount !== 1 ? 's' : ''} nuevo{unreadCount !== 1 ? 's' : ''}
+                  </span>
+                  <div className="flex-1 h-px bg-violet-500/30" />
+                </div>
+              )}
               <div className="flex items-start gap-3 group px-2 py-1 rounded-lg hover:bg-white/[0.03] transition-colors">
                 {!isSame ? (
                   <div
