@@ -6,6 +6,7 @@
 import { db } from "./db";
 import { sendEmail, taskAssignedHtml } from "./resend";
 import { broadcastRealtime } from "./realtime-server";
+import { createNotification } from "./notifications";
 
 // ── Event types ────────────────────────────────────────────────────────────────
 
@@ -74,16 +75,7 @@ export async function dispatchEvent(event: AppEvent): Promise<void> {
 
   switch (event.type) {
     case "task.assigned": {
-      await db.notification.create({
-        data: {
-          userId:      event.targetUserId,
-          workspaceId,
-          message:     `Se te asignó la tarea: "${event.taskTitle}"`,
-          type:        "task",
-          link:        "/dashboard/tasks",
-        },
-      });
-      broadcastRealtime("notification.created", { userId: event.targetUserId }).catch(() => undefined);
+await createNotification({ userId: event.targetUserId, workspaceId, message: `Se te asignó la tarea: "${event.taskTitle}"`, type: "task", broadcast: true });
       if (event.assigneeEmail) {
         sendEmail({
           to:      event.assigneeEmail,
@@ -103,30 +95,12 @@ export async function dispatchEvent(event: AppEvent): Promise<void> {
     }
 
     case "task.status_changed": {
-      await db.notification.create({
-        data: {
-          userId:      event.targetUserId,
-          workspaceId,
-          message:     `Tu tarea "${event.taskTitle}" cambió a: ${event.newStatus}`,
-          type:        "task",
-          link:        "/dashboard/tasks",
-        },
-      });
-      broadcastRealtime("notification.created", { userId: event.targetUserId }).catch(() => undefined);
+await createNotification({ userId: event.targetUserId, workspaceId, message: `Tu tarea "${event.taskTitle}" cambió a: ${event.newStatus}`, type: "task", broadcast: true });
       break;
     }
 
     case "activity.assigned": {
-      await db.notification.create({
-        data: {
-          userId:      event.targetUserId,
-          workspaceId,
-          message:     `Se te asignó la actividad: "${event.activityTitle}"`,
-          type:        "activity",
-          link:        "/dashboard/calendar",
-        },
-      });
-      broadcastRealtime("notification.created", { userId: event.targetUserId }).catch(() => undefined);
+await createNotification({ userId: event.targetUserId, workspaceId, message: `Se te asignó la actividad: "${event.activityTitle}"`, type: "activity", broadcast: true });
       break;
     }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
+import { createNotification } from '@/lib/notifications';
 import { sendMail, templateFeedbackCliente } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
 
@@ -112,14 +113,10 @@ export async function POST(req: NextRequest) {
       });
 
       // Notificar al PM
-      await db.notification.create({
-        data: {
-          userId:      pmId,
-          workspaceId: task.workspaceId,
-          message:     `Cliente solicitó cambios en: "${task.title}"`,
-          type:        'task',
-          link:        '/dashboard/tasks',
-        },
+      await createNotification({
+        userId: pmId, workspaceId: task.workspaceId,
+        message: `Cliente solicitó cambios en: "${task.title}"`,
+        type: 'task',
       }).catch(() => undefined);
     }
 

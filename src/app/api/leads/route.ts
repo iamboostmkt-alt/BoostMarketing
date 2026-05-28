@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { createNotification } from '@/lib/notifications';
 import { requireWorkspace } from '@/core/auth/require-workspace';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 import { rateLimit } from '@/lib/security/rate-limit';
@@ -54,15 +55,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Notificar al admin
-    await db.notification.create({
-      data: {
-        userId:      firstAdmin.id,
-        workspaceId: firstAdmin.workspaceId,
-        message:     `Nuevo lead desde landing: ${contact.name} (${contact.email})`,
-        type:        'lead',
-        link:        '/dashboard/contacts',
-      },
-    }).catch(() => undefined);
+    await createNotification({ userId: firstAdmin.id, workspaceId: firstAdmin.workspaceId, message: `Nuevo lead desde landing: ${contact.name} (${contact.email})`, type: 'lead' });
 
     return NextResponse.json({ message: 'Registro recibido', contact: { id: contact.id } }, { status: 201 });
   } catch (error) {

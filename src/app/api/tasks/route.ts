@@ -4,6 +4,7 @@ import { requireWorkspace } from "@/core/auth/require-workspace";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { logAction } from "@/lib/audit";
+import { createNotification, createNotifications } from "@/lib/notifications";
 import { normalizeTaskStatus } from "@/lib/task-status";
 import {
   sendMail,
@@ -481,9 +482,7 @@ export async function PUT(req: NextRequest) {
     }
     notifyIds.delete(userId);
     for (const uid of notifyIds) {
-      await db.notification.create({
-        data: { userId: uid, workspaceId, message: `"${task.title}" cambio a estado: ${task.status}`, type: "task", link: "/dashboard/tasks" },
-      });
+      await createNotification({ userId: uid, workspaceId, message: `"${task.title}" cambió a estado: ${task.status}`, type: "task" });
     }
     const _branding = await getBranding();
     const _taskWithUsers = await db.task.findUnique({
@@ -542,15 +541,8 @@ export async function PUT(req: NextRequest) {
         if (admin && admin.id !== userId) pm = admin;
       }
       if (pm) {
-        await db.notification.create({
-          data: {
-            userId:      pm.id,
-            workspaceId: workspaceId,
-            message:     `⏳ ${userName} terminó: "${task.title}" — lista para revisar`,
-            type:        "task",
-            read:        false,
-            link:        "/dashboard/tasks",
-          },
+        await createNotification({
+          userId: pm.id, workspaceId, message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`, type: "task",
         });
         if (pm.email) {
           sendMail(pm.email, `⏳ Tarea lista para revisión: ${task.title}`,
@@ -593,9 +585,7 @@ export async function PUT(req: NextRequest) {
         : `🔄 Se pidieron cambios en "${task.title}"`;
 
       for (const uid of asignados) {
-        await db.notification.create({
-          data: { userId: uid, workspaceId, message: mensaje, type: "task", read: false, link: "/dashboard/tasks" },
-        });
+        await createNotification({ userId: uid, workspaceId, message: mensaje, type: "task" });
       }
       for (const u of _assignedUsers) {
         if (!u.email) continue;
@@ -631,9 +621,7 @@ export async function PUT(req: NextRequest) {
   if (isManager && assignedUserId && assignedUserId !== existing.assignedUserId) {
     const newAssignee = await db.user.findUnique({ where: { id: assignedUserId }, select: { id: true, email: true, name: true } });
     if (newAssignee && newAssignee.id !== userId) {
-      await db.notification.create({
-        data: { userId: newAssignee.id, workspaceId, message: `${userName} te asigno la tarea: "${task.title}"`, type: "task", link: "/dashboard/tasks" },
-      });
+      await createNotification({ userId: newAssignee.id, workspaceId, message: `${userName} te asignó la tarea: "${task.title}"`, type: "task" });
       if (newAssignee.email) {
         getBranding().then(b => sendMail(newAssignee.email!, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b, newAssignee.name ?? undefined))).catch(console.error);
       }
@@ -655,9 +643,7 @@ export async function PUT(req: NextRequest) {
     if (task.assignedUser?.id && task.assignedUser.id !== userId) notifyIds.add(task.assignedUser.id);
     existing.assignedUsers?.forEach((au: any) => { if (au.user.id !== userId) notifyIds.add(au.user.id); });
     for (const uid of notifyIds) {
-      await db.notification.create({
-        data: { userId: uid, workspaceId, message: `"${task.title}" fue editada por ${userName}`, type: "task", link: "/dashboard/tasks" },
-      });
+      await createNotification({ userId: uid, workspaceId, message: `"${task.title}" fue editada por ${userName}`, type: "task" });
     }
     const emails = await getAssignedEmails(task.id);
     for (const email of emails) {

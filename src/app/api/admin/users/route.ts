@@ -5,6 +5,7 @@ import { Role, UserLifecycleStatus } from "@prisma/client";
 import { BCRYPT_ROUNDS } from "@/lib/password";
 import { sendEmail, welcomeHtml } from "@/lib/resend";
 import { requireWorkspace } from "@/core/auth/require-workspace";
+import { createNotification } from "@/lib/notifications";
 
 const VALID_ROLES: Role[] = [
   "UNASSIGNED", "ADMIN", "CLIENT", "PROJECT_MANAGER",
@@ -90,14 +91,10 @@ export async function POST(req: NextRequest) {
     select: userSelect,
   });
 
-  await db.notification.create({
-    data: {
-      userId: user.id,
-      workspaceId,
-      message: "¡Bienvenido a BoostMarketing! Tu cuenta ha sido creada por el administrador.",
-      type: "welcome",
-      link: "/dashboard",
-    },
+  await createNotification({
+    userId: user.id, workspaceId,
+    message: "¡Bienvenido a BoostMarketing! Tu cuenta ha sido creada por el administrador.",
+    type: "welcome",
   });
 
   sendEmail({
