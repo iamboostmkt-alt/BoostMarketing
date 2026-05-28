@@ -450,3 +450,29 @@ export function templateArchivoSubido(
     ${btn(APP_URL + '/dashboard/tasks', 'Revisar entrega', color)}`;
   return b ? emailLayout(content, b) : content;
 }
+
+export function templateEscalacionPM(
+  pmName: string,
+  assigneeName: string,
+  taskTitle: string,
+  dueDate: string,
+  overdueCount: number,
+  b?: Branding
+) {
+  const color = '#f59e0b';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">⚠️ Tarea sin actualizar</h2>
+    <p style="color:#6b7280;font-size:15px;margin:0 0 20px;">
+      Hola <strong style="color:#18181b;">${pmName}</strong>,
+      <strong style="color:#18181b;">${assigneeName}</strong> aún no ha completado su tarea.
+      ¿Puedes recordarle?
+    </p>
+    ${infoBox(`
+      <p style="margin:0 0 6px;color:#18181b;font-weight:700;font-size:16px;">${taskTitle}</p>
+      <p style="margin:0 0 4px;color:#ef4444;font-weight:600;font-size:14px;">⚠️ Venció el ${dueDate}</p>
+      <p style="margin:0;color:#9ca3af;font-size:13px;">Se enviaron ${overdueCount} recordatorios a ${assigneeName} sin respuesta.</p>
+    `, color)}
+    ${btn(APP_URL + '/dashboard/tasks', 'Ver tarea', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+

@@ -228,6 +228,23 @@ model Task {
   @@index([userId, status])
   @@index([dueDate, status])
   @@index([parentTaskId])
+  // Recordatorios
+  reminder3dSent    Boolean   @default(false) @map("reminder_3d_sent")
+  reminder2d1Sent   Boolean   @default(false) @map("reminder_2d_1_sent")
+  reminder2d2Sent   Boolean   @default(false) @map("reminder_2d_2_sent")
+  reminder2d3Sent   Boolean   @default(false) @map("reminder_2d_3_sent")
+  reminder1d1Sent   Boolean   @default(false) @map("reminder_1d_1_sent")
+  reminder1d2Sent   Boolean   @default(false) @map("reminder_1d_2_sent")
+  reminder1d3Sent   Boolean   @default(false) @map("reminder_1d_3_sent")
+  reminder1d4Sent   Boolean   @default(false) @map("reminder_1d_4_sent")
+  reminderD1Sent    Boolean   @default(false) @map("reminder_d1_sent")
+  reminderD2Sent    Boolean   @default(false) @map("reminder_d2_sent")
+  reminderD3Sent    Boolean   @default(false) @map("reminder_d3_sent")
+  reminderD4Sent    Boolean   @default(false) @map("reminder_d4_sent")
+  overdueCount      Int       @default(0) @map("overdue_count")
+  overdueEscalated  Boolean   @default(false) @map("overdue_escalated")
+  lastReminderAt    DateTime? @map("last_reminder_at")
+
   @@index([workspaceId, assignedUserId])
   @@map("tasks")
 }

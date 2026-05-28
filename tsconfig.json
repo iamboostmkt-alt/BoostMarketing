@@ -1,5 +1,12 @@
 {
-  "exclude": ["ui-ux-pro-max-skill"],
+  "exclude": [
+    "node_modules",
+    "examples",
+    "prisma",
+    "scripts",
+    "supabase",
+    "supabase/functions"
+  ],
   "compilerOptions": {
     "target": "ES2017",
     "lib": [
@@ -36,11 +43,5 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "examples",
-    "prisma",
-    "scripts"
   ]
 }
