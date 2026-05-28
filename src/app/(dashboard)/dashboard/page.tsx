@@ -37,6 +37,8 @@ const SECTION_TITLES: Record<string, string> = {
   completed_tasks:   'Completadas recientemente',
   recent_messages:   'Mensajes recientes',
   entregas_revision: 'Entregas en revisión',
+  team_activity:     'Actividad del equipo',
+  active_clients:    'Clientes activos',
 };
 
 const DEFAULT_WIDTHS_MANAGER: Record<string, SectionWidth> = {
@@ -44,6 +46,8 @@ const DEFAULT_WIDTHS_MANAGER: Record<string, SectionWidth> = {
   recent_tasks:      '1/2',
   entregas_revision: '1/3',
   upcoming_meetings: '1/3',
+  team_activity:     '1/2',
+  active_clients:    '1/3',
   team_tasks:        '2/3',
   my_tasks:          '1/2',
   recent_activity:   '1/2',
@@ -59,7 +63,7 @@ const DEFAULT_WIDTHS_MEMBER: Record<string, SectionWidth> = {
   recent_messages:   '1/3',
 };
 
-const SECTIONS_MANAGER = ['stats', 'recent_tasks', 'entregas_revision', 'upcoming_meetings', 'team_tasks', 'recent_activity', 'recent_messages'];
+const SECTIONS_MANAGER = ['stats', 'recent_tasks', 'team_activity', 'upcoming_meetings', 'entregas_revision', 'active_clients', 'team_tasks', 'recent_activity', 'recent_messages'];
 const SECTIONS_MEMBER  = ['stats', 'my_tasks', 'upcoming_meetings', 'completed_tasks', 'overdue_tasks', 'recent_messages'];
 
 interface SectionState {
@@ -232,6 +236,8 @@ export default function DashboardPage() {
   const [chatMessages,    setChatMessages]    = useState<ChatMessage[]>([]);
   const [taskTab,         setTaskTab]         = useState<'pending'|'in_progress'|'completed'>('pending');
   const [deliverables,    setDeliverables]    = useState<Task[]>([]);
+  const [activeClients,   setActiveClients]   = useState<Array<{id:string;name:string;company:string;progress:number;activeTasks:number;completedTasks:number}>>([]);
+  const [activityData,    setActivityData]    = useState<Array<{day:string;completed:number;created:number}>>([]);
   const [activeClients,   setActiveClients]   = useState<Array<{id:string;name:string;company:string;progress:number;activeTasks:number;completedTasks:number}>>([]);
   const [activityData,    setActivityData]    = useState<Array<{day:string;completed:number;created:number}>>([]);
   const [loadingChat,     setLoadingChat]     = useState(true);
@@ -831,6 +837,82 @@ export default function DashboardPage() {
             <Link href="/dashboard/tasks">
               <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1.5 text-center border-t border-white/[0.04]">
                 Ver todas →
+              </button>
+            </Link>
+          </div>
+        );
+
+      case 'team_activity':
+        return (
+          <div className="flex flex-col gap-4">
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={activityData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <XAxis dataKey="day" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ background: '#16161e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '8px 12px' }}
+                  labelStyle={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', marginBottom: '4px' }}
+                  itemStyle={{ color: '#a78bfa', fontSize: '12px' }}
+                />
+                <Line type="monotone" dataKey="completed" stroke="#8B5CF6" strokeWidth={2.5} dot={{ fill: '#8B5CF6', r: 4 }} activeDot={{ r: 6, fill: '#a78bfa' }} name="Completadas" />
+                <Line type="monotone" dataKey="created" stroke="rgba(139,92,246,0.3)" strokeWidth={1.5} dot={false} name="Creadas" strokeDasharray="4 4" />
+              </LineChart>
+            </ResponsiveContainer>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Completadas', value: activityData.reduce((a,d) => a+d.completed, 0), color: '#22C55E', trend: '+18%' },
+                { label: 'Creadas', value: activityData.reduce((a,d) => a+d.created, 0), color: '#8B5CF6', trend: '+12%' },
+                { label: 'En revisión', value: deliverables.length, color: '#F59E0B', trend: '' },
+              ].map(s => (
+                <div key={s.label} className="rounded-xl p-3 border border-white/[0.05]" style={{ background: '#0F1117' }}>
+                  <p className="text-[10px] text-white/35 mb-1">{s.label}</p>
+                  <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+                  {s.trend && <p className="text-[10px] text-green-400/70 mt-0.5">▲ {s.trend}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'active_clients':
+        return (
+          <div className="space-y-2 overflow-y-auto custom-scrollbar" style={{ maxHeight: '280px' }}>
+            {activeClients.length === 0
+              ? <p className="text-xs text-white/30 text-center py-6">Sin clientes activos</p>
+              : activeClients.map(c => {
+                  const pct = c.progress ?? (c.completedTasks && c.activeTasks + c.completedTasks > 0
+                    ? Math.round(c.completedTasks / (c.activeTasks + c.completedTasks) * 100) : 0);
+                  const health = pct >= 70 ? '#22C55E' : pct >= 40 ? '#F59E0B' : '#EF4444';
+                  return (
+                    <div key={c.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-white/[0.05] hover:border-white/[0.08] transition-all"
+                      style={{ background: '#0F1117' }}>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold"
+                        style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa' }}>
+                        {(c.name || 'C')[0].toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-xs font-medium text-white/85 truncate">{c.name}</p>
+                          <span className="text-xs font-semibold shrink-0 ml-2" style={{ color: health }}>{pct}%</span>
+                        </div>
+                        <p className="text-[10px] text-white/35 truncate mb-1.5">{c.company || 'Sin campaña'}</p>
+                        <div className="h-1.5 rounded-full w-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                          <motion.div className="h-full rounded-full"
+                            style={{ background: 'linear-gradient(90deg, #7C3AED, #A855F7)' }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 0.6, ease: 'easeOut' }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+            }
+            <Link href="/dashboard/clients">
+              <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1.5 text-center border-t border-white/[0.04]">
+                Ver todos →
               </button>
             </Link>
           </div>
