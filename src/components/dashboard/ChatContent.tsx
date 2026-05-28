@@ -185,15 +185,19 @@ function MentionDropdown({
 // ── Main component ─────────────────────────────────────────────────────────────
 
 interface ChatContentProps {
-  room?:     string;
-  title?:    string;
-  subtitle?: string;
+  room?:        string;
+  title?:       string;
+  subtitle?:    string;
+  onOpenThread?: (msg: ChatMessage) => void;
+  accentColor?:  string;
 }
 
 export default function ChatContent({
-  room     = 'TEAM',
-  title    = 'Chat del Equipo',
-  subtitle = 'Solo para el equipo interno · tiempo real',
+  room         = 'TEAM',
+  title        = 'Chat del Equipo',
+  subtitle     = 'Solo para el equipo interno · tiempo real',
+  onOpenThread,
+  accentColor  = '#8B5CF6',
 }: ChatContentProps) {
   const { data: session } = useSession();
   const myId    = (session?.user as { id?: string })?.id ?? '';
@@ -531,6 +535,7 @@ export default function ChatContent({
                 {/* Hover actions */}
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0 self-start mt-0.5">
                   <button type="button" onClick={() => setTaskMsg(msg.message)} className="p-1 rounded hover:bg-violet-500/10 text-white/20 hover:text-violet-400 transition-colors" title="Crear tarea"><Plus className="w-3.5 h-3.5" /></button>
+                  <button type="button" onClick={() => onOpenThread?.(msg)} className="p-1 rounded hover:bg-violet-500/10 text-white/20 hover:text-violet-400 transition-colors" title="Ver hilo"><MessageSquare className="w-3.5 h-3.5" /></button>
                   <div className="relative">
                     <button
                       type="button"

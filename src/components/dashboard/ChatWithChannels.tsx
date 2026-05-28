@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Hash, LifeBuoy, Briefcase, Lock, ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
+import { Hash, LifeBuoy, Briefcase, Lock, ChevronDown, ChevronRight, Menu, X, MessageSquare, Pin, FileText, CheckSquare, Palette } from 'lucide-react';
+import type { ChatMessage } from '@/lib/types';
 import ChatContent from '@/components/dashboard/ChatContent';
 import SupportTicket from '@/components/dashboard/SupportTicket';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
@@ -22,6 +23,17 @@ export default function ChatWithChannels() {
   const canPrivate = role === 'ADMIN' || role === 'PROJECT_MANAGER';
 
   const [activeId,     setActiveId]     = useState('TEAM');
+  const [threadMsg,    setThreadMsg]    = useState<ChatMessage | null>(null);
+  const [accentColor,  setAccentColor]  = useState('#8B5CF6');
+  const ACCENT_COLORS = [
+    { label: 'Morado',   value: '#8B5CF6' },
+    { label: 'Azul',     value: '#3B82F6' },
+    { label: 'Cyan',     value: '#06B6D4' },
+    { label: 'Verde',    value: '#10B981' },
+    { label: 'Rosa',     value: '#EC4899' },
+    { label: 'Naranja',  value: '#F97316' },
+  ];
+  const [showColors,   setShowColors]   = useState(false);
   const [clients,      setClients]      = useState<ClientOption[]>([]);
   const [showClients,  setShowClients]  = useState(true);
   const [showChannels, setShowChannels] = useState(true);
