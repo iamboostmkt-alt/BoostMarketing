@@ -236,22 +236,13 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                           </>
                         ) : (
                           <>
-                            {task.status === 'changes_requested' && (
-                              <button onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, 'in_progress'); }}
-                                className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] opacity-80">
-                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap['in_progress']}>Retomar</span>
-                              </button>
-                            )}
-                            {(['pending','in_progress','internal_review'] as const).filter(s => s !== 'internal_review' || task.status !== 'changes_requested').map(s => (
+                            {(['pending','in_progress','internal_review','changes_requested'] as const).map(s => (
                               <button key={s} onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, s); }}
                                 className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
-                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'pending':'Por hacer','in_progress':'En curso','internal_review':'Listo ✓'} as Record<string,string>)[s]}</span>
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'pending':'Por hacer','in_progress':'En curso','internal_review':'En revisión','changes_requested':'Con observaciones'} as Record<string,string>)[s]}</span>
                                 {task.status === s && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                               </button>
                             ))}
-                            {task.status === 'changes_requested' && (
-                              <p className="px-3 py-2 text-[10px] text-yellow-400/60 italic">Con observaciones del PM</p>
-                            )}
                           </>
                         )}
                       </div>
