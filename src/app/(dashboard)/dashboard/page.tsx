@@ -8,8 +8,9 @@ import {
   Users, CheckSquare, CheckCircle2, UserCircle, DollarSign,
   Plus, ArrowUpRight, ArrowDownRight, Clock, Video,
   Briefcase, Filter, ChevronDown, ChevronUp, Trash2,
-  Pencil, X, Eye, EyeOff, GripVertical,
+  Pencil, X, Eye, EyeOff, GripVertical, ClipboardCheck, BadgeDollarSign,
 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -231,6 +232,8 @@ export default function DashboardPage() {
   const [chatMessages,    setChatMessages]    = useState<ChatMessage[]>([]);
   const [taskTab,         setTaskTab]         = useState<'pending'|'in_progress'|'completed'>('pending');
   const [deliverables,    setDeliverables]    = useState<Task[]>([]);
+  const [activeClients,   setActiveClients]   = useState<Array<{id:string;name:string;company:string;progress:number;activeTasks:number;completedTasks:number}>>([]);
+  const [activityData,    setActivityData]    = useState<Array<{day:string;completed:number;created:number}>>([]);
   const [loadingChat,     setLoadingChat]     = useState(true);
   const [editMode,        setEditMode]        = useState(false);
   const [sections,        setSections]        = useState<SectionState[]>([]);
@@ -336,7 +339,24 @@ export default function DashboardPage() {
       .then(d => {
         const all = d?.tasks || [];
         setDeliverables(all.filter((t: Task) => t.status === 'internal_review' || t.status === 'client_review'));
+        // Generar actividad semanal desde tareas
+        const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+        const today = new Date();
+        const data = days.map((day, i) => {
+          const date = new Date(today);
+          date.setDate(today.getDate() - (today.getDay() - 1 - i + 7) % 7);
+          const dateStr = date.toDateString();
+          return {
+            day,
+            completed: all.filter((t: Task) => t.updatedAt && new Date(t.updatedAt).toDateString() === dateStr && (t.status === 'completed' || t.status === 'approved')).length,
+            created: all.filter((t: Task) => t.createdAt && new Date((t as any).createdAt).toDateString() === dateStr).length,
+          };
+        });
+        setActivityData(data);
       });
+    fetch('/api/clients')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.clients) setActiveClients(d.clients.slice(0, 5)); });
   }, [isManager]);
 
   const updateSection = useCallback((id: string, updates: Partial<SectionState>) => {
@@ -371,14 +391,14 @@ export default function DashboardPage() {
   }
 
   const statCards = isManager ? [
-    { label: 'Total Contactos',   value: stats?.totalContacts ?? 0,                                icon: Users,       color: '#a78bfa', change: '+12%', up: true  },
-    { label: 'Tareas Pendientes', value: stats ? stats.totalTasks - stats.completedTasks : 0,      icon: CheckSquare, color: '#38bdf8', change: '-5%',  up: false },
-    { label: 'Clientes Activos',  value: stats?.activeClients ?? 0,                                icon: UserCircle,  color: '#4ade80', change: '+8%',  up: true  },
-    { label: 'Ingresos Totales',  value: `$${(stats?.totalRevenue ?? 0).toLocaleString('es-ES')}`, icon: DollarSign,  color: '#fbbf24', change: '+23%', up: true  },
+    { label: 'Tareas Pendientes',    value: stats ? stats.totalTasks - stats.completedTasks : 0,      icon: ClipboardCheck, color: '#38bdf8', change: '+12%', up: true  },
+    { label: 'Clientes Activos',     value: stats?.activeClients ?? 0,                                icon: Users,          color: '#4ade80', change: '+8%',  up: true  },
+    { label: 'Entregables Revisión', value: deliverables.length,                                      icon: Eye,            color: '#f59e0b', change: '-3%',  up: false },
+    { label: 'Ingresos este mes',    value: `$${(stats?.totalRevenue ?? 0).toLocaleString('es-ES')}`, icon: BadgeDollarSign,color: '#a78bfa', change: '+23%', up: true  },
   ] : [
-    { label: 'Tareas Hoy',         value: todayTasks.length,      icon: CheckSquare, color: '#38bdf8', change: '', up: true  },
-    { label: 'Vencidas',           value: overdueTasks.length,    icon: Clock,       color: overdueTasks.length > 0 ? '#f87171' : 'rgba(255,255,255,0.3)', change: '', up: false },
-    { label: 'Listas esta semana', value: completedRecent.length, icon: UserCircle,  color: '#4ade80', change: '', up: true  },
+    { label: 'Tareas Hoy',         value: todayTasks.length,      icon: ClipboardCheck, color: '#38bdf8', change: '', up: true  },
+    { label: 'Vencidas',           value: overdueTasks.length,    icon: Clock,          color: overdueTasks.length > 0 ? '#f87171' : 'rgba(255,255,255,0.3)', change: '', up: false },
+    { label: 'Listas esta semana', value: completedRecent.length, icon: CheckCircle2,   color: '#4ade80', change: '', up: true  },
     { label: 'Próxima reunión',    value: nextMeeting ? new Date(nextMeeting.date).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—', icon: Video, color: '#fbbf24', change: '', up: true },
   ];
 
@@ -431,9 +451,9 @@ export default function DashboardPage() {
                         {s.value}
                       </motion.span>
                     )}
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: s.color + '1a' }}>
-                      <Icon className="w-4 h-4" style={{ color: s.color }} />
+                    <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 relative"
+                      style={{ background: s.color + '18', boxShadow: `0 0 20px ${s.color}33` }}>
+                      <Icon className="w-5 h-5" style={{ color: s.color }} />
                     </div>
                   </div>
                 </motion.div>
