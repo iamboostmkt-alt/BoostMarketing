@@ -23,6 +23,7 @@ enum Role {
 /// Ciclo de vida SaaS del usuario (típico en role CLIENT; null en otros)
 enum UserLifecycleStatus {
   PROSPECT
+  INVITED
   ACTIVE
   INACTIVE
 }

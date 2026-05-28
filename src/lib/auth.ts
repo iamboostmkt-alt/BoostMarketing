@@ -98,8 +98,16 @@ export const authOptions: NextAuthOptions = {
           throw new Error("ContraseÃ±a incorrecta.");
         }
 
+        // Si es usuario invitado → activar en primer login
         if (!user.active) {
-          throw new Error("Cuenta desactivada.");
+          if (user.lifecycleStatus === "INVITED") {
+            await db.user.update({
+              where: { id: user.id },
+              data: { active: true, lifecycleStatus: "ACTIVE" },
+            });
+          } else {
+            throw new Error("Cuenta desactivada.");
+          }
         }
 
         return {
