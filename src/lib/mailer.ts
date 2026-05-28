@@ -232,11 +232,11 @@ export function templateResetPassword(name: string, resetUrl: string, b?: Brandi
 export function templateVideollamadaConfirmada(clientName: string, date: string, meetUrl?: string, b?: Branding) {
   const color = '#0ea5e9';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">🎥 Videollamada confirmada</h2>
-    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong>, tu videollamada ha sido confirmada.</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">🎥 Videollamada confirmada</h2>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:#18181b;">${clientName}</strong>, tu videollamada ha sido confirmada.</p>
     ${infoBox(`
       <p style="margin:0 0 8px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">📅 Detalles de la reunión</p>
-      <p style="margin:0 0 6px;color:white;font-size:16px;font-weight:600;">${date}</p>
+      <p style="margin:0 0 6px;color:#18181b;font-size:16px;font-weight:600;">${date}</p>
       ${meetUrl ? `<p style="margin:6px 0 0;"><a href="${meetUrl}" style="color:${color};font-size:14px;">${meetUrl}</a></p>` : ''}
     `, color)}
     ${meetUrl ? btn(meetUrl, '🔗 Unirse a la Videollamada', color) : ''}
@@ -247,12 +247,12 @@ export function templateVideollamadaConfirmada(clientName: string, date: string,
 export function templateNuevaCita(clientName: string, clientEmail: string, date: string, notes?: string, b?: Branding) {
   const color = '#f59e0b';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">📆 Nueva cita agendada</h2>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">📆 Nueva cita agendada</h2>
     <p style="color:#6b7280;margin:0 0 20px;">Un prospecto agendó una videollamada</p>
     ${infoBox(`
-      <p style="margin:0 0 8px;color:white;"><span style="color:#9ca3af;font-size:13px;">👤 NOMBRE</span><br/><strong>${clientName}</strong></p>
-      <p style="margin:0 0 8px;color:white;"><span style="color:#9ca3af;font-size:13px;">📧 EMAIL</span><br/><strong>${clientEmail}</strong></p>
-      <p style="margin:0 ${notes ? '0 8px' : ''};color:white;"><span style="color:#9ca3af;font-size:13px;">📅 FECHA</span><br/><strong>${date}</strong></p>
+      <p style="margin:0 0 8px;color:#18181b;"><span style="color:#9ca3af;font-size:13px;">👤 NOMBRE</span><br/><strong>${clientName}</strong></p>
+      <p style="margin:0 0 8px;color:#18181b;"><span style="color:#9ca3af;font-size:13px;">📧 EMAIL</span><br/><strong>${clientEmail}</strong></p>
+      <p style="margin:0 ${notes ? '0 8px' : ''};color:#18181b;"><span style="color:#9ca3af;font-size:13px;">📅 FECHA</span><br/><strong>${date}</strong></p>
       ${notes ? `<p style="margin:0;color:#4b5563;font-size:14px;">📝 ${notes}</p>` : ''}
     `, color)}
     ${btn(`${APP_URL}/dashboard/calendar`, 'Ver en Dashboard', color)}`;
@@ -262,9 +262,9 @@ export function templateNuevaCita(clientName: string, clientEmail: string, date:
 export function templateCitaCancelada(clientName: string, date: string, b?: Branding) {
   const color = '#ef4444';
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">❌ Cita cancelada</h2>
-    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:white;">${clientName}</strong></p>
-    ${infoBox(`<p style="margin:0;color:#374151;">Tu cita del <strong style="color:white;">${date}</strong> ha sido cancelada.<br/><span style="font-size:13px;color:#6b7280;">Por favor contáctanos para reagendar.</span></p>`, color)}
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">❌ Cita cancelada</h2>
+    <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:#18181b;">${clientName}</strong></p>
+    ${infoBox(`<p style="margin:0;color:#374151;">Tu cita del <strong style="color:#18181b;">${date}</strong> ha sido cancelada.<br/><span style="font-size:13px;color:#6b7280;">Por favor contáctanos para reagendar.</span></p>`, color)}
     ${btn(APP_URL, 'Reagendar', color)}`;
   return b ? emailLayout(content, b) : content;
 }
@@ -283,9 +283,9 @@ export function templateFeedbackCliente(
   };
   const cfg = configs[type];
   const content = `
-    <h2 style="color:white;margin:0 0 8px;font-size:20px;">${cfg.emoji} ${cfg.title}</h2>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">${cfg.emoji} ${cfg.title}</h2>
     <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">
-      <strong style="color:white;">${clientName}</strong> ${cfg.label} una entrega
+      <strong style="color:#18181b;">${clientName}</strong> ${cfg.label} una entrega
     </p>
     ${infoBox(`
       <p style="margin:0 0 6px;color:#18181b;font-weight:600;font-size:16px;">${taskTitle}</p>
@@ -340,7 +340,7 @@ export function templateRecordatorioVideollamada(params: { name: string; dateStr
     <p style="color:#6b7280;margin:0 0 20px;">Hola <strong style="color:#18181b;">${name}</strong>, tu reunión comienza en <strong style="color:${color};">${label}</strong></p>
     ${infoBox(`
       <p style="margin:0 0 6px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">📅 Fecha y hora</p>
-      <p style="margin:0;color:white;font-size:16px;font-weight:600;">${dateStr}</p>
+      <p style="margin:0;color:#18181b;font-size:16px;font-weight:600;">${dateStr}</p>
     `, color)}
     ${meetUrl ? btn(meetUrl, '🔗 Unirse a la Reunión', color) : ''}
     <p style="color:rgba(255,255,255,0.3);font-size:13px;text-align:center;">Si tienes alguna pregunta, responde a este correo.</p>`;
