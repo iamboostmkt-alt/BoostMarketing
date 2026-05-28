@@ -68,7 +68,8 @@ export async function createNotifications(
   userIds: string[],
   params: Omit<CreateNotificationParams, "userId">
 ): Promise<void> {
+  const uniqueIds = [...new Set(userIds)];
   await Promise.allSettled(
-    userIds.map((userId) => createNotification({ ...params, userId }))
+    uniqueIds.map((userId) => createNotification({ ...params, userId }))
   );
 }

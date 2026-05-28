@@ -184,19 +184,28 @@ export async function POST(req: NextRequest) {
     })().catch(() => undefined);
   }
 
-  // Incrementar no leídos para todos excepto el emisor
-  db.user.findMany({
-    where: { workspaceId, id: { not: userId } },
-    select: { id: true },
-  }).then(members =>
-    Promise.all(members.map(m =>
-      db.chatUnread.upsert({
-        where:  { userId_workspaceId_room: { userId: m.id, workspaceId, room } },
-        update: { count: { increment: 1 } },
-        create: { userId: m.id, workspaceId, room, count: 1 },
+  // Incrementar no leídos solo para usuarios con acceso al room
+  (async () => {
+    const allMembers = await db.user.findMany({
+      where: { workspaceId, id: { not: userId } },
+      select: { id: true, role: true, email: true },
+    });
+    // Filtrar solo los que tienen acceso real al room
+    const eligible = await Promise.all(
+      allMembers.map(async m => {
+        const hasAccess = await checkRoomAccess(m.id, m.role, m.email ?? '', room, workspaceId);
+        return hasAccess ? m.id : null;
       })
-    ))
-  ).catch(() => undefined);
+    );
+    const validIds = eligible.filter((id): id is string => id !== null);
+    await Promise.all(validIds.map(uid =>
+      db.chatUnread.upsert({
+        where:  { userId_workspaceId_room: { userId: uid, workspaceId, room } },
+        update: { count: { increment: 1 } },
+        create: { userId: uid, workspaceId, room, count: 1 },
+      })
+    ));
+  })().catch(() => undefined);
 
   // Parse @mentions → notify (non-blocking)
   resolveMentions(text, userId, workspaceId)
