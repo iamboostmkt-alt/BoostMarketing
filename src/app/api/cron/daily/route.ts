@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { TASK_STATUS, APPOINTMENT_STATUS } from "@/lib/constants/status";
-import { sendMail, templateTareaVencida } from "@/lib/mailer";
+import {
+  sendMail,
+  templateTareaVencida,
+  templateRecordatorio,
+  templateRecordatorioVideollamada,
+} from "@/lib/mailer";
 import { sendEmail } from "@/lib/resend";
 import { getBranding } from "@/lib/branding";
 export const dynamic = "force-dynamic";
@@ -67,6 +72,47 @@ export async function GET(req: NextRequest) {
     }
   }
   results.overdueNotified = emailsEnviados;
+
+  // ─── 2b. Recordatorio reuniones próximas 24h ─────────────────────────────
+  const mananaFin = new Date(ahora); mananaFin.setDate(mananaFin.getDate() + 1); mananaFin.setHours(23, 59, 59, 999);
+  const reunionesManana = await db.meeting.findMany({
+    where: { date: { gte: manana, lte: mananaFin }, deletedAt: null, workspaceId: { not: undefined } },
+    include: { attendees: { include: { user: { select: { id: true, email: true, name: true } } } } },
+  });
+  let meetingReminders = 0;
+  for (const m of reunionesManana) {
+    const dateStr = new Date(m.date).toLocaleString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    for (const a of m.attendees) {
+      const u = a.user;
+      if (!u?.email || u.email.endsWith("@boostmkt.com")) continue;
+      await db.notification.create({ data: { userId: u.id, workspaceId: m.workspaceId, message: `Recordatorio: "${m.title}" mañana`, type: "meeting", read: false, link: "/dashboard/calendar" } }).catch(() => {});
+      await sendMail(u.email, `⏰ Recordatorio de reunión mañana: ${m.title}`, templateRecordatorioVideollamada({ name: u.name ?? "equipo", dateStr, meetUrl: m.meetUrl ?? "", minutesBefore: 1440 }, branding));
+      meetingReminders++;
+    }
+  }
+  results.meetingReminders = meetingReminders;
+
+  // ─── 2c. Recordatorio tareas que vencen mañana ───────────────────────────
+  const tareasManana = await db.task.findMany({
+    where: { dueDate: { gte: ahora, lte: manana }, status: { notIn: [TASK_STATUS.COMPLETED, TASK_STATUS.CANCELLED, TASK_STATUS.APPROVED] }, deletedAt: null, workspaceId: { not: undefined } },
+    include: { assignedUser: { select: { id: true, email: true, name: true } }, assignedUsers: { include: { user: { select: { id: true, email: true, name: true } } } } },
+  });
+  let taskRemindersCount = 0;
+  for (const t of tareasManana) {
+    const tusers: Array<{ id: string; email: string; name: string | null }> = [];
+    if (t.assignedUser?.email) tusers.push({ id: t.assignedUser.id, email: t.assignedUser.email, name: t.assignedUser.name });
+    t.assignedUsers?.forEach((au: any) => { if (au.user?.email) tusers.push({ id: au.user.id, email: au.user.email, name: au.user.name }); });
+    const uniqueTUsers = tusers.filter((u, i, arr) => arr.findIndex(x => x.id === u.id) === i);
+    const dueDate = t.dueDate ? new Date(t.dueDate).toLocaleDateString("es-MX") : "";
+    const horasRestantes = t.dueDate ? Math.round((new Date(t.dueDate).getTime() - ahora.getTime()) / 3600000) : 24;
+    for (const u of uniqueTUsers) {
+      if (u.email.endsWith("@boostmkt.com")) continue;
+      await db.notification.create({ data: { userId: u.id, workspaceId: t.workspaceId, message: `Tu tarea "${t.title}" vence mañana`, type: "task", read: false, link: "/dashboard/tasks" } }).catch(() => {});
+      await sendMail(u.email, `⏰ Tu tarea vence pronto: ${t.title}`, templateRecordatorio(t.title, dueDate, horasRestantes, branding));
+      taskRemindersCount++;
+    }
+  }
+  results.taskReminders = taskRemindersCount;
 
   // ─── 3. Recordatorios F1 (internal_review sin revisar) ───────────────────
   const hace5h  = new Date(ahora.getTime() - 5 * 3600000);
