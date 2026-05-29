@@ -259,12 +259,16 @@ function ChatMain({
   const [activeTab, setActiveTab] = useState<'messages'|'files'|'pinned'|'tasks'>('messages');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [pendingFile, setPendingFile] = useState<{ name: string; type: string; preview?: string } | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<{ name: string; type: string; preview?: string; progress: number }[]>([]);
   const [roomTasks, setRoomTasks] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { startUpload } = useUploadThing('chatAttachment');
+  const { startUpload } = useUploadThing('chatAttachment', {
+    onUploadProgress: (p) => {
+      setPendingFiles(prev => prev.map((f, i) => i === 0 ? { ...f, progress: p } : f));
+    },
+  });
 
   useEffect(() => {
     if (activeTab !== 'tasks') return;
@@ -308,24 +312,55 @@ function ChatMain({
     setSending(false);
   }
 
+  async function compressVideo(file: File): Promise<File> {
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(file);
+      video.muted = true;
+      video.onloadedmetadata = () => {
+        const canvas = document.createElement('canvas');
+        const scale = Math.min(1, 1280 / video.videoWidth);
+        canvas.width = Math.round(video.videoWidth * scale);
+        canvas.height = Math.round(video.videoHeight * scale);
+        video.currentTime = 0;
+        video.onseeked = () => {
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve(file);
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        };
+        // Para videos usamos el archivo original con límite de 64MB — compresión real requiere WebCodecs
+        resolve(file);
+      };
+      video.onerror = () => resolve(file);
+    });
+  }
+
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFiles = Array.from(e.target.files || []);
+    if (!rawFiles.length) return;
     setUploading(true);
-    setPendingFile({ name: file.name, type: file.type, preview: file.type.startsWith('image') ? URL.createObjectURL(file) : undefined });
+    setPendingFiles(rawFiles.map(f => ({
+      name: f.name, type: f.type, progress: 0,
+      preview: f.type.startsWith('image') ? URL.createObjectURL(f) : undefined,
+    })));
     try {
-      const uploaded = await startUpload([file]);
-      if (uploaded?.[0]) {
-        const { url, name, type } = uploaded[0] as any;
-        await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: name || 'Archivo', room, fileUrl: url, fileName: name, fileType: type }),
-        });
+      for (const rawFile of rawFiles) {
+        const file = rawFile.type.startsWith('video') && rawFile.size > 10 * 1024 * 1024
+          ? await compressVideo(rawFile) : rawFile;
+        const uploaded = await startUpload([file]);
+        if (uploaded?.[0]) {
+          const { url, name, type } = uploaded[0] as any;
+          await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: name || 'Archivo', room, fileUrl: url, fileName: name, fileType: type }),
+          });
+        }
+        setPendingFiles(prev => prev.filter(f => f.name !== file.name));
       }
     } catch {}
     setUploading(false);
-    setPendingFile(null);
+    setPendingFiles([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
@@ -535,16 +570,21 @@ function ChatMain({
                 {/* Hover actions */}
                 <div className="absolute top-1 right-2 z-10 hidden items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl group-hover:flex">
                   {[
-                    { Icon: SmilePlus, fn: () => setShowEmoji(showEmoji === msg.id ? null : msg.id) },
-                    { Icon: Reply, fn: () => onOpenThread(msg) },
-                    { Icon: ListPlus, fn: () => {} },
-                    { Icon: Pin, fn: () => {} },
-                    { Icon: MoreHorizontal, fn: () => {} },
-                  ].map(({ Icon, fn }, i) => (
-                    <button key={i} onClick={fn}
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white">
-                      <Icon className="h-4 w-4" strokeWidth={1.75} />
-                    </button>
+                    { Icon: SmilePlus, fn: () => setShowEmoji(showEmoji === msg.id ? null : msg.id), tip: 'Reaccionar' },
+                    { Icon: Reply, fn: () => onOpenThread(msg), tip: 'Responder en hilo' },
+                    { Icon: ListPlus, fn: () => {}, tip: 'Crear tarea' },
+                    { Icon: Pin, fn: () => {}, tip: 'Fijar mensaje' },
+                    { Icon: MoreHorizontal, fn: () => {}, tip: 'Más opciones' },
+                  ].map(({ Icon, fn, tip }, i) => (
+                    <div key={i} className="relative group/tip">
+                      <button onClick={fn}
+                        className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white">
+                        <Icon className="h-4 w-4" strokeWidth={1.75} />
+                      </button>
+                      <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
+                        {tip}
+                      </div>
+                    </div>
                   ))}
                 </div>
 
@@ -649,20 +689,34 @@ function ChatMain({
         <div ref={bottomRef} />
       </div>}
 
-      {/* Pending file preview */}
-      {pendingFile && (
-        <div className="mx-4 mb-2 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2">
-          {pendingFile.preview ? (
-            <img src={pendingFile.preview} alt="" className="h-10 w-10 rounded-lg object-cover" />
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
-              <Paperclip className="h-4 w-4" strokeWidth={1.75} />
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="truncate text-[12px] text-white/70">{pendingFile.name}</p>
-            <p className="text-[11px] text-primary animate-pulse">Subiendo...</p>
-          </div>
+      {/* Pending files preview */}
+      {pendingFiles.length > 0 && (
+        <div className="mx-4 mb-2 flex flex-col gap-1.5">
+          {pendingFiles.map((f, i) => {
+            const typeLabel = f.type.startsWith('image') ? '🖼 Imagen' : f.type.startsWith('video') ? '🎬 Video' : f.type === 'application/pdf' ? '📄 PDF' : '📎 Archivo';
+            return (
+              <div key={i} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2">
+                {f.preview ? (
+                  <img src={f.preview} alt="" className="h-9 w-9 rounded-lg object-cover shrink-0" />
+                ) : (
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 text-primary shrink-0">
+                    <Paperclip className="h-4 w-4" strokeWidth={1.75} />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="truncate text-[12px] text-white/70">{f.name}</p>
+                    <span className="text-[10px] text-white/30 ml-2 shrink-0">{typeLabel}</span>
+                  </div>
+                  <div className="h-1 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                    <div className="h-full rounded-full bg-primary transition-all duration-300"
+                      style={{ width: `${f.progress || 5}%` }} />
+                  </div>
+                  <p className="mt-0.5 text-[10px] text-primary">{f.progress < 100 ? `Subiendo ${f.progress}%` : '✓ Listo'}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
       {/* Composer */}
@@ -670,17 +724,32 @@ function ChatMain({
         <form onSubmit={handleSend}>
           <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] px-2 py-2 transition-colors focus-within:border-primary/40">
             <div className="flex items-center gap-1">
-              <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/*,.pdf,.zip,.doc,.docx" onChange={handleFileUpload} />
-              {[Plus, Smile, AtSign, Slash].map((Icon, i) => (
-                <button key={i} type="button"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
-                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
-                </button>
+              <input ref={fileInputRef} type="file" multiple className="hidden" accept="image/*,video/*,.pdf,.zip,.doc,.docx" onChange={handleFileUpload} />
+              {[
+                { Icon: Plus, tip: 'Más opciones' },
+                { Icon: Smile, tip: 'Emojis' },
+                { Icon: AtSign, tip: 'Mencionar' },
+                { Icon: Slash, tip: 'Comandos' },
+              ].map(({ Icon, tip }, i) => (
+                <div key={i} className="relative group/tip">
+                  <button type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
+                    <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                  </button>
+                  <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
+                    {tip}
+                  </div>
+                </div>
               ))}
-              <button type="button" onClick={() => fileInputRef.current?.click()}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${uploading ? 'text-primary animate-pulse' : 'text-white/35 hover:bg-white/[0.06] hover:text-white'}`}>
-                <Paperclip className="h-[18px] w-[18px]" strokeWidth={1.75} />
-              </button>
+              <div className="relative group/tip">
+                <button type="button" onClick={() => fileInputRef.current?.click()}
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${uploading ? 'text-primary animate-pulse' : 'text-white/35 hover:bg-white/[0.06] hover:text-white'}`}>
+                  <Paperclip className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                </button>
+                <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
+                  Adjuntar archivo
+                </div>
+              </div>
               <input value={input} onChange={e => setInput(e.target.value)}
                 placeholder={`Escribe en #${title}…`}
                 className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white placeholder:text-white/25 focus:outline-none" />
