@@ -7,6 +7,7 @@ type AvatarProps = {
   status?: 'online' | 'away' | 'offline'
   className?: string
   ring?: boolean
+  image?: string | null
 }
 
 const statusColor: Record<string, string> = {
@@ -15,9 +16,16 @@ const statusColor: Record<string, string> = {
   offline: 'rgba(245,247,250,0.3)',
 }
 
-export function Avatar({ initials, color, size = 32, status, className, ring }: AvatarProps) {
+export function Avatar({ initials, color, size = 32, status, className, ring, image }: AvatarProps) {
   return (
     <span className={cn('relative inline-flex shrink-0', className)} style={{ width: size, height: size }}>
+      {image ? (
+        <img
+          src={image}
+          alt={initials}
+          className={cn('h-full w-full rounded-full object-cover', ring && 'ring-2 ring-background')}
+        />
+      ) : (
       <span
         className={cn(
           'flex h-full w-full items-center justify-center rounded-full font-medium text-white',
@@ -32,6 +40,7 @@ export function Avatar({ initials, color, size = 32, status, className, ring }: 
       >
         {initials}
       </span>
+      )}
       {status && (
         <span
           className="absolute bottom-0 right-0 rounded-full ring-2 ring-[#0f1117]"

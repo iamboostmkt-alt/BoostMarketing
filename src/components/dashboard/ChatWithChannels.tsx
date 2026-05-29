@@ -169,7 +169,7 @@ function ChannelList({
                   <button key={m.id} onClick={() => { setActiveId(dmId); setShowDMSearch(false); setDmSearchQuery(''); }}
                     className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
                     <div className="relative shrink-0">
-                      <Avatar initials={initials} color={m.color || '#8b5cf6'} size={22} />
+                      <Avatar initials={initials} color={m.color || '#8b5cf6'} size={22} image={m.image} />
                       <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-[#141824] bg-emerald-400" />
                     </div>
                     <div className="flex-1 min-w-0 text-left">
@@ -247,7 +247,7 @@ function ChatMain({
   title: string;
   accentColor: string;
   onOpenThread: (msg: ChatMessage) => void;
-  dmUser?: { id: string; name: string | null; email: string; color?: string } | null;
+  dmUser?: { id: string; name: string | null; email: string; color?: string; image?: string | null } | null;
 }) {
   const { data: session } = useSession();
   const myId = (session?.user as any)?.id;
@@ -391,7 +391,7 @@ function ChatMain({
         {dmUser && (
           <div className="flex items-center gap-3 px-5 py-3 border-b border-white/[0.04] bg-white/[0.01]">
             <div className="relative shrink-0">
-              <Avatar initials={((dmUser.name || dmUser.email) || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()} color={dmUser.color || '#8b5cf6'} size={36} />
+              <Avatar initials={((dmUser.name || dmUser.email) || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()} color={dmUser.color || '#8b5cf6'} size={36} image={dmUser.image} />
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-400" />
             </div>
             <div>
@@ -608,7 +608,7 @@ function ChatMain({
                       </span>
                     </div>
                   ) : (
-                    <Avatar initials={initials} color={color} size={36} className="mt-0.5 shrink-0" />
+                    <Avatar initials={initials} color={color} size={36} className="mt-0.5 shrink-0" image={(msg.user as any)?.image} />
                   )}
                   <div className="min-w-0 flex-1">
                     {!isSame && (
@@ -821,7 +821,7 @@ function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; on
       <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
         {/* Original message */}
         <div className="flex gap-3 pb-4 border-b border-white/[0.05]">
-          <Avatar initials={initials} color={color} size={36} className="shrink-0 mt-0.5" />
+          <Avatar initials={initials} color={color} size={36} className="shrink-0 mt-0.5" image={(msg.user as any)?.image} />
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-0.5">
               <span className="text-[13.5px] font-semibold text-white/95">{(msg.user as any)?.name || 'Usuario'}</span>
@@ -842,7 +842,7 @@ function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; on
             const rColor = r.user?.color || accentColor;
             return (
               <div key={r.id} className="flex gap-3">
-                <Avatar initials={rInitials} color={rColor} size={28} className="shrink-0 mt-0.5" />
+                <Avatar initials={rInitials} color={rColor} size={28} className="shrink-0 mt-0.5" image={r.user?.image} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 mb-0.5">
                     <span className="text-[12.5px] font-semibold text-white/90">{r.user?.name || r.user?.email}</span>

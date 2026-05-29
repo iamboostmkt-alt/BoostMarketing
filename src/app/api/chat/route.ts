@@ -12,7 +12,7 @@ import { getBranding } from '@/lib/branding';
 const INTERNAL_ROOMS = ['TEAM', 'SUPPORT', 'PROJECT'];
 const PRIVATE_CHAT_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
-const userSelect = { id: true, name: true, email: true, color: true, image: true } as const;
+const userSelect = { id: true, name: true, email: true, color: true, image: true, role: true } as const;
 const reactionUserSelect = { id: true, name: true, color: true } as const;
 
 const messageSelect = {
