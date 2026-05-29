@@ -89,7 +89,7 @@ function ChannelList({
                   className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2.5 text-[13px] transition-colors ${
                     isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
                   }`}>
-                  {isActive && <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary shadow-[0_0_8px_rgba(139,92,246,0.8)]" />}
+                  {isActive && <span className="absolute left-[-8px] top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary shadow-[0_0_8px_rgba(139,92,246,0.8)]" />}
                   <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-white/35'}`} strokeWidth={1.75} />
                   <span className="flex-1 truncate text-left">{r.name}</span>
                   {unread > 0 && (
@@ -729,7 +729,7 @@ function ChatMain({
               <div className="group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02]"
                 style={{ paddingTop: isSame ? '1px' : '8px', paddingBottom: '1px' }}>
                 {/* Hover actions */}
-                <div className="absolute top-1 right-2 z-10 hidden items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl group-hover:flex">
+                <div className="absolute -top-4 right-0 z-10 hidden items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl group-hover:flex">
                   {[
                     { Icon: SmilePlus, fn: () => setShowEmoji(showEmoji === msg.id ? null : msg.id), tip: 'Reaccionar' },
                     { Icon: Reply, fn: () => onOpenThread(msg), tip: 'Responder en hilo' },
@@ -751,7 +751,7 @@ function ChatMain({
 
                 {/* Emoji picker */}
                 {showEmoji === msg.id && (
-                  <div className="absolute top-8 right-2 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
+                  <div className="absolute -top-14 right-0 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
                     {QUICK_EMOJIS.map(e => (
                       <button key={e} onClick={() => handleReaction(msg.id, e)}
                         className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
