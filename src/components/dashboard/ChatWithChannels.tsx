@@ -260,10 +260,19 @@ function ChatMain({
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [pendingFile, setPendingFile] = useState<{ name: string; type: string; preview?: string } | null>(null);
+  const [roomTasks, setRoomTasks] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { startUpload } = useUploadThing('chatAttachment');
+
+  useEffect(() => {
+    if (activeTab !== 'tasks') return;
+    const clientId = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) ? undefined : room;
+    const url = clientId ? `/api/tasks?clientId=${clientId}&limit=20` : `/api/tasks?limit=20`;
+    fetch(url).then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.tasks) setRoomTasks(d.tasks); }).catch(() => {});
+  }, [activeTab, room]);
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -444,20 +453,26 @@ function ChatMain({
       {/* Tab: Tasks */}
       {activeTab === 'tasks' && (
         <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
-          <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-white/30">Tareas vinculadas</p>
-          {messages.filter(m => m.taskId).length === 0 && (
+          <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-white/30">Tareas del canal</p>
+          {roomTasks.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <span className="text-3xl">✅</span>
-              <p className="text-[13px] text-white/25">No hay tareas vinculadas</p>
-              <p className="text-[11px] text-white/20">Hover sobre un mensaje → Crear tarea para vincular</p>
+              <p className="text-[13px] text-white/25">No hay tareas en este canal</p>
             </div>
           )}
           <div className="flex flex-col gap-2">
-            {messages.filter(m => m.taskId).map(m => (
-              <div key={m.id} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
-                <TaskCard title="Tarea vinculada" status="En progreso" due="Pendiente" assignee={(m.user as any)?.name || '--'} />
-              </div>
-            ))}
+            {roomTasks.map((t: any) => {
+              const statusMap: Record<string, 'En progreso' | 'Revisión' | 'Aprobado'> = {
+                in_progress: 'En progreso', internal_review: 'Revisión',
+                client_review: 'Revisión', approved: 'Aprobado', completed: 'Aprobado',
+              };
+              const status = statusMap[t.status] || 'En progreso';
+              const due = t.dueDate ? new Date(t.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : 'Sin fecha';
+              const assignee = t.assignedUser?.name || t.assignedUser?.email || '--';
+              return (
+                <TaskCard key={t.id} title={t.title} status={status} due={due} assignee={assignee} />
+              );
+            })}
           </div>
         </div>
       )}
@@ -518,7 +533,7 @@ function ChatMain({
               <div className="group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02]"
                 style={{ paddingTop: isSame ? '1px' : '8px', paddingBottom: '1px' }}>
                 {/* Hover actions */}
-                <div className="absolute -top-3 right-2 z-10 hidden items-center rounded-lg border border-white/[0.08] bg-popover p-0.5 shadow-xl group-hover:flex">
+                <div className="absolute top-1 right-2 z-10 hidden items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl group-hover:flex">
                   {[
                     { Icon: SmilePlus, fn: () => setShowEmoji(showEmoji === msg.id ? null : msg.id) },
                     { Icon: Reply, fn: () => onOpenThread(msg) },
@@ -535,7 +550,7 @@ function ChatMain({
 
                 {/* Emoji picker */}
                 {showEmoji === msg.id && (
-                  <div className="absolute -top-12 right-2 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-popover p-2 shadow-2xl">
+                  <div className="absolute top-8 right-2 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
                     {QUICK_EMOJIS.map(e => (
                       <button key={e} onClick={() => handleReaction(msg.id, e)}
                         className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
