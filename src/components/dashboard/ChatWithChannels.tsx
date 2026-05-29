@@ -554,13 +554,44 @@ function ChatMain({
 }
 
 // ─── Thread Panel ──────────────────────────────────────────────────────────────
-function ThreadPanel({ msg, onClose, accentColor }: { msg: ChatMessage; onClose: () => void; accentColor: string }) {
+function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; onClose: () => void; accentColor: string; room: string }) {
   const color = (msg.user as any)?.color || accentColor;
   const initials = getInitials((msg.user as any)?.name ?? null, (msg.user as any)?.email ?? '');
+  const [replies, setReplies] = useState<any[]>([]);
+  const [replyInput, setReplyInput] = useState('');
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const fetchReplies = useCallback(async () => {
+    const res = await fetch(`/api/chat/replies?parentId=${msg.id}`).catch(() => null);
+    if (res?.ok) { const d = await res.json(); setReplies(d.replies || []); }
+  }, [msg.id]);
+
+  useEffect(() => { fetchReplies(); }, [fetchReplies]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [replies]);
+
+  async function handleReply(e: React.FormEvent) {
+    e.preventDefault();
+    if (!replyInput.trim() || sending) return;
+    setSending(true);
+    const text = replyInput.trim();
+    setReplyInput('');
+    await fetch('/api/chat/replies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, parentId: msg.id, room }),
+    }).catch(() => {});
+    await fetchReplies();
+    setSending(false);
+  }
+
   return (
     <aside className="flex h-full w-[320px] shrink-0 flex-col border-l border-white/[0.05] bg-[#11131a]">
       <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-white/[0.05] px-5">
-        <h2 className="text-[15px] font-semibold tracking-tight">Hilo</h2>
+        <div>
+          <h2 className="text-[15px] font-semibold tracking-tight">Hilo</h2>
+          {replies.length > 0 && <p className="text-[11px] text-white/30">{replies.length} {replies.length === 1 ? 'respuesta' : 'respuestas'}</p>}
+        </div>
         <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
           <X className="h-[18px] w-[18px]" strokeWidth={1.75} />
         </button>
@@ -579,14 +610,44 @@ function ThreadPanel({ msg, onClose, accentColor }: { msg: ChatMessage; onClose:
             <p className="text-[13.5px] leading-[1.55] text-white/75">{msg.message}</p>
           </div>
         </div>
-        <p className="text-[11px] text-white/25 text-center py-6">Los hilos estarán disponibles próximamente 🧵</p>
+        {/* Replies */}
+        {replies.length === 0 && (
+          <p className="text-[11px] text-white/25 text-center py-6">Sin respuestas aún — sé el primero 🧵</p>
+        )}
+        <div className="mt-4 flex flex-col gap-4">
+          {replies.map((r: any) => {
+            const rInitials = getInitials(r.user?.name ?? null, r.user?.email ?? '');
+            const rColor = r.user?.color || accentColor;
+            return (
+              <div key={r.id} className="flex gap-3">
+                <Avatar initials={rInitials} color={rColor} size={28} className="shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2 mb-0.5">
+                    <span className="text-[12.5px] font-semibold text-white/90">{r.user?.name || r.user?.email}</span>
+                    <span className="text-[10px] text-white/25">
+                      {new Date(r.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <p className="text-[13px] leading-[1.5] text-white/70">{r.message}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div ref={bottomRef} />
       </div>
       <div className="px-4 pb-4 pt-1">
-        <div className="flex items-center gap-2 rounded-[14px] border border-white/[0.06] bg-white/[0.03] px-3 py-2">
-          <input placeholder="Responder en hilo…"
-            className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder:text-white/25 focus:outline-none" />
-          <button className="text-primary"><Send className="h-4 w-4" strokeWidth={1.75} /></button>
-        </div>
+        <form onSubmit={handleReply}>
+          <div className="flex items-center gap-2 rounded-[14px] border border-white/[0.06] bg-white/[0.03] px-3 py-2 focus-within:border-primary/40 transition-colors">
+            <input value={replyInput} onChange={e => setReplyInput(e.target.value)}
+              placeholder="Responder en hilo…"
+              className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder:text-white/25 focus:outline-none" />
+            <button type="submit" disabled={!replyInput.trim() || sending}
+              className="text-primary disabled:opacity-30 transition-opacity">
+              <Send className="h-4 w-4" strokeWidth={1.75} />
+            </button>
+          </div>
+        </form>
       </div>
     </aside>
   );
@@ -726,7 +787,7 @@ export default function ChatWithChannels() {
       {/* Thread panel */}
       {threadMsg && (
         <div className="hidden lg:flex">
-          <ThreadPanel msg={threadMsg} onClose={() => setThreadMsg(null)} accentColor={accentColor} />
+          <ThreadPanel msg={threadMsg} onClose={() => setThreadMsg(null)} accentColor={accentColor} room={activeId} />
         </div>
       )}
     </div>
