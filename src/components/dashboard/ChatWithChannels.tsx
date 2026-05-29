@@ -400,8 +400,70 @@ function ChatMain({
         </div>
       </header>
 
+      {/* Tab: Files */}
+      {activeTab === 'files' && (
+        <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
+          <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-white/30">Archivos compartidos</p>
+          {messages.filter(m => m.fileUrl).length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <span className="text-3xl">📎</span>
+              <p className="text-[13px] text-white/25">No hay archivos compartidos aún</p>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            {messages.filter(m => m.fileUrl).map(m => (
+              <a key={m.id} href={m.fileUrl!} target="_blank" rel="noopener noreferrer"
+                className="flex flex-col gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 hover:border-white/10 transition-colors">
+                {m.fileType?.startsWith('image') ? (
+                  <img src={m.fileUrl!} alt={m.fileName || 'imagen'} className="w-full h-24 object-cover rounded-lg" />
+                ) : (
+                  <div className="flex h-24 items-center justify-center rounded-lg bg-white/[0.04]">
+                    <Paperclip className="h-8 w-8 text-white/20" strokeWidth={1.5} />
+                  </div>
+                )}
+                <p className="truncate text-[11px] text-white/60">{m.fileName || 'Archivo'}</p>
+                <p className="text-[10px] text-white/25">{(m.user as any)?.name || ''} · {new Date(m.createdAt).toLocaleDateString('es-MX')}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Pinned */}
+      {activeTab === 'pinned' && (
+        <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
+          <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-white/30">Mensajes fijados</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <span className="text-3xl">📌</span>
+            <p className="text-[13px] text-white/25">No hay mensajes fijados</p>
+            <p className="text-[11px] text-white/20">Hover sobre un mensaje → Pin para fijarlo</p>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Tasks */}
+      {activeTab === 'tasks' && (
+        <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
+          <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-white/30">Tareas vinculadas</p>
+          {messages.filter(m => m.taskId).length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <span className="text-3xl">✅</span>
+              <p className="text-[13px] text-white/25">No hay tareas vinculadas</p>
+              <p className="text-[11px] text-white/20">Hover sobre un mensaje → Crear tarea para vincular</p>
+            </div>
+          )}
+          <div className="flex flex-col gap-2">
+            {messages.filter(m => m.taskId).map(m => (
+              <div key={m.id} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+                <TaskCard title="Tarea vinculada" status="En progreso" due="Pendiente" assignee={(m.user as any)?.name || '--'} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-3">
+      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-3">
         {loading && (
           <div className="space-y-4">
             {[1,2,3].map(i => (
@@ -570,7 +632,7 @@ function ChatMain({
           </div>
         )}
         <div ref={bottomRef} />
-      </div>
+      </div>}
 
       {/* Pending file preview */}
       {pendingFile && (
