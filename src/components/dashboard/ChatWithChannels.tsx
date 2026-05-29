@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Hash, LifeBuoy, Briefcase, Lock, ChevronDown, ChevronRight, Menu, X, MessageSquare, Pin, FileText, CheckSquare, Palette } from 'lucide-react';
 import type { ChatMessage } from '@/lib/types';
 import ChatContent from '@/components/dashboard/ChatContent';
+import { WeeklinkChatContent } from '@/components/weeklink/WeeklinkChatContent';
 import SupportTicket from '@/components/dashboard/SupportTicket';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
 
@@ -227,7 +228,8 @@ export default function ChatWithChannels() {
             <SupportTicket onClose={() => setActiveId('TEAM')} />
           </div>
         ) : (
-          <ChatContent key={activeId} room={activeId} title={activeTitle} subtitle={activeSubtitle} />
+          <WeeklinkChatContent key={activeId} room={activeId} title={activeTitle} subtitle={activeSubtitle}
+            onOpenThread={(msg) => setThreadMsg(msg)} accentColor={accentColor} />
         )}
       </div>
     </div>
