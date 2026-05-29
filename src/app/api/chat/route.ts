@@ -15,7 +15,9 @@ const PRIVATE_CHAT_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 const userSelect = { id: true, name: true, email: true, color: true, image: true } as const;
 const reactionUserSelect = { id: true, name: true, color: true } as const;
 
-const messageInclude = {
+const messageSelect = {
+  id: true, userId: true, message: true, room: true, createdAt: true,
+  fileUrl: true, fileName: true, fileType: true, taskId: true,
   user:      { select: userSelect },
   reactions: { include: { user: { select: reactionUserSelect } } },
 } as const;
@@ -95,7 +97,7 @@ export async function GET(req: NextRequest) {
     where:   { room },
     take:    50,
     orderBy: { createdAt: 'desc' },
-    include: messageInclude,
+    select: messageSelect,
   });
 
   return NextResponse.json({ messages: messages.reverse() });
@@ -126,7 +128,7 @@ export async function POST(req: NextRequest) {
 
   const chatMessage = await db.chatMessage.create({
     data:    { userId, workspaceId, message: text, room },
-    include: messageInclude,
+    select: messageSelect,
   });
 
   broadcastRealtime('message.sent', { message: chatMessage, room }).catch(() => undefined);

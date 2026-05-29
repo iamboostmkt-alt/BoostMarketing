@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
 import { Avatar } from '@/components/weeklink/avatar';
+import { VideoCard, PdfCard, TaskCard, ArchiveCard } from '@/components/weeklink/chat-cards';
 import SupportTicket from '@/components/dashboard/SupportTicket';
 import type { ChatMessage } from '@/lib/types';
 
@@ -346,6 +347,32 @@ function ChatMain({
                     <div className="text-[13.5px] leading-[1.55] text-white/75">
                       {renderMessage(msg.message)}
                     </div>
+                    {/* Inline file/task cards */}
+                    {msg.fileUrl && msg.fileType?.startsWith('video') && (
+                      <div className="mt-2">
+                        <VideoCard thumb={msg.fileUrl} name={msg.fileName || 'Video'} meta={msg.fileType} />
+                      </div>
+                    )}
+                    {msg.fileUrl && msg.fileType === 'application/pdf' && (
+                      <div className="mt-2">
+                        <PdfCard name={msg.fileName || 'Documento'} meta="PDF" />
+                      </div>
+                    )}
+                    {msg.fileUrl && msg.fileType && !msg.fileType.startsWith('video') && msg.fileType !== 'application/pdf' && msg.fileType.startsWith('image') && (
+                      <div className="mt-2">
+                        <img src={msg.fileUrl} alt={msg.fileName || 'imagen'} className="max-w-[320px] rounded-xl border border-white/[0.08]" />
+                      </div>
+                    )}
+                    {msg.fileUrl && msg.fileType && !msg.fileType.startsWith('video') && msg.fileType !== 'application/pdf' && !msg.fileType.startsWith('image') && (
+                      <div className="mt-2">
+                        <ArchiveCard name={msg.fileName || 'Archivo'} meta={msg.fileType} />
+                      </div>
+                    )}
+                    {msg.taskId && (
+                      <div className="mt-2">
+                        <TaskCard title="Tarea vinculada" status="En progreso" due="Pendiente" assignee="--" />
+                      </div>
+                    )}
                     {reactions.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {reactions.map((r: any, i: number) => (

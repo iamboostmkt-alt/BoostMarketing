@@ -233,6 +233,10 @@ export interface ChatMessage {
   message: string;
   room: string;
   createdAt: string;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileType?: string | null;
+  taskId?: string | null;
   user: { id: string; name: string | null; email: string; color: string; image: string | null };
   reactions?: ChatReaction[];
 }
