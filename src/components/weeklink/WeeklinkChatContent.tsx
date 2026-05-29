@@ -138,7 +138,7 @@ export function WeeklinkChatContent({
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center" style={{ background: '#07070A' }}>
+      <div className="flex flex-1 items-center justify-center" style={{ background: 'red', minHeight: '200px' }}>
         <div className="space-y-3 w-full max-w-2xl px-8">
           {[1,2,3].map(i => (
             <div key={i} className="flex items-start gap-3 animate-pulse">
@@ -155,9 +155,9 @@ export function WeeklinkChatContent({
   }
 
   return (
-    <div className="flex flex-1 flex-col min-h-0" style={{ background: '#07070A' }}>
+    <div className="flex flex-1 flex-col min-h-0" style={{ background: 'red', minHeight: '200px' }}>
       {/* WEEKLINK_V2 */}
-      <div style={{ background: '#8B5CF6', color: 'white', fontSize: '11px', padding: '2px 8px', textAlign: 'center' }}>✦ WeeklinkChat v2 activo</div>
+      <div style={{ background: 'lime', border: '4px solid yellow', color: 'white', fontSize: '11px', padding: '2px 8px', textAlign: 'center' }}>✦ WeeklinkChat v2 activo</div>
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-0 custom-scrollbar"
         style={{ scrollbarWidth: 'thin' }}>
@@ -258,7 +258,7 @@ export function WeeklinkChatContent({
       </div>
 
       {/* Composer */}
-      <div className="px-4 pb-4 pt-2 shrink-0" style={{ background: '#07070A' }}>
+      <div className="px-4 pb-4 pt-2 shrink-0" style={{ background: 'red', minHeight: '200px' }}>
         <form onSubmit={handleSend}>
           <div className="rounded-[18px] border border-white/[0.06] px-2 py-2 transition-colors"
             style={{ background: 'rgba(255,255,255,0.03)' }}
