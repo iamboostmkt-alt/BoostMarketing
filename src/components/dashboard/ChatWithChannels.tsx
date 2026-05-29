@@ -556,6 +556,7 @@ export default function ChatWithChannels() {
   const [unreads, setUnreads] = useState<Record<string, number>>({});
   const [clients, setClients] = useState<{ id: string; name: string; color?: string }[]>([]);
   const [members, setMembers] = useState<{ id: string; name: string | null; email: string; color?: string; image?: string | null }[]>([]);
+  const [dmActivity, setDmActivity] = useState<Record<string, number>>({});
 
   // Fetch unreads
   useEffect(() => {
@@ -575,11 +576,14 @@ export default function ChatWithChannels() {
       .then(d => { if (d?.members) setMembers(d.members); }).catch(() => {});
   }, []);
 
-  // Listen for new messages → update unreads
+  // Listen for new messages → update unreads + dm sort
   useEffect(() => {
     return bus.on<{ room: string }>(RT_EVENTS.MESSAGE_SENT, (p) => {
       if (p.room !== activeId) {
         setUnreads(prev => ({ ...prev, [p.room]: (prev[p.room] || 0) + 1 }));
+      }
+      if (p.room.includes('_DM_')) {
+        setDmActivity(prev => ({ ...prev, [p.room]: Date.now() }));
       }
     });
   }, [activeId]);
@@ -614,7 +618,12 @@ export default function ChatWithChannels() {
       setActiveId={handleSetActive}
       rooms={rooms}
       clients={clients}
-      members={members}
+      members={[...members].sort((a, b) => {
+        const myId = (session?.user as any)?.id ?? '';
+        const dmA = [myId, a.id].sort().join('_DM_');
+        const dmB = [myId, b.id].sort().join('_DM_');
+        return (dmActivity[dmB] || 0) - (dmActivity[dmA] || 0);
+      })}
       myId={(session?.user as any)?.id ?? ''}
       unreads={unreads}
     />
