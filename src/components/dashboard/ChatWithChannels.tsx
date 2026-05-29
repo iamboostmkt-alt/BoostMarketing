@@ -250,7 +250,7 @@ function ChatMain({
             </div>
             <div>
               <p className="text-[14px] font-semibold text-white/95">{dmUser.name || dmUser.email}</p>
-              <p className="text-[11px] text-emerald-400">En línea</p>
+              <p className="text-[11px] text-white/30">@{(dmUser.email || '').split('@')[0]} · <span className="text-emerald-400">En línea</span></p>
             </div>
           </div>
         )}
@@ -605,7 +605,8 @@ export default function ChatWithChannels() {
   });
 
   const activeRoom = rooms.find(r => r.id === activeId) || clients.find(c => c.id === activeId);
-  const activeTitle = (activeRoom as any)?.name || activeId.toLowerCase();
+  const activeDmUser = activeId.includes('_DM_') ? members.find(m => activeId.includes(m.id) && m.id !== (session?.user as any)?.id) ?? null : null;
+  const activeTitle = activeDmUser ? (activeDmUser.name || activeDmUser.email) : ((activeRoom as any)?.name || activeId.toLowerCase());
 
   const channelList = (
     <ChannelList
@@ -658,7 +659,7 @@ export default function ChatWithChannels() {
             title={activeTitle}
             accentColor={accentColor}
             onOpenThread={(msg) => setThreadMsg(msg)}
-            dmUser={activeId.includes('_DM_') ? members.find(m => activeId.includes(m.id) && m.id !== (session?.user as any)?.id) ?? null : null}
+            dmUser={activeDmUser}
           />
         )}
       </div>
