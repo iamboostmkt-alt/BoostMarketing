@@ -31,12 +31,14 @@ function renderMessage(text: string) {
 
 // ─── Channel List ──────────────────────────────────────────────────────────────
 function ChannelList({
-  activeId, setActiveId, rooms, clients, unreads,
+  activeId, setActiveId, rooms, clients, members, myId, unreads,
 }: {
   activeId: string;
   setActiveId: (id: string) => void;
   rooms: { id: string; name: string; icon: string; subtitle?: string; locked?: boolean }[];
   clients: { id: string; name: string; color?: string }[];
+  members: { id: string; name: string | null; email: string; color?: string; image?: string | null }[];
+  myId: string;
   unreads: Record<string, number>;
 }) {
   const [openClients, setOpenClients] = useState(true);
@@ -106,6 +108,39 @@ function ChannelList({
             })}
           </ul>
         )}
+
+        {/* Direct Messages */}
+        <div className="flex items-center justify-between px-2 pb-1 pt-4">
+          <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Mensajes directos</span>
+          <Plus className="h-3.5 w-3.5 text-white/30 cursor-pointer hover:text-white/60" strokeWidth={2} />
+        </div>
+        <ul className="flex flex-col gap-0.5">
+          {members.filter(m => m.id !== myId).map(m => {
+            const dmId = [myId, m.id].sort().join('_DM_');
+            const isActive = activeId === dmId;
+            const unread = unreads[dmId] || 0;
+            const initials = ((m.name || m.email) || 'U').split(/[\s@]/)[0].slice(0,2).toUpperCase();
+            return (
+              <li key={m.id}>
+                <button onClick={() => setActiveId(dmId)}
+                  className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${
+                    isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
+                  }`}>
+                  <div className="relative shrink-0">
+                    <Avatar initials={initials} color={m.color || '#8b5cf6'} size={20} />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-card bg-emerald-400" />
+                  </div>
+                  <span className="flex-1 truncate text-left">{m.name || m.email}</span>
+                  {unread > 0 && (
+                    <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white">
+                      {unread}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
 
         {/* Apps */}
         <div className="px-2 pb-1 pt-4">
@@ -496,6 +531,7 @@ export default function ChatWithChannels() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreads, setUnreads] = useState<Record<string, number>>({});
   const [clients, setClients] = useState<{ id: string; name: string; color?: string }[]>([]);
+  const [members, setMembers] = useState<{ id: string; name: string | null; email: string; color?: string; image?: string | null }[]>([]);
 
   // Fetch unreads
   useEffect(() => {
@@ -509,6 +545,11 @@ export default function ChatWithChannels() {
     fetch('/api/clients?sidebar=1').then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.clients) setClients(d.clients); }).catch(() => {});
   }, [role]);
+  // Fetch workspace members for DMs
+  useEffect(() => {
+    fetch('/api/workspace/members?limit=20').then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.members) setMembers(d.members); }).catch(() => {});
+  }, []);
 
   // Listen for new messages → update unreads
   useEffect(() => {
@@ -548,6 +589,8 @@ export default function ChatWithChannels() {
       setActiveId={handleSetActive}
       rooms={rooms}
       clients={clients}
+      members={members}
+      myId={(session?.user as any)?.id ?? ''}
       unreads={unreads}
     />
   );
