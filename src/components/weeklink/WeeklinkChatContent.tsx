@@ -156,6 +156,8 @@ export function WeeklinkChatContent({
 
   return (
     <div className="flex flex-1 flex-col min-h-0" style={{ background: '#07070A' }}>
+      {/* WEEKLINK_V2 */}
+      <div style={{ background: '#8B5CF6', color: 'white', fontSize: '11px', padding: '2px 8px', textAlign: 'center' }}>✦ WeeklinkChat v2 activo</div>
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-0 custom-scrollbar"
         style={{ scrollbarWidth: 'thin' }}>
