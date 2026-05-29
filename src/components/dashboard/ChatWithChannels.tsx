@@ -239,6 +239,139 @@ function ChannelList({
   );
 }
 
+// ─── Tasks Tab ────────────────────────────────────────────────────────────────
+function TasksTab({ roomTasks, room, onRefresh }: { roomTasks: any[]; room: string; onRefresh: () => void }) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showDone, setShowDone] = useState(false);
+  const [completing, setCompleting] = useState<string | null>(null);
+  const taskFileRef = useRef<HTMLInputElement>(null);
+  const [uploadingTaskId, setUploadingTaskId] = useState<string | null>(null);
+  const { startUpload } = useUploadThing('chatAttachment');
+
+  const activeTasks = roomTasks.filter(t => !['completed','approved'].includes(t.status));
+  const doneTasks = roomTasks.filter(t => ['completed','approved'].includes(t.status));
+
+  const statusStyleMap: Record<string, { background: string; color: string }> = {
+    pending:           { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' },
+    in_progress:       { background: 'rgba(56,189,248,0.15)',  color: '#38BDF8' },
+    internal_review:   { background: 'rgba(167,139,250,0.15)', color: '#a78bfa' },
+    client_review:     { background: 'rgba(56,189,248,0.15)',  color: '#38BDF8' },
+    changes_requested: { background: 'rgba(234,179,8,0.15)',   color: '#EAB308' },
+    approved:          { background: 'rgba(34,197,94,0.15)',   color: '#22C55E' },
+    completed:         { background: 'rgba(34,197,94,0.15)',   color: '#22C55E' },
+  };
+
+  const statusLabel: Record<string, string> = {
+    pending: 'Pendiente', in_progress: 'En progreso', internal_review: 'En revisión',
+    client_review: 'Revisión cliente', changes_requested: 'Cambios', approved: 'Aprobado', completed: 'Completado',
+  };
+
+  async function handleComplete(taskId: string) {
+    setCompleting(taskId);
+    await fetch(`/api/tasks?id=${taskId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'completed' }),
+    }).catch(() => {});
+    setCompleting(null);
+    onRefresh();
+  }
+
+  async function handleTaskFileUpload(e: React.ChangeEvent<HTMLInputElement>, taskId: string) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingTaskId(taskId);
+    try {
+      const uploaded = await startUpload([file]);
+      if (uploaded?.[0]) {
+        const { url, name, type } = uploaded[0] as any;
+        await fetch('/api/chat/link-task', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taskId, fileUrl: url, fileName: name, fileType: type, isVideo: type.startsWith('video') }),
+        });
+        onRefresh();
+      }
+    } catch {}
+    setUploadingTaskId(null);
+    if (taskFileRef.current) taskFileRef.current.value = '';
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
+      <input ref={taskFileRef} type="file" className="hidden" accept="image/*,video/*,.pdf,.zip,.doc,.docx"
+        onChange={e => uploadingTaskId && handleTaskFileUpload(e, uploadingTaskId)} />
+      <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-white/30">
+        Tareas activas ({activeTasks.length})
+      </p>
+      {activeTasks.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 gap-2">
+          <span className="text-2xl">✅</span>
+          <p className="text-[13px] text-white/25">No hay tareas activas</p>
+        </div>
+      )}
+      <div className="flex flex-col gap-1.5">
+        {activeTasks.map((t: any) => {
+          const isExpanded = expandedId === t.id;
+          const style = statusStyleMap[t.status] || statusStyleMap.pending;
+          const due = t.dueDate ? new Date(t.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : 'Sin fecha';
+          return (
+            <div key={t.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+              <button onClick={() => setExpandedId(isExpanded ? null : t.id)}
+                className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-white/[0.02] transition-colors">
+                <ChevronDown className={`h-3.5 w-3.5 text-white/30 shrink-0 transition-transform ${isExpanded ? '' : '-rotate-90'}`} strokeWidth={2} />
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-[13px] font-medium text-white/85">{t.title}</p>
+                  <p className="text-[11px] text-white/30 mt-0.5">{due} · {t.assignedUser?.name || '--'}</p>
+                </div>
+                <span className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium" style={style}>
+                  {statusLabel[t.status] || t.status}
+                </span>
+              </button>
+              {isExpanded && (
+                <div className="border-t border-white/[0.04] px-3 py-2.5 flex items-center gap-2">
+                  <button onClick={() => { setUploadingTaskId(t.id); taskFileRef.current?.click(); }}
+                    className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-[12px] text-white/50 hover:text-white hover:border-white/20 transition-colors">
+                    <Paperclip className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    {uploadingTaskId === t.id ? 'Subiendo...' : 'Subir archivo'}
+                  </button>
+                  <button onClick={() => handleComplete(t.id)} disabled={completing === t.id}
+                    className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/20 px-3 py-1.5 text-[12px] text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-40">
+                    <CheckCheck className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    {completing === t.id ? 'Completando...' : 'Marcar completada'}
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Tareas completadas/aprobadas colapsadas */}
+      {doneTasks.length > 0 && (
+        <div className="mt-4">
+          <button onClick={() => setShowDone(!showDone)}
+            className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-white/25 hover:text-white/40 transition-colors mb-2">
+            <ChevronDown className={`h-3 w-3 transition-transform ${showDone ? '' : '-rotate-90'}`} strokeWidth={2} />
+            Completadas / Aprobadas ({doneTasks.length})
+          </button>
+          {showDone && (
+            <div className="flex flex-col gap-1.5">
+              {doneTasks.map((t: any) => (
+                <div key={t.id} className="flex items-center gap-3 rounded-xl border border-white/[0.04] bg-white/[0.01] px-3 py-2 opacity-50">
+                  <CheckCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" strokeWidth={1.75} />
+                  <p className="flex-1 truncate text-[12px] text-white/50 line-through">{t.title}</p>
+                  <span className="text-[10px] text-emerald-400/60">{statusLabel[t.status]}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Chat ─────────────────────────────────────────────────────────────────
 function ChatMain({
   room, title, accentColor, onOpenThread, dmUser, role = '',
@@ -531,29 +664,13 @@ function ChatMain({
 
       {/* Tab: Tasks */}
       {activeTab === 'tasks' && (
-        <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
-          <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-white/30">Tareas del canal</p>
-          {roomTasks.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <span className="text-3xl">✅</span>
-              <p className="text-[13px] text-white/25">No hay tareas en este canal</p>
-            </div>
-          )}
-          <div className="flex flex-col gap-2">
-            {roomTasks.map((t: any) => {
-              const statusMap: Record<string, 'En progreso' | 'Revisión' | 'Aprobado'> = {
-                in_progress: 'En progreso', internal_review: 'Revisión',
-                client_review: 'Revisión', approved: 'Aprobado', completed: 'Aprobado',
-              };
-              const status = statusMap[t.status] || 'En progreso';
-              const due = t.dueDate ? new Date(t.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : 'Sin fecha';
-              const assignee = t.assignedUser?.name || t.assignedUser?.email || '--';
-              return (
-                <TaskCard key={t.id} title={t.title} status={status} due={due} assignee={assignee} />
-              );
-            })}
-          </div>
-        </div>
+        <TasksTab roomTasks={roomTasks} room={room} onRefresh={() => {
+          const clientId = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) ? undefined : room;
+          const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role || '');
+          const assignedParam = isManager ? '' : '&assignedToMe=true';
+          const url = clientId ? `/api/tasks?clientId=${clientId}&limit=30${assignedParam}` : `/api/tasks?limit=30${assignedParam}`;
+          fetch(url).then(r => r.ok ? r.json() : null).then(d => { if (d?.tasks) setRoomTasks(d.tasks); }).catch(() => {});
+        }} />
       )}
 
       {/* Messages */}
