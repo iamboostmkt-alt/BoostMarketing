@@ -27,6 +27,20 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ metadata, file }) => {
       return { url: file.ufsUrl || file.url, userId: metadata.userId };
     }),
+  chatAttachment: f({
+    image:  { maxFileSize: "8MB",  maxFileCount: 1 },
+    pdf:    { maxFileSize: "16MB", maxFileCount: 1 },
+    video:  { maxFileSize: "64MB", maxFileCount: 1 },
+    "application/zip": { maxFileSize: "32MB", maxFileCount: 1 },
+  })
+    .middleware(async () => {
+      const result = await requireWorkspace();
+      if (!result.ok) throw new Error("Unauthorized");
+      return { userId: result.ctx.userId, workspaceId: result.ctx.workspaceId };
+    })
+    .onUploadComplete(async ({ file }) => {
+      return { url: file.ufsUrl || file.url, name: file.name, type: file.type };
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

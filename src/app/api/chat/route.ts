@@ -126,8 +126,11 @@ export async function POST(req: NextRequest) {
   if (!text)              return NextResponse.json({ error: 'El mensaje no puede estar vacío.' }, { status: 400 });
   if (text.length > 2000) return NextResponse.json({ error: 'El mensaje es demasiado largo.'  }, { status: 400 });
 
+  const fileUrl: string | undefined = body.fileUrl;
+  const fileName: string | undefined = body.fileName;
+  const fileType: string | undefined = body.fileType;
   const chatMessage = await db.chatMessage.create({
-    data:    { userId, workspaceId, message: text, room },
+    data: { userId, workspaceId, message: text, room, fileUrl, fileName, fileType },
     select: messageSelect,
   });
 

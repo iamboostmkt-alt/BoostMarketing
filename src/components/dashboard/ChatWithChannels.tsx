@@ -10,6 +10,7 @@ import {
   CheckCheck, Video, Folder
 } from 'lucide-react';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
+import { useUploadThing } from '@/lib/uploadthing';
 import { Avatar } from '@/components/weeklink/avatar';
 import { VideoCard, PdfCard, TaskCard, ArchiveCard } from '@/components/weeklink/chat-cards';
 import SupportTicket from '@/components/dashboard/SupportTicket';
@@ -192,8 +193,12 @@ function ChatMain({
   const [showEmoji, setShowEmoji] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'messages'|'files'|'pinned'|'tasks'>('messages');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<{ name: string; type: string; preview?: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { startUpload } = useUploadThing('chatAttachment');
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -227,6 +232,27 @@ function ChatMain({
       });
     } catch {}
     setSending(false);
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setPendingFile({ name: file.name, type: file.type, preview: file.type.startsWith('image') ? URL.createObjectURL(file) : undefined });
+    try {
+      const uploaded = await startUpload([file]);
+      if (uploaded?.[0]) {
+        const { url, name, type } = uploaded[0] as any;
+        await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: name || 'Archivo', room, fileUrl: url, fileName: name, fileType: type }),
+        });
+      }
+    } catch {}
+    setUploading(false);
+    setPendingFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
   async function handleReaction(msgId: string, emoji: string) {
@@ -470,17 +496,38 @@ function ChatMain({
         <div ref={bottomRef} />
       </div>
 
+      {/* Pending file preview */}
+      {pendingFile && (
+        <div className="mx-4 mb-2 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2">
+          {pendingFile.preview ? (
+            <img src={pendingFile.preview} alt="" className="h-10 w-10 rounded-lg object-cover" />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
+              <Paperclip className="h-4 w-4" strokeWidth={1.75} />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="truncate text-[12px] text-white/70">{pendingFile.name}</p>
+            <p className="text-[11px] text-primary animate-pulse">Subiendo...</p>
+          </div>
+        </div>
+      )}
       {/* Composer */}
       <div className="px-4 pb-4 pt-1">
         <form onSubmit={handleSend}>
           <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] px-2 py-2 transition-colors focus-within:border-primary/40">
             <div className="flex items-center gap-1">
-              {[Plus, Smile, AtSign, Slash, Paperclip].map((Icon, i) => (
+              <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/*,.pdf,.zip,.doc,.docx" onChange={handleFileUpload} />
+              {[Plus, Smile, AtSign, Slash].map((Icon, i) => (
                 <button key={i} type="button"
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
                   <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
               ))}
+              <button type="button" onClick={() => fileInputRef.current?.click()}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${uploading ? 'text-primary animate-pulse' : 'text-white/35 hover:bg-white/[0.06] hover:text-white'}`}>
+                <Paperclip className="h-[18px] w-[18px]" strokeWidth={1.75} />
+              </button>
               <input value={input} onChange={e => setInput(e.target.value)}
                 placeholder={`Escribe en #${title}…`}
                 className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white placeholder:text-white/25 focus:outline-none" />
@@ -555,7 +602,7 @@ export default function ChatWithChannels() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreads, setUnreads] = useState<Record<string, number>>({});
   const [clients, setClients] = useState<{ id: string; name: string; color?: string }[]>([]);
-  const [members, setMembers] = useState<{ id: string; name: string | null; email: string; color?: string; image?: string | null }[]>([]);
+  const [members, setMembers] = useState<{ id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string }[]>([]);
   const [dmActivity, setDmActivity] = useState<Record<string, number>>({});
 
   // Fetch unreads
@@ -618,7 +665,10 @@ export default function ChatWithChannels() {
       setActiveId={handleSetActive}
       rooms={rooms}
       clients={clients}
-      members={[...members].sort((a, b) => {
+      members={[...members].filter(m => {
+        if (['ADMIN', 'PROJECT_MANAGER'].includes(role)) return true;
+        return m.role !== 'CLIENT';
+      }).sort((a, b) => {
         const myId = (session?.user as any)?.id ?? '';
         const dmA = [myId, a.id].sort().join('_DM_');
         const dmB = [myId, b.id].sort().join('_DM_');

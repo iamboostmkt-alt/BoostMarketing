@@ -371,6 +371,10 @@ model ChatMessage {
 
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  fileUrl   String?  @map("file_url")
+  fileName  String?  @map("file_name")
+  fileType  String?  @map("file_type")
+  taskId    String?  @map("task_id")
   reactions ChatReaction[]
 
   @@index([workspaceId, room, createdAt])
