@@ -38,13 +38,15 @@ function ChannelList({
   setActiveId: (id: string) => void;
   rooms: { id: string; name: string; icon: string; subtitle?: string; locked?: boolean }[];
   clients: { id: string; name: string; color?: string }[];
-  members: { id: string; name: string | null; email: string; color?: string; image?: string | null }[];
+  members: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string }[];
   myId: string;
   unreads: Record<string, number>;
 }) {
   const [openClients, setOpenClients] = useState(true);
   const [openDMs, setOpenDMs] = useState(true);
   const [showChannelMenu, setShowChannelMenu] = useState(false);
+  const [showDMSearch, setShowDMSearch] = useState(false);
+  const [dmSearchQuery, setDmSearchQuery] = useState('');
   const channelMenuRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -141,8 +143,48 @@ function ChannelList({
             <ChevronDown className={`h-3 w-3 transition-transform ${openDMs ? '' : '-rotate-90'}`} strokeWidth={2} />
             Mensajes directos
           </button>
-          <Plus className="h-3.5 w-3.5 text-white/30 cursor-pointer hover:text-white/60" strokeWidth={2} />
+          <button onClick={() => { setShowDMSearch(!showDMSearch); setDmSearchQuery(''); }}
+            className="flex h-5 w-5 items-center justify-center rounded text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-colors">
+            <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+          </button>
         </div>
+        {showDMSearch && (
+          <div className="mx-2 mb-2 rounded-xl border border-white/[0.08] bg-[#141824] overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.05]">
+              <Search className="h-3.5 w-3.5 text-white/30 shrink-0" strokeWidth={1.75} />
+              <input autoFocus value={dmSearchQuery} onChange={e => setDmSearchQuery(e.target.value)}
+                placeholder="Buscar persona..."
+                className="flex-1 bg-transparent text-[12px] text-white placeholder:text-white/25 focus:outline-none" />
+              <button onClick={() => setShowDMSearch(false)} className="text-white/25 hover:text-white/60">
+                <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+              </button>
+            </div>
+            <div className="max-h-[200px] overflow-y-auto py-1">
+              {members.filter(m => m.id !== myId && (
+                !dmSearchQuery || (m.name || m.email).toLowerCase().includes(dmSearchQuery.toLowerCase())
+              )).map(m => {
+                const dmId = [myId, m.id].sort().join('_DM_');
+                const initials = ((m.name || m.email) || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
+                return (
+                  <button key={m.id} onClick={() => { setActiveId(dmId); setShowDMSearch(false); setDmSearchQuery(''); }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                    <div className="relative shrink-0">
+                      <Avatar initials={initials} color={m.color || '#8b5cf6'} size={22} />
+                      <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-[#141824] bg-emerald-400" />
+                    </div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="truncate text-[12px] font-medium text-white/80">{m.name || m.email}</p>
+                      <p className="truncate text-[10px] text-white/30">{m.role || 'Miembro'}</p>
+                    </div>
+                  </button>
+                );
+              })}
+              {members.filter(m => m.id !== myId && (!dmSearchQuery || (m.name || m.email).toLowerCase().includes(dmSearchQuery.toLowerCase()))).length === 0 && (
+                <p className="px-3 py-3 text-[12px] text-white/25 text-center">Sin resultados</p>
+              )}
+            </div>
+          </div>
+        )}
         {openDMs && (
           <ul className="flex flex-col gap-0.5 max-h-[216px] overflow-y-auto scrollbar-thin">
             {members.filter(m => m.id !== myId).map(m => {
