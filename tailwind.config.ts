@@ -11,6 +11,17 @@ const config: Config = {
   theme: {
   	extend: {
   		colors: {
+  			// Weeklink tokens
+  			'text-text-primary':    '#F5F7FA',
+  			'text-text-secondary':  'rgba(245,247,250,0.65)',
+  			'text-text-muted':      'rgba(245,247,250,0.40)',
+  			'surface-elevated':     '#141824',
+  			'sidebar':              '#0F1117',
+  			'sidebar-border':       'rgba(255,255,255,0.04)',
+  			'divider':              'rgba(255,255,255,0.05)',
+  			'success':              '#10B981',
+  			'warning':              '#F59E0B',
+  			'cyan':                 '#06B6D4',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

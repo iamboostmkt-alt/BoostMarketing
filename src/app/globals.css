@@ -312,3 +312,27 @@
   .priority-high { color: #F97316 !important; }
   .priority-urgent { color: #EF4444 !important; }
 }
+
+/* ── Weeklink v0 design token classes ─────────────────────────── */
+.text-text-primary   { color: #F5F7FA; }
+.text-text-secondary { color: rgba(245,247,250,0.65); }
+.text-text-muted     { color: rgba(245,247,250,0.40); }
+.text-foreground     { color: #F5F7FA; }
+.bg-background       { background-color: #07070A; }
+.bg-card             { background-color: #0F1117; }
+.bg-surface-elevated { background-color: #141824; }
+.bg-popover          { background-color: #141824; }
+.bg-sidebar          { background-color: #0F1117; }
+.border-divider      { border-color: rgba(255,255,255,0.05); }
+.border-border       { border-color: rgba(255,255,255,0.08); }
+.border-sidebar-border { border-color: rgba(255,255,255,0.04); }
+.border-input        { border-color: rgba(255,255,255,0.08); }
+.text-primary        { color: #8B5CF6; }
+.bg-primary\/15     { background-color: rgba(139,92,246,0.15); }
+.bg-primary\/12     { background-color: rgba(139,92,246,0.12); }
+.text-success        { color: #10B981; }
+.text-warning        { color: #F59E0B; }
+.text-cyan           { color: #06B6D4; }
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 9999px; }
