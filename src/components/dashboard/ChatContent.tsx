@@ -472,7 +472,7 @@ export default function ChatContent({
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar space-y-1 pr-1 -mx-2 px-2 min-h-0">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar min-h-0 px-2 py-4" style={{ background: '#07070A' }}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-12">
             <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center">
@@ -491,7 +491,7 @@ export default function ChatContent({
           const isSame = idx > 0 && messages[idx - 1].userId === msg.userId;
 
           return (
-            <div key={msg.id} className={isSame ? 'mt-0.5' : 'mt-3'}>
+            <div key={msg.id} className={isSame ? 'mt-0.5' : 'mt-5'}>
               {isFirstUnread && (
                 <div ref={firstUnreadRef} className="flex items-center gap-2 my-3 px-1">
                   <div className="flex-1 h-px bg-violet-500/30" />
@@ -543,17 +543,17 @@ export default function ChatContent({
                 )}
                 <div className="flex-1 min-w-0">
                   {!isSame && (
-                    <div className="flex items-baseline gap-2 mb-0.5">
-                      <span className="text-[13px] font-semibold text-white/90">
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-[13px] font-semibold text-white/95 tracking-[-0.01em]">
                         {msg.user.name || msg.user.email}
-                        {isMe && <span className="ml-1.5 text-[10px] font-normal text-violet-400/70">tú</span>}
+                        {isMe && <span className="ml-1.5 text-[10px] font-normal" style={{ color: accentColor }}>tú</span>}
                       </span>
                       <span className="text-[11px] text-white/25">
-                        {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true, locale: es })}
+                        {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                   )}
-                  <p className="text-[13.5px] text-white/75 break-words leading-[1.55]">
+                  <p className="text-[13.5px] text-white/80 break-words leading-[1.55] font-[400]">
                     {renderMessage(msg.message)}
                   </p>
                 </div>
@@ -626,7 +626,7 @@ export default function ChatContent({
       )}
 
       {/* Input + @mention dropdown */}
-          <form onSubmit={handleSend} className="mt-2 md:mt-4 shrink-0 pb-[env(safe-area-inset-bottom)]">
+          <form onSubmit={handleSend} className="shrink-0 pb-[env(safe-area-inset-bottom)] px-4 py-3 border-t border-white/[0.05]" style={{ background: '#0F1117' }}>
         <div className="relative">
           {/* @mention dropdown */}
           {mentionQuery !== null && filteredMentions.length > 0 && (
