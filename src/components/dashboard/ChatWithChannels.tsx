@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -17,6 +18,33 @@ const BASE_CHANNELS = [
   { id: 'PROJECT', label: 'proyectos', hint: 'Discusión de proyectos',   icon: Briefcase, iconBg: 'rgba(167,139,250,0.12)', iconColor: '#c4b5fd' },
   { id: 'PRIVATE', label: 'privado',   hint: 'Admin y Project Managers', icon: Lock,      iconBg: 'rgba(248,113,113,0.12)', iconColor: '#fca5a5', private: true },
 ];
+
+
+// Safe wrapper que captura errores de WeeklinkChatContent
+function WeeklinkSafeWrapper(props: {
+  room: string; title: string; subtitle: string;
+  onOpenThread: (msg: any) => void; accentColor: string;
+}) {
+  const [crashed, setCrashed] = React.useState(false);
+  const [error, setError] = React.useState('');
+
+  if (crashed) {
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#07070A', gap: 8 }}>
+        <p style={{ color: 'red', fontSize: 12 }}>Error: {error}</p>
+        <ChatContent key={props.room} room={props.room} title={props.title} subtitle={props.subtitle} />
+      </div>
+    );
+  }
+
+  try {
+    return <WeeklinkChatContent {...props} />;
+  } catch (e: any) {
+    setCrashed(true);
+    setError(e?.message || 'Unknown error');
+    return null;
+  }
+}
 
 export default function ChatWithChannels() {
   const { data: session } = useSession();
@@ -228,7 +256,8 @@ export default function ChatWithChannels() {
             <SupportTicket onClose={() => setActiveId('TEAM')} />
           </div>
         ) : (
-          <WeeklinkChatContent key={activeId} room={activeId} title={activeTitle} subtitle={activeSubtitle}
+          <WeeklinkSafeWrapper
+            room={activeId} title={activeTitle} subtitle={activeSubtitle}
             onOpenThread={(msg) => setThreadMsg(msg)} accentColor={accentColor} />
         )}
       </div>
