@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
+import { broadcastRealtime } from '@/lib/realtime-server';
 
 const VALID_EMOJI = /^\p{Emoji}/u;
 const ALLOWED_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'DESIGNER', 'MARKETING', 'CLIENT'];

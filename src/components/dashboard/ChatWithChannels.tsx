@@ -61,7 +61,7 @@ function ChannelList({
               <Plus className="h-3.5 w-3.5" strokeWidth={2} />
             </button>
             {showChannelMenu && (
-              <div className="absolute left-0 top-6 z-50 w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
+              <div className="absolute right-0 top-6 z-50 w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
                 {[
                   { label: 'Crear canal', icon: '＃' },
                   { label: 'Crear espacio cliente', icon: '◉' },
@@ -241,13 +241,14 @@ function ChannelList({
 
 // ─── Main Chat ─────────────────────────────────────────────────────────────────
 function ChatMain({
-  room, title, accentColor, onOpenThread, dmUser,
+  room, title, accentColor, onOpenThread, dmUser, role = '',
 }: {
   room: string;
   title: string;
   accentColor: string;
   onOpenThread: (msg: ChatMessage) => void;
   dmUser?: { id: string; name: string | null; email: string; color?: string; image?: string | null } | null;
+  role?: string;
 }) {
   const { data: session } = useSession();
   const myId = (session?.user as any)?.id;
@@ -261,6 +262,10 @@ function ChatMain({
   const [uploading, setUploading] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<{ name: string; type: string; preview?: string; progress: number }[]>([]);
   const [roomTasks, setRoomTasks] = useState<any[]>([]);
+  const [linkModal, setLinkModal] = useState<{ fileUrl: string; fileName: string; fileType: string } | null>(null);
+  const [linkTaskId, setLinkTaskId] = useState('');
+  const [linkableTasks, setLinkableTasks] = useState<any[]>([]);
+  const [linking, setLinking] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -269,6 +274,18 @@ function ChatMain({
       setPendingFiles(prev => prev.map((f, i) => i === 0 ? { ...f, progress: p } : f));
     },
   });
+
+  useEffect(() => {
+    if (!linkModal) return;
+    const clientId = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) ? undefined : room;
+    const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role);
+    const assignedParam = isManager ? '' : '&assignedToMe=true';
+    const url = clientId
+      ? `/api/tasks?clientId=${clientId}&limit=30${assignedParam}`
+      : `/api/tasks?limit=30${assignedParam}`;
+    fetch(url).then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.tasks) setLinkableTasks(d.tasks); }).catch(() => {});
+  }, [linkModal, room, role]);
 
   useEffect(() => {
     if (activeTab !== 'tasks') return;
@@ -293,6 +310,13 @@ function ChatMain({
     return bus.on<{ message: ChatMessage; room: string }>(RT_EVENTS.MESSAGE_SENT, (p) => {
       if (p.room === room)
         setMessages(prev => prev.some(m => m.id === p.message.id) ? prev : [...prev, p.message]);
+    });
+  }, [room]);
+
+  useEffect(() => {
+    return bus.on<{ message: ChatMessage; room: string }>('reaction.updated' as any, (p) => {
+      if (p.room === room)
+        setMessages(prev => prev.map(m => m.id === p.message.id ? { ...m, reactions: (p.message as any).reactions } : m));
     });
   }, [room]);
 
@@ -357,11 +381,31 @@ function ChatMain({
           });
         }
         setPendingFiles(prev => prev.filter(f => f.name !== file.name));
+        // Si es canal de cliente → ofrecer vincular con tarea
+        if (!['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) && uploaded?.[0]) {
+          const { url, name, type } = uploaded[0] as any;
+          setLinkModal({ fileUrl: url, fileName: name, fileType: type });
+          setLinkTaskId('');
+        }
       }
     } catch {}
     setUploading(false);
     setPendingFiles([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  async function handleLinkTask() {
+    if (!linkModal || !linkTaskId) return;
+    setLinking(true);
+    const isVideo = linkModal.fileType.startsWith('video');
+    await fetch('/api/chat/link-task', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...linkModal, taskId: linkTaskId, isVideo }),
+    }).catch(() => {});
+    setLinking(false);
+    setLinkModal(null);
+    setLinkTaskId('');
   }
 
   async function handleReaction(msgId: string, emoji: string) {
@@ -689,6 +733,39 @@ function ChatMain({
         <div ref={bottomRef} />
       </div>}
 
+      {/* Modal vincular archivo con tarea */}
+      {linkModal && (
+        <div className="mx-4 mb-2 rounded-xl border border-primary/30 bg-primary/[0.06] p-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[12px] font-medium text-white/80">
+              {linkModal.fileType.startsWith('video') ? '🎬 Video subido' : '📎 Archivo subido'} — ¿Vincular con tarea?
+            </p>
+            <button onClick={() => setLinkModal(null)} className="text-white/30 hover:text-white/60">
+              <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+            </button>
+          </div>
+          {linkModal.fileType.startsWith('video') && (
+            <p className="text-[11px] text-primary/70 mb-2">Al vincular un video la tarea pasará a <strong>En revisión</strong> automáticamente</p>
+          )}
+          <select value={linkTaskId} onChange={e => setLinkTaskId(e.target.value)}
+            className="w-full rounded-lg border border-white/[0.08] bg-[#141824] px-3 py-2 text-[12px] text-white/70 focus:outline-none focus:border-primary/40 mb-2">
+            <option value="">Seleccionar tarea...</option>
+            {linkableTasks.map((t: any) => (
+              <option key={t.id} value={t.id}>{t.title}</option>
+            ))}
+          </select>
+          <div className="flex gap-2">
+            <button onClick={handleLinkTask} disabled={!linkTaskId || linking}
+              className="flex-1 rounded-lg bg-primary py-1.5 text-[12px] font-medium text-white disabled:opacity-40 transition-opacity">
+              {linking ? 'Vinculando...' : 'Vincular'}
+            </button>
+            <button onClick={() => setLinkModal(null)}
+              className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-[12px] text-white/40 hover:text-white/70">
+              Omitir
+            </button>
+          </div>
+        </div>
+      )}
       {/* Pending files preview */}
       {pendingFiles.length > 0 && (
         <div className="mx-4 mb-2 flex flex-col gap-1.5">
@@ -1002,6 +1079,7 @@ export default function ChatWithChannels() {
             accentColor={accentColor}
             onOpenThread={(msg) => setThreadMsg(msg)}
             dmUser={activeDmUser}
+            role={role}
           />
         )}
       </div>
