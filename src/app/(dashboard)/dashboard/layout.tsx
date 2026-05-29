@@ -11,6 +11,7 @@ import ErrorBoundary from '@/components/dashboard/ErrorBoundary';
 import { AuthProvider } from '@/context/AuthContext';
 import { BrandingProvider } from '@/context/BrandingContext';
 import { RealtimeProvider } from '@/providers/RealtimeProvider';
+import { ActivityToastListener } from '@/components/dashboard/ActivityToastListener';
 
 function ForbiddenBanner() {
   const searchParams = useSearchParams();
@@ -40,6 +41,7 @@ export default function DashboardLayout({
     <AuthProvider>
       <BrandingProvider>
       <RealtimeProvider>
+        <ActivityToastListener />
       <TooltipProvider delayDuration={0}>
         <SidebarProvider>
           <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}>
