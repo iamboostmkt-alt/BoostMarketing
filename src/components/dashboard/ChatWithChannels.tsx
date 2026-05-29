@@ -146,6 +146,9 @@ function ChatMain({
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [showEmoji, setShowEmoji] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'messages'|'files'|'pinned'|'tasks'>('messages');
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = useCallback(async () => {
@@ -194,21 +197,44 @@ function ChatMain({
   return (
     <section className="flex h-full min-w-0 flex-1 flex-col bg-background">
       {/* Channel header */}
-      <header className="flex h-[52px] shrink-0 items-center gap-3 border-b border-white/[0.05] px-5">
-        <div className="flex items-center gap-2">
-          <Hash className="h-4 w-4 text-white/40" strokeWidth={1.75} />
-          <h1 className="text-[15px] font-semibold tracking-tight">{title}</h1>
+      <header className="shrink-0 border-b border-white/[0.05]">
+        <div className="flex h-[52px] items-center gap-3 px-5">
+          <div className="flex items-center gap-2">
+            <Hash className="h-4 w-4 text-white/40" strokeWidth={1.75} />
+            <h1 className="text-[15px] font-semibold tracking-tight">{title}</h1>
+          </div>
+          <div className="ml-auto flex items-center gap-1">
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
+              <Users className="h-4 w-4" strokeWidth={1.75} />
+            </button>
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
+              <Pin className="h-[18px] w-[18px]" strokeWidth={1.75} />
+            </button>
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
+              <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.75} />
+            </button>
+          </div>
         </div>
-        <div className="ml-auto flex items-center gap-1">
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
-            <Users className="h-4 w-4" strokeWidth={1.75} />
-          </button>
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
-            <Pin className="h-[18px] w-[18px]" strokeWidth={1.75} />
-          </button>
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
-            <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.75} />
-          </button>
+        {/* Tabs */}
+        <div className="flex items-center gap-0 px-4">
+          {(['messages','files','pinned','tasks'] as const).map(tab => {
+            const labels: Record<string, string> = { messages: 'Messages', files: 'Files', pinned: 'Pinned', tasks: 'Tasks' };
+            const isActive = activeTab === tab;
+            return (
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                className={`relative flex h-9 items-center gap-1.5 px-3 text-[13px] transition-colors ${
+                  isActive ? 'text-white' : 'text-white/35 hover:text-white/60'
+                }`}>
+                {labels[tab]}
+                {tab === 'tasks' && (
+                  <span className="flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-white/[0.08] px-1 text-[10px] font-medium text-white/50">3</span>
+                )}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-primary" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </header>
 
@@ -237,7 +263,15 @@ function ChatMain({
 
         {messages.map((msg, idx) => {
           const isMe = msg.userId === myId;
-          const isSame = idx > 0 && messages[idx - 1].userId === msg.userId;
+          const msgDate = new Date(msg.createdAt);
+          const prevDate = idx > 0 ? new Date(messages[idx - 1].createdAt) : null;
+          const isNewDay = !prevDate || msgDate.toDateString() !== prevDate.toDateString();
+          const today = new Date();
+          const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+          const dayLabel = msgDate.toDateString() === today.toDateString() ? 'Hoy'
+            : msgDate.toDateString() === yesterday.toDateString() ? 'Ayer'
+            : msgDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+          const isSame = idx > 0 && messages[idx - 1].userId === msg.userId && !isNewDay;
           const color = (msg.user as any)?.color || accentColor;
           const initials = getInitials((msg.user as any)?.name ?? null, (msg.user as any)?.email ?? '');
           const reactions = (msg.reactions || []).reduce((acc: any[], r: any) => {
@@ -248,7 +282,15 @@ function ChatMain({
           }, []);
 
           return (
-            <div key={msg.id} className={isSame ? 'mt-0.5' : 'mt-4'}>
+            <div key={msg.id}>
+              {isNewDay && (
+                <div className="flex items-center gap-3 my-4 px-2">
+                  <div className="flex-1 h-px bg-white/[0.05]" />
+                  <span className="text-[11px] font-medium text-white/30 px-2">{dayLabel}</span>
+                  <div className="flex-1 h-px bg-white/[0.05]" />
+                </div>
+              )}
+            <div className={isSame ? 'mt-0.5' : 'mt-4'}>
               <div className="group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02]"
                 style={{ paddingTop: isSame ? '1px' : '8px', paddingBottom: '1px' }}>
                 {/* Hover actions */}
@@ -321,8 +363,24 @@ function ChatMain({
                 </div>
               </div>
             </div>
+            </div>
           );
         })}
+
+        {/* Typing indicator */}
+        {typingUsers.length > 0 && (
+          <div className="flex items-center gap-2 px-2 py-2">
+            <div className="flex gap-[3px] items-center">
+              {[0,1,2].map(i => (
+                <span key={i} className="block h-[6px] w-[6px] rounded-full bg-primary/60"
+                  style={{ animation: `typing-dot 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+              ))}
+            </div>
+            <span className="text-[12px] text-white/35">
+              {typingUsers.join(', ')} {typingUsers.length === 1 ? 'está' : 'están'} escribiendo…
+            </span>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 

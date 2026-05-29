@@ -374,3 +374,8 @@
 .wl-text-muted       { color: var(--wl-text-muted); }
 .wl-border           { border-color: var(--wl-border); }
 .wl-divider          { border-color: var(--wl-divider); }
+
+@keyframes typing-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
