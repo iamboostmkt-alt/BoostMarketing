@@ -42,6 +42,7 @@ function ChannelList({
   unreads: Record<string, number>;
 }) {
   const [openClients, setOpenClients] = useState(true);
+  const [openDMs, setOpenDMs] = useState(true);
 
   return (
     <div className="flex h-full w-[244px] shrink-0 flex-col border-r border-white/[0.05] bg-card">
@@ -81,7 +82,7 @@ function ChannelList({
           <button onClick={() => setOpenClients(!openClients)}
             className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 hover:text-white/60">
             <ChevronDown className={`h-3 w-3 transition-transform ${openClients ? '' : '-rotate-90'}`} strokeWidth={2} />
-            Clientes ({clients.length})
+            Cuentas ({clients.length})
           </button>
         </div>
         {openClients && (
@@ -111,36 +112,42 @@ function ChannelList({
 
         {/* Direct Messages */}
         <div className="flex items-center justify-between px-2 pb-1 pt-4">
-          <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Mensajes directos</span>
+          <button onClick={() => setOpenDMs(!openDMs)}
+            className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 hover:text-white/60">
+            <ChevronDown className={`h-3 w-3 transition-transform ${openDMs ? '' : '-rotate-90'}`} strokeWidth={2} />
+            Mensajes directos
+          </button>
           <Plus className="h-3.5 w-3.5 text-white/30 cursor-pointer hover:text-white/60" strokeWidth={2} />
         </div>
-        <ul className="flex flex-col gap-0.5">
-          {members.filter(m => m.id !== myId).map(m => {
-            const dmId = [myId, m.id].sort().join('_DM_');
-            const isActive = activeId === dmId;
-            const unread = unreads[dmId] || 0;
-            const initials = ((m.name || m.email) || 'U').split(/[\s@]/)[0].slice(0,2).toUpperCase();
-            return (
-              <li key={m.id}>
-                <button onClick={() => setActiveId(dmId)}
-                  className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${
-                    isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
-                  }`}>
-                  <div className="relative shrink-0">
-                    <Avatar initials={initials} color={m.color || '#8b5cf6'} size={20} />
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-card bg-emerald-400" />
-                  </div>
-                  <span className="flex-1 truncate text-left">{m.name || m.email}</span>
-                  {unread > 0 && (
-                    <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white">
-                      {unread}
-                    </span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        {openDMs && (
+          <ul className="flex flex-col gap-0.5 max-h-[216px] overflow-y-auto scrollbar-thin">
+            {members.filter(m => m.id !== myId).map(m => {
+              const dmId = [myId, m.id].sort().join('_DM_');
+              const isActive = activeId === dmId;
+              const unread = unreads[dmId] || 0;
+              const initials = ((m.name || m.email) || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
+              return (
+                <li key={m.id}>
+                  <button onClick={() => setActiveId(dmId)}
+                    className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${
+                      isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
+                    }`}>
+                    <div className="relative shrink-0">
+                      <Avatar initials={initials} color={m.color || '#8b5cf6'} size={20} />
+                      <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-card bg-emerald-400" />
+                    </div>
+                    <span className="flex-1 truncate text-left">{m.name || m.email}</span>
+                    {unread > 0 && (
+                      <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white">
+                        {unread}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
         {/* Apps */}
         <div className="px-2 pb-1 pt-4">
@@ -168,12 +175,13 @@ function ChannelList({
 
 // ─── Main Chat ─────────────────────────────────────────────────────────────────
 function ChatMain({
-  room, title, accentColor, onOpenThread,
+  room, title, accentColor, onOpenThread, dmUser,
 }: {
   room: string;
   title: string;
   accentColor: string;
   onOpenThread: (msg: ChatMessage) => void;
+  dmUser?: { id: string; name: string | null; email: string; color?: string } | null;
 }) {
   const { data: session } = useSession();
   const myId = (session?.user as any)?.id;
@@ -234,9 +242,25 @@ function ChatMain({
     <section className="flex h-full min-w-0 flex-1 flex-col bg-background">
       {/* Channel header */}
       <header className="shrink-0 border-b border-white/[0.05]">
+        {dmUser && (
+          <div className="flex items-center gap-3 px-5 py-3 border-b border-white/[0.04] bg-white/[0.01]">
+            <div className="relative shrink-0">
+              <Avatar initials={((dmUser.name || dmUser.email) || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()} color={dmUser.color || '#8b5cf6'} size={36} />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-400" />
+            </div>
+            <div>
+              <p className="text-[14px] font-semibold text-white/95">{dmUser.name || dmUser.email}</p>
+              <p className="text-[11px] text-emerald-400">En línea</p>
+            </div>
+          </div>
+        )}
         <div className="flex h-[52px] items-center gap-3 px-5">
           <div className="flex items-center gap-2">
-            <Hash className="h-4 w-4 text-white/40" strokeWidth={1.75} />
+            {dmUser ? (
+              <span className="text-[13px] font-medium text-white/40">@</span>
+            ) : (
+              <Hash className="h-4 w-4 text-white/40" strokeWidth={1.75} />
+            )}
             <h1 className="text-[15px] font-semibold tracking-tight">{title}</h1>
           </div>
           <div className="ml-auto flex items-center gap-1">
@@ -634,6 +658,7 @@ export default function ChatWithChannels() {
             title={activeTitle}
             accentColor={accentColor}
             onOpenThread={(msg) => setThreadMsg(msg)}
+            dmUser={activeId.includes('_DM_') ? members.find(m => activeId.includes(m.id) && m.id !== (session?.user as any)?.id) ?? null : null}
           />
         )}
       </div>

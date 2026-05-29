@@ -6,7 +6,7 @@ const ChatWithChannels = dynamic(
 );
 export default function ChatPage() {
   return (
-    <div className="-mx-4 md:-mx-6 lg:-mx-8 -mt-4 md:-mt-6 lg:-mt-8 h-[calc(100dvh-3.5rem)] flex flex-col">
+    <div className="fixed inset-0 top-[3.5rem] left-[var(--sidebar-width,240px)] flex flex-col overflow-hidden z-10">
       <ChatWithChannels />
     </div>
   );

@@ -56,14 +56,16 @@ export default function DashboardLayout({
               </div>
 
               {/* Main content — ÚNICO área scrolleable */}
-              <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}>
-                <div className="p-4 md:p-6 lg:p-8">
-                  <Suspense fallback={null}>
-                    <ForbiddenBanner />
-                  </Suspense>
-                  <ErrorBoundary>
-                    {children}
-                  </ErrorBoundary>
+              <main className="flex-1 min-h-0 overflow-hidden" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}>
+                <div className="h-full overflow-y-auto overflow-x-hidden custom-scrollbar">
+                  <div className="p-4 md:p-6 lg:p-8 min-h-full">
+                    <Suspense fallback={null}>
+                      <ForbiddenBanner />
+                    </Suspense>
+                    <ErrorBoundary>
+                      {children}
+                    </ErrorBoundary>
+                  </div>
                 </div>
               </main>
             </div>
