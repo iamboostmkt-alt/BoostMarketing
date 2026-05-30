@@ -778,7 +778,7 @@ function ChatMain({
                 {/* Hover actions */}
                 <div className="absolute -top-1 right-2 z-10 hidden items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl group-hover:flex">
                   {[
-                    { Icon: SmilePlus, fn: (e: React.MouseEvent) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setShowEmoji(showEmoji?.id === msg.id ? null : {id: msg.id, x: r.right, y: r.top}); }, tip: 'Reaccionar' },
+                    { Icon: SmilePlus, fn: () => { setShowEmoji(showEmoji?.id === msg.id ? null : {id: msg.id, x: 0, y: 0}); }, tip: 'Reaccionar' },
                     { Icon: Reply, fn: () => onOpenThread(msg), tip: 'Responder en hilo' },
                     { Icon: ListPlus, fn: () => {}, tip: 'Crear tarea' },
                     { Icon: Pin, fn: () => {}, tip: 'Fijar mensaje' },
@@ -796,8 +796,18 @@ function ChatMain({
                   ))}
                 </div>
 
-                {/* Emoji picker */}
-{/* emoji picker moved to fixed portal */}
+                {/* Emoji picker — absolute encima del hover bar */}
+                {showEmoji?.id === msg.id && (
+                  <div className="absolute -top-10 right-2 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
+                    onMouseLeave={() => setShowEmoji(null)}>
+                    {QUICK_EMOJIS.map(e => (
+                      <button key={e} onClick={() => handleReaction(msg.id, e)}
+                        className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
+                        {e}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <div className="flex gap-3">
                   {isSame ? (
@@ -1004,20 +1014,6 @@ function ChatMain({
         </form>
       </div>
       {/* Emoji picker portal fixed */}
-      {showEmoji && (
-        <div
-          className="fixed z-[9999] flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
-          style={{ top: Math.max(8, showEmoji.y - 52), left: Math.max(8, showEmoji.x - 190), paddingBottom: 16 }}
-          onMouseLeave={() => setShowEmoji(null)}
-        >
-          {QUICK_EMOJIS.map(e => (
-            <button key={e} onClick={() => handleReaction(showEmoji.id, e)}
-              className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
-              {e}
-            </button>
-          ))}
-        </div>
-      )}
     </section>
   );
 }
