@@ -679,7 +679,7 @@ function ChatMain({
       )}
 
       {/* Messages */}
-      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-3">
+      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto px-5 py-3" style={{scrollbarWidth:'none'}}>
         {loading && (
           <div className="space-y-4">
             {[1,2,3].map(i => (
@@ -965,7 +965,7 @@ function ChatMain({
       {showEmoji && (
         <div
           className="fixed z-[9999] flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
-          style={{ top: showEmoji.y - 56, left: showEmoji.x - 60 }}
+          style={{ top: Math.max(8, showEmoji.y - 52), left: Math.max(8, showEmoji.x - 80) }}
           onMouseLeave={() => setShowEmoji(null)}
         >
           {QUICK_EMOJIS.map(e => (
