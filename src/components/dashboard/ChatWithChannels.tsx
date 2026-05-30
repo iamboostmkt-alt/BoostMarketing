@@ -46,6 +46,7 @@ function ChannelList({
   const [openClients, setOpenClients] = useState(true);
   const [openDMs, setOpenDMs] = useState(true);
   const [showChannelMenu, setShowChannelMenu] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [showDMSearch, setShowDMSearch] = useState(false);
   const [dmSearchQuery, setDmSearchQuery] = useState('');
   const [showCreateChannel, setShowCreateChannel] = useState(false);
@@ -55,17 +56,17 @@ function ChannelList({
 
   return (
     <div className="flex h-full w-[244px] shrink-0 flex-col border-r border-white/[0.05] bg-card">
-      <div className="flex-1 overflow-y-auto scrollbar-thin px-2 pb-4 overflow-x-visible">
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-2 pb-4">
         {/* Internal channels */}
         <div className="flex items-center justify-between px-2 pb-1 pt-4">
           <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Canales</span>
           <div className="relative" ref={channelMenuRef}>
-            <button onClick={() => setShowChannelMenu(!showChannelMenu)}
+            <button onClick={(e) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenuPos({ top: r.bottom + 4, left: r.left }); setShowChannelMenu(!showChannelMenu); }}
               className="flex h-5 w-5 items-center justify-center rounded text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-colors">
               <Plus className="h-3.5 w-3.5" strokeWidth={2} />
             </button>
             {showChannelMenu && (
-              <div className="absolute left-0 top-6 z-[200] w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
+              <div className="fixed z-[9999] w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl" style={{ top: menuPos.top, left: menuPos.left }}>
                 <button onClick={() => { setShowChannelMenu(false); setShowCreateChannel(true); }}
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
                   <span className="text-[14px]">＃</span>Crear canal
@@ -89,7 +90,7 @@ function ChannelList({
               </div>
             )}
             {showCreateChannel && (
-              <div className="absolute left-0 top-6 z-[200] w-56 rounded-xl border border-white/[0.08] bg-[#141824] p-3 shadow-2xl">
+              <div className="fixed z-[9999] w-56 rounded-xl border border-white/[0.08] bg-[#141824] p-3 shadow-2xl" style={{ top: menuPos.top, left: menuPos.left }}>
                 <p className="text-[12px] font-medium text-white/70 mb-2">Nuevo canal</p>
                 <input autoFocus value={newChannelName} onChange={e => setNewChannelName(e.target.value.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,''))}
                   placeholder="nombre-del-canal"
