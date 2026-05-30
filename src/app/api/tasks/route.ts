@@ -504,6 +504,21 @@ export async function PUT(req: NextRequest) {
       for (const u of _assignedUsers) {
         if (u.email) getBranding().then(b => sendMail(u.email!, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName, b))).catch(console.error);
       }
+      // Notificar al PM que su equipo completó la tarea
+      const clienteCompleted = task.clientId
+        ? await db.client.findUnique({ where: { id: task.clientId }, select: { assignedManager: { select: { id: true, email: true, name: true } } } })
+        : null;
+      const pmCompleted = clienteCompleted?.assignedManager;
+      if (pmCompleted?.email && !_assignedUsers.find((u: any) => u.id === pmCompleted.id)) {
+        getBranding().then(b => sendMail(
+          pmCompleted.email!,
+          `✅ Tu equipo completó: ${task.title}`,
+          templateTareaCompletada(task.title, userName, b)
+        )).catch(() => {});
+        await db.notification.create({
+          data: { userId: pmCompleted.id, workspaceId: existing.workspaceId, message: `✅ ${userName} completó: "${task.title}"`, type: 'task', read: false, link: '/dashboard/tasks' }
+        }).catch(() => {});
+      }
     }
 
     // F1 — Notificación inmediata al pasar a internal_review
