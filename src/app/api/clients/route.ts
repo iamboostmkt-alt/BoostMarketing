@@ -56,8 +56,7 @@ export async function GET(req: NextRequest) {
   const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'clients-get' });
   if (!rl.success) return rl.response;
   const isSidebar = new URL(req.url).searchParams.get("sidebar") === "1";
-  const allowedRoles = isSidebar ? ["ADMIN","PROJECT_MANAGER","SALES_REP","TEAM_MEMBER","DESIGNER","MARKETING"] : ["ADMIN","PROJECT_MANAGER","SALES_REP"];
-  const result = await requireWorkspace({ roles: allowedRoles });
+  const result = await requireWorkspace({ roles: isSidebar ? ["ADMIN","PROJECT_MANAGER","SALES_REP","TEAM_MEMBER","DESIGNER","MARKETING"] as any : ["ADMIN","PROJECT_MANAGER","SALES_REP"] });
   if (!result.ok) return result.response;
   const { userId, workspaceId, role } = result.ctx;
 
