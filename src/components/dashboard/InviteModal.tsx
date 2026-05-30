@@ -291,6 +291,12 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
   const [members,  setMembers]  = React.useState<Member[]>([]);
   const [loadingMembers, setLoadingMembers] = React.useState(false);
   const [pendingInvites, setPendingInvites] = React.useState<PendingInvite[]>([]);
+  const [tab, setTab] = React.useState<'team' | 'client'>('team');
+  const [clientName, setClientName] = React.useState('');
+  const [clientEmail, setClientEmail] = React.useState('');
+  const [clientLoading, setClientLoading] = React.useState(false);
+  const [clientSuccess, setClientSuccess] = React.useState(false);
+  const [clientError, setClientError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (open) setPendingInvites(getStoredInvites());
@@ -365,6 +371,25 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     }
   }
 
+  async function handleInviteClient() {
+    setClientError(null);
+    if (!clientEmail.trim() || !clientName.trim()) { setClientError("Nombre y email son obligatorios."); return; }
+    setClientLoading(true);
+    try {
+      const res = await fetch('/api/workspace/invite-client', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: clientEmail.trim(), clientName: clientName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setClientError(data.error ?? "Error al invitar."); return; }
+      setClientSuccess(true);
+      setClientEmail(''); setClientName('');
+      setTimeout(() => setClientSuccess(false), 2000);
+    } catch { setClientError("Error de red."); }
+    finally { setClientLoading(false); }
+  }
+
   return (
     <>
       {open && (
@@ -405,6 +430,16 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
               {/* Container 1: Invite */}
               <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative" }} className="p-5">
                 <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
+                {/* Tabs */}
+                <div className="flex gap-1 mb-4 p-1 rounded-lg bg-white/[0.03] w-fit">
+                  {(['team','client'] as const).map(t => (
+                    <button key={t} type="button" onClick={() => setTab(t)}
+                      className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${tab === t ? 'bg-primary text-white' : 'text-white/40 hover:text-white/70'}`}>
+                      {t === 'team' ? '👥 Equipo' : '🏢 Cliente'}
+                    </button>
+                  ))}
+                </div>
+                {tab === 'team' && <>
                 <h2 className="text-[14px] font-medium text-white/85 relative z-10">Invitar miembros</h2>
                 <p className="mt-0.5 text-[12px] text-white/35 relative z-10">Agrega nuevos miembros con su correo electrónico</p>
                 <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center relative z-10">
@@ -427,8 +462,29 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                     </motion.p>
                   )}
                 </AnimatePresence>
+                </>}
               </div>
-
+                {tab === 'client' && <>
+                <h2 className="text-[14px] font-medium text-white/85 relative z-10">Invitar cliente</h2>
+                <p className="mt-0.5 text-[12px] text-white/35 relative z-10">El cliente recibirá un link para acceder a su portal</p>
+                <div className="mt-4 flex flex-col gap-2.5 relative z-10">
+                  <input type="text" placeholder="Nombre del cliente" value={clientName}
+                    onChange={e => setClientName(e.target.value)}
+                    className="h-[36px] rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 text-[13px] text-white/70 placeholder-white/20 outline-none focus:border-purple-500/40" />
+                  <div className="flex gap-2">
+                    <input type="email" placeholder="Email del cliente" value={clientEmail}
+                      onChange={e => setClientEmail(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleInviteClient()}
+                      className="h-[36px] flex-1 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 text-[13px] text-white/70 placeholder-white/20 outline-none focus:border-purple-500/40" />
+                    <motion.button type="button" onClick={handleInviteClient} disabled={clientLoading || clientSuccess}
+                      whileHover={{ backgroundColor: "#6d28d9" }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.15 }}
+                      className="flex h-[36px] items-center gap-1.5 rounded-lg bg-[#7c3aed] px-5 text-[13px] font-medium text-white disabled:opacity-60 whitespace-nowrap">
+                      {clientLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : clientSuccess ? <><Check className="h-3.5 w-3.5" />Enviado</> : "Invitar"}
+                    </motion.button>
+                  </div>
+                  {clientError && <p className="text-[12px] text-red-400 mt-1">{clientError}</p>}
+                </div>
+                </>}
               {/* Container 2: People with access */}
               <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative", minHeight: 420 }} className="p-5">
                 <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
