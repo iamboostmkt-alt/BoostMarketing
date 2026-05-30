@@ -1,32 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { requireWorkspace } from '@/core/auth/require-workspace';
+
+export const dynamic = 'force-dynamic';
+
+function isAuthorized(req: NextRequest): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return false;
+  return req.headers.get('x-cron-secret') === secret ||
+         req.headers.get('authorization') === `Bearer ${secret}`;
+}
 
 export async function GET(req: NextRequest) {
+  if (!isAuthorized(req))
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   try {
-    const result = await requireWorkspace({ roles: ['ADMIN'] });
-    if (!result.ok) return result.response;
-    const { workspaceId } = result.ctx;
-
     const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
-    const deleted = await db.contact.deleteMany({
-      where: {
-        status:    'lead',
-        workspaceId,
-        createdAt: { lt: cutoff },
-      },
-    });
-
-    const pending = await db.contact.count({
-      where: { status: 'lead', workspaceId, createdAt: { gte: cutoff } },
-    });
-
-    return NextResponse.json({
-      message: `${deleted.count} leads eliminados. ${pending} pendientes activos.`,
-      deleted: deleted.count,
-      pending,
-    });
+    const workspaces = await db.workspace.findMany({ select: { id: true } });
+    let totalDeleted = 0;
+    for (const { id: workspaceId } of workspaces) {
+      const deleted = await db.contact.deleteMany({
+        where: { status: 'lead', workspaceId, createdAt: { lt: cutoff } },
+      });
+      totalDeleted += deleted.count;
+    }
+    return NextResponse.json({ ok: true, deleted: totalDeleted });
   } catch (error) {
     console.error('[cleanup-leads]', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
