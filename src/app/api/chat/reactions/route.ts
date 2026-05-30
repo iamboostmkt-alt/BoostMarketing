@@ -46,5 +46,5 @@ export async function POST(req: NextRequest) {
   if (updatedMsg) {
     broadcastRealtime('reaction.updated', { message: updatedMsg, room: updatedMsg.room }).catch(() => {});
   }
-  return NextResponse.json({ added: !existing }, { status: existing ? 200 : 201 });
+  return NextResponse.json({ added: !existing, message: updatedMsg }, { status: existing ? 200 : 201 });
 }

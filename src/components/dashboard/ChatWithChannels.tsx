@@ -1007,7 +1007,7 @@ function ChatMain({
       {showEmoji && (
         <div
           className="fixed z-[9999] flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
-          style={{ top: Math.max(8, showEmoji.y - 90), left: Math.max(8, showEmoji.x - 100) }}
+          style={{ top: Math.max(8, showEmoji.y - 48), left: Math.min(showEmoji.x - 180, window.innerWidth - 220) }}
           onMouseLeave={() => setShowEmoji(null)}
         >
           {QUICK_EMOJIS.map(e => (
