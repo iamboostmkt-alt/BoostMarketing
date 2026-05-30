@@ -8,7 +8,7 @@ export async function GET() {
   const { workspaceId } = result.ctx;
   const sdb = getScopedDb(workspaceId);
   const members = await sdb.user.findMany({
-    where: { workspaceId, active: true, role: { notIn: ['CLIENT', 'GUEST'] } },
+    where: { workspaceId, active: true, role: { not: 'CLIENT' } },
     select: { id: true, name: true, email: true, color: true, image: true, role: true },
     take: 30,
   });
