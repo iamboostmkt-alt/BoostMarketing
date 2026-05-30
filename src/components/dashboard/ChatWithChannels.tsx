@@ -32,7 +32,7 @@ function renderMessage(text: string) {
 
 // ─── Channel List ──────────────────────────────────────────────────────────────
 function ChannelList({
-  activeId, setActiveId, rooms, clients, members, myId, unreads,
+  activeId, setActiveId, rooms, clients, members, myId, unreads, role,
 }: {
   activeId: string;
   setActiveId: (id: string) => void;
@@ -41,13 +41,17 @@ function ChannelList({
   members: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string }[];
   myId: string;
   unreads: Record<string, number>;
+  role: string;
 }) {
   const [openClients, setOpenClients] = useState(true);
   const [openDMs, setOpenDMs] = useState(true);
   const [showChannelMenu, setShowChannelMenu] = useState(false);
   const [showDMSearch, setShowDMSearch] = useState(false);
   const [dmSearchQuery, setDmSearchQuery] = useState('');
+  const [showCreateChannel, setShowCreateChannel] = useState(false);
+  const [newChannelName, setNewChannelName] = useState('');
   const channelMenuRef = useRef<HTMLDivElement>(null);
+  const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(role);
 
   return (
     <div className="flex h-full w-[244px] shrink-0 flex-col border-r border-white/[0.05] bg-card">
@@ -61,19 +65,46 @@ function ChannelList({
               <Plus className="h-3.5 w-3.5" strokeWidth={2} />
             </button>
             {showChannelMenu && (
-              <div className="absolute right-0 top-6 z-50 w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
-                {[
-                  { label: 'Crear canal', icon: '＃' },
-                  { label: 'Crear espacio cliente', icon: '◉' },
-                  { label: 'Chat grupal', icon: '⊕' },
-                  { label: 'Anuncio', icon: '📢' },
-                ].map(item => (
-                  <button key={item.label} onClick={() => setShowChannelMenu(false)}
+              <div className="absolute left-0 top-6 z-50 w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
+                <button onClick={() => { setShowChannelMenu(false); setShowCreateChannel(true); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
+                  <span className="text-[14px]">＃</span>Crear canal
+                </button>
+                {isManager && (
+                  <button onClick={() => setShowChannelMenu(false)}
                     className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
-                    <span className="text-[14px]">{item.icon}</span>
-                    {item.label}
+                    <span className="text-[14px]">◉</span>Crear espacio cliente
                   </button>
-                ))}
+                )}
+                <button onClick={() => setShowChannelMenu(false)}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
+                  <span className="text-[14px]">⊕</span>Chat grupal
+                </button>
+                {isManager && (
+                  <button onClick={() => setShowChannelMenu(false)}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
+                    <span className="text-[14px]">📢</span>Anuncio
+                  </button>
+                )}
+              </div>
+            )}
+            {showCreateChannel && (
+              <div className="absolute left-0 top-6 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] p-3 shadow-2xl">
+                <p className="text-[12px] font-medium text-white/70 mb-2">Nuevo canal</p>
+                <input autoFocus value={newChannelName} onChange={e => setNewChannelName(e.target.value.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,''))}
+                  placeholder="nombre-del-canal"
+                  className="w-full rounded-lg border border-white/[0.08] bg-[#0f1117] px-2.5 py-1.5 text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 mb-2" />
+                <div className="flex gap-2">
+                  <button onClick={() => { setShowCreateChannel(false); setNewChannelName(''); }}
+                    className="flex-1 rounded-lg border border-white/[0.08] py-1.5 text-[12px] text-white/50 hover:text-white transition-colors">
+                    Cancelar
+                  </button>
+                  <button disabled={!newChannelName.trim()}
+                    onClick={() => { if (newChannelName.trim()) { setActiveId(newChannelName.trim()); setShowCreateChannel(false); setNewChannelName(''); } }}
+                    className="flex-1 rounded-lg bg-primary py-1.5 text-[12px] font-medium text-white disabled:opacity-40 transition-opacity">
+                    Crear
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1153,6 +1184,7 @@ export default function ChatWithChannels() {
       setActiveId={handleSetActive}
       rooms={rooms}
       clients={clients}
+      role={role}
       members={[...members].filter(m => {
         if (m.role === 'CLIENT' || m.role === 'GUEST') return false;
         return true;

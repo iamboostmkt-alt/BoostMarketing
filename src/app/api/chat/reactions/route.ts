@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { broadcastRealtime } from '@/lib/realtime-server';
 
 const VALID_EMOJI = /^\p{Emoji}/u;
-const ALLOWED_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'DESIGNER', 'MARKETING', 'CLIENT'];
+const ALLOWED_ROLES = ['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'DESIGNER', 'MARKETING', 'CLIENT'];
 
 // POST — toggle a reaction (add if missing, remove if already there)
 export async function POST(req: NextRequest) {
