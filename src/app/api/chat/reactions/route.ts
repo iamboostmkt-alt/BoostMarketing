@@ -31,9 +31,20 @@ export async function POST(req: NextRequest) {
 
   if (existing) {
     await db.chatReaction.delete({ where: { id: existing.id } });
-    return NextResponse.json({ added: false });
+  } else {
+    await db.chatReaction.create({ data: { messageId, userId, emoji } });
   }
-
-  await db.chatReaction.create({ data: { messageId, userId, emoji } });
-  return NextResponse.json({ added: true }, { status: 201 });
+  const updatedMsg = await db.chatMessage.findUnique({
+    where: { id: messageId },
+    select: {
+      id: true, userId: true, message: true, room: true, createdAt: true,
+      fileUrl: true, fileName: true, fileType: true, taskId: true,
+      user: { select: { id: true, name: true, email: true, color: true, image: true, role: true } },
+      reactions: { include: { user: { select: { id: true, name: true, color: true } } } },
+    },
+  });
+  if (updatedMsg) {
+    broadcastRealtime('reaction.updated', { message: updatedMsg, room: updatedMsg.room }).catch(() => {});
+  }
+  return NextResponse.json({ added: !existing }, { status: existing ? 200 : 201 });
 }

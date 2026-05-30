@@ -580,11 +580,18 @@ function ChatMain({
 
   async function handleReaction(msgId: string, emoji: string) {
     setShowEmoji(null);
-    await fetch('/api/chat/reactions', {
+    const res = await fetch('/api/chat/reactions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messageId: msgId, emoji }),
-    }).catch(() => {});
+    }).catch(() => null);
+    // Actualizar localmente sin esperar RT
+    if (res?.ok) {
+      const d = await res.json().catch(() => null);
+      if (d?.message) {
+        setMessages(prev => prev.map(m => m.id === msgId ? { ...m, reactions: (d.message as any).reactions } : m));
+      }
+    }
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -1000,7 +1007,7 @@ function ChatMain({
       {showEmoji && (
         <div
           className="fixed z-[9999] flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
-          style={{ top: Math.max(8, showEmoji.y - 52), left: Math.max(8, showEmoji.x - 80) }}
+          style={{ top: Math.max(8, showEmoji.y - 90), left: Math.max(8, showEmoji.x - 100) }}
           onMouseLeave={() => setShowEmoji(null)}
         >
           {QUICK_EMOJIS.map(e => (
