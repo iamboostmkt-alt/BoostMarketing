@@ -423,10 +423,12 @@ function ChatMain({
   useEffect(() => {
     if (activeTab !== 'tasks') return;
     const clientId = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) ? undefined : room;
-    const url = clientId ? `/api/tasks?clientId=${clientId}&limit=20` : `/api/tasks?limit=20`;
+    const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role);
+    const assignedParam = isManager ? '' : '&assignedToMe=true';
+    const url = clientId ? `/api/tasks?clientId=${clientId}&limit=20${assignedParam}` : `/api/tasks?limit=20${assignedParam}`;
     fetch(url).then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.tasks) setRoomTasks(d.tasks); }).catch(() => {});
-  }, [activeTab, room]);
+  }, [activeTab, room, role]);
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -1152,8 +1154,8 @@ export default function ChatWithChannels() {
       rooms={rooms}
       clients={clients}
       members={[...members].filter(m => {
-        if (['ADMIN', 'PROJECT_MANAGER'].includes(role)) return true;
-        return m.role !== 'CLIENT';
+        if (m.role === 'CLIENT' || m.role === 'GUEST') return false;
+        return true;
       }).sort((a, b) => {
         const myId = (session?.user as any)?.id ?? '';
         const dmA = [myId, a.id].sort().join('_DM_');
