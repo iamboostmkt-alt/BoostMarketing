@@ -211,16 +211,36 @@ export async function GET(req: NextRequest) {
           ...assignedClients.map((c) => c.clientId),
         ]),
       ];
-      whereAll = {
-        archivedAt: null,
-        workspaceId,
-        OR: [
-          { userId },
-          { assignedUserId: userId },
-          { assignedUsers: { some: { userId } } },
-          ...(allClientIds.length > 0 ? [{ clientId: { in: allClientIds } }] : []),
-        ],
-      };
+      const isTeamMember = !['ADMIN', 'PROJECT_MANAGER'].includes(role as string);
+      if (isTeamMember) {
+        // TEAM: solo tareas asignadas a ellos + que pertenezcan a cliente asignado
+        whereAll = {
+          archivedAt: null,
+          workspaceId,
+          clientId: allClientIds.length > 0 ? { in: allClientIds } : { not: null },
+          AND: [
+            {
+              OR: [
+                { assignedUserId: userId },
+                { assignedUsers: { some: { userId } } },
+              ],
+            },
+            ...(filterClientId ? [] : [{ clientId: { not: null } }]),
+          ],
+        };
+      } else {
+        // PM: tareas de sus clientes (asignado o manager) + sus propias
+        whereAll = {
+          archivedAt: null,
+          workspaceId,
+          OR: [
+            { userId },
+            { assignedUserId: userId },
+            { assignedUsers: { some: { userId } } },
+            ...(allClientIds.length > 0 ? [{ clientId: { in: allClientIds } }] : []),
+          ],
+        };
+      }
     }
     const tasks = await db.task.findMany({
       where: whereAll,
