@@ -785,7 +785,7 @@ function ChatMain({
                     { Icon: MoreHorizontal, fn: () => {}, tip: 'Más opciones' },
                   ].map(({ Icon, fn, tip }, i) => (
                     <div key={i} className="relative group/tip">
-                      <button onClick={(e) => fn(e as any)}
+                      <button onClick={() => fn()}
                         className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white">
                         <Icon className="h-4 w-4" strokeWidth={1.75} />
                       </button>
