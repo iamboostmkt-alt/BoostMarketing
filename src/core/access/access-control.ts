@@ -23,16 +23,10 @@ export class AccessControl {
     }
 
     if (["TEAM_MEMBER", "DESIGNER", "MARKETING"].includes(user.role)) {
-      // Asignación directa
+      // Solo asignación directa a la tarea
       if (
         task.assignedUsers?.some((u: any) => u.id === user.id) ||
-        task.assignedUserId === user.id ||
-        task.userId === user.id
-      ) return true;
-      // Acceso por ClientAssignedUser — el cliente tiene al usuario en su equipo
-      if (
-        task.clientId &&
-        task.client?.assignedUsers?.some((au: any) => au.userId === user.id)
+        task.assignedUserId === user.id
       ) return true;
       return false;
     }
