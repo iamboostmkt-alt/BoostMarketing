@@ -169,7 +169,7 @@ function ChannelList({
                   <button key={m.id} onClick={() => { setActiveId(dmId); setShowDMSearch(false); setDmSearchQuery(''); }}
                     className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
                     <div className="relative shrink-0">
-                      <Avatar initials={initials} color={m.color || '#8b5cf6'} size={22} image={m.image} />
+                      <Avatar initials={initials} color={m.color || '#8b5cf6'} size={22} image={m.image ?? undefined} />
                       <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-[#141824] bg-emerald-400" />
                     </div>
                     <div className="flex-1 min-w-0 text-left">
@@ -600,7 +600,10 @@ function ChatMain({
         </div>
         {/* Tabs */}
         <div className="flex items-center gap-0 px-4">
-          {(['messages','files','pinned','tasks'] as const).map(tab => {
+          {(['messages','files','pinned','tasks'] as const).filter(tab => {
+            if (room.includes('_DM_') && (tab === 'pinned' || tab === 'tasks')) return false;
+            return true;
+          }).map(tab => {
             const labels: Record<string, string> = { messages: 'Messages', files: 'Files', pinned: 'Pinned', tasks: 'Tasks' };
             const isActive = activeTab === tab;
             return (
