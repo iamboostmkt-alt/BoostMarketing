@@ -1006,8 +1006,8 @@ function ChatMain({
       {/* Emoji picker portal fixed */}
       {showEmoji && (
         <div
-          className="fixed z-[9999] flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl" style={{ paddingBottom: '16px', marginBottom: '-16px' }}
-          style={{ top: Math.max(8, showEmoji.y - 52), left: Math.max(8, showEmoji.x - 190) }}
+          className="fixed z-[9999] flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
+          style={{ top: Math.max(8, showEmoji.y - 52), left: Math.max(8, showEmoji.x - 190), paddingBottom: 16 }}
           onMouseLeave={() => setShowEmoji(null)}
         >
           {QUICK_EMOJIS.map(e => (
