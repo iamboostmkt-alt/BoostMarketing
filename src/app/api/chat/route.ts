@@ -33,6 +33,11 @@ async function checkRoomAccess(
 ): Promise<boolean> {
   if (room === 'PRIVATE') return PRIVATE_CHAT_ROLES.includes(role);
 
+  if (room.includes('_DM_')) {
+    const parts = room.split('_DM_');
+    return parts.includes(userId);
+  }
+
   if (INTERNAL_ROOMS.includes(room)) {
     if (!hasRole(role, INTERNAL_ROLES)) return false;
     // SUPPORT: todos los roles internos pueden escribir tickets
