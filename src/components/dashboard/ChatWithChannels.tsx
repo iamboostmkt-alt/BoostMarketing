@@ -199,7 +199,7 @@ function ChannelList({
                       isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
                     }`}>
                     <div className="relative shrink-0">
-                      <Avatar initials={initials} color={m.color || '#8b5cf6'} size={20} />
+                      <Avatar initials={initials} color={m.color || '#8b5cf6'} size={20} image={m.image ?? undefined} />
                       <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-card bg-emerald-400" />
                     </div>
                     <span className="flex-1 truncate text-left">{m.name || m.email}</span>
@@ -389,7 +389,7 @@ function ChatMain({
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [showEmoji, setShowEmoji] = useState<string | null>(null);
+  const [showEmoji, setShowEmoji] = useState<{id: string, x: number, y: number} | null>(null);
   const [activeTab, setActiveTab] = useState<'messages'|'files'|'pinned'|'tasks'>('messages');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -560,7 +560,7 @@ function ChatMain({
   }
 
   return (
-    <section className="flex h-full min-w-0 flex-1 flex-col bg-background"
+    <section className="flex h-full min-w-0 flex-1 flex-col bg-background overflow-hidden"
       onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
       onDrop={handleDrop}>
       {/* Channel header */}
@@ -734,14 +734,14 @@ function ChatMain({
                 {/* Hover actions */}
                 <div className="absolute -top-1 right-2 z-10 hidden items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl group-hover:flex">
                   {[
-                    { Icon: SmilePlus, fn: () => setShowEmoji(showEmoji === msg.id ? null : msg.id), tip: 'Reaccionar' },
+                    { Icon: SmilePlus, fn: (e: React.MouseEvent) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setShowEmoji(showEmoji?.id === msg.id ? null : {id: msg.id, x: r.left, y: r.top}); }, tip: 'Reaccionar' },
                     { Icon: Reply, fn: () => onOpenThread(msg), tip: 'Responder en hilo' },
                     { Icon: ListPlus, fn: () => {}, tip: 'Crear tarea' },
                     { Icon: Pin, fn: () => {}, tip: 'Fijar mensaje' },
                     { Icon: MoreHorizontal, fn: () => {}, tip: 'Más opciones' },
                   ].map(({ Icon, fn, tip }, i) => (
                     <div key={i} className="relative group/tip">
-                      <button onClick={fn}
+                      <button onClick={(e) => fn(e as any)}
                         className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white">
                         <Icon className="h-4 w-4" strokeWidth={1.75} />
                       </button>
@@ -753,16 +753,7 @@ function ChatMain({
                 </div>
 
                 {/* Emoji picker */}
-                {showEmoji === msg.id && (
-                  <div className="absolute -top-14 right-2 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
-                    {QUICK_EMOJIS.map(e => (
-                      <button key={e} onClick={() => handleReaction(msg.id, e)}
-                        className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
-                        {e}
-                      </button>
-                    ))}
-                  </div>
-                )}
+{/* emoji picker moved to fixed portal */}
 
                 <div className="flex gap-3">
                   {isSame ? (
@@ -968,6 +959,21 @@ function ChatMain({
           <p className="mt-1 px-2 text-[11px] text-white/20">Enter para enviar · @ para mencionar · / para comandos</p>
         </form>
       </div>
+      {/* Emoji picker portal fixed */}
+      {showEmoji && (
+        <div
+          className="fixed z-[9999] flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
+          style={{ top: showEmoji.y - 56, left: showEmoji.x - 60 }}
+          onMouseLeave={() => setShowEmoji(null)}
+        >
+          {QUICK_EMOJIS.map(e => (
+            <button key={e} onClick={() => handleReaction(showEmoji.id, e)}
+              className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
+              {e}
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
