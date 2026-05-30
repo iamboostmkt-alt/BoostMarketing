@@ -493,11 +493,15 @@ function ChatMain({
     const text = input.trim();
     setInput('');
     try {
-      await fetch('/api/chat', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, room }),
       });
+      if (res.ok) {
+        const d = await res.json();
+        if (d.message) setMessages(prev => prev.some(m => m.id === d.message.id) ? prev : [...prev, d.message]);
+      }
     } catch {}
     setSending(false);
   }
@@ -634,7 +638,7 @@ function ChatMain({
         {/* Tabs */}
         <div className="flex items-center gap-0 px-4">
           {(['messages','files','pinned','tasks'] as const).filter(tab => {
-            if (room.includes('_DM_') && (tab === 'pinned' || tab === 'tasks')) return false;
+            if (room.includes('_DM_') && tab === 'tasks') return false;
             return true;
           }).map(tab => {
             const labels: Record<string, string> = { messages: 'Messages', files: 'Files', pinned: 'Pinned', tasks: 'Tasks' };
