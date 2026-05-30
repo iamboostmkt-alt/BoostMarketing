@@ -1,121 +1,63 @@
-import { requireWorkspace } from "@/core/auth/require-workspace";
-import { NextRequest, NextResponse } from "next/server";
-import { rateLimit } from "@/lib/security/rate-limit";
-import { db } from "@/lib/db";
-import bcrypt from "bcryptjs";
-import { BCRYPT_ROUNDS } from "@/lib/password";
-import { sendMail } from "@/lib/mailer";
-import { z } from "zod";
-import { Role, UserLifecycleStatus } from "@prisma/client";
+import { NextRequest, NextResponse } from 'next/server';
+import { requireWorkspace } from '@/core/auth/require-workspace';
+import { db } from '@/lib/db';
+import { rateLimit } from '@/lib/security/rate-limit';
+import { sendMail } from '@/lib/mailer';
+import { getBranding } from '@/lib/branding';
+import { randomBytes } from 'crypto';
+import { z } from 'zod';
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN:           "Administrador",
-  PROJECT_MANAGER: "Project Manager",
-  TEAM_MEMBER:     "Miembro del equipo",
-  DESIGNER:        "Diseñador",
-  MARKETING:       "Equipo de Marketing",
-  SALES_REP:       "Equipo de Ventas",
-};
-
-const InviteSchema = z.object({
-  name: z.string().min(2).max(100),
+const Schema = z.object({
   email: z.string().email(),
-  role: z.enum(["PROJECT_MANAGER", "TEAM_MEMBER", "DESIGNER", "MARKETING", "SALES_REP"]),
-  tempPassword: z.string().min(8).optional(),
+  role: z.enum(['ADMIN','PROJECT_MANAGER','TEAM_MEMBER','DESIGNER','MARKETING','SALES_REP']),
 });
 
 export async function POST(req: NextRequest) {
-  const _rl_workspace_invite = await rateLimit(req, { limit: 10, windowMs: 60000, identifier: 'workspace-invite' });
-  if (!_rl_workspace_invite.success) return _rl_workspace_invite.response;
+  const rl = await rateLimit(req, { limit: 10, windowMs: 60_000, identifier: 'invite-post' });
+  if (!rl.success) return rl.response;
+  const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+  if (!result.ok) return result.response;
+  const { userId, workspaceId } = result.ctx;
 
-  try {
-    const result = await requireWorkspace({ roles: ["ADMIN"] });
-    if (!result.ok) return result.response;
+  const body = await req.json();
+  const parsed = Schema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  const { email, role } = parsed.data;
 
-    const { workspaceId, workspaceName } = result.ctx;
+  // Verificar si ya existe usuario con ese email
+  const existing = await db.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' }, workspaceId } });
+  if (existing) return NextResponse.json({ error: 'Este email ya tiene una cuenta en el workspace.' }, { status: 409 });
 
-    const body = await req.json();
-    const validation = InviteSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
-    }
-    const { name, email, role, tempPassword } = validation.data;
+  // Invalidar invitaciones previas pendientes
+  await db.workspaceInvite.updateMany({
+    where: { email: { equals: email, mode: 'insensitive' }, workspaceId, usedAt: null },
+    data: { expiresAt: new Date() },
+  });
 
-    // Verificar email unico dentro del workspace
-    const existing = await db.user.findFirst({
-      where: { email: email.toLowerCase(), workspaceId },
-    });
-    if (existing) {
-      return NextResponse.json({ error: "Ese email ya existe en tu workspace." }, { status: 409 });
-    }
+  const token = randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días
 
-    const password = tempPassword || Math.random().toString(36).slice(-10) + "A1!";
-    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  await db.workspaceInvite.create({
+    data: { workspaceId, email, role, token, invitedBy: userId, expiresAt, isClient: false },
+  });
 
-    const user = await db.user.create({
-      data: {
-        name,
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        role: role as Role,
-        workspaceId,
-        active: false,
-        lifecycleStatus: UserLifecycleStatus.INVITED,
-        color: "#7c3aed",
-      },
-      select: { id: true, name: true, email: true, role: true },
-    });
+  const workspace = await db.workspace.findUnique({ where: { id: workspaceId }, select: { name: true } });
+  const inviter = await db.user.findUnique({ where: { id: userId }, select: { name: true } });
+  const branding = await getBranding();
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
+  const inviteUrl = `${APP_URL}/invite/${token}`;
 
-    // Email de bienvenida con credenciales temporales
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-    const wsName = result.ctx.workspaceName ?? "la plataforma";
-    const roleLabel = ROLE_LABELS[role] ?? role;
-    await sendMail(
-      email,
-      `Fuiste invitado a ${wsName}`,
-      `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="color-scheme" content="light only"/></head>
-      <body style="margin:0;padding:0;background-color:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f7" style="padding:32px 16px;"><tr><td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
-          <tr><td bgcolor="#7c3aed" style="background:linear-gradient(135deg,#7c3aed,#9333ea);padding:28px 32px;text-align:center;">
-            <h1 style="margin:0;font-size:20px;color:#fff;font-weight:700;">${wsName}</h1>
-          </td></tr>
-          <tr><td style="padding:32px;background-color:#ffffff;color:#18181b;font-size:15px;line-height:1.6;">
-            <h2 style="color:#18181b;margin:0 0 8px;">👋 Hola, ${name}!</h2>
-            <p style="color:#6b7280;margin:0 0 20px;">Fuiste invitado a unirte a <strong style="color:#18181b;">${wsName}</strong> como <strong style="color:#7c3aed;">${roleLabel}</strong>.</p>
-            <div style="background:#f8f9fa;border:1px solid #e4e4e7;border-radius:8px;padding:16px;margin:16px 0;">
-              <p style="margin:0 0 8px;color:#6b7280;font-size:14px;">Tus credenciales temporales:</p>
-              <p style="margin:0 0 6px;color:#18181b;font-size:14px;"><strong>Email:</strong> <a href="mailto:${email}" style="color:#7c3aed;">${email}</a></p>
-              <p style="margin:0;color:#18181b;font-size:14px;"><strong>Contraseña temporal:</strong> ${password}</p>
-            </div>
-            <p style="color:#6b7280;font-size:13px;margin:0 0 20px;">Accede a la plataforma y cambia tu contraseña al iniciar sesión por primera vez.</p>
-            <div style="text-align:center;margin-top:24px;">
-              <a href="${appUrl}/login" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#9333ea);color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">Iniciar sesión →</a>
-            </div>
-            <p style="color:#9ca3af;font-size:12px;margin-top:20px;text-align:center;">Si no esperabas esta invitación, puedes ignorar este correo.</p>
-          </td></tr>
-          <tr><td bgcolor="#f9fafb" style="background-color:#f9fafb;border-top:1px solid #e4e4e7;padding:16px 32px;text-align:center;">
-            <p style="margin:0;color:#9ca3af;font-size:12px;">${wsName} &middot; Mensaje automático</p>
-          </td></tr>
-        </table></td></tr></table>
-      </body></html>`
-    ).catch(console.error);
+  await sendMail(
+    email,
+    `Te invitaron a unirte a ${workspace?.name ?? 'BoostMarketing'}`,
+    `<!DOCTYPE html><html><body style="font-family:sans-serif;background:#07070A;color:#F5F7FA;padding:40px;">
+    <h2 style="color:#8B5CF6;">¡Tienes una invitación!</h2>
+    <p><strong>${inviter?.name ?? 'Un administrador'}</strong> te invitó a unirte a <strong>${workspace?.name}</strong> como <strong>${role}</strong>.</p>
+    <p>Este link expira en 7 días.</p>
+    <a href="${inviteUrl}" style="display:inline-block;background:#8B5CF6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px;">Aceptar invitación</a>
+    <p style="color:#666;margin-top:24px;font-size:12px;">Si no esperabas esta invitación, ignora este correo.</p>
+    </body></html>`
+  );
 
-    await db.activityLog.create({
-      data: {
-        userId: result.ctx.userId,
-        action: "USER_INVITED",
-        entity: "User",
-        entityId: user.id,
-        details: JSON.stringify({ name, email, role }),
-        workspaceId,
-      },
-    });
-
-    return NextResponse.json({ user }, { status: 201 });
-
-  } catch (error) {
-    console.error("[workspace/invite]", error);
-    return NextResponse.json({ error: "Error interno del servidor." }, { status: 500 });
-  }
+  return NextResponse.json({ ok: true });
 }

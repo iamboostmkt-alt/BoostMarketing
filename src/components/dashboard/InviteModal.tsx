@@ -348,14 +348,13 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
       const res = await fetch("/api/workspace/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email: email.trim(), role }),
+        body: JSON.stringify({ email: email.trim(), role }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Error al invitar."); return; }
       const newInvite: PendingInvite = { email: email.trim().toLowerCase(), role, name, invitedAt: Date.now() };
       const updated = [...pendingInvites, newInvite];
       setPendingInvites(updated);
-      saveInvites(updated);
       setSuccess(true);
       setEmail("");
       setTimeout(() => setSuccess(false), 2000);

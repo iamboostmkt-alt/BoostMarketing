@@ -48,6 +48,7 @@ model Workspace {
   contacts      Contact[]
   chatMessages  ChatMessage[]
   chatUnreads   ChatUnread[]
+  invites       WorkspaceInvite[]
   taskTemplates      TaskTemplate[]
   customRoles        CustomRole[]
   analyticsSnapshots AnalyticsSnapshot[]
@@ -113,6 +114,7 @@ model User {
   assignedTasks          Task[]                    @relation("AssignedTasks")
   taskTemplates          TaskTemplate[]
   taskFeedback           TaskFeedback[]
+  sentInvites            WorkspaceInvite[]         @relation("InvitedBy")
   contacts               Contact[]
   clients                Client[]
   assignedActivities     Activity[]                @relation("AssignedActivities")
@@ -697,4 +699,25 @@ model ChatUnread {
   @@unique([userId, workspaceId, room])
   @@index([userId, workspaceId])
   @@map("chat_unreads")
+}
+
+model WorkspaceInvite {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  email       String
+  role        Role      @default(TEAM_MEMBER)
+  token       String    @unique
+  invitedBy   String    @map("invited_by")
+  expiresAt   DateTime  @map("expires_at")
+  usedAt      DateTime? @map("used_at")
+  isClient    Boolean   @default(false) @map("is_client")
+  clientName  String?   @map("client_name")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  inviter   User      @relation("InvitedBy", fields: [invitedBy], references: [id])
+
+  @@index([token])
+  @@index([workspaceId])
+  @@map("workspace_invites")
 }
