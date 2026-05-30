@@ -51,7 +51,7 @@ function ChannelList({
   const [dmSearchQuery, setDmSearchQuery] = useState('');
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
-  const createChannelRef = React.useRef<HTMLDivElement>(null);
+  const createChannelRef = useRef<HTMLDivElement>(null);
   const channelMenuRef = useRef<HTMLDivElement>(null);
   const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(role);
 
