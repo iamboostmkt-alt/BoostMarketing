@@ -1,0 +1,9 @@
+node_modules/
+.next/
+scripts/
+*.js
+graphify-out/
+agent-ctx/
+download/
+upload/
+supabase/.temp/
