@@ -61,3 +61,5 @@ server.log
 .vercel
 .claude/
 *.py
+graphify-out/
+supabase/.temp/
