@@ -261,3 +261,38 @@ export async function DELETE(req: NextRequest) {
   await db.chatMessage.delete({ where: { id } });
   return NextResponse.json({ message: 'Eliminado.' });
 }
+
+// ── PATCH ──────────────────────────────────────────────────────────────────────
+
+export async function PATCH(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 20, windowMs: 60_000, identifier: 'chat-patch' });
+  if (!rl.success) return rl.response;
+
+  const result = await requireWorkspace();
+  if (!result.ok) return result.response;
+
+  const { userId, workspaceId } = result.ctx;
+  const isAdmin = result.ctx.role === 'ADMIN';
+
+  const body = await req.json();
+  const messageId = body.messageId?.toString();
+  const message   = body.message?.toString().trim();
+
+  if (!messageId) return NextResponse.json({ error: 'messageId requerido.' }, { status: 400 });
+  if (!message)   return NextResponse.json({ error: 'El mensaje no puede estar vacío.' }, { status: 400 });
+  if (message.length > 2000) return NextResponse.json({ error: 'Mensaje demasiado largo.' }, { status: 400 });
+
+  const msg = await db.chatMessage.findFirst({ where: { id: messageId, workspaceId } });
+  if (!msg) return NextResponse.json({ error: 'Mensaje no encontrado.' }, { status: 404 });
+
+  if (!isAdmin && msg.userId !== userId)
+    return NextResponse.json({ error: 'Solo puedes editar tus propios mensajes.' }, { status: 403 });
+
+  const updated = await db.chatMessage.update({
+    where: { id: messageId },
+    data:  { message },
+    select: { id: true, message: true },
+  });
+
+  return NextResponse.json({ message: updated });
+}

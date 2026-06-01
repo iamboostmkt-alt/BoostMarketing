@@ -480,6 +480,9 @@ function ChatMain({
   const [linkModal, setLinkModal] = useState<{ fileUrl: string; fileName: string; fileType: string } | null>(null);
   const [taskModal, setTaskModal] = useState<{ title: string; description: string } | null>(null);
   const [taskModalSending, setTaskModalSending] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null);
   const [linkTaskId, setLinkTaskId] = useState('');
   const [linkableTasks, setLinkableTasks] = useState<any[]>([]);
   const [linking, setLinking] = useState(false);
@@ -871,7 +874,7 @@ function ChatMain({
                     { Icon: Reply, fn: () => onOpenThread(msg), tip: 'Responder en hilo' },
                     { Icon: ListPlus, fn: () => setTaskModal({ title: msg.message.slice(0, 80), description: msg.message }), tip: 'Crear tarea' },
                     { Icon: Pin, fn: () => togglePin(msg), tip: msg.pinned ? 'Desfijar mensaje' : 'Fijar mensaje' },
-                    { Icon: MoreHorizontal, fn: () => {}, tip: 'Más opciones' },
+                    { Icon: MoreHorizontal, fn: () => setShowMoreMenu(showMoreMenu === msg.id ? null : msg.id), tip: 'Más opciones' },
                   ].map(({ Icon, fn, tip }, i) => (
                     <div key={i} className="relative group/tip">
                       <button onClick={() => fn()}
@@ -920,9 +923,68 @@ function ChatMain({
                         </span>
                       </div>
                     )}
-                    <div className="text-[13.5px] leading-[1.55] text-white/75">
-                      {renderMessage(msg.message)}
-                    </div>
+                    {editingId === msg.id ? (
+                      <div className="flex flex-col gap-1.5 mt-1">
+                        <textarea
+                          autoFocus
+                          value={editText}
+                          onChange={e => setEditText(e.target.value)}
+                          onKeyDown={async e => {
+                            if (e.key === 'Escape') { setEditingId(null); return; }
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              if (!editText.trim()) return;
+                              const res = await fetch('/api/chat', {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ messageId: msg.id, message: editText.trim() }),
+                              });
+                              if (res.ok) {
+                                setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, message: editText.trim() } : m));
+                                setEditingId(null);
+                              }
+                            }
+                          }}
+                          rows={2}
+                          className="w-full rounded-xl border border-primary/40 bg-[#141824] px-3 py-2 text-[13px] text-white focus:outline-none resize-none"
+                        />
+                        <div className="flex gap-2 text-[11px]">
+                          <button onClick={() => setEditingId(null)} className="text-white/30 hover:text-white transition-colors">Cancelar</button>
+                          <span className="text-white/20">·</span>
+                          <span className="text-white/20">Enter para guardar · Esc para cancelar</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-[13.5px] leading-[1.55] text-white/75">
+                        {renderMessage(msg.message)}
+                      </div>
+                    )}
+                    {/* More options dropdown */}
+                    {showMoreMenu === msg.id && (
+                      <div className="absolute top-8 left-[280px] z-30 w-44 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
+                        <button onClick={() => { navigator.clipboard.writeText(msg.message); setShowMoreMenu(null); }}
+                          className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                          Copiar texto
+                        </button>
+                        {(msg.userId === myId || role === 'ADMIN') && (
+                          <button onClick={() => { setEditText(msg.message); setEditingId(msg.id); setShowMoreMenu(null); }}
+                            className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                            Editar mensaje
+                          </button>
+                        )}
+                        {(msg.userId === myId || role === 'ADMIN') && (
+                          <button onClick={async () => {
+                            if (!confirm('¿Eliminar este mensaje?')) return;
+                            const res = await fetch(`/api/chat?id=${msg.id}`, { method: 'DELETE' });
+                            if (res.ok) setMessages(prev => prev.filter(m => m.id !== msg.id));
+                            setShowMoreMenu(null);
+                          }}
+                            className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-red-400/70 hover:bg-white/[0.04] hover:text-red-400 transition-colors">
+                            Eliminar mensaje
+                          </button>
+                        )}
+                      </div>
+                    )}
                     {/* Inline file/task cards */}
                     {msg.fileUrl && msg.fileType?.startsWith('video') && (
                       <div className="mt-2">
