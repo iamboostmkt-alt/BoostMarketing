@@ -130,7 +130,7 @@ export default function AIAssistantPage() {
   const userInitial = ((session?.user?.name || session?.user?.email || 'U')[0]).toUpperCase();
 
   return (
-    <div className="flex bg-background overflow-hidden" style={{ height: "100vh" }}>
+    <div className="flex bg-background overflow-hidden h-full">
       {/* Sidebar sesiones */}
       {showSidebar && (
         <div className="w-[220px] shrink-0 border-r border-white/[0.05] flex flex-col bg-[#0F1117] overflow-hidden">

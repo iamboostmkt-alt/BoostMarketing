@@ -35,11 +35,57 @@ function formatLastSeen(dateStr: string): string {
 }
 
 function renderMessage(text: string) {
-  return text.split(/(@\w+)/g).map((part, i) =>
-    part.startsWith('@')
-      ? <span key={i} className="rounded-[5px] bg-primary/15 px-1 py-px font-medium text-[#b794f6]">{part}</span>
-      : part
-  );
+  // Procesar línea por línea para soportar listas y saltos
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+
+  lines.forEach((line, lineIdx) => {
+    const isList = /^[-*•]\s/.test(line.trim());
+    const isNumbered = /^\d+\.\s/.test(line.trim());
+    const content = isList ? line.trim().slice(2) : isNumbered ? line.trim().replace(/^\d+\.\s/, '') : line;
+
+    // Parsear inline: **bold**, _italic_, @menciones
+    function parseInline(str: string): React.ReactNode[] {
+      const parts: React.ReactNode[] = [];
+      const regex = /(@\w+)|\*\*(.+?)\*\*|_(.+?)_|`(.+?)`/g;
+      let last = 0;
+      let match;
+      while ((match = regex.exec(str)) !== null) {
+        if (match.index > last) parts.push(str.slice(last, match.index));
+        if (match[1]) {
+          parts.push(<span key={match.index} className="rounded-[5px] bg-primary/15 px-1 py-px font-medium text-[#b794f6]">{match[1]}</span>);
+        } else if (match[2]) {
+          parts.push(<strong key={match.index} className="font-semibold text-white/90">{match[2]}</strong>);
+        } else if (match[3]) {
+          parts.push(<em key={match.index} className="italic text-white/70">{match[3]}</em>);
+        } else if (match[4]) {
+          parts.push(<code key={match.index} className="rounded px-1 py-px text-[12px] bg-white/[0.08] font-mono text-primary/90">{match[4]}</code>);
+        }
+        last = match.index + match[0].length;
+      }
+      if (last < str.length) parts.push(str.slice(last));
+      return parts;
+    }
+
+    if (line.trim() === '') {
+      elements.push(<div key={lineIdx} className="h-1" />);
+    } else if (isList || isNumbered) {
+      elements.push(
+        <div key={lineIdx} className="flex gap-2 items-start my-0.5">
+          <span className="text-primary/60 mt-0.5 shrink-0 text-[11px]">{isNumbered ? `${lineIdx + 1}.` : '•'}</span>
+          <span>{parseInline(content)}</span>
+        </div>
+      );
+    } else {
+      elements.push(
+        <div key={lineIdx} className={lineIdx > 0 ? 'mt-0.5' : ''}>
+          {parseInline(content)}
+        </div>
+      );
+    }
+  });
+
+  return <>{elements}</>;
 }
 
 // ─── Channel List ──────────────────────────────────────────────────────────────
@@ -647,15 +693,27 @@ function ChatMain({
     if ((!input.trim() && !linkModal) || sending) return;
     const text = input.trim();
 
-    // Comando /ai — responde en el chat como mensaje del sistema
-    if (text.startsWith('/ai ')) {
+    // Comando /ai — responde en el chat con historial del canal
+    if (text.startsWith('/ai ') || text.startsWith('/ia ')) {
       const query = text.slice(4).trim();
       if (!query) return;
       setInput('');
+      // 1. Mostrar mensaje del usuario primero
+      const userMsgId = 'user-ai-' + Date.now();
+      const userChatMsg: ChatMessage = {
+        id: userMsgId,
+        message: text,
+        room,
+        createdAt: new Date().toISOString(),
+        userId: 'user-local',
+        user: null as any,
+      };
+      setMessages(prev => [...prev, userChatMsg]);
+      // 2. Mostrar indicador pensando
       const tempId = 'ai-thinking-' + Date.now();
       const aiMsg: ChatMessage = {
         id: tempId,
-        message: '✨ _pensando..._',
+        message: '✨ _..._',
         room,
         createdAt: new Date().toISOString(),
         userId: 'ai',
@@ -663,15 +721,53 @@ function ChatMain({
       };
       setMessages(prev => [...prev, aiMsg]);
       try {
+        // Construir historial de conversación AI del canal (últimos 10 intercambios)
+        const aiHistory = messages
+          .filter(m => m.userId === 'ai' || true)
+          .slice(-20)
+          .map(m => ({
+            role: m.userId === 'ai' ? 'assistant' as const : 'user' as const,
+            content: m.userId === 'ai'
+              ? m.message.replace(/^✨ \*\*AI:\*\* /, '')
+              : m.message,
+          }));
+        // Agregar pregunta actual
+        aiHistory.push({ role: 'user', content: query });
+
+        // System prompt para respuestas en chat — conciso y resumido
+        const systemHint = query.toLowerCase().includes('tarea') ||
+          query.toLowerCase().includes('pendiente') ||
+          query.toLowerCase().includes('completad') ||
+          query.toLowerCase().includes('resumen')
+            ? 'Responde MUY BREVEMENTE en máximo 3 líneas. Da solo números y nombres clave, sin detalles. Ejemplo: "Hay 12 tareas: 5 completadas, 4 en progreso, 3 pendientes. Ruperto tiene 2 pendientes."'
+            : 'Responde de forma concisa, máximo 4 líneas para chat grupal.';
+
         const res = await fetch('/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: [{ role: 'user', content: query }], model: 'turbo' }),
+          body: JSON.stringify({
+            messages: aiHistory,
+            model: 'turbo',
+            systemOverride: systemHint,
+          }),
         });
         const data = await res.json();
         const reply = data.content || 'Sin respuesta.';
+        // Efecto typing — agregar letra por letra
+        const fullMsg = `✨ **AI:** ${reply}`;
+        let displayed = '';
+        const chunkSize = 8; // caracteres por frame
+        for (let i = 0; i < fullMsg.length; i += chunkSize) {
+          displayed = fullMsg.slice(0, i + chunkSize);
+          await new Promise<void>(resolve => setTimeout(resolve, 18));
+          setMessages(prev => prev.map(m => m.id === tempId
+            ? { ...m, message: displayed }
+            : m
+          ));
+        }
+        // Asegurar mensaje completo al final
         setMessages(prev => prev.map(m => m.id === tempId
-          ? { ...m, message: `✨ **AI:** ${reply}` }
+          ? { ...m, message: fullMsg }
           : m
         ));
       } catch {
@@ -1550,7 +1646,7 @@ function ChatMain({
                     <p className="px-3 py-1.5 text-[10px] text-white/30 uppercase tracking-wide">Comandos</p>
                     {[
                       { cmd: '/tarea', desc: 'Crear tarea rápida', icon: '📋' },
-                      { cmd: '/ai', desc: 'Preguntar al AI Assistant', icon: '✨' },
+                      { cmd: '/ai', desc: 'Preguntar al AI Assistant (/ia)', icon: '✨' },
                       { cmd: '/recordar', desc: 'Recordatorio', icon: '⏰' },
                       { cmd: '/giphy', desc: 'Buscar GIF', icon: '🎬' },
                     ].map(({ cmd, desc, icon }) => (
