@@ -770,6 +770,16 @@ function ChatMain({
           ? { ...m, message: fullMsg }
           : m
         ));
+        // Persistir respuesta AI en DB para que sobreviva refresh
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: fullMsg, room }),
+        }).then(r => r.ok ? r.json() : null).then(d => {
+          if (d?.message) {
+            setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: d.message.id } : m));
+          }
+        }).catch(() => {});
       } catch {
         setMessages(prev => prev.map(m => m.id === tempId
           ? { ...m, message: '✨ Error al contactar AI.' }
@@ -1116,7 +1126,7 @@ function ChatMain({
       )}
 
       {/* Messages */}
-      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto px-5 py-3" style={{scrollbarWidth:'none'}}>
+      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto px-5 py-3 pb-6" style={{scrollbarWidth:'none'}}>
         {loading && (
           <div className="space-y-4">
             {[1,2,3].map(i => (
@@ -1599,12 +1609,30 @@ function ChatMain({
                   const filtered = members
                     .filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST')
                     .filter(m => !mentionQuery || (m.name || m.email || '').toLowerCase().includes(mentionQuery.toLowerCase()))
-                    .slice(0, 5);
+                    .slice(0, 12);
+                  const showAll = !mentionQuery || 'all'.includes(mentionQuery.toLowerCase()) || 'todos'.includes(mentionQuery.toLowerCase());
                   return (
                     <>
                     <div className="fixed inset-0 z-40" onClick={() => setMentionQuery(null)} />
                     <div className="absolute bottom-16 left-0 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
-                      {filtered.length === 0 ? (
+                      {/* @all opción especial */}
+                      {showAll && (
+                        <button type="button"
+                          onClick={() => {
+                            setInput(prev => prev.replace(/@\w*$/, '@all '));
+                            setMentionQuery(null);
+                          }}
+                          className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-white/[0.04] transition-colors border-b border-white/[0.05]">
+                          <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 bg-primary/20">
+                            ✦
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[12px] font-medium text-primary/80 truncate">@all</p>
+                            <p className="text-[10px] text-white/25 truncate">Notificar a todos</p>
+                          </div>
+                        </button>
+                      )}
+                      {filtered.length === 0 && !showAll ? (
                         <p className="px-3 py-2 text-[11px] text-white/25">Sin resultados</p>
                       ) : filtered.map(m => (
                         <button key={m.id} type="button"

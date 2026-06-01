@@ -61,7 +61,9 @@ export default function DashboardLayout({
                   <ForbiddenBanner />
                 </Suspense>
                 <ErrorBoundary>
-                  {children}
+                  <div className="h-full overflow-y-auto overflow-x-hidden custom-scrollbar">
+                    {children}
+                  </div>
                 </ErrorBoundary>
               </main>
             </div>
