@@ -174,7 +174,9 @@ export async function POST(req: NextRequest) {
     ? `\n\nContexto del workspace (${today}):\nClientes: ${clients.map(c => c.name).join(', ')}\nTareas:\n${tasks.map(t => `- ${t.title} | ${t.status} | ${t.priority}${(t as any).client?.name ? ` | ${(t as any).client.name}` : ''}${t.dueDate ? ` | vence ${new Date(t.dueDate).toLocaleDateString('es-MX')}` : ''}`).join('\n')}`
     : '';
 
-  const system = SYSTEM_PROMPT + ctx;
+  // Solo incluir contexto completo en modelos confiables (no Llama open-source)
+  const trustedProviders = ['anthropic', 'deepseek', 'gemini'];
+  const system = SYSTEM_PROMPT + (trustedProviders.includes(model.provider) ? ctx : '');
   const model = MODELS[tier];
 
   // Timeout de 25s para evitar que quede cargando
