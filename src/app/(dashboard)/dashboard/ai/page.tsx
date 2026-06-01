@@ -203,7 +203,7 @@ export default function AIAssistantPage() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="flex-1 overflow-y-auto min-h-0 px-5 py-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-5 max-w-xl mx-auto">
               <div className="text-center">

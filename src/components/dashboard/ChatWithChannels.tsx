@@ -1454,7 +1454,7 @@ function ChatMain({
               </div>
               {/* @ mencionar */}
               <div className="relative group/tip">
-                <button type="button" onClick={() => { setInput(prev => prev + '@'); setMentionQuery(''); }}
+                <button type="button" onClick={() => setMentionQuery('')}
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
                   <AtSign className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
@@ -1536,43 +1536,6 @@ function ChatMain({
                   Adjuntar archivo
                 </div>
               </div>
-              {mentionQuery !== null && (() => {
-                const filtered = members
-                  .filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST')
-                  .filter(m => !mentionQuery || (m.name || m.email || '').toLowerCase().includes(mentionQuery.toLowerCase()))
-                  .slice(0, 5);
-                return (
-                  <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMentionQuery(null)} />
-                  <div className="absolute bottom-10 left-0 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
-                    {filtered.length === 0 ? (
-                      <p className="px-3 py-2 text-[11px] text-white/25">Sin resultados</p>
-                    ) : filtered.map(m => (
-                      <button key={m.id} type="button"
-                        onClick={() => {
-                          const handle = (m.name || m.email || '').split(' ')[0];
-                          setInput(prev => prev.replace(/@\w*$/, `@${handle} `));
-                          setMentionQuery(null);
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-white/[0.04] transition-colors">
-                        {m.image ? (
-                          <img src={m.image} className="h-6 w-6 rounded-full object-cover shrink-0" />
-                        ) : (
-                          <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                            style={{ background: m.color ?? '#8B5CF6' }}>
-                            {(m.name || m.email || '?')[0].toUpperCase()}
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-[12px] font-medium text-white/75 truncate">{m.name || m.email}</p>
-                          <p className="text-[10px] text-white/25 truncate">@{(m.email || '').split('@')[0]}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                  </>
-                );
-              })()}
               <input value={input} onChange={e => {
                 const val = e.target.value;
                 setInput(val);
