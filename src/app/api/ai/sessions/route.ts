@@ -8,6 +8,15 @@ export async function GET(req: NextRequest) {
   if (!result.ok) return result.response;
   const { userId, workspaceId } = result.ctx;
 
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+
+  if (id) {
+    const session = await db.aiSession.findFirst({ where: { id, userId, workspaceId } });
+    if (!session) return NextResponse.json({ error: 'Sesión no encontrada' }, { status: 404 });
+    return NextResponse.json({ session });
+  }
+
   const sessions = await db.aiSession.findMany({
     where: { userId, workspaceId },
     orderBy: { updatedAt: 'desc' },
