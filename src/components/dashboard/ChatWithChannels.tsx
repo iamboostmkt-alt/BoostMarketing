@@ -1498,21 +1498,25 @@ function ChatMain({
                   Adjuntar archivo
                 </div>
               </div>
-              {mentionQuery !== null && (
-                <div className="absolute bottom-12 left-0 z-50 w-64 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-40 overflow-y-auto">
-                  <p className="px-3 py-1 text-[10px] text-white/30 uppercase tracking-wide">Mencionar miembro</p>
-                  {members
-                    .filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST')
-                    .filter(m => !mentionQuery || (m.name || m.email || '').toLowerCase().includes(mentionQuery.toLowerCase()))
-                    .slice(0, 6)
-                    .map(m => (
+              {mentionQuery !== null && (() => {
+                const filtered = members
+                  .filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST')
+                  .filter(m => !mentionQuery || (m.name || m.email || '').toLowerCase().includes(mentionQuery.toLowerCase()))
+                  .slice(0, 5);
+                return (
+                  <>
+                  <div className="fixed inset-0 z-40" onClick={() => setMentionQuery(null)} />
+                  <div className="absolute bottom-12 left-8 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
+                    {filtered.length === 0 ? (
+                      <p className="px-3 py-2 text-[11px] text-white/25">Sin resultados</p>
+                    ) : filtered.map(m => (
                       <button key={m.id} type="button"
                         onClick={() => {
-                          const handle = (m.name || m.email || '').replace(/\s+/g, '');
+                          const handle = (m.name || m.email || '').split(' ')[0];
                           setInput(prev => prev.replace(/@\w*$/, `@${handle} `));
                           setMentionQuery(null);
                         }}
-                        className="flex w-full items-center gap-2.5 px-3 py-2 hover:bg-white/[0.04] transition-colors">
+                        className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-white/[0.04] transition-colors">
                         {m.image ? (
                           <img src={m.image} className="h-6 w-6 rounded-full object-cover shrink-0" />
                         ) : (
@@ -1522,17 +1526,15 @@ function ChatMain({
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="text-[12px] font-medium text-white/80 truncate">{m.name || m.email}</p>
-                          <p className="text-[10px] text-white/30 truncate">@{(m.email || '').split('@')[0]}</p>
+                          <p className="text-[12px] font-medium text-white/75 truncate">{m.name || m.email}</p>
+                          <p className="text-[10px] text-white/25 truncate">@{(m.email || '').split('@')[0]}</p>
                         </div>
                       </button>
                     ))}
-                  {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST')
-                    .filter(m => !mentionQuery || (m.name || m.email || '').toLowerCase().includes(mentionQuery.toLowerCase())).length === 0 && (
-                    <p className="px-3 py-2 text-[12px] text-white/25">Sin resultados</p>
-                  )}
-                </div>
-              )}
+                  </div>
+                  </>
+                );
+              })()}
               <input value={input} onChange={e => {
                 const val = e.target.value;
                 setInput(val);
