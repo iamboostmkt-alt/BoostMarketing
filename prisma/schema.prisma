@@ -49,6 +49,7 @@ model Workspace {
   chatMessages  ChatMessage[]
   chatUnreads   ChatUnread[]
   channels      Channel[]
+  aiSessions    AiSession[]
   invites       WorkspaceInvite[]
   taskTemplates      TaskTemplate[]
   customRoles        CustomRole[]
@@ -130,6 +131,7 @@ model User {
   chatReactions          ChatReaction[]
   chatUnreads           ChatUnread[]
   createdChannels       Channel[]             @relation("ChannelCreator")
+  aiSessions            AiSession[]
   managedClients         Client[]                  @relation("ClientManager")
   activityComments       ActivityComment[]
   appointmentAssignments AppointmentAssignedUser[]
@@ -741,3 +743,20 @@ model Channel {
   @@map("channels")
 }
 
+
+model AiSession {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  workspaceId String   @map("workspace_id")
+  title       String   @default("Nueva conversación")
+  messages    Json     @default("[]")
+  model       String   @default("turbo")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId, workspaceId])
+  @@map("ai_sessions")
+}
