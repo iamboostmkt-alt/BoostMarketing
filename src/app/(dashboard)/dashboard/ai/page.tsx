@@ -130,7 +130,7 @@ export default function AIAssistantPage() {
   const userInitial = ((session?.user?.name || session?.user?.email || 'U')[0]).toUpperCase();
 
   return (
-    <div className="flex h-full bg-background overflow-hidden">
+    <div className="flex bg-background overflow-hidden" style={{ height: "100vh" }}>
       {/* Sidebar sesiones */}
       {showSidebar && (
         <div className="w-[220px] shrink-0 border-r border-white/[0.05] flex flex-col bg-[#0F1117]">
@@ -173,7 +173,7 @@ export default function AIAssistantPage() {
       {/* Main */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Header */}
-        <div className="shrink-0 border-b border-white/[0.05] px-5 h-[52px] flex items-center gap-3">
+        <div className="shrink-0 border-b border-white/[0.05] px-5 h-[52px] flex items-center gap-3 sticky top-0 z-10 bg-background">
           <button onClick={() => setShowSidebar(p => !p)}
             className="flex h-7 w-7 items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/[0.06] transition-colors">
             <ChevronLeft className={`h-4 w-4 transition-transform ${showSidebar ? '' : 'rotate-180'}`} strokeWidth={1.75} />

@@ -1506,7 +1506,7 @@ function ChatMain({
                 return (
                   <>
                   <div className="fixed inset-0 z-40" onClick={() => setMentionQuery(null)} />
-                  <div className="absolute bottom-12 left-8 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
+                  <div className="absolute bottom-10 left-0 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
                     {filtered.length === 0 ? (
                       <p className="px-3 py-2 text-[11px] text-white/25">Sin resultados</p>
                     ) : filtered.map(m => (
