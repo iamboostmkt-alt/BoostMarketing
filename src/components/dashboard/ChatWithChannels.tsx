@@ -645,8 +645,45 @@ function ChatMain({
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     if ((!input.trim() && !linkModal) || sending) return;
-    setSending(true);
     const text = input.trim();
+
+    // Comando /ai — responde en el chat como mensaje del sistema
+    if (text.startsWith('/ai ')) {
+      const query = text.slice(4).trim();
+      if (!query) return;
+      setInput('');
+      const tempId = 'ai-thinking-' + Date.now();
+      const aiMsg: ChatMessage = {
+        id: tempId,
+        message: '✨ _pensando..._',
+        room,
+        createdAt: new Date().toISOString(),
+        userId: 'ai',
+        user: { name: 'AI Assistant', email: 'ai@weeklink', color: '#8B5CF6', image: null } as any,
+      };
+      setMessages(prev => [...prev, aiMsg]);
+      try {
+        const res = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [{ role: 'user', content: query }], model: 'turbo' }),
+        });
+        const data = await res.json();
+        const reply = data.content || 'Sin respuesta.';
+        setMessages(prev => prev.map(m => m.id === tempId
+          ? { ...m, message: `✨ **AI:** ${reply}` }
+          : m
+        ));
+      } catch {
+        setMessages(prev => prev.map(m => m.id === tempId
+          ? { ...m, message: '✨ Error al contactar AI.' }
+          : m
+        ));
+      }
+      return;
+    }
+
+    setSending(true);
     setInput('');
     try {
       if (text) {
@@ -1440,7 +1477,7 @@ function ChatMain({
                 {showComposerEmoji && (
                   <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowComposerEmoji(false)} />
-                  <div className="absolute bottom-14 left-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
+                  <div className="absolute bottom-16 left-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
                     {['😀','😂','🥹','😍','🤔','😅','🙌','👍','🔥','❤️','✅','🎉','💪','🚀','👀','💡','⚡','🎯'].map(e => (
                       <button key={e} type="button"
                         onClick={() => { setInput(prev => prev + e); setShowComposerEmoji(false); }}
@@ -1454,7 +1491,7 @@ function ChatMain({
               </div>
               {/* @ mencionar */}
               <div className="relative group/tip">
-                <button type="button" onClick={() => setMentionQuery('')}
+                <button type="button" onClick={() => { setInput(prev => { const next = prev + '@'; return next; }); setMentionQuery(''); }}
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
                   <AtSign className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
@@ -1470,7 +1507,7 @@ function ChatMain({
                   return (
                     <>
                     <div className="fixed inset-0 z-40" onClick={() => setMentionQuery(null)} />
-                    <div className="absolute bottom-10 left-0 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
+                    <div className="absolute bottom-16 left-0 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
                       {filtered.length === 0 ? (
                         <p className="px-3 py-2 text-[11px] text-white/25">Sin resultados</p>
                       ) : filtered.map(m => (
@@ -1512,13 +1549,27 @@ function ChatMain({
                   <div className="absolute bottom-14 left-0 z-50 w-52 rounded-xl border border-white/[0.08] bg-[#1a1d2e] py-1 shadow-2xl">
                     <p className="px-3 py-1.5 text-[10px] text-white/30 uppercase tracking-wide">Comandos</p>
                     {[
-                      { cmd: '/tarea', desc: 'Crear tarea rápida' },
-                      { cmd: '/giphy', desc: 'Buscar GIF' },
-                      { cmd: '/recordar', desc: 'Recordatorio' },
-                    ].map(({ cmd, desc }) => (
+                      { cmd: '/tarea', desc: 'Crear tarea rápida', icon: '📋' },
+                      { cmd: '/ai', desc: 'Preguntar al AI Assistant', icon: '✨' },
+                      { cmd: '/recordar', desc: 'Recordatorio', icon: '⏰' },
+                      { cmd: '/giphy', desc: 'Buscar GIF', icon: '🎬' },
+                    ].map(({ cmd, desc, icon }) => (
                       <button key={cmd} type="button"
-                        onClick={() => { setInput(cmd + ' '); setShowSlashMenu(false); }}
+                        onClick={() => {
+                          if (cmd === '/tarea') {
+                            setShowSlashMenu(false);
+                            setInput('');
+                            setTaskModal({ title: '', description: '' });
+                          } else if (cmd === '/ai') {
+                            setShowSlashMenu(false);
+                            setInput('/ai ');
+                          } else {
+                            setInput(cmd + ' ');
+                            setShowSlashMenu(false);
+                          }
+                        }}
                         className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] hover:bg-white/[0.04] transition-colors">
+                        <span className="text-base">{icon}</span>
                         <span className="font-mono text-primary">{cmd}</span>
                         <span className="text-white/40">{desc}</span>
                       </button>
