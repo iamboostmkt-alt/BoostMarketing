@@ -478,6 +478,8 @@ function ChatMain({
   const [pinnedMessages, setPinnedMessages] = useState<ChatMessage[]>([]);
   const [pinLoading, setPinLoading] = useState(false);
   const [linkModal, setLinkModal] = useState<{ fileUrl: string; fileName: string; fileType: string } | null>(null);
+  const [taskModal, setTaskModal] = useState<{ title: string; description: string } | null>(null);
+  const [taskModalSending, setTaskModalSending] = useState(false);
   const [linkTaskId, setLinkTaskId] = useState('');
   const [linkableTasks, setLinkableTasks] = useState<any[]>([]);
   const [linking, setLinking] = useState(false);
@@ -867,7 +869,7 @@ function ChatMain({
                   {[
                     { Icon: SmilePlus, fn: () => { setShowEmoji(showEmoji?.id === msg.id ? null : {id: msg.id, x: 0, y: 0}); }, tip: 'Reaccionar' },
                     { Icon: Reply, fn: () => onOpenThread(msg), tip: 'Responder en hilo' },
-                    { Icon: ListPlus, fn: () => {}, tip: 'Crear tarea' },
+                    { Icon: ListPlus, fn: () => setTaskModal({ title: msg.message.slice(0, 80), description: msg.message }), tip: 'Crear tarea' },
                     { Icon: Pin, fn: () => togglePin(msg), tip: msg.pinned ? 'Desfijar mensaje' : 'Fijar mensaje' },
                     { Icon: MoreHorizontal, fn: () => {}, tip: 'Más opciones' },
                   ].map(({ Icon, fn, tip }, i) => (
@@ -985,6 +987,73 @@ function ChatMain({
         <div ref={bottomRef} />
       </div>}
 
+      {/* Create Task Modal */}
+      {taskModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#0F1117] p-6 shadow-2xl mx-4">
+            <h3 className="text-[15px] font-semibold text-white mb-4">Crear tarea desde mensaje</h3>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-[11px] text-white/40 uppercase tracking-wide mb-1 block">Título</label>
+                <input
+                  value={taskModal.title}
+                  onChange={e => setTaskModal(prev => prev ? { ...prev, title: e.target.value } : null)}
+                  maxLength={120}
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#141824] px-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40"
+                  placeholder="Título de la tarea"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-white/40 uppercase tracking-wide mb-1 block">Descripción</label>
+                <textarea
+                  value={taskModal.description}
+                  onChange={e => setTaskModal(prev => prev ? { ...prev, description: e.target.value } : null)}
+                  rows={3}
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#141824] px-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 resize-none"
+                  placeholder="Descripción opcional"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setTaskModal(null)}
+                className="flex-1 rounded-xl border border-white/[0.08] py-2 text-[13px] text-white/50 hover:text-white transition-colors">
+                Cancelar
+              </button>
+              <button
+                disabled={!taskModal.title.trim() || taskModalSending}
+                onClick={async () => {
+                  if (!taskModal.title.trim()) return;
+                  setTaskModalSending(true);
+                  const INTERNAL = ['TEAM','SUPPORT','PROJECTS','PRIVATE'];
+                  const clientId = INTERNAL.includes(room) ? undefined : room;
+                  try {
+                    const res = await fetch('/api/tasks', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        title: taskModal.title.trim(),
+                        description: taskModal.description.trim(),
+                        priority: 'medium',
+                        ...(clientId ? { clientId } : {}),
+                      }),
+                    });
+                    if (res.ok) {
+                      setTaskModal(null);
+                    } else {
+                      const d = await res.json();
+                      alert(d.error ?? 'Error al crear tarea');
+                    }
+                  } catch { alert('Error al crear tarea'); }
+                  finally { setTaskModalSending(false); }
+                }}
+                className="flex-1 rounded-xl bg-primary py-2 text-[13px] font-medium text-white disabled:opacity-40 transition-opacity">
+                {taskModalSending ? 'Creando…' : 'Crear tarea'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Modal vincular archivo con tarea */}
       {linkModal && (
         <div className="mx-4 mb-2 rounded-xl border border-primary/30 bg-primary/[0.06] p-3">
