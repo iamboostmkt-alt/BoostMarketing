@@ -680,7 +680,7 @@ function ChatMain({
   useEffect(() => {
     return bus.on<{ message: ChatMessage; room: string }>(RT_EVENTS.MESSAGE_SENT, (p) => {
       if (p.room === room)
-        setMessages(prev => prev.some(m => m.id === p.message.id) ? prev : [...prev, p.message]);
+        setMessages(prev => prev.some(m => m.id === p.message.id || m.id.startsWith('user-ai-') && m.userId === p.message.userId && Math.abs(new Date(m.createdAt).getTime() - new Date(p.message.createdAt).getTime()) < 5000) ? prev : [...prev, p.message]);
     });
   }, [room]);
 
@@ -742,7 +742,7 @@ function ChatMain({
         const aiPairs: {role: 'user'|'assistant', content: string}[] = [];
         for (let idx = 0; idx < messages.length; idx++) {
           const m = messages[idx];
-          if (m.userId === myId || m.id.startsWith('user-ai-')) {
+          if (m.id.startsWith('user-ai-')) {
             const q = m.message.startsWith('/ai ') || m.message.startsWith('/ia ') ? m.message.slice(4).trim() : m.message.replace(/^@(boosti|ai|ia|boostai|asistente)\s*/i, '').trim();
             if (q) aiPairs.push({ role: 'user', content: q });
           } else if (m.userId === 'ai') {
@@ -1193,7 +1193,7 @@ function ChatMain({
           const prevMsg = idx > 0 ? messages[idx - 1] : null;
           const isLocalAiMsg = msg.id.startsWith('user-ai-') || msg.id.startsWith('ai-thinking-');
           const prevIsLocalAiMsg = prevMsg ? (prevMsg.id.startsWith('user-ai-') || prevMsg.id.startsWith('ai-thinking-')) : false;
-          const isSame = idx > 0 && prevMsg?.userId === msg.userId && !isNewDay && msg.userId !== 'ai' && prevMsg?.userId !== 'ai' && !isLocalAiMsg && !prevIsLocalAiMsg;
+          const isSame = idx > 0 && prevMsg?.userId === msg.userId && !isNewDay && msg.userId !== 'ai' && prevMsg?.userId !== 'ai' && !isLocalAiMsg && !prevIsLocalAiMsg && !msg.id.startsWith('user-ai-') && !(prevMsg?.id ?? '').startsWith('user-ai-');
           const color = (msg.user as any)?.color || accentColor;
           const initials = getInitials((msg.user as any)?.name ?? null, (msg.user as any)?.email ?? '');
           const reactions = (msg.reactions || []).reduce((acc: any[], r: any) => {
