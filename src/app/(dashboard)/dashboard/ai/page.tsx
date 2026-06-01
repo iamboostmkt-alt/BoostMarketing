@@ -133,7 +133,7 @@ export default function AIAssistantPage() {
     <div className="flex bg-background overflow-hidden" style={{ height: "100vh" }}>
       {/* Sidebar sesiones */}
       {showSidebar && (
-        <div className="w-[220px] shrink-0 border-r border-white/[0.05] flex flex-col bg-[#0F1117]">
+        <div className="w-[220px] shrink-0 border-r border-white/[0.05] flex flex-col bg-[#0F1117] overflow-hidden">
           <div className="flex items-center justify-between px-3 py-3 border-b border-white/[0.05]">
             <span className="text-[11px] font-medium uppercase tracking-wide text-white/40">Conversaciones</span>
             <button onClick={newConversation}
@@ -171,7 +171,7 @@ export default function AIAssistantPage() {
       )}
 
       {/* Main */}
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <div className="shrink-0 border-b border-white/[0.05] px-5 h-[52px] flex items-center gap-3 sticky top-0 z-10 bg-background">
           <button onClick={() => setShowSidebar(p => !p)}
