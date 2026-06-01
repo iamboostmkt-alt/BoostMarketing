@@ -44,7 +44,7 @@ function renderMessage(text: string) {
 
 // ─── Channel List ──────────────────────────────────────────────────────────────
 function ChannelList({
-  activeId, setActiveId, rooms, clients, members, myId, unreads, role,
+  activeId, setActiveId, rooms, clients, members, myId, unreads, role, onDeleteChannel,
 }: {
   activeId: string;
   setActiveId: (id: string) => void;
@@ -54,6 +54,7 @@ function ChannelList({
   myId: string;
   unreads: Record<string, number>;
   role: string;
+  onDeleteChannel?: (id: string) => void;
 }) {
   const [openClients, setOpenClients] = useState(true);
   const [openDMs, setOpenDMs] = useState(true);
@@ -139,13 +140,13 @@ function ChannelList({
             )}
           </div>
         </div>
-        <ul className="flex flex-col gap-0.5" style={{ maxHeight: rooms.length > 6 ? '216px' : 'none', overflowY: rooms.length > 6 ? 'auto' : 'visible' }}>
+        <ul className="flex flex-col gap-0.5 scrollbar-thin" style={{ maxHeight: '216px', overflowY: 'auto' }}>
           {rooms.map(r => {
             const isActive = activeId === r.id;
             const unread = unreads[r.id] || 0;
             const Icon = r.locked ? Lock : r.icon === 'support' ? LifeBuoy : r.icon === 'projects' ? Briefcase : Hash;
             return (
-              <li key={r.id}>
+              <li key={r.id} className="group/ch relative">
                 <button onClick={() => setActiveId(r.id)}
                   className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2.5 text-[13px] transition-colors ${
                     isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
@@ -159,6 +160,20 @@ function ChannelList({
                     </span>
                   )}
                 </button>
+                {!['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(r.id) && isManager && (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!confirm(`¿Eliminar el canal #${r.name}?`)) return;
+                      const res = await fetch(`/api/channels?id=${r.id}`, { method: 'DELETE' });
+                      if (res.ok) {
+                        if (activeId === r.id) setActiveId('TEAM');
+                      }
+                    }}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover/ch:opacity-100 flex h-6 w-6 items-center justify-center rounded-md text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all">
+                    <X className="h-3 w-3" strokeWidth={2} />
+                  </button>
+                )}
               </li>
             );
           })}
@@ -1670,7 +1685,7 @@ export default function ChatWithChannels() {
   }, [role]);
   // Fetch workspace members for DMs
   useEffect(() => {
-    fetch('/api/workspace/members?limit=20').then(r => r.ok ? r.json() : null)
+    fetch('/api/workspace/members?limit=50').then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.members) setMembers(d.members); }).catch(() => {});
   }, []);
 
@@ -1692,6 +1707,12 @@ export default function ChatWithChannels() {
     setUnreads(prev => ({ ...prev, [id]: 0 }));
     setThreadMsg(null);
     setMobileOpen(false);
+    // Limpiar unread en DB
+    fetch('/api/chat/unread', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ room: id }),
+    }).catch(() => {});
   };
 
   const isSupport = activeId === 'SUPPORT' && !['ADMIN'].includes(role);
@@ -1718,6 +1739,7 @@ export default function ChatWithChannels() {
       rooms={rooms}
       clients={clients}
       role={role}
+      onDeleteChannel={(id) => setCustomChannels(prev => prev.filter(c => c.id !== id))}
       members={[...members].filter(m => {
         if (m.role === 'CLIENT' || m.role === 'GUEST') return false;
         return true;
