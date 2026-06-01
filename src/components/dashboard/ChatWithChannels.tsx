@@ -1461,6 +1461,44 @@ function ChatMain({
                 <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
                   Mencionar
                 </div>
+                {/* Dropdown menciones — dentro del botón @ */}
+                {mentionQuery !== null && (() => {
+                  const filtered = members
+                    .filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST')
+                    .filter(m => !mentionQuery || (m.name || m.email || '').toLowerCase().includes(mentionQuery.toLowerCase()))
+                    .slice(0, 5);
+                  return (
+                    <>
+                    <div className="fixed inset-0 z-40" onClick={() => setMentionQuery(null)} />
+                    <div className="absolute bottom-10 left-0 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
+                      {filtered.length === 0 ? (
+                        <p className="px-3 py-2 text-[11px] text-white/25">Sin resultados</p>
+                      ) : filtered.map(m => (
+                        <button key={m.id} type="button"
+                          onClick={() => {
+                            const handle = (m.name || m.email || '').split(' ')[0];
+                            setInput(prev => prev.replace(/@\w*$/, `@${handle} `));
+                            setMentionQuery(null);
+                          }}
+                          className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-white/[0.04] transition-colors">
+                          {m.image ? (
+                            <img src={m.image} className="h-6 w-6 rounded-full object-cover shrink-0" />
+                          ) : (
+                            <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                              style={{ background: m.color ?? '#8B5CF6' }}>
+                              {(m.name || m.email || '?')[0].toUpperCase()}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-[12px] font-medium text-white/75 truncate">{m.name || m.email}</p>
+                            <p className="text-[10px] text-white/25 truncate">@{(m.email || '').split('@')[0]}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    </>
+                  );
+                })()}
               </div>
               {/* Slash commands */}
               <div className="relative">
