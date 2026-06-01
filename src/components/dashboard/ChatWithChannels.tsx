@@ -102,7 +102,23 @@ function ChannelList({
                     Cancelar
                   </button>
                   <button disabled={!newChannelName.trim()}
-                    onClick={() => { if (newChannelName.trim()) { setActiveId(newChannelName.trim()); setShowCreateChannel(false); setNewChannelName(''); } }}
+                    onClick={async () => {
+                      const name = newChannelName.trim();
+                      if (!name) return;
+                      try {
+                        const res = await fetch('/api/channels', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ name }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) { alert(data.error ?? 'Error al crear canal'); return; }
+                        const ch = data.channel;
+                        setActiveId(ch.id);
+                        setShowCreateChannel(false);
+                        setNewChannelName('');
+                      } catch { alert('Error al crear canal'); }
+                    }}
                     className="flex-1 rounded-lg bg-primary py-1.5 text-[12px] font-medium text-white disabled:opacity-40 transition-opacity">
                     Crear
                   </button>
@@ -1201,6 +1217,14 @@ export default function ChatWithChannels() {
   const [clients, setClients] = useState<{ id: string; name: string; color?: string }[]>([]);
   const [members, setMembers] = useState<{ id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string }[]>([]);
   const [dmActivity, setDmActivity] = useState<Record<string, number>>({});
+  const [customChannels, setCustomChannels] = useState<{ id: string; name: string; icon: string; subtitle?: string }[]>([]);
+
+  // Fetch custom channels
+  useEffect(() => {
+    if (['CLIENT'].includes(role)) return;
+    fetch('/api/channels').then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.channels) setCustomChannels(d.channels); }).catch(() => {});
+  }, [role]);
 
   // Fetch unreads
   useEffect(() => {
@@ -1242,7 +1266,7 @@ export default function ChatWithChannels() {
 
   const isSupport = activeId === 'SUPPORT' && !['ADMIN'].includes(role);
 
-  const rooms = [
+  const defaultRooms = [
     { id: 'TEAM',     name: 'general',   icon: 'hash',     subtitle: 'Equipo interno' },
     { id: 'SUPPORT',  name: 'soporte',   icon: 'support',  subtitle: 'Atención a clientes' },
     { id: 'PROJECTS', name: 'proyectos', icon: 'projects', subtitle: 'Discusión de proyectos' },
@@ -1251,6 +1275,7 @@ export default function ChatWithChannels() {
     if (r.locked && !['ADMIN', 'PROJECT_MANAGER'].includes(role)) return false;
     return true;
   });
+  const rooms = [...defaultRooms, ...customChannels];
 
   const activeRoom = rooms.find(r => r.id === activeId) || clients.find(c => c.id === activeId);
   const activeDmUser = activeId.includes('_DM_') ? members.find(m => activeId.includes(m.id) && m.id !== (session?.user as any)?.id) ?? null : null;

@@ -48,6 +48,7 @@ model Workspace {
   contacts      Contact[]
   chatMessages  ChatMessage[]
   chatUnreads   ChatUnread[]
+  channels      Channel[]
   invites       WorkspaceInvite[]
   taskTemplates      TaskTemplate[]
   customRoles        CustomRole[]
@@ -128,6 +129,7 @@ model User {
   chatMessages           ChatMessage[]
   chatReactions          ChatReaction[]
   chatUnreads           ChatUnread[]
+  createdChannels       Channel[]             @relation("ChannelCreator")
   managedClients         Client[]                  @relation("ClientManager")
   activityComments       ActivityComment[]
   appointmentAssignments AppointmentAssignedUser[]
@@ -722,3 +724,20 @@ model WorkspaceInvite {
   @@index([workspaceId])
   @@map("workspace_invites")
 }
+model Channel {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  name        String
+  icon        String   @default("hash")
+  subtitle    String?
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User      @relation("ChannelCreator", fields: [createdBy], references: [id])
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@map("channels")
+}
+
