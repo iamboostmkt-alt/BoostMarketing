@@ -655,6 +655,21 @@ function ChatMain({
     });
   }
 
+  async function sendFileMessage(fileUrl: string, fileName: string, fileType: string) {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: fileName || 'Archivo', room, fileUrl, fileName, fileType }),
+    }).catch(() => null);
+    if (res?.ok) {
+      const d = await res.json().catch(() => null);
+      if (d?.message) {
+        setMessages(prev => prev.some(m => m.id === d.message.id) ? prev : [...prev, d.message]);
+        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+      }
+    }
+  }
+
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const rawFiles = Array.from(e.target.files || []);
     if (!rawFiles.length) return;
@@ -668,20 +683,16 @@ function ChatMain({
         const file = rawFile.type.startsWith('video') && rawFile.size > 10 * 1024 * 1024
           ? await compressVideo(rawFile) : rawFile;
         const uploaded = await startUpload([file]);
-        if (uploaded?.[0]) {
-          const { url, name, type } = uploaded[0] as any;
-          await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: name || 'Archivo', room, fileUrl: url, fileName: name, fileType: type }),
-          });
-        }
         setPendingFiles(prev => prev.filter(f => f.name !== file.name));
-        // Si es canal de cliente → ofrecer vincular con tarea
-        if (!['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) && uploaded?.[0]) {
-          const { url, name, type } = uploaded[0] as any;
+        if (!uploaded?.[0]) continue;
+        const { url, name, type } = uploaded[0] as any;
+        const isClientRoom = !['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room);
+        if (isClientRoom) {
+          // Mostrar modal primero — el mensaje se envía desde handleLinkTask o al omitir
           setLinkModal({ fileUrl: url, fileName: name, fileType: type });
           setLinkTaskId('');
+        } else {
+          await sendFileMessage(url, name, type);
         }
       }
     } catch {}
@@ -694,12 +705,23 @@ function ChatMain({
     if (!linkModal || !linkTaskId) return;
     setLinking(true);
     const isVideo = linkModal.fileType.startsWith('video');
-    await fetch('/api/chat/link-task', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...linkModal, taskId: linkTaskId, isVideo }),
-    }).catch(() => {});
+    // Enviar mensaje + vincular tarea
+    await Promise.all([
+      sendFileMessage(linkModal.fileUrl, linkModal.fileName, linkModal.fileType),
+      fetch('/api/chat/link-task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...linkModal, taskId: linkTaskId, isVideo }),
+      }).catch(() => {}),
+    ]);
     setLinking(false);
+    setLinkModal(null);
+    setLinkTaskId('');
+  }
+
+  async function handleSkipLink() {
+    if (!linkModal) return;
+    await sendFileMessage(linkModal.fileUrl, linkModal.fileName, linkModal.fileType);
     setLinkModal(null);
     setLinkTaskId('');
   }
@@ -987,7 +1009,7 @@ function ChatMain({
 
                 {/* Emoji picker — absolute encima del hover bar */}
                 {showEmoji?.id === msg.id && (
-                  <div className="absolute -top-10 left-0 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
+                  <div className="absolute -top-10 left-[280px] z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
                     onMouseLeave={() => setShowEmoji(null)}>
                     {QUICK_EMOJIS.map(e => (
                       <button key={e} onClick={() => handleReaction(msg.id, e)}
@@ -1309,9 +1331,9 @@ function ChatMain({
               className="flex-1 rounded-lg bg-primary py-1.5 text-[12px] font-medium text-white disabled:opacity-40 transition-opacity">
               {linking ? 'Vinculando...' : 'Vincular'}
             </button>
-            <button onClick={() => setLinkModal(null)}
+            <button onClick={handleSkipLink}
               className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-[12px] text-white/40 hover:text-white/70">
-              Omitir
+              Omitir (enviar sin vincular)
             </button>
           </div>
         </div>
@@ -1333,7 +1355,13 @@ function ChatMain({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <p className="truncate text-[12px] text-white/70">{f.name}</p>
-                    <span className="text-[10px] text-white/30 ml-2 shrink-0">{typeLabel}</span>
+                    <div className="flex items-center gap-1.5 ml-2 shrink-0">
+                      <span className="text-[10px] text-white/30">{typeLabel}</span>
+                      <button onClick={() => setPendingFiles(prev => prev.filter((_, idx) => idx !== i))}
+                        className="text-white/20 hover:text-red-400 transition-colors">
+                        <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </button>
+                    </div>
                   </div>
                   <div className="h-1 w-full rounded-full bg-white/[0.06] overflow-hidden">
                     <div className="h-full rounded-full bg-primary transition-all duration-300"

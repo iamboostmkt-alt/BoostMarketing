@@ -20,29 +20,20 @@ export function VideoCard({
   return (
     <div
       className={cn(
-        'group flex max-w-[420px] items-center gap-3 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#141824] p-2 transition-colors hover:border-white/10',
+        'group flex max-w-[420px] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#141824] p-2 transition-colors hover:border-white/10',
         className,
       )}
     >
-      <div className="relative h-[60px] w-[100px] shrink-0 overflow-hidden rounded-xl">
-        <img src={thumb || '/placeholder.svg'} alt={name} className="object-cover w-full h-full" />
-        <div className="absolute inset-0 bg-black/30" />
-        <span className="absolute inset-0 flex items-center justify-center">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-black shadow-lg">
-            <Play className="h-3.5 w-3.5 translate-x-px fill-black" />
-          </span>
-        </span>
+      <div className="w-full">
+        <video
+          src={thumb}
+          controls
+          preload="metadata"
+          className="w-full max-w-[400px] rounded-xl border border-white/[0.08]"
+          style={{ maxHeight: '240px' }}
+        />
+        <p className="mt-1.5 truncate text-[12px] text-white/40">{name}</p>
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-medium">{name}</p>
-        <p className="mt-0.5 text-[11px] text-white/40">{meta}</p>
-      </div>
-      <button
-        aria-label="Reproducir"
-        className="mr-1 flex h-8 w-8 items-center justify-center rounded-full text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white/90"
-      >
-        <Play className="h-4 w-4" strokeWidth={1.75} />
-      </button>
     </div>
   )
 }
