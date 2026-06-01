@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
   }
 
   const messages = await db.chatMessage.findMany({
-    where:   { room, ...(pinnedOnly ? { pinned: true } : {}) },
+    where:   { room, workspaceId, ...(pinnedOnly ? { pinned: true } : {}) },
     take:    50,
     orderBy: { createdAt: 'desc' },
     select: messageSelect,

@@ -517,6 +517,7 @@ function ChatMain({
   const [showChannelMore, setShowChannelMore] = useState(false);
   const [showComposerEmoji, setShowComposerEmoji] = useState(false);
   const [showSlashMenu, setShowSlashMenu] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -824,12 +825,16 @@ function ChatMain({
             <h1 className="text-[15px] font-semibold tracking-tight">{title}</h1>
           </div>
           <div className="ml-auto flex items-center gap-1 relative">
-            <button
-              onClick={() => setShowMembersPanel(p => !p)}
-              title="Miembros"
-              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showMembersPanel ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
-              <Users className="h-4 w-4" strokeWidth={1.75} />
-            </button>
+            <div className="relative group/tip">
+              <button
+                onClick={() => setShowMembersPanel(p => !p)}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showMembersPanel ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
+                <Users className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+              <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-300 group-hover/tip:opacity-100 z-30">
+                Miembros
+              </div>
+            </div>
             <button
               onClick={() => handleTabChange('pinned')}
               title="Mensajes fijados"
@@ -1432,7 +1437,7 @@ function ChatMain({
                   <Smile className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
                 {showComposerEmoji && (
-                  <div className="absolute bottom-10 left-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
+                  <div className="absolute bottom-14 left-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
                     {['😀','😂','🥹','😍','🤔','😅','🙌','👍','🔥','❤️','✅','🎉','💪','🚀','👀','💡','⚡','🎯'].map(e => (
                       <button key={e} type="button"
                         onClick={() => { setInput(prev => prev + e); setShowComposerEmoji(false); }}
@@ -1460,7 +1465,7 @@ function ChatMain({
                   <Slash className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
                 {showSlashMenu && (
-                  <div className="absolute bottom-10 left-0 z-50 w-52 rounded-xl border border-white/[0.08] bg-[#1a1d2e] py-1 shadow-2xl">
+                  <div className="absolute bottom-14 left-0 z-50 w-52 rounded-xl border border-white/[0.08] bg-[#1a1d2e] py-1 shadow-2xl">
                     <p className="px-3 py-1.5 text-[10px] text-white/30 uppercase tracking-wide">Comandos</p>
                     {[
                       { cmd: '/tarea', desc: 'Crear tarea rápida' },
@@ -1486,7 +1491,51 @@ function ChatMain({
                   Adjuntar archivo
                 </div>
               </div>
-              <input value={input} onChange={e => { setInput(e.target.value); broadcastTyping(); }}
+              {mentionQuery !== null && (
+                <div className="absolute bottom-12 left-0 right-0 z-50 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-48 overflow-y-auto">
+                  <p className="px-3 py-1 text-[10px] text-white/30 uppercase tracking-wide">Mencionar miembro</p>
+                  {members
+                    .filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST')
+                    .filter(m => !mentionQuery || (m.name || m.email || '').toLowerCase().includes(mentionQuery.toLowerCase()))
+                    .slice(0, 6)
+                    .map(m => (
+                      <button key={m.id} type="button"
+                        onClick={() => {
+                          const handle = (m.name || m.email || '').replace(/\s+/g, '');
+                          setInput(prev => prev.replace(/@\w*$/, `@${handle} `));
+                          setMentionQuery(null);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2 hover:bg-white/[0.04] transition-colors">
+                        {m.image ? (
+                          <img src={m.image} className="h-6 w-6 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                            style={{ background: m.color ?? '#8B5CF6' }}>
+                            {(m.name || m.email || '?')[0].toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[12px] font-medium text-white/80 truncate">{m.name || m.email}</p>
+                          <p className="text-[10px] text-white/30 truncate">@{(m.email || '').split('@')[0]}</p>
+                        </div>
+                      </button>
+                    ))}
+                  {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST')
+                    .filter(m => !mentionQuery || (m.name || m.email || '').toLowerCase().includes(mentionQuery.toLowerCase())).length === 0 && (
+                    <p className="px-3 py-2 text-[12px] text-white/25">Sin resultados</p>
+                  )}
+                </div>
+              )}
+              <input value={input} onChange={e => {
+                const val = e.target.value;
+                setInput(val);
+                broadcastTyping();
+                // Detectar @ para menciones
+                const match = val.match(/@(\w*)$/);
+                if (match) { setMentionQuery(match[1]); } else { setMentionQuery(null); }
+                // Detectar / para slash commands
+                if (val === '/') setShowSlashMenu(true); else if (!val.startsWith('/')) setShowSlashMenu(false);
+              }}
                 placeholder={`Escribe en #${title}…`}
                 className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white placeholder:text-white/25 focus:outline-none" />
               <button type="button"

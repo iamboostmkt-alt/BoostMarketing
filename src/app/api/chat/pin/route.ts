@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest) {
   const rl = await rateLimit(req, { limit: 30, windowMs: 60_000, identifier: 'chat-pin' });
   if (!rl.success) return rl.response;
 
-  const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+  const result = await requireWorkspace();
   if (!result.ok) return result.response;
 
   const { workspaceId } = result.ctx;
