@@ -8,7 +8,7 @@ type ModelTier = 'pro' | 'medium' | 'free' | 'turbo';
 const MODELS: Record<ModelTier, { name: string; label: string; provider: string }> = {
   pro:    { name: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4',    provider: 'anthropic' },
   medium: { name: 'deepseek-chat',            label: 'DeepSeek V3',        provider: 'deepseek'  },
-  free:   { name: 'gemini-1.5-flash',         label: 'Gemini 1.5 Flash',   provider: 'gemini'    },
+  free:   { name: 'gemini-2.0-flash',         label: 'Gemini 2.0 Flash',   provider: 'gemini'    },
   turbo:  { name: 'llama-3.3-70b-versatile',  label: 'Llama 3.3 70B',      provider: 'groq'      },
 };
 
@@ -58,7 +58,7 @@ async function callDeepSeek(messages: {role:string;content:string}[], system: st
 }
 
 async function callGemini(messages: {role:string;content:string}[], system: string) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
   const contents = messages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
   const res = await fetch(url, {
     method: 'POST',

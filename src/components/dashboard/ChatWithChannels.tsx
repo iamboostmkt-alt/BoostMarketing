@@ -1454,7 +1454,7 @@ function ChatMain({
               </div>
               {/* @ mencionar */}
               <div className="relative group/tip">
-                <button type="button" onClick={() => setInput(prev => prev + '@')}
+                <button type="button" onClick={() => { setInput(prev => prev + '@'); setMentionQuery(''); }}
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
                   <AtSign className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
