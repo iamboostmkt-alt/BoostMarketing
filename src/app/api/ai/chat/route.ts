@@ -133,6 +133,7 @@ export async function POST(req: NextRequest) {
     else if (model.provider === 'gemini') content = await callGemini(messages, system);
     else content = await callGroq(messages, system);
     if (!content || content === 'Sin respuesta.') throw new Error('empty response');
+    console.log(`[AI] provider=${model.provider} model=${model.name} tier=${tier} chars=${content.length}`);
     return NextResponse.json({ content, model: model.label });
   } catch (err) {
     console.error('AI error:', err, 'tier:', tier);
