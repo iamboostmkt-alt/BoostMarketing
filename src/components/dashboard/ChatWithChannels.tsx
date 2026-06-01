@@ -785,7 +785,15 @@ function ChatMain({
             </div>
             <div>
               <p className="text-[14px] font-semibold text-white/95">{dmUser.name || dmUser.email}</p>
-              <p className="text-[11px] text-white/30">@{(dmUser.email || '').split('@')[0]} · <span className="text-emerald-400">En línea</span></p>
+              <p className="text-[11px] text-white/30">
+                @{(dmUser.email || '').split('@')[0]} · {' '}
+                {(dmUser as any).presence?.status === 'online'
+                  ? <span className="text-emerald-400">En línea</span>
+                  : (dmUser as any).presence?.lastSeen
+                    ? <span>Visto {formatLastSeen((dmUser as any).presence.lastSeen)}</span>
+                    : <span className="text-emerald-400">En línea</span>
+                }
+              </p>
             </div>
           </div>
         )}

@@ -18,45 +18,52 @@ export function VideoCard({
   meta: string
   className?: string
 }) {
+  const [open, setOpen] = React.useState(false)
   return (
-    <div
-      className={cn(
-        'group flex max-w-[420px] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#141824] p-2 transition-colors hover:border-white/10',
-        className,
+    <>
+      {open && (
+        <div
+          className="fixed inset-0 z-[500] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          onClick={() => setOpen(false)}>
+          <div className="relative w-full max-w-3xl mx-4" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setOpen(false)}
+              className="absolute -top-9 right-0 flex items-center gap-1 text-[13px] text-white/60 hover:text-white transition-colors">
+              <X className="h-4 w-4" strokeWidth={1.75} /> Cerrar
+            </button>
+            <video src={thumb} controls autoPlay playsInline preload="auto"
+              className="w-full rounded-2xl border border-white/[0.08] shadow-2xl"
+              style={{ maxHeight: '80vh' }} />
+            <div className="mt-2 flex items-center justify-between px-1">
+              <p className="text-[12px] text-white/40 truncate">{name}</p>
+              <a href={thumb} download={name}
+                className="text-[11px] text-white/30 hover:text-white/60 transition-colors ml-3 shrink-0">
+                ↓ descargar
+              </a>
+            </div>
+          </div>
+        </div>
       )}
-    >
-      <div className="w-full">
-        <video
-          src={thumb}
-          controls
-          playsInline
-          preload="metadata"
-          crossOrigin="anonymous"
-          className="w-full max-w-[400px] rounded-xl border border-white/[0.08]"
-          style={{ maxHeight: '240px' }}
-          onError={(e) => {
-            // Fallback: ocultar video roto y mostrar link
-            const el = e.currentTarget;
-            el.style.display = 'none';
-            const link = el.nextElementSibling as HTMLElement;
-            if (link) link.style.display = 'flex';
-          }}
-        />
-        <a href={thumb} target="_blank" rel="noopener noreferrer"
-          className="hidden items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 text-[12px] text-primary hover:text-primary/80 transition-colors"
-          style={{ display: 'none' }}>
-          <Play className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-          Ver video — {name}
-        </a>
-        <div className="mt-1.5 flex items-center justify-between">
+      <div className={cn('group flex max-w-[420px] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#141824] p-2 transition-colors hover:border-white/10', className)}>
+        <div className="relative cursor-pointer" onClick={() => setOpen(true)}>
+          <video src={thumb} preload="metadata" playsInline muted
+            className="w-full rounded-xl border border-white/[0.08] pointer-events-none"
+            style={{ maxHeight: '180px' }} />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl hover:bg-black/40 transition-colors">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white transition-colors">
+              <Play className="h-4 w-4 translate-x-px fill-black text-black" strokeWidth={1.75} />
+            </span>
+          </div>
+        </div>
+        <div className="mt-1.5 flex items-center justify-between px-1">
           <p className="truncate text-[12px] text-white/40">{name}</p>
-          <a href={thumb} download={name} target="_blank" rel="noopener noreferrer"
+          <a href={thumb} download={name}
+            onClick={e => e.stopPropagation()}
             className="ml-2 shrink-0 text-[10px] text-white/25 hover:text-white/50 transition-colors">
             ↓ descargar
           </a>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
