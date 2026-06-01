@@ -423,7 +423,7 @@ function TasksTab({ roomTasks, room, onRefresh }: { roomTasks: any[]; room: stri
 
 // ─── Main Chat ─────────────────────────────────────────────────────────────────
 function ChatMain({
-  room, title, accentColor, onOpenThread, dmUser, role = '',
+  room, title, accentColor, onOpenThread, dmUser, role = '', members = [],
 }: {
   room: string;
   title: string;
@@ -431,6 +431,7 @@ function ChatMain({
   onOpenThread: (msg: ChatMessage) => void;
   dmUser?: { id: string; name: string | null; email: string; color?: string; image?: string | null } | null;
   role?: string;
+  members?: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string }[];
 }) {
   const { data: session } = useSession();
   const myId = (session?.user as any)?.id;
@@ -483,6 +484,8 @@ function ChatMain({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null);
+  const [showMembersPanel, setShowMembersPanel] = useState(false);
+  const [showChannelMore, setShowChannelMore] = useState(false);
   const [linkTaskId, setLinkTaskId] = useState('');
   const [linkableTasks, setLinkableTasks] = useState<any[]>([]);
   const [linking, setLinking] = useState(false);
@@ -686,16 +689,43 @@ function ChatMain({
             )}
             <h1 className="text-[15px] font-semibold tracking-tight">{title}</h1>
           </div>
-          <div className="ml-auto flex items-center gap-1">
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
+          <div className="ml-auto flex items-center gap-1 relative">
+            <button
+              onClick={() => setShowMembersPanel(p => !p)}
+              title="Miembros"
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showMembersPanel ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
               <Users className="h-4 w-4" strokeWidth={1.75} />
             </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
+            <button
+              onClick={() => handleTabChange('pinned')}
+              title="Mensajes fijados"
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${activeTab === 'pinned' ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
               <Pin className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
-              <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.75} />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowChannelMore(p => !p)}
+                title="Más opciones del canal"
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showChannelMore ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
+                <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.75} />
+              </button>
+              {showChannelMore && (
+                <div className="absolute right-0 top-9 z-50 w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
+                  <button onClick={() => { handleTabChange('pinned'); setShowChannelMore(false); }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                    📌 Ver mensajes fijados
+                  </button>
+                  <button onClick={() => { handleTabChange('files'); setShowChannelMore(false); }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                    📎 Ver archivos
+                  </button>
+                  <button onClick={() => { setShowMembersPanel(p => !p); setShowChannelMore(false); }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                    👥 Ver miembros
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {/* Tabs */}
@@ -1232,6 +1262,38 @@ function ChatMain({
         </form>
       </div>
       {/* Emoji picker portal fixed */}
+      {/* Members Panel */}
+      {showMembersPanel && (
+        <div className="absolute right-0 top-[52px] bottom-0 z-40 w-64 border-l border-white/[0.05] bg-[#0F1117] flex flex-col shadow-2xl">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]">
+            <span className="text-[13px] font-semibold text-white/80">Miembros</span>
+            <button onClick={() => setShowMembersPanel(false)} className="text-white/30 hover:text-white transition-colors">
+              <X className="h-4 w-4" strokeWidth={1.75} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-3 flex flex-col gap-1">
+            {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST').map(m => (
+              <div key={m.id} className="flex items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-white/[0.03] transition-colors">
+                <div className="relative shrink-0">
+                  <Avatar
+                    initials={(m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()}
+                    color={m.color || '#8b5cf6'}
+                    size={30}
+                    image={m.image}
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-medium text-white/80 truncate">{m.name || m.email}</p>
+                  <p className="text-[10px] text-white/30 truncate">{m.role?.toLowerCase().replace('_', ' ')}</p>
+                </div>
+              </div>
+            ))}
+            {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST').length === 0 && (
+              <p className="text-[12px] text-white/20 text-center py-8">Sin miembros</p>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -1474,6 +1536,7 @@ export default function ChatWithChannels() {
             onOpenThread={(msg) => setThreadMsg(msg)}
             dmUser={activeDmUser}
             role={role}
+            members={members}
           />
         )}
       </div>
