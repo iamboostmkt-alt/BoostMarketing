@@ -614,19 +614,27 @@ function ChatMain({
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.trim() || sending) return;
+    if ((!input.trim() && !linkModal) || sending) return;
     setSending(true);
     const text = input.trim();
     setInput('');
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, room }),
-      });
-      if (res.ok) {
-        const d = await res.json();
-        if (d.message) setMessages(prev => prev.some(m => m.id === d.message.id) ? prev : [...prev, d.message]);
+      if (text) {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, room }),
+        });
+        if (res.ok) {
+          const d = await res.json();
+          if (d.message) setMessages(prev => prev.some(m => m.id === d.message.id) ? prev : [...prev, d.message]);
+        }
+      }
+      // Si hay archivo pendiente en modal, enviarlo también
+      if (linkModal) {
+        await sendFileMessage(linkModal.fileUrl, linkModal.fileName, linkModal.fileType);
+        setLinkModal(null);
+        setLinkTaskId('');
       }
     } catch {}
     setSending(false);
@@ -685,7 +693,8 @@ function ChatMain({
         const uploaded = await startUpload([file]);
         setPendingFiles(prev => prev.filter(f => f.name !== file.name));
         if (!uploaded?.[0]) continue;
-        const { url, name, type } = uploaded[0] as any;
+        const { ufsUrl, url: _url, name, type } = uploaded[0] as any;
+        const url = ufsUrl ?? _url;
         const isClientRoom = !['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room);
         if (isClientRoom) {
           // Mostrar modal primero — el mensaje se envía desde handleLinkTask o al omitir
@@ -1416,7 +1425,7 @@ function ChatMain({
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
                 <Mic className="h-[18px] w-[18px]" strokeWidth={1.75} />
               </button>
-              <button type="submit" disabled={!input.trim() || sending}
+              <button type="submit" disabled={(!input.trim() && !linkModal) || sending}
                 className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white transition-all hover:bg-primary/90 disabled:opacity-30"
                 style={{ boxShadow: input.trim() ? `0 0 16px -2px ${accentColor}70` : 'none' }}>
                 <Send className="h-[18px] w-[18px]" strokeWidth={1.75} />

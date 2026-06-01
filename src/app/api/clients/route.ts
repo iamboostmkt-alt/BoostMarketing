@@ -68,11 +68,19 @@ export async function GET(req: NextRequest) {
 
   // Modo sidebar: devolver solo id, name, color para el nav
   if (sidebar) {
+    const TEAM_ROLES = ['TEAM_MEMBER', 'DESIGNER', 'MARKETING'];
+    const sidebarWhere: Record<string, unknown> = { workspaceId };
+    if (role === 'PROJECT_MANAGER') {
+      sidebarWhere.OR = [{ assignedManagerId: userId }, { assignedUsers: { some: { userId } } }];
+    } else if (TEAM_ROLES.includes(role)) {
+      sidebarWhere.assignedUsers = { some: { userId } };
+    }
+    // ADMIN y SALES_REP ven todos
     const sidebarClients = await db.client.findMany({
-      where: { workspaceId },
+      where: sidebarWhere,
       select: { id: true, name: true },
       orderBy: { name: "asc" },
-      take: 10,
+      take: 20,
     });
     return NextResponse.json({ clients: sidebarClients });
   }
