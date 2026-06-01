@@ -775,12 +775,14 @@ function ChatMain({
               (isTasks ? ' (responde en máximo 3 líneas con números)' : ' (responde conciso, máximo 4 líneas)'),
           };
         }
+        // Usar Gemini (free) como default — mejor calidad que Groq para chat
+        // Fallback automático a Groq si Gemini falla (maneja la API)
         const res = await fetch('/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: finalMessages,
-            model: 'turbo',
+            model: 'free',
           }),
         });
         const data = await res.json();
@@ -1323,6 +1325,12 @@ function ChatMain({
                         {(msg.userId === myId || role === 'ADMIN') && (
                           <button onClick={async () => {
                             if (!confirm('¿Eliminar este mensaje?')) return;
+                            // No borrar mensajes locales de Boosti (no están en DB)
+                            if (msg.id.startsWith('user-ai-') || msg.id.startsWith('ai-thinking-')) {
+                              setMessages(prev => prev.filter(m => m.id !== msg.id));
+                              setShowMoreMenu(null);
+                              return;
+                            }
                             const res = await fetch(`/api/chat?id=${msg.id}`, { method: 'DELETE' });
                             if (res.ok) setMessages(prev => prev.filter(m => m.id !== msg.id));
                             setShowMoreMenu(null);
