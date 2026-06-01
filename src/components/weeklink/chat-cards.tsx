@@ -28,11 +28,32 @@ export function VideoCard({
         <video
           src={thumb}
           controls
+          playsInline
           preload="metadata"
+          crossOrigin="anonymous"
           className="w-full max-w-[400px] rounded-xl border border-white/[0.08]"
           style={{ maxHeight: '240px' }}
+          onError={(e) => {
+            // Fallback: ocultar video roto y mostrar link
+            const el = e.currentTarget;
+            el.style.display = 'none';
+            const link = el.nextElementSibling as HTMLElement;
+            if (link) link.style.display = 'flex';
+          }}
         />
-        <p className="mt-1.5 truncate text-[12px] text-white/40">{name}</p>
+        <a href={thumb} target="_blank" rel="noopener noreferrer"
+          className="hidden items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 text-[12px] text-primary hover:text-primary/80 transition-colors"
+          style={{ display: 'none' }}>
+          <Play className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+          Ver video — {name}
+        </a>
+        <div className="mt-1.5 flex items-center justify-between">
+          <p className="truncate text-[12px] text-white/40">{name}</p>
+          <a href={thumb} download={name} target="_blank" rel="noopener noreferrer"
+            className="ml-2 shrink-0 text-[10px] text-white/25 hover:text-white/50 transition-colors">
+            ↓ descargar
+          </a>
+        </div>
       </div>
     </div>
   )
