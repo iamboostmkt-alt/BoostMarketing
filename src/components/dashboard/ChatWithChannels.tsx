@@ -139,7 +139,7 @@ function ChannelList({
             )}
           </div>
         </div>
-        <ul className="flex flex-col gap-0.5">
+        <ul className="flex flex-col gap-0.5" style={{ maxHeight: rooms.length > 6 ? '216px' : 'none', overflowY: rooms.length > 6 ? 'auto' : 'visible' }}>
           {rooms.map(r => {
             const isActive = activeId === r.id;
             const unread = unreads[r.id] || 0;
@@ -282,16 +282,16 @@ function ChannelList({
         </div>
         <ul className="flex flex-col gap-0.5">
           {[
-            { id: 'tasks', label: 'Tareas', Icon: CheckCheck },
-            { id: 'meetings', label: 'Reuniones', Icon: Video },
-            { id: 'files', label: 'Archivos', Icon: Folder },
-            { id: 'ai', label: 'AI Assistant', Icon: Sparkles },
-          ].map(({ id, label, Icon }) => (
+            { id: 'tasks',    label: 'Tareas',       Icon: CheckCheck, href: '/dashboard/tasks' },
+            { id: 'meetings', label: 'Reuniones',     Icon: Video,      href: '/dashboard/meetings' },
+            { id: 'files',    label: 'Archivos',      Icon: Folder,     href: '/dashboard/files' },
+            { id: 'ai',       label: 'AI Assistant',  Icon: Sparkles,   href: '/dashboard/ai' },
+          ].map(({ id, label, Icon, href }) => (
             <li key={id}>
-              <button className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/40 transition-colors hover:bg-white/[0.03] hover:text-white/70">
+              <a href={href} className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/40 transition-colors hover:bg-white/[0.03] hover:text-white/70">
                 <Icon className={`h-4 w-4 ${id === 'ai' ? 'text-primary' : 'text-white/30'}`} strokeWidth={1.75} />
                 <span>{label}</span>
-              </button>
+              </a>
             </li>
           ))}
         </ul>
@@ -500,6 +500,8 @@ function ChatMain({
   const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
   const [showChannelMore, setShowChannelMore] = useState(false);
+  const [showComposerEmoji, setShowComposerEmoji] = useState(false);
+  const [showSlashMenu, setShowSlashMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -1408,22 +1410,58 @@ function ChatMain({
           <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] px-2 py-2 transition-colors focus-within:border-primary/40">
             <div className="flex items-center gap-1">
               <input ref={fileInputRef} type="file" multiple className="hidden" accept="image/*,video/*,.pdf,.zip,.doc,.docx" onChange={handleFileUpload} />
-              {[
-                { Icon: Plus, tip: 'Más opciones' },
-                { Icon: Smile, tip: 'Emojis' },
-                { Icon: AtSign, tip: 'Mencionar' },
-                { Icon: Slash, tip: 'Comandos' },
-              ].map(({ Icon, tip }, i) => (
-                <div key={i} className="relative group/tip">
-                  <button type="button"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
-                    <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
-                  </button>
-                  <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
-                    {tip}
+              {/* Emoji picker composer */}
+              <div className="relative">
+                <button type="button" onClick={() => setShowComposerEmoji(p => !p)}
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] ${showComposerEmoji ? 'text-primary' : 'text-white/35 hover:text-white'}`}>
+                  <Smile className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                </button>
+                {showComposerEmoji && (
+                  <div className="absolute bottom-10 left-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
+                    {['😀','😂','🥹','😍','🤔','😅','🙌','👍','🔥','❤️','✅','🎉','💪','🚀','👀','💡','⚡','🎯'].map(e => (
+                      <button key={e} type="button"
+                        onClick={() => { setInput(prev => prev + e); setShowComposerEmoji(false); }}
+                        className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
+                        {e}
+                      </button>
+                    ))}
                   </div>
+                )}
+              </div>
+              {/* @ mencionar */}
+              <div className="relative group/tip">
+                <button type="button" onClick={() => setInput(prev => prev + '@')}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
+                  <AtSign className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                </button>
+                <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
+                  Mencionar
                 </div>
-              ))}
+              </div>
+              {/* Slash commands */}
+              <div className="relative">
+                <button type="button" onClick={() => { setInput('/'); setShowSlashMenu(true); }}
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] ${showSlashMenu ? 'text-primary' : 'text-white/35 hover:text-white'}`}>
+                  <Slash className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                </button>
+                {showSlashMenu && (
+                  <div className="absolute bottom-10 left-0 z-50 w-52 rounded-xl border border-white/[0.08] bg-[#1a1d2e] py-1 shadow-2xl">
+                    <p className="px-3 py-1.5 text-[10px] text-white/30 uppercase tracking-wide">Comandos</p>
+                    {[
+                      { cmd: '/tarea', desc: 'Crear tarea rápida' },
+                      { cmd: '/giphy', desc: 'Buscar GIF' },
+                      { cmd: '/recordar', desc: 'Recordatorio' },
+                    ].map(({ cmd, desc }) => (
+                      <button key={cmd} type="button"
+                        onClick={() => { setInput(cmd + ' '); setShowSlashMenu(false); }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] hover:bg-white/[0.04] transition-colors">
+                        <span className="font-mono text-primary">{cmd}</span>
+                        <span className="text-white/40">{desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="relative group/tip">
                 <button type="button" onClick={() => fileInputRef.current?.click()}
                   className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${uploading ? 'text-primary animate-pulse' : 'text-white/35 hover:bg-white/[0.06] hover:text-white'}`}>
