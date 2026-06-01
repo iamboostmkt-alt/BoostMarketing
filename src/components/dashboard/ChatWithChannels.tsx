@@ -489,6 +489,40 @@ function ChatMain({
   const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
   const [showChannelMore, setShowChannelMore] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // CMD+K / Ctrl+K
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearch(p => !p);
+        setSearchQuery('');
+        setSearchResults([]);
+      }
+      if (e.key === 'Escape') setShowSearch(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // Debounced search
+  useEffect(() => {
+    if (searchQuery.length < 2) { setSearchResults([]); return; }
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&room=${encodeURIComponent(room)}`);
+        const data = await res.json();
+        setSearchResults(data.results ?? []);
+      } catch { /* ignore */ } finally { setSearchLoading(false); }
+    }, 300);
+  }, [searchQuery, room]);
   const [linkTaskId, setLinkTaskId] = useState('');
   const [linkableTasks, setLinkableTasks] = useState<any[]>([]);
   const [linking, setLinking] = useState(false);
@@ -1112,6 +1146,76 @@ function ChatMain({
         <div ref={bottomRef} />
       </div>}
 
+      {/* Search Modal CMD+K */}
+      {showSearch && (
+        <div className="fixed inset-0 z-[300] flex items-start justify-center pt-[15vh] bg-black/60 backdrop-blur-sm"
+          onClick={e => { if (e.target === e.currentTarget) setShowSearch(false); }}>
+          <div className="w-full max-w-lg rounded-2xl border border-white/[0.08] bg-[#0F1117] shadow-2xl mx-4 overflow-hidden">
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.05]">
+              <Search className="h-4 w-4 text-white/30 shrink-0" strokeWidth={1.75} />
+              <input
+                autoFocus
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Buscar mensajes…"
+                className="flex-1 bg-transparent text-[14px] text-white placeholder:text-white/25 focus:outline-none"
+              />
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(''); setSearchResults([]); }}
+                  className="text-white/30 hover:text-white transition-colors">
+                  <X className="h-4 w-4" strokeWidth={1.75} />
+                </button>
+              )}
+              <kbd className="hidden sm:flex items-center gap-1 rounded-md border border-white/[0.08] px-1.5 py-0.5 text-[10px] text-white/30">Esc</kbd>
+            </div>
+            <div className="max-h-[360px] overflow-y-auto scrollbar-thin">
+              {searchLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white/60" />
+                </div>
+              )}
+              {!searchLoading && searchQuery.length >= 2 && searchResults.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-10 gap-2">
+                  <p className="text-[13px] text-white/25">Sin resultados para "{searchQuery}"</p>
+                </div>
+              )}
+              {!searchLoading && searchResults.length > 0 && (
+                <div className="flex flex-col divide-y divide-white/[0.04]">
+                  {searchResults.map((r: any) => (
+                    <button key={r.id}
+                      onClick={() => setShowSearch(false)}
+                      className="flex items-start gap-3 px-4 py-3 text-left hover:bg-white/[0.03] transition-colors w-full">
+                      {r.user?.image ? (
+                        <img src={r.user.image} className="h-7 w-7 rounded-full object-cover shrink-0 mt-0.5" />
+                      ) : (
+                        <div className="h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5"
+                          style={{ background: r.user?.color ?? '#8B5CF6' }}>
+                          {(r.user?.name || r.user?.email || '?')[0].toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline gap-2 mb-0.5">
+                          <span className="text-[12px] font-medium text-white/70">{r.user?.name || r.user?.email}</span>
+                          <span className="text-[10px] text-white/30">
+                            {new Date(r.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+                          </span>
+                          <span className="text-[10px] text-white/20">#{r.room}</span>
+                        </div>
+                        <p className="text-[12px] text-white/50 truncate">{r.message}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {!searchLoading && searchQuery.length < 2 && (
+                <div className="flex flex-col items-center justify-center py-10 gap-2">
+                  <p className="text-[12px] text-white/20">Escribe al menos 2 caracteres para buscar</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {/* Create Task Modal */}
       {taskModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
