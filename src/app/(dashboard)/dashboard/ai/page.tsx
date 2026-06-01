@@ -3,6 +3,15 @@ import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Send, Sparkles, RotateCcw, ChevronDown } from 'lucide-react';
 
+type ModelTier = 'pro' | 'medium' | 'free' | 'turbo';
+
+const MODEL_OPTIONS: { tier: ModelTier; label: string; desc: string; badge: string; color: string }[] = [
+  { tier: 'pro',    label: 'Claude Sonnet 4',  desc: 'Mejor calidad',      badge: 'PRO',   color: '#8B5CF6' },
+  { tier: 'medium', label: 'DeepSeek V3',       desc: 'Balance costo',      badge: 'MED',   color: '#3B82F6' },
+  { tier: 'free',   label: 'Gemini 1.5 Flash',  desc: 'Gratis · Rápido',    badge: 'FREE',  color: '#10B981' },
+  { tier: 'turbo',  label: 'Llama 3.3 70B',     desc: 'Ultra rápido',       badge: 'TURBO', color: '#F59E0B' },
+];
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -20,6 +29,8 @@ const SUGGESTIONS = [
 export default function AIAssistantPage() {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [selectedModel, setSelectedModel] = useState<ModelTier>('pro');
+  const [usedModel, setUsedModel] = useState<string>('');
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -40,11 +51,12 @@ export default function AIAssistantPage() {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: newMessages, model: selectedModel }),
       });
       const data = await res.json();
       if (data.content) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.content }]);
+        setUsedModel(data.model ?? '');
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Hubo un error. Intenta de nuevo.' }]);
@@ -64,13 +76,32 @@ export default function AIAssistantPage() {
             <h1 className="text-[15px] font-semibold tracking-tight">AI Marketing Assistant</h1>
             <p className="text-[11px] text-white/35">Especialista en estrategia y contenido digital</p>
           </div>
-          {messages.length > 0 && (
-            <button onClick={() => setMessages([])}
-              className="ml-auto flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-[12px] text-white/40 hover:text-white/70 transition-colors">
-              <RotateCcw className="h-3 w-3" strokeWidth={1.75} />
-              Nueva conversación
-            </button>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            {/* Model selector */}
+            <div className="flex items-center gap-1 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1">
+              {MODEL_OPTIONS.map(m => (
+                <button key={m.tier} onClick={() => setSelectedModel(m.tier)}
+                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all ${
+                    selectedModel === m.tier
+                      ? 'bg-white/[0.08] text-white shadow-sm'
+                      : 'text-white/30 hover:text-white/60'
+                  }`}>
+                  <span className="text-[9px] font-bold rounded px-1 py-px"
+                    style={{ background: selectedModel === m.tier ? m.color + '30' : 'transparent', color: m.color }}>
+                    {m.badge}
+                  </span>
+                  <span className="hidden sm:inline">{m.label}</span>
+                </button>
+              ))}
+            </div>
+            {messages.length > 0 && (
+              <button onClick={() => { setMessages([]); setUsedModel(''); }}
+                className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-[12px] text-white/40 hover:text-white/70 transition-colors">
+                <RotateCcw className="h-3 w-3" strokeWidth={1.75} />
+                Nueva
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -105,12 +136,17 @@ export default function AIAssistantPage() {
                     <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={1.75} />
                   </div>
                 )}
-                <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-[13.5px] leading-relaxed whitespace-pre-wrap ${
-                  m.role === 'user'
-                    ? 'bg-primary/20 text-white rounded-tr-sm'
-                    : 'bg-white/[0.04] border border-white/[0.06] text-white/85 rounded-tl-sm'
-                }`}>
-                  {m.content}
+                <div className="max-w-[80%]">
+                  <div className={`rounded-2xl px-4 py-3 text-[13.5px] leading-relaxed whitespace-pre-wrap ${
+                    m.role === 'user'
+                      ? 'bg-primary/20 text-white rounded-tr-sm'
+                      : 'bg-white/[0.04] border border-white/[0.06] text-white/85 rounded-tl-sm'
+                  }`}>
+                    {m.content}
+                  </div>
+                  {m.role === 'assistant' && i === messages.length - 1 && usedModel && (
+                    <p className="mt-1 text-[10px] text-white/20 px-1">{usedModel}</p>
+                  )}
                 </div>
                 {m.role === 'user' && (
                   <div className="h-7 w-7 shrink-0 flex items-center justify-center rounded-lg bg-white/[0.08] mt-0.5 text-[11px] font-semibold text-white/60">
