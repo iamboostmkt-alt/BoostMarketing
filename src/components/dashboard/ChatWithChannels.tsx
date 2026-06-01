@@ -693,9 +693,15 @@ function ChatMain({
     if ((!input.trim() && !linkModal) || sending) return;
     const text = input.trim();
 
-    // Comando /ai — responde en el chat con historial del canal
-    if (text.startsWith('/ai ') || text.startsWith('/ia ')) {
-      const query = text.slice(4).trim();
+    // Nombres que activan el AI automáticamente
+    const AI_TRIGGERS = /^@(boosti|ai|ia|boostai|asistente)\s+/i;
+    const aiMentionMatch = text.match(AI_TRIGGERS);
+
+    // Comando /ai o mención @ai/@ia/@boostai/@asistente
+    if (text.startsWith('/ai ') || text.startsWith('/ia ') || aiMentionMatch) {
+      const query = aiMentionMatch
+        ? text.replace(AI_TRIGGERS, '').trim()
+        : text.slice(4).trim();
       if (!query) return;
       setInput('');
       // 1. Mostrar mensaje del usuario primero
@@ -717,44 +723,48 @@ function ChatMain({
         room,
         createdAt: new Date().toISOString(),
         userId: 'ai',
-        user: { name: 'AI Assistant', email: 'ai@weeklink', color: '#8B5CF6', image: null } as any,
+        user: { name: 'Boosti', email: 'boosti@weeklink', color: '#8B5CF6', image: null } as any,
       };
       setMessages(prev => [...prev, aiMsg]);
       try {
-        // Construir historial de conversación AI del canal (últimos 10 intercambios)
-        const aiHistory = messages
-          .filter(m => m.userId === 'ai' || true)
-          .slice(-20)
-          .map(m => ({
-            role: m.userId === 'ai' ? 'assistant' as const : 'user' as const,
-            content: m.userId === 'ai'
-              ? m.message.replace(/^✨ \*\*AI:\*\* /, '')
-              : m.message,
-          }));
-        // Agregar pregunta actual
+        // Construir historial solo de intercambios AI (user-ai, user-ai...)
+        // Buscar mensajes del usuario que empezaron con /ai y respuestas AI
+        const aiPairs: {role: 'user'|'assistant', content: string}[] = [];
+        for (let idx = 0; idx < messages.length; idx++) {
+          const m = messages[idx];
+          if (m.userId === 'user-local') {
+            const q = m.message.startsWith('/ai ') || m.message.startsWith('/ia ') ? m.message.slice(4).trim() : m.message.replace(/^@(ai|ia|boostai|asistente)\s*/i, '').trim();
+            if (q) aiPairs.push({ role: 'user', content: q });
+          } else if (m.userId === 'ai') {
+            const clean = m.message.replace(/^✨ \*\*(AI|Boosti):\*\* /, '');
+            aiPairs.push({ role: 'assistant', content: clean });
+          }
+        }
+        // Mantener solo últimos 8 intercambios + query actual
+        const aiHistory = aiPairs.slice(-8);
         aiHistory.push({ role: 'user', content: query });
 
-        // System prompt para respuestas en chat — conciso y resumido
-        const systemHint = query.toLowerCase().includes('tarea') ||
+        // System prompt conciso para chat grupal
+        const isTasks = query.toLowerCase().includes('tarea') ||
           query.toLowerCase().includes('pendiente') ||
           query.toLowerCase().includes('completad') ||
-          query.toLowerCase().includes('resumen')
-            ? 'Responde MUY BREVEMENTE en máximo 3 líneas. Da solo números y nombres clave, sin detalles. Ejemplo: "Hay 12 tareas: 5 completadas, 4 en progreso, 3 pendientes. Ruperto tiene 2 pendientes."'
-            : 'Responde de forma concisa, máximo 4 líneas para chat grupal.';
+          query.toLowerCase().includes('resumen');
+        const systemMsg = isTasks
+          ? 'Responde en máximo 3 líneas con números clave. Ejemplo: "15 tareas: 8 completadas, 4 en progreso, 3 pendientes. Ruperto tiene 2 pendientes."'
+          : 'Eres AI Assistant en un chat grupal. Responde conciso, máximo 4 líneas.';
 
         const res = await fetch('/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: aiHistory,
+            messages: [{ role: 'user', content: systemMsg + '\n\nPregunta: ' + query }],
             model: 'turbo',
-            systemOverride: systemHint,
           }),
         });
         const data = await res.json();
         const reply = data.content || 'Sin respuesta.';
         // Efecto typing — agregar letra por letra
-        const fullMsg = `✨ **AI:** ${reply}`;
+        const fullMsg = `✨ **Boosti:** ${reply}`;
         let displayed = '';
         const chunkSize = 8; // caracteres por frame
         for (let i = 0; i < fullMsg.length; i += chunkSize) {
@@ -1177,7 +1187,7 @@ function ChatMain({
                   <div className="flex-1 h-px bg-white/[0.05]" />
                 </div>
               )}
-            <div className={isSame ? 'mt-0.5' : 'mt-4'}>
+            <div className={isSame ? 'mt-0.5' : 'mt-2'}>
               <div className="group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02]"
                 style={{ paddingTop: isSame ? '1px' : '8px', paddingBottom: '1px' }}>
                 {/* Hover actions */}
@@ -1222,12 +1232,12 @@ function ChatMain({
                       </span>
                     </div>
                   ) : (
-                    <Avatar initials={initials} color={color} size={36} className="mt-0.5 shrink-0" image={(msg.user as any)?.image} />
+                    <Avatar initials={initials} color={color} size={28} className="mt-0.5 shrink-0" image={(msg.user as any)?.image} />
                   )}
                   <div className="min-w-0 flex-1">
                     {!isSame && (
                       <div className="mb-0.5 flex items-baseline gap-2">
-                        <span className="text-[13.5px] font-semibold leading-none text-white/95">
+                        <span className="text-[12px] font-semibold leading-none text-white/95">
                           {(msg.user as any)?.name || (msg.user as any)?.email}
                           {isMe && <span className="ml-1.5 text-[10px] font-normal" style={{ color: accentColor }}>tú</span>}
                         </span>
@@ -1268,7 +1278,7 @@ function ChatMain({
                         </div>
                       </div>
                     ) : (
-                      <div className="text-[13.5px] leading-[1.55] text-white/75">
+                      <div className="text-[12.5px] leading-[1.45] text-white/75">
                         {renderMessage(msg.message)}
                       </div>
                     )}
@@ -1615,6 +1625,23 @@ function ChatMain({
                     <>
                     <div className="fixed inset-0 z-40" onClick={() => setMentionQuery(null)} />
                     <div className="absolute bottom-16 left-0 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
+                      {/* @ai opción especial */}
+                      {(!mentionQuery || 'boosti'.includes(mentionQuery.toLowerCase()) || 'ai'.includes(mentionQuery.toLowerCase()) || 'ia'.includes(mentionQuery.toLowerCase()) || 'boostai'.includes(mentionQuery.toLowerCase())) && (
+                        <button type="button"
+                          onClick={() => {
+                            setInput(prev => prev.replace(/@\w*$/, '@boosti '));
+                            setMentionQuery(null);
+                          }}
+                          className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-white/[0.04] transition-colors border-b border-white/[0.05]">
+                          <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 bg-primary/30">
+                            ✨
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[12px] font-medium text-primary truncate">@boosti</p>
+                            <p className="text-[10px] text-white/25 truncate">Boosti AI Assistant</p>
+                          </div>
+                        </button>
+                      )}
                       {/* @all opción especial */}
                       {showAll && (
                         <button type="button"
