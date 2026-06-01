@@ -700,11 +700,18 @@ function ChatMain({
     const AI_TRIGGERS = /^@(boosti|ai|ia|boostai|asistente)\s+/i;
     const aiMentionMatch = text.match(AI_TRIGGERS);
 
-    // Comando /ai o mención @ai/@ia/@boostai/@asistente
-    if (text.startsWith('/ai ') || text.startsWith('/ia ') || aiMentionMatch) {
+    // Detectar si el último mensaje fue de Boosti — continuar hilo sin mención
+    const lastMsg = messages[messages.length - 1];
+    const lastWasBoosti = lastMsg?.userId === 'ai';
+    const isFollowUp = lastWasBoosti && !text.startsWith('/') && !aiMentionMatch;
+
+    // Comando /ai o mención @boosti o seguimiento del hilo
+    if (text.startsWith('/ai ') || text.startsWith('/ia ') || aiMentionMatch || isFollowUp) {
       const query = aiMentionMatch
         ? text.replace(AI_TRIGGERS, '').trim()
-        : text.slice(4).trim();
+        : isFollowUp
+          ? text.trim()
+          : text.slice(4).trim();
       if (!query) return;
       setInput('');
       // 1. Mostrar mensaje del usuario primero
@@ -735,8 +742,8 @@ function ChatMain({
         const aiPairs: {role: 'user'|'assistant', content: string}[] = [];
         for (let idx = 0; idx < messages.length; idx++) {
           const m = messages[idx];
-          if (m.userId === 'user-local') {
-            const q = m.message.startsWith('/ai ') || m.message.startsWith('/ia ') ? m.message.slice(4).trim() : m.message.replace(/^@(ai|ia|boostai|asistente)\s*/i, '').trim();
+          if (m.userId === myId || m.id.startsWith('user-ai-')) {
+            const q = m.message.startsWith('/ai ') || m.message.startsWith('/ia ') ? m.message.slice(4).trim() : m.message.replace(/^@(boosti|ai|ia|boostai|asistente)\s*/i, '').trim();
             if (q) aiPairs.push({ role: 'user', content: q });
           } else if (m.userId === 'ai') {
             const clean = m.message.replace(/^✨ \*\*(AI|Boosti):\*\* /, '');
@@ -1183,7 +1190,10 @@ function ChatMain({
           const dayLabel = msgDate.toDateString() === today.toDateString() ? 'Hoy'
             : msgDate.toDateString() === yesterday.toDateString() ? 'Ayer'
             : msgDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-          const isSame = idx > 0 && messages[idx - 1].userId === msg.userId && !isNewDay && msg.userId !== 'ai' && messages[idx-1].userId !== 'ai';
+          const prevMsg = idx > 0 ? messages[idx - 1] : null;
+          const isLocalAiMsg = msg.id.startsWith('user-ai-') || msg.id.startsWith('ai-thinking-');
+          const prevIsLocalAiMsg = prevMsg ? (prevMsg.id.startsWith('user-ai-') || prevMsg.id.startsWith('ai-thinking-')) : false;
+          const isSame = idx > 0 && prevMsg?.userId === msg.userId && !isNewDay && msg.userId !== 'ai' && prevMsg?.userId !== 'ai' && !isLocalAiMsg && !prevIsLocalAiMsg;
           const color = (msg.user as any)?.color || accentColor;
           const initials = getInitials((msg.user as any)?.name ?? null, (msg.user as any)?.email ?? '');
           const reactions = (msg.reactions || []).reduce((acc: any[], r: any) => {
@@ -1299,7 +1309,7 @@ function ChatMain({
                     )}
                     {/* More options dropdown */}
                     {showMoreMenu === msg.id && (
-                      <div className="absolute top-8 left-[280px] z-30 w-44 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
+                      <div className="absolute bottom-8 left-[280px] z-30 w-44 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
                         <button onClick={() => { navigator.clipboard.writeText(msg.message); setShowMoreMenu(null); }}
                           className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
                           Copiar texto
