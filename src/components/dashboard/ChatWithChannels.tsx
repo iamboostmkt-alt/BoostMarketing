@@ -10,6 +10,7 @@ import {
   CheckCheck, Video, Folder
 } from 'lucide-react';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
+import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { useUploadThing } from '@/lib/uploadthing';
 import { Avatar } from '@/components/weeklink/avatar';
 import { VideoCard, PdfCard, TaskCard, ArchiveCard } from '@/components/weeklink/chat-cards';
@@ -437,6 +438,7 @@ function ChatMain({
   const myId = (session?.user as any)?.id;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
+  const broadcastTypingRef = useRef<(() => void) | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [showEmoji, setShowEmoji] = useState<{id: string, x: number, y: number} | null>(null);
@@ -473,6 +475,7 @@ function ChatMain({
     }
   };
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const presenceChannelRef = useRef<any>(null);
   const [uploading, setUploading] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<{ name: string; type: string; preview?: string; progress: number }[]>([]);
   const [roomTasks, setRoomTasks] = useState<any[]>([]);
@@ -491,6 +494,36 @@ function ChatMain({
   const [linking, setLinking] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Supabase Presence — typing indicator real
+  useEffect(() => {
+    const sb = getSupabaseBrowser();
+    if (!sb || !myId) return;
+    const userName = (session?.user as any)?.name || (session?.user as any)?.email || 'Alguien';
+    const channelName = `typing:${room}`;
+    const ch = sb.channel(channelName, { config: { presence: { key: myId } } });
+    presenceChannelRef.current = ch;
+    ch.on('presence', { event: 'sync' }, () => {
+      const state = ch.presenceState<{ name: string; typing: boolean }>();
+      const typingNow = Object.entries(state)
+        .filter(([uid, arr]) => uid !== myId && (arr as any[])[0]?.typing)
+        .map(([, arr]) => (arr as any[])[0]?.name ?? 'Alguien');
+      setTypingUsers(typingNow);
+    });
+    ch.subscribe();
+    return () => { sb.removeChannel(ch); presenceChannelRef.current = null; };
+  }, [room, myId]);
+
+  const broadcastTyping = useCallback(() => {
+    const ch = presenceChannelRef.current;
+    if (!ch) return;
+    const userName = (session?.user as any)?.name || (session?.user as any)?.email || 'Alguien';
+    ch.track({ name: userName, typing: true });
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => {
+      ch.track({ name: userName, typing: false });
+    }, 3000);
+  }, [session]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { startUpload } = useUploadThing('chatAttachment', {
     onUploadProgress: (p) => {
@@ -1240,7 +1273,7 @@ function ChatMain({
                   Adjuntar archivo
                 </div>
               </div>
-              <input value={input} onChange={e => setInput(e.target.value)}
+              <input value={input} onChange={e => { setInput(e.target.value); broadcastTyping(); }}
                 placeholder={`Escribe en #${title}…`}
                 className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white placeholder:text-white/25 focus:outline-none" />
               <button type="button"
