@@ -105,8 +105,55 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Mensaje inválido.' }, { status: 400 });
 
   const injectionPatterns = [/ignore (previous|above|all) instructions/i, /you are now/i, /act as (a |an )?(different|new|unrestricted)/i, /forget (your|all) (instructions|rules)/i, /jailbreak/i, /dan mode/i, /override (system|instructions)/i, /reveal (your|the) (system prompt|instructions)/i];
-  if (injectionPatterns.some(p => p.test(lastMsg.content)))
-    return NextResponse.json({ content: 'Solo puedo ayudarte con temas de marketing digital. ¿Tienes alguna pregunta?' });
+  
+  // Limpiar mensajes con injection del historial
+  const cleanMessages = messages.filter((m: {role:string;content:string}) => 
+    !injectionPatterns.some(p => p.test(m.content))
+  );
+
+  // Cooldown 30 min por usuario si intenta injection
+  const cooldownKey = `ai_cooldown_${userId}`;
+  const COOLDOWN_MS = 30 * 60 * 1000;
+
+  if (injectionPatterns.some(p => p.test(lastMsg.content))) {
+    // Guardar timestamp de bloqueo en DB como log
+    db.activityLog.create({
+      data: {
+        workspaceId,
+        userId,
+        action: 'AI_INJECTION_ATTEMPT',
+        entity: 'AI',
+        entityId: userId,
+        details: JSON.stringify({ message: lastMsg.content.slice(0, 100), blockedAt: new Date().toISOString() }),
+      }
+    }).catch(() => {});
+    // Guardar cooldown en headers de respuesta
+    return NextResponse.json({
+      content: '⚠️ Se detectó un intento de uso inapropiado. El asistente estará bloqueado por **30 minutos**. Solo puedo ayudarte con temas de marketing digital.',
+      blocked: true,
+      blockedUntil: new Date(Date.now() + COOLDOWN_MS).toISOString(),
+    });
+  }
+
+  // Verificar si el usuario está en cooldown (basado en logs recientes)
+  const recentBlock = await db.activityLog.findFirst({
+    where: {
+      userId,
+      workspaceId,
+      action: 'AI_INJECTION_ATTEMPT',
+      createdAt: { gt: new Date(Date.now() - COOLDOWN_MS) },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (recentBlock) {
+    const unblockAt = new Date((recentBlock.createdAt as Date).getTime() + COOLDOWN_MS);
+    const minsLeft = Math.ceil((unblockAt.getTime() - Date.now()) / 60000);
+    return NextResponse.json({
+      content: `🔒 El asistente está bloqueado por uso inapropiado. Podrás usarlo de nuevo en **${minsLeft} minuto${minsLeft !== 1 ? 's' : ''}**.`,
+      blocked: true,
+      blockedUntil: unblockAt.toISOString(),
+    });
+  }
 
   const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(role as string);
   const [clients, tasks] = await Promise.all([
@@ -126,12 +173,16 @@ export async function POST(req: NextRequest) {
   const system = SYSTEM_PROMPT + ctx;
   const model = MODELS[tier];
 
+  // Timeout de 25s para evitar que quede cargando
+  const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+    Promise.race([promise, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+
   try {
     let content: string;
-    if (model.provider === 'anthropic') content = await callAnthropic(messages, system);
-    else if (model.provider === 'deepseek') content = await callDeepSeek(messages, system);
-    else if (model.provider === 'gemini') content = await callGemini(messages, system);
-    else content = await callGroq(messages, system);
+    if (model.provider === 'anthropic') content = await withTimeout(callAnthropic(cleanMessages, system), 25000);
+    else if (model.provider === 'deepseek') content = await withTimeout(callDeepSeek(cleanMessages, system), 25000);
+    else if (model.provider === 'gemini') content = await withTimeout(callGemini(cleanMessages, system), 25000);
+    else content = await withTimeout(callGroq(cleanMessages, system), 25000);
     if (!content || content === 'Sin respuesta.') throw new Error('empty response');
     console.log(`[AI] provider=${model.provider} model=${model.name} tier=${tier} chars=${content.length}`);
     return NextResponse.json({ content, model: model.label });
