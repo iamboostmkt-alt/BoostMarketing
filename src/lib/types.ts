@@ -237,6 +237,7 @@ export interface ChatMessage {
   fileName?: string | null;
   fileType?: string | null;
   taskId?: string | null;
+  pinned?: boolean;
   user: { id: string; name: string | null; email: string; color: string; image: string | null };
   reactions?: ChatReaction[];
 }

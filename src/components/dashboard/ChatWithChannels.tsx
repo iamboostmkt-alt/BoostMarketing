@@ -424,10 +424,43 @@ function ChatMain({
   const [sending, setSending] = useState(false);
   const [showEmoji, setShowEmoji] = useState<{id: string, x: number, y: number} | null>(null);
   const [activeTab, setActiveTab] = useState<'messages'|'files'|'pinned'|'tasks'>('messages');
+
+  const fetchPinned = async () => {
+    setPinLoading(true);
+    try {
+      const res = await fetch(`/api/chat?room=${encodeURIComponent(room)}&pinned=true`);
+      const data = await res.json();
+      setPinnedMessages(data.messages ?? []);
+    } catch { /* ignore */ } finally {
+      setPinLoading(false);
+    }
+  };
+
+  const handleTabChange = (tab: 'messages'|'files'|'pinned'|'tasks') => {
+    setActiveTab(tab);
+    if (tab === 'pinned') fetchPinned();
+  };
+
+  const togglePin = async (msg: ChatMessage) => {
+    const newPinned = !msg.pinned;
+    setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, pinned: newPinned } : m));
+    try {
+      await fetch('/api/chat/pin', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId: msg.id, pinned: newPinned }),
+      });
+      if (activeTab === 'pinned') fetchPinned();
+    } catch {
+      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, pinned: !newPinned } : m));
+    }
+  };
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<{ name: string; type: string; preview?: string; progress: number }[]>([]);
   const [roomTasks, setRoomTasks] = useState<any[]>([]);
+  const [pinnedMessages, setPinnedMessages] = useState<ChatMessage[]>([]);
+  const [pinLoading, setPinLoading] = useState(false);
   const [linkModal, setLinkModal] = useState<{ fileUrl: string; fileName: string; fileType: string } | null>(null);
   const [linkTaskId, setLinkTaskId] = useState('');
   const [linkableTasks, setLinkableTasks] = useState<any[]>([]);
@@ -653,7 +686,7 @@ function ChatMain({
             const labels: Record<string, string> = { messages: 'Messages', files: 'Files', pinned: 'Pinned', tasks: 'Tasks' };
             const isActive = activeTab === tab;
             return (
-              <button key={tab} onClick={() => setActiveTab(tab)}
+              <button key={tab} onClick={() => handleTabChange(tab)}
                 className={`relative flex h-9 items-center gap-1.5 px-3 text-[13px] transition-colors ${
                   isActive ? 'text-white' : 'text-white/35 hover:text-white/60'
                 }`}>
@@ -703,11 +736,47 @@ function ChatMain({
       {activeTab === 'pinned' && (
         <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
           <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-white/30">Mensajes fijados</p>
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <span className="text-3xl">📌</span>
-            <p className="text-[13px] text-white/25">No hay mensajes fijados</p>
-            <p className="text-[11px] text-white/20">Hover sobre un mensaje → Pin para fijarlo</p>
-          </div>
+          {pinLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white/60" />
+            </div>
+          ) : pinnedMessages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <span className="text-3xl">📌</span>
+              <p className="text-[13px] text-white/25">No hay mensajes fijados</p>
+              <p className="text-[11px] text-white/20">Hover sobre un mensaje → Pin para fijarlo</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {pinnedMessages.map(pm => (
+                <div key={pm.id} className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 group">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      {pm.user?.image ? (
+                        <img src={pm.user.image} className="h-5 w-5 rounded-full object-cover" />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                          style={{ background: pm.user?.color ?? '#8B5CF6' }}>
+                          {pm.user?.name?.[0]?.toUpperCase() ?? '?'}
+                        </div>
+                      )}
+                      <span className="text-[12px] font-medium text-white/70">{pm.user?.name ?? 'Usuario'}</span>
+                      <span className="text-[10px] text-white/30">
+                        {new Date(pm.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => togglePin(pm)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-white"
+                      title="Desfijar">
+                      <Pin className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    </button>
+                  </div>
+                  <p className="text-[13px] text-white/60 leading-relaxed">{pm.message}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -783,7 +852,7 @@ function ChatMain({
                     { Icon: SmilePlus, fn: () => { setShowEmoji(showEmoji?.id === msg.id ? null : {id: msg.id, x: 0, y: 0}); }, tip: 'Reaccionar' },
                     { Icon: Reply, fn: () => onOpenThread(msg), tip: 'Responder en hilo' },
                     { Icon: ListPlus, fn: () => {}, tip: 'Crear tarea' },
-                    { Icon: Pin, fn: () => {}, tip: 'Fijar mensaje' },
+                    { Icon: Pin, fn: () => togglePin(msg), tip: msg.pinned ? 'Desfijar mensaje' : 'Fijar mensaje' },
                     { Icon: MoreHorizontal, fn: () => {}, tip: 'Más opciones' },
                   ].map(({ Icon, fn, tip }, i) => (
                     <div key={i} className="relative group/tip">

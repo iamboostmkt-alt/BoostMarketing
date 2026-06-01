@@ -378,6 +378,7 @@ model ChatMessage {
   fileName  String?  @map("file_name")
   fileType  String?  @map("file_type")
   taskId    String?  @map("task_id")
+  pinned    Boolean  @default(false)
   reactions ChatReaction[]
 
   @@index([workspaceId, room, createdAt])

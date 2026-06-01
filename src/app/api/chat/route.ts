@@ -17,7 +17,7 @@ const reactionUserSelect = { id: true, name: true, color: true } as const;
 
 const messageSelect = {
   id: true, userId: true, message: true, room: true, createdAt: true,
-  fileUrl: true, fileName: true, fileType: true, taskId: true,
+  fileUrl: true, fileName: true, fileType: true, taskId: true, pinned: true,
   user:      { select: userSelect },
   reactions: { include: { user: { select: reactionUserSelect } } },
 } as const;
@@ -93,13 +93,14 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const room = searchParams.get('room') ?? 'TEAM';
+  const pinnedOnly = searchParams.get('pinned') === 'true';
 
   if (!(await checkRoomAccess(userId, role, email, room, workspaceId))) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
   }
 
   const messages = await db.chatMessage.findMany({
-    where:   { room },
+    where:   { room, ...(pinnedOnly ? { pinned: true } : {}) },
     take:    50,
     orderBy: { createdAt: 'desc' },
     select: messageSelect,
