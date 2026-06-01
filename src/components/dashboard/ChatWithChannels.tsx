@@ -509,6 +509,9 @@ function ChatMain({
 }) {
   const { data: session } = useSession();
   const myId = (session?.user as any)?.id;
+  const myName = (session?.user as any)?.name || (session?.user as any)?.email || 'Yo';
+  const myEmail = (session?.user as any)?.email || '';
+  const myImage = (session?.user as any)?.image || null;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const broadcastTypingRef = useRef<(() => void) | null>(null);
@@ -711,8 +714,8 @@ function ChatMain({
         message: text,
         room,
         createdAt: new Date().toISOString(),
-        userId: 'user-local',
-        user: null as any,
+        userId: myId,
+        user: { name: myName, email: myEmail, color: accentColor, image: myImage } as any,
       };
       setMessages(prev => [...prev, userChatMsg]);
       // 2. Mostrar indicador pensando
@@ -753,11 +756,23 @@ function ChatMain({
           ? 'Responde en máximo 3 líneas con números clave. Ejemplo: "15 tareas: 8 completadas, 4 en progreso, 3 pendientes. Ruperto tiene 2 pendientes."'
           : 'Eres AI Assistant en un chat grupal. Responde conciso, máximo 4 líneas.';
 
+        // Mandar historial completo con instrucción de concisión en el último mensaje
+        const finalMessages = aiHistory.length > 1
+          ? aiHistory
+          : [{ role: 'user' as const, content: query }];
+        // Agregar hint de brevedad al último mensaje sin sobreescribir el historial
+        if (finalMessages.length > 0) {
+          finalMessages[finalMessages.length - 1] = {
+            ...finalMessages[finalMessages.length - 1],
+            content: finalMessages[finalMessages.length - 1].content +
+              (isTasks ? ' (responde en máximo 3 líneas con números)' : ' (responde conciso, máximo 4 líneas)'),
+          };
+        }
         const res = await fetch('/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: [{ role: 'user', content: systemMsg + '\n\nPregunta: ' + query }],
+            messages: finalMessages,
             model: 'turbo',
           }),
         });
@@ -1168,7 +1183,7 @@ function ChatMain({
           const dayLabel = msgDate.toDateString() === today.toDateString() ? 'Hoy'
             : msgDate.toDateString() === yesterday.toDateString() ? 'Ayer'
             : msgDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-          const isSame = idx > 0 && messages[idx - 1].userId === msg.userId && !isNewDay;
+          const isSame = idx > 0 && messages[idx - 1].userId === msg.userId && !isNewDay && msg.userId !== 'ai' && messages[idx-1].userId !== 'ai';
           const color = (msg.user as any)?.color || accentColor;
           const initials = getInitials((msg.user as any)?.name ?? null, (msg.user as any)?.email ?? '');
           const reactions = (msg.reactions || []).reduce((acc: any[], r: any) => {
