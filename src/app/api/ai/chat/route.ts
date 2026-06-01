@@ -175,9 +175,9 @@ export async function POST(req: NextRequest) {
     : '';
 
   // Solo incluir contexto completo en modelos confiables (no Llama open-source)
+  const model = MODELS[tier];
   const trustedProviders = ['anthropic', 'deepseek', 'gemini'];
   const system = SYSTEM_PROMPT + (trustedProviders.includes(model.provider) ? ctx : '');
-  const model = MODELS[tier];
 
   // Timeout de 25s para evitar que quede cargando
   const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
