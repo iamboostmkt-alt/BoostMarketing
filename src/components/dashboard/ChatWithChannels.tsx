@@ -23,6 +23,17 @@ function getInitials(name: string | null, email: string) {
   return (name || email).split(/[\s@]/)[0].slice(0, 2).toUpperCase();
 }
 
+function formatLastSeen(dateStr: string): string {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - d.getTime()) / 1000);
+  if (diff < 60) return 'hace un momento';
+  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `hace ${Math.floor(diff / 3600)}h`;
+  if (diff < 172800) return 'ayer';
+  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+}
+
 function renderMessage(text: string) {
   return text.split(/(@\w+)/g).map((part, i) =>
     part.startsWith('@')
@@ -432,7 +443,7 @@ function ChatMain({
   onOpenThread: (msg: ChatMessage) => void;
   dmUser?: { id: string; name: string | null; email: string; color?: string; image?: string | null } | null;
   role?: string;
-  members?: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string }[];
+  members?: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string; presence?: { status: string; lastSeen: string } | null }[];
 }) {
   const { data: session } = useSession();
   const myId = (session?.user as any)?.id;
@@ -1458,7 +1469,13 @@ function ChatMain({
                 </div>
                 <div className="min-w-0">
                   <p className="text-[12px] font-medium text-white/80 truncate">{m.name || m.email}</p>
-                  <p className="text-[10px] text-white/30 truncate">{m.role?.toLowerCase().replace('_', ' ')}</p>
+                  <p className="text-[10px] text-white/30 truncate">
+                    {(m as any).presence?.status === 'online'
+                      ? <span className="text-emerald-400">En línea</span>
+                      : (m as any).presence?.lastSeen
+                        ? `Visto ${formatLastSeen((m as any).presence.lastSeen)}`
+                        : m.role?.toLowerCase().replace('_', ' ')}
+                  </p>
                 </div>
               </div>
             ))}

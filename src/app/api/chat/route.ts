@@ -35,7 +35,15 @@ async function checkRoomAccess(
 
   if (room.includes('_DM_')) {
     const parts = room.split('_DM_');
-    return parts.includes(userId);
+    if (!parts.includes(userId)) return false;
+    // Validar que el otro usuario pertenece al mismo workspace
+    const otherId = parts.find(p => p !== userId);
+    if (!otherId) return false;
+    const otherUser = await db.user.findFirst({
+      where: { id: otherId, workspaceId, active: true },
+      select: { id: true },
+    });
+    return !!otherUser;
   }
 
   if (INTERNAL_ROOMS.includes(room)) {

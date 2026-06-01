@@ -10,7 +10,7 @@ export async function GET() {
   const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(role as string);
   const members = await sdb.user.findMany({
     where: { workspaceId, active: true, ...(isManager ? {} : { role: { not: 'CLIENT' } }) },
-    select: { id: true, name: true, email: true, color: true, image: true, role: true },
+    select: { id: true, name: true, email: true, color: true, image: true, role: true, presence: { select: { status: true, lastSeen: true } } },
     take: 30,
   });
   return NextResponse.json({ members });

@@ -1,7 +1,8 @@
 'use client'
 
 
-import { Play, FileText, Clock, Circle, FileArchive } from 'lucide-react'
+import React from 'react'
+import { Play, FileText, Clock, Circle, FileArchive, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Avatar } from './avatar'
 
