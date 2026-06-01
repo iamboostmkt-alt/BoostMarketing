@@ -167,8 +167,9 @@ function ChannelList({
                       if (!confirm(`¿Eliminar el canal #${r.name}?`)) return;
                       const res = await fetch(`/api/channels?id=${r.id}`, { method: 'DELETE' });
                       if (res.ok) {
+                        onDeleteChannel?.(r.id);
                         if (activeId === r.id) setActiveId('TEAM');
-                      }
+                      } else { alert('Error al eliminar canal'); }
                     }}
                     className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover/ch:opacity-100 flex h-6 w-6 items-center justify-center rounded-md text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all">
                     <X className="h-3 w-3" strokeWidth={2} />
@@ -1437,6 +1438,8 @@ function ChatMain({
                   <Smile className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
                 {showComposerEmoji && (
+                  <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowComposerEmoji(false)} />
                   <div className="absolute bottom-14 left-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
                     {['😀','😂','🥹','😍','🤔','😅','🙌','👍','🔥','❤️','✅','🎉','💪','🚀','👀','💡','⚡','🎯'].map(e => (
                       <button key={e} type="button"
@@ -1446,6 +1449,7 @@ function ChatMain({
                       </button>
                     ))}
                   </div>
+                  </>
                 )}
               </div>
               {/* @ mencionar */}
@@ -1465,6 +1469,8 @@ function ChatMain({
                   <Slash className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
                 {showSlashMenu && (
+                  <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowSlashMenu(false)} />
                   <div className="absolute bottom-14 left-0 z-50 w-52 rounded-xl border border-white/[0.08] bg-[#1a1d2e] py-1 shadow-2xl">
                     <p className="px-3 py-1.5 text-[10px] text-white/30 uppercase tracking-wide">Comandos</p>
                     {[
@@ -1480,6 +1486,7 @@ function ChatMain({
                       </button>
                     ))}
                   </div>
+                  </>
                 )}
               </div>
               <div className="relative group/tip">
@@ -1492,7 +1499,7 @@ function ChatMain({
                 </div>
               </div>
               {mentionQuery !== null && (
-                <div className="absolute bottom-12 left-0 right-0 z-50 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-48 overflow-y-auto">
+                <div className="absolute bottom-12 left-0 z-50 w-64 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-40 overflow-y-auto">
                   <p className="px-3 py-1 text-[10px] text-white/30 uppercase tracking-wide">Mencionar miembro</p>
                   {members
                     .filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST')

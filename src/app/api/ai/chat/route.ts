@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const messages = body.messages;
-  const tier: ModelTier = ['pro','medium','free','turbo'].includes(body.model) ? body.model : 'pro';
+  const tier: ModelTier = ['pro','medium','free','turbo'].includes(body.model) ? body.model : 'turbo';
 
   if (!messages?.length) return NextResponse.json({ error: 'messages requerido' }, { status: 400 });
   if (messages.length > 20) return NextResponse.json({ error: 'Máximo 20 mensajes.' }, { status: 400 });
@@ -131,14 +131,18 @@ export async function POST(req: NextRequest) {
     else if (model.provider === 'deepseek') content = await callDeepSeek(messages, system);
     else if (model.provider === 'gemini') content = await callGemini(messages, system);
     else content = await callGroq(messages, system);
+    if (!content || content === 'Sin respuesta.') throw new Error('empty response');
     return NextResponse.json({ content, model: model.label });
-  } catch {
+  } catch (err) {
+    console.error('AI error:', err, 'tier:', tier);
     // Fallback a Groq si el modelo principal falla
-    try {
-      const content = await callGroq(messages, system);
-      return NextResponse.json({ content, model: 'Llama 3.3 (fallback)', fallback: true });
-    } catch {
-      return NextResponse.json({ error: 'Error al procesar. Intenta de nuevo.' }, { status: 500 });
+    if (model.provider !== 'groq') {
+      try {
+        const content = await callGroq(messages, system);
+        if (content && content !== 'Sin respuesta.')
+          return NextResponse.json({ content, model: 'Llama 3.3 70B (fallback)', fallback: true });
+      } catch (e) { console.error('Groq fallback error:', e); }
     }
+    return NextResponse.json({ error: 'Error al procesar. Intenta de nuevo.' }, { status: 500 });
   }
 }
