@@ -24,7 +24,7 @@ import type { Task } from '@/lib/types';
 import { taskStatuses, statusLabels } from '@/lib/theme-maps';
 
 type ViewMode = 'list' | 'board';
-type TabId = 'mine' | 'clients' | 'all';
+type TabId = 'mine' | 'clients' | 'all' | 'review';
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
 interface ClientWithTasks {
@@ -309,6 +309,7 @@ function TasksContent() {
   const [clientsWithTasks, setClientsWithTasks] = useState<ClientWithTasks[]>([]);
   const [allTasks, setAllTasks]             = useState<Task[]>([]);
   const [allTasksCursor, setAllTasksCursor] = useState<string | null>(null);
+  const [reviewTasks, setReviewTasks]       = useState<Task[]>([]);
   const [allTasksHasMore, setAllTasksHasMore] = useState(false);
   const [loadingMore, setLoadingMore]       = useState(false);
   const [loading, setLoading]               = useState(true);
@@ -345,6 +346,10 @@ function TasksContent() {
       ]);
       if (mineRes.ok)    { const d = await mineRes.json();    setMyTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId)); }
       if (clientsRes.ok) { const d = await clientsRes.json(); setClientsWithTasks(d.clients ?? []); }
+      if (isManager) {
+        const revRes = await fetch('/api/tasks?scope=review');
+        if (revRes.ok) { const d = await revRes.json(); setReviewTasks(d.tasks ?? []); }
+      }
       if (allRes?.ok)    {
         const d = await allRes.json();
         setAllTasks((d.tasks ?? []).filter((t: Task) => !t.parentTaskId));
@@ -489,6 +494,7 @@ function TasksContent() {
     { id: 'mine' as TabId,    label: 'Mis Tareas',        icon: User,        count: myTasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length },
     { id: 'clients' as TabId, label: 'Clientes',          icon: Building2,   count: clientsWithTasks.reduce((a, c) => a + c.tasks.filter((t: any) => t.status !== 'completed' && t.status !== 'approved').length, 0) },
     ...(isManager ? [{ id: 'all' as TabId, label: 'Todas', icon: LayoutGrid, count: allTasks.filter(t => t.status !== 'completed' && t.status !== 'approved').length }] : []),
+    ...(isManager ? [{ id: 'review' as TabId, label: 'Revisiones', icon: CheckCircle2, count: reviewTasks.length }] : []),
   ];
 
   if (loading) {
@@ -574,6 +580,20 @@ function TasksContent() {
       </div>
 
       {/* Tab: Mis Tareas */}
+      {activeTab === 'review' && isManager && (
+        <div className="space-y-1">
+          {reviewTasks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-white/30">
+              <CheckCircle2 className="w-8 h-8 mb-3 opacity-40" />
+              <p className="text-sm">Sin tareas en revisión</p>
+            </div>
+          ) : (
+            reviewTasks.map((t) => (
+              <TaskCard key={t.id} task={t} {...cardProps} isManager={isManager} />
+            ))
+          )}
+        </div>
+      )}
       {activeTab === 'mine' && (
         <MineTasksView
           tasks={myTasks}

@@ -189,6 +189,43 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ tasks: flattenTasks(subtasks) });
   }
 
+  if (scope === "review" && isManager) {
+    // TASK-R-01: tareas en revision para PM — internal_review + client_review
+    const reviewWhere: any = {
+      archivedAt: null,
+      workspaceId,
+      status: { in: ["internal_review", "client_review"] },
+      ...(filterClientId && { clientId: filterClientId }),
+    };
+    if (!isAdmin) {
+      const managedClients = await db.client.findMany({
+        where: { assignedManagerId: userId }, select: { id: true },
+      });
+      const assignedClients = await db.clientAssignedUser.findMany({
+        where: { userId }, select: { clientId: true },
+      });
+      const allClientIds = [...new Set([
+        ...managedClients.map((c) => c.id),
+        ...assignedClients.map((c) => c.clientId),
+      ])];
+      reviewWhere.OR = [
+        { userId },
+        { assignedUserId: userId },
+        { assignedUsers: { some: { userId } } },
+        ...(allClientIds.length > 0 ? [{ clientId: { in: allClientIds } }] : []),
+      ];
+    }
+    const reviewTasks = await db.task.findMany({
+      where: reviewWhere,
+      include: {
+        assignedUser:  userInclude,
+        assignedUsers: { include: { user: userInclude } },
+        client:        clientInclude,
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+    return NextResponse.json({ tasks: flattenTasks(reviewTasks) });
+  }
   if (scope === "all" && isManager) {
     // Paginación cursor-based — límite 50 por página
     const cursor = req.nextUrl.searchParams.get("cursor") ?? undefined;
