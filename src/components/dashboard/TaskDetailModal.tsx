@@ -199,17 +199,21 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       // Mensaje al chat del room del cliente con imagen si es aprobacion
       const chatClientId = clientId || (task as any).client?.id;
       if (chatClientId) {
-        // Menciones solo de team members (excluir al PM/ADMIN actual)
+        // PM que aprueba
+        const pmName = (task as any).assignedUsers
+          ?.find((au: any) => ['ADMIN','PROJECT_MANAGER'].includes(au.role ?? ''))
+          ?.name || 'PM';
+        // Team members que hicieron la tarea
         const assigneeNames = (task as any).assignedUsers
-          ?.filter((au: any) => au.id !== (task as any).userId && !['ADMIN','PROJECT_MANAGER'].includes(au.role ?? ''))
+          ?.filter((au: any) => !['ADMIN','PROJECT_MANAGER'].includes(au.role ?? ''))
           .map((au: any) => au.name || au.email?.split('@')[0])
           .filter(Boolean)
           .map((n: string) => `@${n}`)
           .join(' ') || '';
         const msgMap = {
           approved:    assigneeNames
-            ? `🎉 ¡Felicidades ${assigneeNames}! Tu entrega fue aprobada`
-            : `✅ Archivo aprobado: "${fileName}"`,
+            ? `@${pmName} marcó como aprobada ✅\n🎉 ¡Felicidades ${assigneeNames}! Tu entrega fue aprobada`
+            : `@${pmName} marcó como aprobada: "${fileName}" ✅`,
           comments:    `💬 Comentarios sobre "${fileName}": ${reviewComment}`,
           new_version: `🔄 Se solicita nueva versión de: "${fileName}"`,
         };
