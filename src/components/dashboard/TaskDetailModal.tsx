@@ -195,25 +195,38 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       }
 
       // Correo al equipo con cambios pedidos (non-blocking)
-      if (action === 'comments' && reviewComment) {
-        fetch('/api/tasks/notify-changes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ taskId: task.id, fileName, comment: reviewComment }),
-        }).catch(() => {});
-      }
 
-      // Mensaje al chat del room del cliente (solo equipo lo ve)
-      if (clientId) {
+      // Mensaje al chat del room del cliente con imagen si es aprobacion
+      const chatClientId = clientId || (task as any).client?.id;
+      if (chatClientId) {
+        // Construir menciones de los asignados para felicitacion
+        const assigneeNames = (task as any).assignedUsers
+          ?.map((au: any) => au.name || au.email?.split('@')[0])
+          .filter(Boolean)
+          .map((n: string) => `@${n}`)
+          .join(' ') || '';
         const msgMap = {
-          approved:    `✅ Archivo aprobado: "${fileName}"`,
+          approved:    action === 'approved' && assigneeNames
+            ? `🎉 ¡Felicidades ${assigneeNames}! Tu entrega fue aprobada\n✅ Archivo aprobado: "${fileName}"`
+            : `✅ Archivo aprobado: "${fileName}"`,
           comments:    `💬 Comentarios sobre "${fileName}": ${reviewComment}`,
           new_version: `🔄 Se solicita nueva versión de: "${fileName}"`,
         };
+        // Buscar fileUrl del archivo aprobado para mostrarlo en chat
+        const approvedAttachment = attachments.find(a => a.id === fileId);
+        const isImage = approvedAttachment?.fileType?.startsWith('image/');
         await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ room: clientId, message: msgMap[action] }),
+          body: JSON.stringify({
+            room: chatClientId,
+            message: msgMap[action],
+            ...(action === 'approved' && isImage && approvedAttachment ? {
+              fileUrl: approvedAttachment.fileUrl,
+              fileName: approvedAttachment.fileName,
+              fileType: approvedAttachment.fileType,
+            } : {}),
+          }),
         });
       }
 
