@@ -288,6 +288,34 @@ export function NotificationsDropdown() {
                         <p className={`text-[13px] leading-snug ${n.read ? 'text-white/50' : 'text-white/88'}`}>
                           {n.message}
                         </p>
+                        {/* Preview de contenido si existe */}
+                        {(n as any).preview && (
+                          <div className="mt-1.5 px-2.5 py-1.5 rounded-lg text-[11px] text-white/50 leading-relaxed"
+                            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            {(n as any).preview}
+                          </div>
+                        )}
+                        {/* Archivo adjunto */}
+                        {(n as any).fileUrl && (
+                          <div className="mt-1.5 flex items-center gap-2 px-2.5 py-1.5 rounded-lg"
+                            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <span className="text-[10px] font-bold px-1 rounded bg-white/10 text-white/40">
+                              {((n as any).fileName || '').split('.').pop()?.toUpperCase() || 'FILE'}
+                            </span>
+                            <span className="text-[11px] text-white/50 truncate">{(n as any).fileName}</span>
+                          </div>
+                        )}
+                        {/* Botones Accept/Decline para invitaciones */}
+                        {n.type === 'invite' && !(n as any).responded && (
+                          <div className="mt-2 flex gap-2" onClick={e => e.stopPropagation()}>
+                            <button className="flex-1 py-1 rounded-lg text-[11px] font-medium text-red-300 border border-red-500/20 hover:bg-red-500/10 transition-colors">
+                              Rechazar
+                            </button>
+                            <button className="flex-1 py-1 rounded-lg text-[11px] font-medium text-green-300 border border-green-500/20 hover:bg-green-500/10 transition-colors">
+                              Aceptar
+                            </button>
+                          </div>
+                        )}
                         <p className="text-[11px] text-white/30 mt-1">{timeAgo}</p>
                       </div>
                       {/* Dot no leído */}

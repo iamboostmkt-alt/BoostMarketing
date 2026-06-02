@@ -34,6 +34,10 @@ export const RT_EVENTS = {
   NOTIFICATION_NEW:   'notification.created',
   PRESENCE_UPDATED:   'presence.updated',
   COMMENT_CREATED:    'comment.created',
+  FILE_UPLOADED:      'file.uploaded',
+  MEETING_SCHEDULED:  'meeting.scheduled',
+  INVITE_SENT:        'invite.sent',
+  TASK_DUE_SOON:      'task.due_soon',
 } as const;
 
 export type RTEventName = (typeof RT_EVENTS)[keyof typeof RT_EVENTS];
