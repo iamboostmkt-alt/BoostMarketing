@@ -1208,8 +1208,11 @@ function ChatMain({
           const isLocalAiMsg = msg.id.startsWith('user-ai-') || msg.id.startsWith('ai-thinking-');
           const prevIsLocalAiMsg = prevMsg ? (prevMsg.id.startsWith('user-ai-') || prevMsg.id.startsWith('ai-thinking-')) : false;
           const isSame = idx > 0 && prevMsg?.userId === msg.userId && !isNewDay && msg.userId !== 'ai' && prevMsg?.userId !== 'ai' && !isLocalAiMsg && !prevIsLocalAiMsg && !msg.id.startsWith('user-ai-') && !(prevMsg?.id ?? '').startsWith('user-ai-');
-          const color = (msg.user as any)?.color || accentColor;
-          const initials = getInitials((msg.user as any)?.name ?? null, (msg.user as any)?.email ?? '');
+          // Mensajes de sistema (bot) usan identidad de Weeklink
+          const isSystemMsg = (msg as any).isSystem;
+          const systemMsgName = (msg as any).systemName || 'Weeklink';
+          const color = isSystemMsg ? '#8B5CF6' : ((msg.user as any)?.color || accentColor);
+          const initials = isSystemMsg ? 'W' : getInitials((msg.user as any)?.name ?? null, (msg.user as any)?.email ?? '');
           const reactions = (msg.reactions || []).reduce((acc: any[], r: any) => {
             const ex = acc.find((x: any) => x.emoji === r.emoji);
             if (ex) { ex.count++; if (r.userId === myId) ex.mine = true; }
@@ -1277,8 +1280,9 @@ function ChatMain({
                     {!isSame && (
                       <div className="mb-0.5 flex items-baseline gap-2">
                         <span className="text-[12px] font-semibold leading-none text-white/95">
-                          {(msg.user as any)?.name || (msg.user as any)?.email}
-                          {isMe && <span className="ml-1.5 text-[10px] font-normal" style={{ color: accentColor }}>tú</span>}
+                          {isSystemMsg ? systemMsgName : ((msg.user as any)?.name || (msg.user as any)?.email)}
+                          {isSystemMsg && <span className="ml-1.5 text-[10px] font-normal text-violet-400/70">bot</span>}
+                          {!isSystemMsg && isMe && <span className="ml-1.5 text-[10px] font-normal" style={{ color: accentColor }}>tú</span>}
                         </span>
                         <span className="text-[11px] text-white/30">
                           {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}

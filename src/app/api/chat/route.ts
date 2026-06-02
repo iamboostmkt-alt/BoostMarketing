@@ -17,7 +17,7 @@ const reactionUserSelect = { id: true, name: true, color: true } as const;
 
 const messageSelect = {
   id: true, userId: true, message: true, room: true, createdAt: true,
-  fileUrl: true, fileName: true, fileType: true, taskId: true, pinned: true,
+  fileUrl: true, fileName: true, fileType: true, taskId: true, pinned: true, isSystem: true, systemName: true,
   user:      { select: userSelect },
   reactions: { include: { user: { select: reactionUserSelect } } },
 } as const;
@@ -143,8 +143,10 @@ export async function POST(req: NextRequest) {
   const fileUrl: string | undefined = body.fileUrl;
   const fileName: string | undefined = body.fileName;
   const fileType: string | undefined = body.fileType;
+  const isSystem: boolean = body.isSystem ?? false;
+  const systemName: string | undefined = body.systemName;
   const chatMessage = await db.chatMessage.create({
-    data: { userId, workspaceId, message: text, room, fileUrl, fileName, fileType },
+    data: { userId, workspaceId, message: text, room, fileUrl, fileName, fileType, isSystem, systemName },
     select: messageSelect,
   });
 

@@ -199,15 +199,16 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       // Mensaje al chat del room del cliente con imagen si es aprobacion
       const chatClientId = clientId || (task as any).client?.id;
       if (chatClientId) {
-        // Construir menciones de los asignados para felicitacion
+        // Menciones solo de team members (excluir al PM/ADMIN actual)
         const assigneeNames = (task as any).assignedUsers
-          ?.map((au: any) => au.name || au.email?.split('@')[0])
+          ?.filter((au: any) => au.id !== (task as any).userId && !['ADMIN','PROJECT_MANAGER'].includes(au.role ?? ''))
+          .map((au: any) => au.name || au.email?.split('@')[0])
           .filter(Boolean)
           .map((n: string) => `@${n}`)
           .join(' ') || '';
         const msgMap = {
-          approved:    action === 'approved' && assigneeNames
-            ? `🎉 ¡Felicidades ${assigneeNames}! Tu entrega fue aprobada\n✅ Archivo aprobado: "${fileName}"`
+          approved:    assigneeNames
+            ? `🎉 ¡Felicidades ${assigneeNames}! Tu entrega fue aprobada`
             : `✅ Archivo aprobado: "${fileName}"`,
           comments:    `💬 Comentarios sobre "${fileName}": ${reviewComment}`,
           new_version: `🔄 Se solicita nueva versión de: "${fileName}"`,
@@ -221,6 +222,8 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
           body: JSON.stringify({
             room: chatClientId,
             message: msgMap[action],
+            isSystem: true,
+            systemName: 'Weeklink',
             ...(action === 'approved' && isImage && approvedAttachment ? {
               fileUrl: approvedAttachment.fileUrl,
               fileName: approvedAttachment.fileName,
@@ -814,6 +817,8 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                       message: assigneeNames
                         ? `🎉 ¡Felicidades ${assigneeNames}! La tarea "${task.title}" fue aprobada ✅`
                         : `✅ Tarea aprobada: "${task.title}"`,
+                      isSystem: true,
+                      systemName: 'Weeklink',
                     }),
                   }).catch(() => {});
                 }
