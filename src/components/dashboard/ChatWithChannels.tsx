@@ -1207,7 +1207,7 @@ function ChatMain({
           const prevMsg = idx > 0 ? messages[idx - 1] : null;
           const isLocalAiMsg = msg.id.startsWith('user-ai-') || msg.id.startsWith('ai-thinking-');
           const prevIsLocalAiMsg = prevMsg ? (prevMsg.id.startsWith('user-ai-') || prevMsg.id.startsWith('ai-thinking-')) : false;
-          const isSame = idx > 0 && prevMsg?.userId === msg.userId && !isNewDay && msg.userId !== 'ai' && prevMsg?.userId !== 'ai' && !isLocalAiMsg && !prevIsLocalAiMsg && !msg.id.startsWith('user-ai-') && !(prevMsg?.id ?? '').startsWith('user-ai-');
+          const isSame = idx > 0 && prevMsg?.userId === msg.userId && !isNewDay && msg.userId !== 'ai' && prevMsg?.userId !== 'ai' && !isLocalAiMsg && !prevIsLocalAiMsg && !msg.id.startsWith('user-ai-') && !(prevMsg?.id ?? '').startsWith('user-ai-') && !(msg as any).isSystem && !(prevMsg as any)?.isSystem;
           // Mensajes de sistema (bot) usan identidad de Weeklink
           const isSystemMsg = (msg as any).isSystem;
           const systemMsgName = (msg as any).systemName || 'Weeklink';

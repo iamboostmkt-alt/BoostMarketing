@@ -23,7 +23,7 @@ import { rateLimit } from "@/lib/security/rate-limit";
 
 
 const userInclude = {
-  select: { id: true, name: true, email: true, color: true, image: true },
+  select: { id: true, name: true, email: true, color: true, image: true, role: true },
 };
 
 function flattenTask(task: any) {
