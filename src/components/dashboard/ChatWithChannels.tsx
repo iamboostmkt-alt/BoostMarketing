@@ -662,11 +662,9 @@ function ChatMain({
     if (activeTab !== 'tasks') return;
     const isInternalRoom = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room);
     const isDM = room.includes('_DM_');
-    // Verificar si el room es un clientId comparando con la lista de clientes
-    const isClientRoom = !isInternalRoom && !isDM && (
-      clients.length > 0 ? clients.some(c => c.id === room) : true
-    );
-    const clientId = isClientRoom ? room : undefined;
+    // Si no es canal interno ni DM, es clientId directo (UUID de cuenta)
+    // No depender de clients[] que puede estar vacio al montar
+    const clientId = (!isInternalRoom && !isDM) ? room : undefined;
     const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role ?? '');
     const assignedParam = isManager ? '' : '&assignedToMe=true';
     const url = clientId
