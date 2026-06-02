@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell } from 'lucide-react';
+import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion } from 'framer-motion';
@@ -784,6 +784,33 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 className="border-[#EAB308]/30 text-[#EAB308] hover:text-[#EAB308]/80 hover:bg-[#EAB308]/10 gap-1.5 text-xs h-8">
                 {reminding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bell className="w-3.5 h-3.5" />}
                 {reminding ? 'Enviando...' : 'Recordatorio'}
+              </Button>
+            )}
+            {isManager && !['approved','completed'].includes(task.status) && (
+              <Button size="sm" disabled={reviewLoading} onClick={async () => {
+                if (!onStatusChange) return;
+                await onStatusChange(task.id, 'approved');
+                // Mensaje de felicitacion en chat
+                const clientId = (task as any).clientId || (task as any).client?.id;
+                if (clientId) {
+                  const assigneeNames = (task as any).assignedUsers
+                    ?.map((au: any) => au.name || au.email?.split('@')[0])
+                    .filter(Boolean).map((n: string) => `@${n}`).join(' ') || '';
+                  await fetch('/api/chat', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      room: clientId,
+                      message: assigneeNames
+                        ? `🎉 ¡Felicidades ${assigneeNames}! La tarea "${task.title}" fue aprobada ✅`
+                        : `✅ Tarea aprobada: "${task.title}"`,
+                    }),
+                  }).catch(() => {});
+                }
+                toast.success('Tarea aprobada ✓');
+                onClose();
+              }}
+                className="gap-1.5 text-xs h-8 bg-green-500/15 border border-green-500/30 text-green-300 hover:bg-green-500/25 hover:text-green-200">
+                <CheckCircle2 className="w-3.5 h-3.5" />Aprobar tarea
               </Button>
             )}
             <Button size="sm" variant="ghost" onClick={onClose} className="text-white/30 hover:text-white hover:bg-white/[0.06] text-xs h-8 ml-auto">

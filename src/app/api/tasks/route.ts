@@ -753,26 +753,33 @@ export async function PUT(req: NextRequest) {
         select: { id: true, status: true },
       });
       if (siblings.length > 0) {
-        const completedSiblings = siblings.filter((s: any) =>
-          s.status === 'completed' || s.status === 'approved'
-        ).length;
-        const allDone = completedSiblings === siblings.length;
-        // Si todas las subtareas están completadas, marcar padre como completado
-        if (allDone) {
-          // REGLA: si todas las subtareas done -> padre a internal_review (F1 flujo)
-          const parentTask = await db.task.findUnique({
-            where: { id: taskParentId },
-            select: { status: true },
-          });
-          if (parentTask && !['completed', 'approved', 'internal_review'].includes(parentTask.status)) {
+        const newStatus = normalizeTaskStatus(status);
+        const allStatuses = siblings.map((s: any) =>
+          s.id === id ? newStatus : s.status
+        );
+        const allDone      = allStatuses.every((s: string) => ['completed','approved'].includes(s));
+        const allReview    = allStatuses.every((s: string) => ['internal_review','client_review','completed','approved'].includes(s));
+        const anyChanges   = allStatuses.some((s: string) => s === 'changes_requested');
+        const anyProgress  = allStatuses.some((s: string) => !['pending','draft'].includes(s));
+
+        const parentTask = await db.task.findUnique({
+          where: { id: taskParentId },
+          select: { status: true },
+        });
+        if (parentTask && !['approved'].includes(parentTask.status)) {
+          let newParentStatus: string | null = null;
+          if (allDone)                                              newParentStatus = 'internal_review';
+          else if (allReview && !allDone)                           newParentStatus = 'internal_review';
+          else if (anyChanges)                                      newParentStatus = 'changes_requested';
+          else if (anyProgress && parentTask.status === 'pending')  newParentStatus = 'in_progress';
+
+          if (newParentStatus && newParentStatus !== parentTask.status) {
             await db.task.update({
               where: { id: taskParentId },
-              data: { status: 'internal_review' },
+              data: { status: newParentStatus },
             });
           }
         }
-        // Notificación interna de progreso (opcional)
-        console.log(`[SUBTASK] Parent ${taskParentId}: ${completedSiblings}/${siblings.length} subtasks done`);
       }
     } catch (e) {
       console.error('[SUBTASK PROGRESS]', e);
