@@ -595,10 +595,14 @@ model TaskAttachment {
   fileUrl    String    @map("file_url")
   fileType   String    @map("file_type")
   fileSize   Int       @map("file_size")
-  isInternal Boolean   @default(false) @map("is_internal")
-  status     String    @default("active")
-  expiresAt  DateTime? @map("expires_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
+  isInternal     Boolean   @default(false) @map("is_internal")
+  status         String    @default("active")
+  expiresAt      DateTime? @map("expires_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  reviewStatus   String?   @map("review_status")   // pending | approved | changes_requested
+  reviewComment  String?   @map("review_comment")
+  reviewedAt     DateTime? @map("reviewed_at")
+  reviewedById   String?   @map("reviewed_by_id")
   task       Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 

@@ -4,6 +4,7 @@ import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from '@/lib/db';
 import { sendMail, templateArchivoSubido } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 
 
@@ -169,4 +170,32 @@ export async function DELETE(req: NextRequest) {
     console.error('[task-attachments DELETE]', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
+}
+
+export async function PATCH(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 30, windowMs: 60_000, identifier: 'task-attachments-patch' });
+  if (!rl.success) return rl.response;
+  const result = await requireWorkspace({ roles: ['ADMIN', 'PROJECT_MANAGER'] });
+  if (!result.ok) return result.response;
+  const { workspaceId } = result.ctx;
+  const id = req.nextUrl.searchParams.get('id');
+  if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 });
+  const body = await req.json();
+  const { reviewStatus, reviewComment } = body;
+  if (!reviewStatus || !['approved', 'changes_requested', 'pending'].includes(reviewStatus))
+    return NextResponse.json({ error: 'reviewStatus inválido' }, { status: 400 });
+  // Verificar que el attachment pertenece al workspace
+  const attachment = await db.taskAttachment.findFirst({
+    where: { id, task: { workspaceId } },
+  });
+  if (!attachment) return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
+  const updated = await db.taskAttachment.update({
+    where: { id },
+    data: {
+      reviewStatus,
+      reviewComment: reviewComment ?? null,
+      reviewedAt: new Date(),
+    },
+  });
+  return NextResponse.json({ attachment: updated });
 }

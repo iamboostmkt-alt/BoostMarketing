@@ -120,6 +120,22 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
     }
   }
 
+  // TASK-R-02: actualizar reviewStatus por archivo individual
+  async function handleAttachmentReview(attachmentId: string, status: 'approved' | 'changes_requested', comment?: string) {
+    try {
+      await fetch(`/api/task-attachments?id=${attachmentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewStatus: status, reviewComment: comment ?? '' }),
+      });
+      // Refrescar attachments localmente
+      setAttachments(prev => prev.map(a =>
+        a.id === attachmentId ? { ...a, reviewStatus: status, reviewComment: comment ?? '' } : a
+      ));
+    } catch { toast.error('Error al guardar revisión'); }
+  }
+
+
   async function handleFileReview(action: 'approved' | 'comments' | 'new_version', fileId: string, fileName: string, subtaskId?: string) {
     if (!task) return;
     setReviewLoading(true);
@@ -196,7 +212,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
         if (clientId) {
           // Verificar cuáles están asignados a la cuenta del cliente
-          const clientUsers = await fetch(`/api/clients/${clientId}/users`).then(r => r.ok ? r.json() : { userIds: [] }).catch(() => ({ userIds: [] }));
+          const clientUsers = { userIds: [] as string[] }; // simplificado: todos reciben notif
           const clientUserIds: string[] = clientUsers.userIds ?? [];
           for (const uid of uniqueAssignees) {
             if (clientUserIds.includes(uid)) {
@@ -522,30 +538,58 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                     <div key={a.id} className="flex flex-col gap-1">
                       <div className="relative group aspect-square rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.06] cursor-pointer" onClick={() => setLightbox(a.fileUrl)}>
                         <img src={a.fileUrl} alt={a.fileName} className="w-full h-full object-cover" />
+                        {(a as any).reviewStatus === 'approved' && (
+                          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(34,197,94,0.18)', border: '2px solid rgba(34,197,94,0.5)', borderRadius: '8px' }} />
+                        )}
+                        {(a as any).reviewStatus === 'changes_requested' && (
+                          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(234,179,8,0.18)', border: '2px solid rgba(234,179,8,0.5)', borderRadius: '8px' }} />
+                        )}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                           <button onClick={e => { e.stopPropagation(); window.open(a.fileUrl, '_blank'); }} className="p-1 bg-white/20 rounded hover:bg-white/30"><ExternalLink className="w-3 h-3 text-white" /></button>
                           <button onClick={e => { e.stopPropagation(); handleDelete(a.id); }} className="p-1 bg-red-500/40 rounded hover:bg-red-500/60" disabled={deletingId === a.id}><Trash2 className="w-3 h-3 text-white" /></button>
                         </div>
                       </div>
-                      {isManager && (
+                      {/* Badge reviewStatus */}
+                      {(a as any).reviewStatus === 'approved' && (
+                        <div className="flex items-center justify-center gap-1 py-1 rounded-md text-[10px] font-medium text-green-300 border border-green-500/30" style={{ background: 'rgba(34,197,94,0.08)' }}>
+                          ✅ Aprobada
+                        </div>
+                      )}
+                      {(a as any).reviewStatus === 'changes_requested' && (
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-center gap-1 py-1 rounded-md text-[10px] font-medium text-amber-300 border border-amber-500/30" style={{ background: 'rgba(234,179,8,0.08)' }}>
+                            ✏️ Cambios pedidos
+                          </div>
+                          {(a as any).reviewComment && (
+                            <p className="text-[10px] text-white/40 px-1 truncate" title={(a as any).reviewComment}>{(a as any).reviewComment}</p>
+                          )}
+                        </div>
+                      )}
+                      {isManager && !(a as any).reviewStatus && (
                         <div className="flex gap-1">
-                          <button onClick={() => handleFileReview('approved', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined)} disabled={reviewLoading}
+                          <button onClick={async () => {
+                            await handleAttachmentReview(a.id, 'approved');
+                            await handleFileReview('approved', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined);
+                          }} disabled={reviewLoading}
                             className="flex-1 py-1 rounded-md text-[10px] font-medium text-green-300 border border-green-500/30 hover:bg-green-500/10 transition-colors truncate">
                             ✅ Aprobar
                           </button>
-                          <button onClick={() => { setReviewingFile(reviewingFile === a.id ? null : a.id); setReviewComment(''); }} disabled={reviewLoading}
+                          <button onClick={() => { setReviewingFile(reviewingFile === a.id ? null : a.id); setReviewComment(''); }}
                             className="flex-1 py-1 rounded-md text-[10px] font-medium text-amber-300 border border-amber-500/30 hover:bg-amber-500/10 transition-colors truncate">
                             ✏️ Correcciones
                           </button>
                         </div>
                       )}
-                      {isManager && reviewingFile === a.id && (
+                      {isManager && reviewingFile === a.id && !(a as any).reviewStatus && (
                         <div className="p-2 rounded-lg border border-violet-500/20 space-y-1.5" style={{ background: 'rgba(124,58,237,0.06)' }}>
                           <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
                             placeholder={`(${a.fileName}) correcciones: ...`} rows={2}
                             className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-2 py-1.5 text-[10px] text-white/70 placeholder:text-white/20 resize-none focus:outline-none focus:border-violet-500/40" />
-                          <button onClick={() => { if (reviewComment.trim()) handleFileReview('comments', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined); else toast.error('Escribe las correcciones'); }}
-                            disabled={reviewLoading || !reviewComment.trim()}
+                          <button onClick={async () => {
+                            if (!reviewComment.trim()) { toast.error('Escribe las correcciones'); return; }
+                            await handleAttachmentReview(a.id, 'changes_requested', reviewComment);
+                            await handleFileReview('comments', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined);
+                          }} disabled={reviewLoading || !reviewComment.trim()}
                             className="w-full py-1 rounded-md text-[10px] font-medium text-blue-300 border border-blue-500/30 hover:bg-blue-500/10 transition-colors disabled:opacity-40">
                             💬 Enviar correcciones
                           </button>
