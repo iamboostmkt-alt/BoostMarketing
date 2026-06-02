@@ -498,7 +498,7 @@ function TasksTab({ roomTasks, room, onRefresh }: { roomTasks: any[]; room: stri
 
 // ─── Main Chat ─────────────────────────────────────────────────────────────────
 function ChatMain({
-  room, title, accentColor, onOpenThread, dmUser, role = '', members = [],
+  room, title, accentColor, onOpenThread, dmUser, role = '', members = [], clients = [],
 }: {
   room: string;
   title: string;
@@ -507,6 +507,7 @@ function ChatMain({
   dmUser?: { id: string; name: string | null; email: string; color?: string; image?: string | null } | null;
   role?: string;
   members?: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string; presence?: { status: string; lastSeen: string } | null }[];
+  clients?: { id: string; name: string; color?: string }[];
 }) {
   const { data: session } = useSession();
   const myId = (session?.user as any)?.id;
@@ -659,10 +660,16 @@ function ChatMain({
 
   useEffect(() => {
     if (activeTab !== 'tasks') return;
-    const clientId = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) ? undefined : room;
-    const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role);
+    const isInternalRoom = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room);
+    const isDM = room.includes('_DM_');
+    // Verificar si el room es un clientId comparando con la lista de clientes
+    const isClientRoom = !isInternalRoom && !isDM && clients.some(c => c.id === room);
+    const clientId = isClientRoom ? room : undefined;
+    const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role ?? '');
     const assignedParam = isManager ? '' : '&assignedToMe=true';
-    const url = clientId ? `/api/tasks?clientId=${clientId}&limit=20${assignedParam}` : `/api/tasks?limit=20${assignedParam}`;
+    const url = clientId
+      ? `/api/tasks?clientId=${clientId}&limit=50${assignedParam}`
+      : `/api/tasks?limit=50${assignedParam}`;
     fetch(url).then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.tasks) setRoomTasks(d.tasks); }).catch(() => {});
   }, [activeTab, room, role]);
@@ -1154,10 +1161,12 @@ function ChatMain({
       {/* Tab: Tasks */}
       {activeTab === 'tasks' && (
         <TasksTab roomTasks={roomTasks} room={room} onRefresh={() => {
-          const clientId = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) ? undefined : room;
+          const isInternalRoom2 = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room);
+          const isDM2 = room.includes('_DM_');
+          const clientId = (!isInternalRoom2 && !isDM2 && clients.some(c => c.id === room)) ? room : undefined;
           const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role || '');
           const assignedParam = isManager ? '' : '&assignedToMe=true';
-          const url = clientId ? `/api/tasks?clientId=${clientId}&limit=30${assignedParam}` : `/api/tasks?limit=30${assignedParam}`;
+          const url = clientId ? `/api/tasks?clientId=${clientId}&limit=50${assignedParam}` : `/api/tasks?limit=50${assignedParam}`;
           fetch(url).then(r => r.ok ? r.json() : null).then(d => { if (d?.tasks) setRoomTasks(d.tasks); }).catch(() => {});
         }} />
       )}
@@ -2096,6 +2105,7 @@ export default function ChatWithChannels() {
             dmUser={activeDmUser}
             role={role}
             members={members}
+            clients={clients}
           />
         )}
       </div>
