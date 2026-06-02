@@ -295,6 +295,35 @@ export function templateFeedbackCliente(
   return b ? emailLayout(content, b) : content;
 }
 
+export function templateCambiosPedidosPM(
+  taskTitle: string,
+  fileName: string,
+  comment: string,
+  assigneeName: string,
+  pmName: string,
+  b?: Branding
+) {
+  const color = '#f59e0b';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;">✏️ Se han solicitado cambios</h2>
+    <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">
+      Hola <strong style="color:#18181b;">${assigneeName}</strong>, 
+      <strong style="color:#18181b;">${pmName}</strong> ha revisado tu entrega y solicita los siguientes cambios.
+    </p>
+    ${infoBox(`
+      <p style="margin:0 0 4px;color:#18181b;font-weight:600;font-size:15px;">📋 ${taskTitle}</p>
+      <p style="margin:4px 0 8px;color:#6b7280;font-size:12px;">📎 Archivo: <strong>${fileName}</strong></p>
+      <div style="border-left:3px solid ${color};padding-left:10px;margin-top:8px;">
+        <p style="margin:0;color:#4b5563;font-size:13px;font-style:italic;">"${comment}"</p>
+      </div>
+    `, color)}
+    <p style="color:#6b7280;font-size:13px;margin:16px 0 0;">
+      Por favor realiza los cambios indicados y vuelve a subir el archivo para revisión.
+    </p>
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver tarea completa', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
 export function templateTareaEditada(taskTitle: string, cambios: Array<{campo: string, antes: string, despues: string}>, b?: Branding) {
   const color = b?.brandColor || '#6366f1';
   const filas = cambios.map(c => `<tr>

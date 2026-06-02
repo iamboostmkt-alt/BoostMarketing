@@ -185,6 +185,24 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
         }).catch(() => {});
       }
 
+      // Correo al equipo con cambios pedidos (non-blocking)
+      if (action === 'comments' && reviewComment) {
+        fetch('/api/tasks/notify-changes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taskId: task.id, fileName, comment: reviewComment }),
+        }).catch(() => {});
+      }
+
+      // Correo al equipo con cambios pedidos (non-blocking)
+      if (action === 'comments' && reviewComment) {
+        fetch('/api/tasks/notify-changes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taskId: task.id, fileName, comment: reviewComment }),
+        }).catch(() => {});
+      }
+
       // Mensaje al chat del room del cliente (solo equipo lo ve)
       if (clientId) {
         const msgMap = {
