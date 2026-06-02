@@ -663,7 +663,9 @@ function ChatMain({
     const isInternalRoom = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room);
     const isDM = room.includes('_DM_');
     // Verificar si el room es un clientId comparando con la lista de clientes
-    const isClientRoom = !isInternalRoom && !isDM && clients.some(c => c.id === room);
+    const isClientRoom = !isInternalRoom && !isDM && (
+      clients.length > 0 ? clients.some(c => c.id === room) : true
+    );
     const clientId = isClientRoom ? room : undefined;
     const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role ?? '');
     const assignedParam = isManager ? '' : '&assignedToMe=true';
@@ -672,7 +674,7 @@ function ChatMain({
       : `/api/tasks?limit=50${assignedParam}`;
     fetch(url).then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.tasks) setRoomTasks(d.tasks); }).catch(() => {});
-  }, [activeTab, room, role]);
+  }, [activeTab, room, role, clients]);
 
   const fetchMessages = useCallback(async () => {
     try {
