@@ -350,7 +350,8 @@ function ChannelList({
             { id: 'ai',       label: 'AI Assistant',  Icon: Sparkles,   href: '/dashboard/ai' },
           ].map(({ id, label, Icon, href }) => (
             <li key={id}>
-              <a href={href} className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/40 transition-colors hover:bg-white/[0.03] hover:text-white/70">
+              <a href={href} className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/40 transition-colors hover:bg-white/[0.03] hover:text-white/70"
+                onClick={e => { e.preventDefault(); window.location.href = href; }}>
                 <Icon className={`h-4 w-4 ${id === 'ai' ? 'text-primary' : 'text-white/30'}`} strokeWidth={1.75} />
                 <span>{label}</span>
               </a>
@@ -1059,8 +1060,10 @@ function ChatMain({
                   isActive ? 'text-white' : 'text-white/35 hover:text-white/60'
                 }`}>
                 {labels[tab]}
-                {tab === 'tasks' && (
-                  <span className="flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-white/[0.08] px-1 text-[10px] font-medium text-white/50">3</span>
+                {tab === 'tasks' && roomTasks.filter(t => !['completed','approved'].includes(t.status)).length > 0 && (
+                  <span className="flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-primary/20 px-1 text-[10px] font-medium text-primary/80">
+                    {roomTasks.filter(t => !['completed','approved'].includes(t.status)).length}
+                  </span>
                 )}
                 {isActive && (
                   <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-primary" />
@@ -1735,8 +1738,8 @@ function ChatMain({
                     {[
                       { cmd: '/tarea', desc: 'Crear tarea rápida', icon: '📋' },
                       { cmd: '/ai', desc: 'Preguntar al AI Assistant (/ia)', icon: '✨' },
+                      { cmd: '/anuncio', desc: 'Enviar anuncio al equipo', icon: '📢' },
                       { cmd: '/recordar', desc: 'Recordatorio', icon: '⏰' },
-                      { cmd: '/giphy', desc: 'Buscar GIF', icon: '🎬' },
                     ].map(({ cmd, desc, icon }) => (
                       <button key={cmd} type="button"
                         onClick={() => {
@@ -1747,6 +1750,9 @@ function ChatMain({
                           } else if (cmd === '/ai') {
                             setShowSlashMenu(false);
                             setInput('/ai ');
+                          } else if (cmd === '/anuncio') {
+                            setShowSlashMenu(false);
+                            setInput('📢 **Anuncio:** ');
                           } else {
                             setInput(cmd + ' ');
                             setShowSlashMenu(false);
