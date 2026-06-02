@@ -419,6 +419,10 @@ function TasksContent() {
       ...c,
       tasks: c.tasks.map((t: any) => t.id === taskId ? { ...t, status: newStatus } : t),
     })));
+    // Remover de reviewTasks si ya no es internal_review ni client_review
+    if (!['internal_review', 'client_review'].includes(newStatus)) {
+      setReviewTasks(prev => prev.filter(t => t.id !== taskId));
+    }
     try {
       const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: taskId, status: newStatus }) });
       if (!res.ok) throw new Error();
