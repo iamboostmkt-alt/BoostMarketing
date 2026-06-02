@@ -177,6 +177,12 @@ export default function TaskCard({
             <h4 className="text-sm font-medium tracking-tight text-white/90 truncate leading-snug">
               {task.title}
             </h4>
+            {(task as any).client && (
+              <p className="text-[10px] text-violet-400/60 font-medium mt-0.5 flex items-center gap-1">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-400/40 shrink-0" />
+                {(task as any).client.name}
+              </p>
+            )}
             {task.description && (
               <p className="mt-0.5 text-xs text-white/35 truncate">
                 {task.description}

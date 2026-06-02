@@ -517,14 +517,40 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
               {/* Image previews */}
               {imageAttachments.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {imageAttachments.map(a => (
-                    <div key={a.id} className="relative group aspect-square rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.06] cursor-pointer" onClick={() => setLightbox(a.fileUrl)}>
-                      <img src={a.fileUrl} alt={a.fileName} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <button onClick={e => { e.stopPropagation(); window.open(a.fileUrl, '_blank'); }} className="p-1 bg-white/20 rounded hover:bg-white/30"><ExternalLink className="w-3 h-3 text-white" /></button>
-                        <button onClick={e => { e.stopPropagation(); handleDelete(a.id); }} className="p-1 bg-red-500/40 rounded hover:bg-red-500/60" disabled={deletingId === a.id}><Trash2 className="w-3 h-3 text-white" /></button>
+                    <div key={a.id} className="flex flex-col gap-1">
+                      <div className="relative group aspect-square rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.06] cursor-pointer" onClick={() => setLightbox(a.fileUrl)}>
+                        <img src={a.fileUrl} alt={a.fileName} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <button onClick={e => { e.stopPropagation(); window.open(a.fileUrl, '_blank'); }} className="p-1 bg-white/20 rounded hover:bg-white/30"><ExternalLink className="w-3 h-3 text-white" /></button>
+                          <button onClick={e => { e.stopPropagation(); handleDelete(a.id); }} className="p-1 bg-red-500/40 rounded hover:bg-red-500/60" disabled={deletingId === a.id}><Trash2 className="w-3 h-3 text-white" /></button>
+                        </div>
                       </div>
+                      {isManager && (
+                        <div className="flex gap-1">
+                          <button onClick={() => handleFileReview('approved', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined)} disabled={reviewLoading}
+                            className="flex-1 py-1 rounded-md text-[10px] font-medium text-green-300 border border-green-500/30 hover:bg-green-500/10 transition-colors truncate">
+                            ✅ Aprobar
+                          </button>
+                          <button onClick={() => { setReviewingFile(reviewingFile === a.id ? null : a.id); setReviewComment(''); }} disabled={reviewLoading}
+                            className="flex-1 py-1 rounded-md text-[10px] font-medium text-amber-300 border border-amber-500/30 hover:bg-amber-500/10 transition-colors truncate">
+                            ✏️ Correcciones
+                          </button>
+                        </div>
+                      )}
+                      {isManager && reviewingFile === a.id && (
+                        <div className="p-2 rounded-lg border border-violet-500/20 space-y-1.5" style={{ background: 'rgba(124,58,237,0.06)' }}>
+                          <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
+                            placeholder={`(${a.fileName}) correcciones: ...`} rows={2}
+                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-2 py-1.5 text-[10px] text-white/70 placeholder:text-white/20 resize-none focus:outline-none focus:border-violet-500/40" />
+                          <button onClick={() => { if (reviewComment.trim()) handleFileReview('comments', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined); else toast.error('Escribe las correcciones'); }}
+                            disabled={reviewLoading || !reviewComment.trim()}
+                            className="w-full py-1 rounded-md text-[10px] font-medium text-blue-300 border border-blue-500/30 hover:bg-blue-500/10 transition-colors disabled:opacity-40">
+                            💬 Enviar correcciones
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
