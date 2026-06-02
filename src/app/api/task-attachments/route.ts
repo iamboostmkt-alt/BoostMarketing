@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { sendMail, templateArchivoSubido } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
 import { rateLimit } from '@/lib/security/rate-limit';
+import { broadcastRealtime } from '@/lib/realtime-server';
 
 
 
@@ -133,6 +134,12 @@ export async function POST(req: NextRequest) {
       }).catch(console.error);
     }
 
+    // Broadcast FILE_UPLOADED para toasts en tiempo real (non-blocking)
+    broadcastRealtime('file.uploaded', {
+      file: { fileName, fileUrl, fileType, taskId },
+      taskTitle: task.title,
+      uploadedBy: result.ctx.name || result.ctx.email,
+    }).catch(() => {});
     return NextResponse.json({ attachment }, { status: 201 });
   } catch (error) {
     console.error('[task-attachments POST]', error);

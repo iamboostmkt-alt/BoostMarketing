@@ -5,6 +5,7 @@ import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 import { sendMail, templateNuevaReunion } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
+import { broadcastRealtime } from '@/lib/realtime-server';
 
 const include = {
   assignedUsers: { include: { user: { select: { id: true, name: true, email: true, color: true, image: true } } } },
@@ -57,6 +58,12 @@ export async function POST(req: NextRequest) {
       if (u.email) getBranding().then(b => sendMail(u.email!, "Nueva reunion asignada - BoostMarketing", templateNuevaReunion(u.name || u.email!, name.trim(), dateStr, (meetUrl ?? "").trim(), b))).catch(console.error);
     }
   }
+  // Broadcast MEETING_SCHEDULED para toasts en tiempo real (non-blocking)
+  broadcastRealtime('meeting.scheduled', {
+    meeting: { id: meeting.id, title: name.trim(), date: parsed.toISOString() },
+    scheduledBy: result.ctx.name || result.ctx.email,
+    assignedUserIds: allMeetingIds,
+  }).catch(() => {});
   return NextResponse.json({ meeting }, { status: 201 });
 }
 
