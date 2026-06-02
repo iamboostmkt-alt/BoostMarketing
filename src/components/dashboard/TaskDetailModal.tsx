@@ -167,11 +167,20 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
       // Notificación + correo de felicitación
       if (action === 'approved') {
+        // Priorizar al usuario que subio el archivo — si no, usar asignados de la tarea
+        const uploaderAttachment = attachments.find(a => a.id === fileId);
+        const uploaderId = (uploaderAttachment as any)?.user?.id;
         const taskAssignees: string[] = [];
-        if ((task as any).assignedUserId) taskAssignees.push((task as any).assignedUserId);
-        (task as any).assignedUsers?.forEach((au: any) => { if (au.userId) taskAssignees.push(au.userId); });
+        if (uploaderId) {
+          taskAssignees.push(uploaderId);
+        } else {
+          if ((task as any).assignedUserId) taskAssignees.push((task as any).assignedUserId);
+          (task as any).assignedUsers?.forEach((au: any) => {
+            const id = au.id || au.userId;
+            if (id) taskAssignees.push(id);
+          });
+        }
         const uniqueAssignees = [...new Set(taskAssignees)];
-        const celebTitle = parentCompleted ? task.title : `${task.title}${isSubtask ? ' (subtarea)' : ''}`;
         // celebrate maneja correos — solo notif in-app aqui
         fetch('/api/tasks/celebrate', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
