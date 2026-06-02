@@ -637,7 +637,7 @@ export default function ClientPortalContent() {
       {/* Chat + Tareas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass-card rounded-2xl p-5">
-          <ChatContent room={client.id} title="Chat con tu equipo" subtitle="Habla en tiempo real con tu Project Manager" />
+          <ChatContent room={client.id} portalMode={true} title="Chat con tu equipo" subtitle="Habla en tiempo real con tu Project Manager" />
         </div>
         <div className="glass-card rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between gap-2">

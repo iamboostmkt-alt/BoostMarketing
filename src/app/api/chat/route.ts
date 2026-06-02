@@ -17,7 +17,7 @@ const reactionUserSelect = { id: true, name: true, color: true } as const;
 
 const messageSelect = {
   id: true, userId: true, message: true, room: true, createdAt: true,
-  fileUrl: true, fileName: true, fileType: true, taskId: true, pinned: true, isSystem: true, systemName: true,
+  fileUrl: true, fileName: true, fileType: true, taskId: true, pinned: true, isSystem: true, systemName: true, isInternal: true,
   user:      { select: userSelect },
   reactions: { include: { user: { select: reactionUserSelect } } },
 } as const;
@@ -107,8 +107,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
   }
 
+  const portalMode = req.nextUrl.searchParams.get('portalMode') === '1';
   const messages = await db.chatMessage.findMany({
-    where:   { room, workspaceId, ...(pinnedOnly ? { pinned: true } : {}) },
+    where:   { room, workspaceId, ...(pinnedOnly ? { pinned: true } : {}), ...(portalMode ? { isInternal: false } : {}) },
     take:    50,
     orderBy: { createdAt: 'desc' },
     select: messageSelect,
@@ -145,8 +146,9 @@ export async function POST(req: NextRequest) {
   const fileType: string | undefined = body.fileType;
   const isSystem: boolean = body.isSystem ?? false;
   const systemName: string | undefined = body.systemName;
+  const isInternal: boolean = body.isInternal ?? false;
   const chatMessage = await db.chatMessage.create({
-    data: { userId, workspaceId, message: text, room, fileUrl, fileName, fileType, isSystem, systemName },
+    data: { userId, workspaceId, message: text, room, fileUrl, fileName, fileType, isSystem, systemName, isInternal },
     select: messageSelect,
   });
 

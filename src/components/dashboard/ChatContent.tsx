@@ -186,6 +186,7 @@ function MentionDropdown({
 
 interface ChatContentProps {
   room?:        string;
+  portalMode?:  boolean;
   title?:       string;
   subtitle?:    string;
   onOpenThread?: (msg: ChatMessage) => void;
@@ -194,6 +195,7 @@ interface ChatContentProps {
 
 export default function ChatContent({
   room         = 'TEAM',
+  portalMode   = false,
   title        = 'Chat del Equipo',
   subtitle     = 'Solo para el equipo interno · tiempo real',
   onOpenThread,
@@ -255,7 +257,7 @@ export default function ChatContent({
   // ── Messages ──────────────────────────────────────────────────────────────
   const fetchMessages = useCallback(async () => {
     try {
-      const res  = await fetch(`/api/chat?room=${encodeURIComponent(room)}`);
+      const res  = await fetch(`/api/chat?room=${encodeURIComponent(room)}${portalMode ? '&portalMode=1' : ''}`);
       if (!res.ok) return;
       const data = await res.json();
       setMessages(data.messages ?? []);

@@ -385,6 +385,7 @@ model ChatMessage {
   pinned      Boolean  @default(false)
   isSystem    Boolean  @default(false) @map("is_system")
   systemName  String?  @map("system_name")   // "Weeklink" | "Boosti" etc
+  isInternal  Boolean  @default(false) @map("is_internal") // true = solo equipo, false = visible al cliente
   reactions   ChatReaction[]
 
   @@index([workspaceId, room, createdAt])
