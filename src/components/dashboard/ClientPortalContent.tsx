@@ -636,7 +636,9 @@ export default function ClientPortalContent() {
 
       {/* Chat + Tareas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-{/* Chat removido — comunicacion via DM directo en Chat */}
+<div className="glass-card rounded-2xl p-5">
+          <ChatContent room={client.id} portalMode={true} title="Chat con tu Project Manager" subtitle="Mensajes directos con tu equipo" />
+        </div>
         <div className="glass-card rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">

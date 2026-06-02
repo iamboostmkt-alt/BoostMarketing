@@ -851,7 +851,7 @@ function ChatMain({
         fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: fullMsg, room, isInternal: true }),
+          body: JSON.stringify({ message: fullMsg, room, isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) || room.includes('_DM_') }),
         }).then(r => r.ok ? r.json() : null).then(d => {
           if (d?.message) {
             setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: d.message.id } : m));
@@ -873,7 +873,7 @@ function ChatMain({
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, room, isInternal: true }),
+          body: JSON.stringify({ message: text, room, isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) || room.includes('_DM_') }),
         });
         if (res.ok) {
           const d = await res.json();
@@ -917,7 +917,7 @@ function ChatMain({
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: fileName || 'Archivo', room, fileUrl, fileName, fileType, isInternal: true }),
+      body: JSON.stringify({ message: fileName || 'Archivo', room, fileUrl, fileName, fileType, isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) || room.includes('_DM_') }),
     }).catch(() => null);
     if (res?.ok) {
       const d = await res.json().catch(() => null);
