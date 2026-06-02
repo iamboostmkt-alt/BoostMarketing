@@ -338,6 +338,41 @@ function ChannelList({
           </ul>
         )}
 
+        {/* Cuentas — DM directo con PM de cada cuenta (solo para clientes) */}
+        {role === 'CLIENT' && clients.length > 0 && (
+          <>
+            <div className="flex items-center px-2 pb-1 pt-4">
+              <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Cuentas</span>
+            </div>
+            <ul className="flex flex-col gap-0.5">
+              {clients.map(c => {
+                const clientColor = (c as any).color || '#8B5CF6';
+                const initials = (c.name || 'C').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
+                const isActive = activeId === c.id;
+                const unread = unreads[c.id] || 0;
+                return (
+                  <li key={c.id}>
+                    <button onClick={() => setActiveId(c.id)}
+                      className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${
+                        isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
+                      }`}>
+                      <div className="relative shrink-0">
+                        <Avatar initials={initials} color={clientColor} size={20} />
+                        <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-card bg-violet-400" />
+                      </div>
+                      <span className="flex-1 truncate text-left">{c.name}</span>
+                      {unread > 0 && (
+                        <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white">
+                          {unread}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
         {/* Apps */}
         <div className="px-2 pb-1 pt-4">
           <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Apps</span>
@@ -816,7 +851,7 @@ function ChatMain({
         fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: fullMsg, room }),
+          body: JSON.stringify({ message: fullMsg, room, isInternal: true }),
         }).then(r => r.ok ? r.json() : null).then(d => {
           if (d?.message) {
             setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: d.message.id } : m));
@@ -838,7 +873,7 @@ function ChatMain({
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, room }),
+          body: JSON.stringify({ message: text, room, isInternal: true }),
         });
         if (res.ok) {
           const d = await res.json();
@@ -882,7 +917,7 @@ function ChatMain({
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: fileName || 'Archivo', room, fileUrl, fileName, fileType }),
+      body: JSON.stringify({ message: fileName || 'Archivo', room, fileUrl, fileName, fileType, isInternal: true }),
     }).catch(() => null);
     if (res?.ok) {
       const d = await res.json().catch(() => null);
