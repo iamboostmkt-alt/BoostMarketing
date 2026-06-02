@@ -122,17 +122,23 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
   // TASK-R-02: actualizar reviewStatus por archivo individual
   async function handleAttachmentReview(attachmentId: string, status: 'approved' | 'changes_requested', comment?: string) {
+    // Actualizar estado local INMEDIATAMENTE para prevenir doble click
+    setAttachments(prev => prev.map(a =>
+      a.id === attachmentId ? { ...a, reviewStatus: status, reviewComment: comment ?? '' } : a
+    ));
     try {
       await fetch(`/api/task-attachments?id=${attachmentId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reviewStatus: status, reviewComment: comment ?? '' }),
       });
-      // Refrescar attachments localmente
+    } catch {
+      // Revertir si falla
       setAttachments(prev => prev.map(a =>
-        a.id === attachmentId ? { ...a, reviewStatus: status, reviewComment: comment ?? '' } : a
+        a.id === attachmentId ? { ...a, reviewStatus: undefined, reviewComment: undefined } : a
       ));
-    } catch { toast.error('Error al guardar revisión'); }
+      toast.error('Error al guardar revisión');
+    }
   }
 
 
@@ -199,9 +205,10 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
       // Correo al equipo con cambios pedidos (non-blocking)
 
+      const isSubtaskApproval = isSubtask;
       // Mensaje al chat del room del cliente con imagen si es aprobacion
       const chatClientId = clientId || (task as any).client?.id;
-      if (chatClientId) {
+      if (chatClientId && !isSubtaskApproval) {
         // PM que aprueba
         const pmName = (task as any).assignedUsers
           ?.find((au: any) => ['ADMIN','PROJECT_MANAGER'].includes(au.role ?? ''))
@@ -815,7 +822,8 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 const clientId = (task as any).clientId || (task as any).client?.id;
                 if (clientId) {
                   const assigneeNames = (task as any).assignedUsers
-                    ?.map((au: any) => au.name || au.email?.split('@')[0])
+                    ?.filter((au: any) => !['ADMIN','PROJECT_MANAGER'].includes(au.role ?? ''))
+                    .map((au: any) => au.name || au.email?.split('@')[0])
                     .filter(Boolean).map((n: string) => `@${n}`).join(' ') || '';
                   await fetch('/api/chat', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
