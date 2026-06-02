@@ -296,13 +296,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ tasks: flattenTasks(page), nextCursor, hasMore });
   }
 
-  // Fallback — mismo comportamiento que antes
+  // Fallback — aplica filterClientId si viene en query
   const tasks = await db.task.findMany({
     where: isClient
       ? { assignedUserId: userId, archivedAt: null, workspaceId }
       : {
           archivedAt: null,
           workspaceId,
+          ...(filterClientId && { clientId: filterClientId }),
           OR: [
             { userId },
             { assignedUserId: userId },
