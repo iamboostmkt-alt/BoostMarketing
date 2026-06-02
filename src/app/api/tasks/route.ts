@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { broadcastRealtime } from "@/lib/realtime-server";
 import { MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { authOptions } from "@/lib/auth";
@@ -422,6 +423,8 @@ export async function POST(req: NextRequest) {
   }
 
   await logAction({ userId, workspaceId, action: "TASK_CREATED", entity: "task", entityId: task.id, details: { title: task.title } });
+  // Broadcast para toasts en tiempo real (non-blocking)
+  broadcastRealtime('task.created', { task: flattenTask(task as any) }).catch(() => {});
   return NextResponse.json({ task: flattenTask(task) }, { status: 201 });
 }
 
@@ -787,6 +790,8 @@ export async function PUT(req: NextRequest) {
   }
 
   await logAction({ userId, workspaceId, action: "TASK_UPDATED", entity: "task", entityId: task.id, details: { status: task.status, title: task.title } });
+  // Broadcast para toasts en tiempo real (non-blocking)
+  broadcastRealtime('task.updated', { task: flattenTask(task) }).catch(() => {});
   return NextResponse.json({ task: flattenTask(task) });
 }
 

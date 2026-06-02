@@ -21,8 +21,7 @@ export async function POST(req: NextRequest) {
   const branding = await getBranding();
   const resolvedPmId = pmId ?? task.userId;
 
-  // Solo enviar felicitación final si el proyecto se completó
-  if (!parentCompleted) return NextResponse.json({ ok: true });
+  // Siempre notificar al equipo cuando se aprueba — parentCompleted solo afecta el mensaje
 
   // Obtener PM
   const pm = resolvedPmId ? await db.user.findUnique({

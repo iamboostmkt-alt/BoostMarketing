@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell, CheckCircle2 } from 'lucide-react';
+import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell, CheckCircle2, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion } from 'framer-motion';
@@ -784,6 +784,17 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 className="border-[#EAB308]/30 text-[#EAB308] hover:text-[#EAB308]/80 hover:bg-[#EAB308]/10 gap-1.5 text-xs h-8">
                 {reminding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bell className="w-3.5 h-3.5" />}
                 {reminding ? 'Enviando...' : 'Recordatorio'}
+              </Button>
+            )}
+            {isManager && ['approved','completed'].includes(task.status) && (
+              <Button size="sm" variant="outline" disabled={reviewLoading} onClick={async () => {
+                if (!onStatusChange) return;
+                await onStatusChange(task.id, 'internal_review');
+                toast.success('Tarea devuelta a revisión');
+                onClose();
+              }}
+                className="gap-1.5 text-xs h-8 border-white/[0.08] text-white/40 hover:text-amber-300 hover:border-amber-500/30 hover:bg-amber-500/10">
+                <RotateCcw className="w-3.5 h-3.5" />Devolver
               </Button>
             )}
             {isManager && !['approved','completed'].includes(task.status) && (
