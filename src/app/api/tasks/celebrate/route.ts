@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
 
   const sends: Promise<void>[] = [];
 
-  // Correo + notif al PM
-  if (pm?.email && !pm.email.endsWith('@boostmkt.com')) {
+  // Correo + notif al PM — solo si proyecto completado
+  if (parentCompleted && pm?.email && !pm.email.endsWith('@boostmkt.com')) {
     sends.push(sendMail(
       pm.email,
       `🏆 ¡Proyecto completado! ${task.title}`,
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     sends.push(
       db.notification.create({ data: {
         userId: uid, workspaceId,
-        message: `🏆 ¡Proyecto completado! El proyecto "${task.title}" fue aprobado. ¡Excelente trabajo, sigue así!`,
+          message: parentCompleted ? `🏆 ¡Proyecto completado! "${task.title}" fue aprobado. ¡Excelente trabajo!` : `⭐ Tu entrega fue aprobada: "${task.title}"`,
         type: 'task', read: false, link: '/dashboard/tasks',
       }}).then(() => undefined).catch(() => undefined)
     );
