@@ -172,13 +172,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
         (task as any).assignedUsers?.forEach((au: any) => { if (au.userId) taskAssignees.push(au.userId); });
         const uniqueAssignees = [...new Set(taskAssignees)];
         const celebTitle = parentCompleted ? task.title : `${task.title}${isSubtask ? ' (subtarea)' : ''}`;
-        for (const uid of uniqueAssignees) {
-          await fetch('/api/notifications', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: uid, message: parentCompleted ? `🏆 ¡Proyecto completado! "${task.title}"` : `⭐ Tu entrega fue aprobada: "${task.title}"`, type: 'task', link: '/dashboard/tasks' }),
-          });
-        }
-        // Correo de felicitación (non-blocking)
+        // celebrate maneja correos — solo notif in-app aqui
         fetch('/api/tasks/celebrate', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ taskId: task.id, parentCompleted, assigneeIds: uniqueAssignees, pmId: (task as any).userId }),

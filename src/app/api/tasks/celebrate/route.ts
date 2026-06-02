@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
-import { sendMail, templateFelicitacion } from "@/lib/mailer";
+import { sendMail, templateFelicitacion, templateCambioEstado } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
 
 export async function POST(req: NextRequest) {
@@ -56,13 +56,21 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Correo + notif al team
+  // Correo al team — celebracion completa si proyecto done, simple si solo aprobacion
   for (const u of teamUsers.filter(u => u.email && !u.email.endsWith('@boostmkt.com'))) {
-    sends.push(sendMail(
-      u.email!,
-      `🏆 ¡Proyecto completado! ${task.title}`,
-      templateFelicitacion(u.name ?? 'Equipo', task.title, true, branding, 'team')
-    ));
+    if (parentCompleted) {
+      sends.push(sendMail(
+        u.email!,
+        `🏆 ¡Proyecto completado! ${task.title}`,
+        templateFelicitacion(u.name ?? 'Equipo', task.title, true, branding, 'team')
+      ));
+    } else {
+      sends.push(sendMail(
+        u.email!,
+        `✅ Tarea aprobada: ${task.title}`,
+        templateCambioEstado(task.title, 'internal_review', 'approved', branding, u.name ?? undefined)
+      ));
+    }
   }
   for (const uid of teamIds) {
     sends.push(
