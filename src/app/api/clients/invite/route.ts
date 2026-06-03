@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
           if (pm) { pmName = pm.name || pmName; pmEmail = pm.email; }
         }
         const branding = await getBranding();
-        const portalUrl = `${process.env.NEXTAUTH_URL}/dashboard/client-portal`;
+        const portalUrl = `${process.env.NEXTAUTH_URL || "https://boostmarketingboost.com"}/dashboard/client-portal`;
         await sendMail(
           clientEmail,
           `Bienvenido/a a tu portal — ${pmName}`,
@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
     });
 
     const branding = await getBranding();
-    const portalUrl = `${process.env.NEXTAUTH_URL}/dashboard/client-portal`;
-    const APP_URL = process.env.NEXTAUTH_URL || '';
+    const portalUrl = `${process.env.NEXTAUTH_URL || "https://boostmarketingboost.com"}/dashboard/client-portal`;
+    const APP_URL = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "https://boostmarketingboost.com";
     const pmName = client.assignedManager?.name || 'Tu Project Manager';
 
     let inviteUrl = portalUrl;

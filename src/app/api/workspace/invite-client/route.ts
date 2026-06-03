@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   });
 
   const workspace = await db.workspace.findUnique({ where: { id: workspaceId }, select: { name: true } });
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
+  const APP_URL = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "https://boostmarketingboost.com";
   const inviteUrl = `${APP_URL}/invite/${token}`;
 
   await sendMail(

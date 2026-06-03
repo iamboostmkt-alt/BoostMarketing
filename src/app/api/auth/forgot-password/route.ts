@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     await db.passwordResetToken.create({ data: { email, token, expires } });
 
-    const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL || "https://boostmarketingboost.com";
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
     await sendPasswordResetEmail(email, resetUrl);

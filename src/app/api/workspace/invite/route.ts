@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   const inviter = await db.user.findUnique({ where: { id: userId }, select: { name: true } });
   const branding = await getBranding();
   // Usar NEXTAUTH_URL consistente con el resto del sistema
-  const APP_URL = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || '';
+  const APP_URL = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "https://boostmarketingboost.com";
   const inviteUrl = `${APP_URL}/invite/${token}`;
 
   await sendMail(
