@@ -53,17 +53,21 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "
 export function templateNuevaTarea(title: string, description: string, dueDate?: string, b?: Branding, userName?: string) {
   const color = b?.brandColor || '#7c3aed';
   const greeting = userName ? `Hola <strong>${userName}</strong>,` : 'Hola,';
+  // Truncar descripción larga — mostrar solo un resumen en el correo
+  const descPreview = description && description.length > 180
+    ? description.slice(0, 180).trimEnd() + '...'
+    : description;
   const content = `
     <p style="color:#6b7280;font-size:15px;margin:0 0 16px;">${greeting}</p>
     <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;font-weight:700;">📌 Se te asignó una nueva tarea</h2>
     <p style="color:#6b7280;margin:0 0 20px;font-size:14px;">Revisa los detalles y asegúrate de completarla a tiempo.</p>
     ${infoBox(`
       <p style="margin:0 0 6px;color:#18181b;font-weight:700;font-size:16px;">${title}</p>
-      ${description ? `<p style="margin:0 0 8px;color:#6b7280;font-size:14px;">${description}</p>` : ''}
+      ${descPreview ? `<p style="margin:0 0 8px;color:#6b7280;font-size:14px;line-height:1.5;">${descPreview}</p>` : ''}
       ${dueDate ? `<p style="margin:8px 0 0;color:#f59e0b;font-size:13px;font-weight:600;">⏰ Fecha límite: ${dueDate}</p>` : ''}
     `, color)}
     <p style="color:#9ca3af;font-size:13px;margin:0 0 20px;">Si tienes dudas, comunícate con tu PM.</p>
-    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver tarea', color)}`;
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver tarea completa', color)}`;
   return b ? emailLayout(content, b) : content;
 }
 
@@ -78,11 +82,11 @@ export function templateSubtareaAsignada(title: string, parentTitle: string, des
       <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Parte de</p>
       <p style="margin:0 0 10px;color:#6b7280;font-size:13px;font-weight:600;">${parentTitle}</p>
       <p style="margin:0 0 6px;color:#18181b;font-weight:700;font-size:16px;">${title}</p>
-      ${description ? `<p style="margin:0 0 8px;color:#6b7280;font-size:14px;">${description}</p>` : ''}
+      ${description ? `<p style="margin:0 0 8px;color:#6b7280;font-size:14px;line-height:1.5;">${description.length > 180 ? description.slice(0,180)+'...' : description}</p>` : ''}
       ${dueDate ? `<p style="margin:8px 0 0;color:#f59e0b;font-size:13px;font-weight:600;">⏰ Fecha límite: ${dueDate}</p>` : ''}
     `, color)}
     <p style="color:#9ca3af;font-size:13px;margin:0 0 20px;">Si tienes dudas, comunícate con tu PM.</p>
-    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver mi tarea', color)}`;
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver tarea completa', color)}`;
   return b ? emailLayout(content, b) : content;
 }
 

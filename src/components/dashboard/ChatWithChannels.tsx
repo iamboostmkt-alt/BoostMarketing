@@ -1459,19 +1459,24 @@ FORMATO:
                   </div>
                 )}
 
-                <div className="flex gap-3">
-                  {isSame ? (
-                    <div className="w-9 shrink-0 pt-0.5 text-right">
-                      <span className="text-[10px] text-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  ) : (
-                    <Avatar initials={initials} color={color} size={28} className="mt-0.5 shrink-0" image={(msg.user as any)?.image} />
+                {/* Layout de burbuja: propio (derecha) vs ajeno (izquierda) */}
+                <div className={`flex gap-2.5 ${isMe && !isSystemMsg ? 'flex-row-reverse' : ''}`}>
+                  {/* Avatar — solo para mensajes ajenos y sistema */}
+                  {(!isMe || isSystemMsg) && (
+                    isSame && !isSystemMsg ? (
+                      <div className="w-7 shrink-0" />
+                    ) : (
+                      <Avatar initials={initials} color={color} size={28} className="mt-0.5 shrink-0" image={(msg.user as any)?.image} />
+                    )
                   )}
-                  <div className="min-w-0 flex-1">
+                  {/* Mensaje propio — sin avatar, alineado derecha */}
+                  {isMe && !isSystemMsg && isSame && (
+                    <div className="w-7 shrink-0" />
+                  )}
+
+                  <div className={`min-w-0 ${isMe && !isSystemMsg ? 'flex flex-col items-end max-w-[72%]' : 'flex-1'}`}>
                     {!isSame && (
-                      <div className="mb-0.5 flex items-baseline gap-2">
+                      <div className={`mb-0.5 flex items-baseline gap-2 ${isMe && !isSystemMsg ? 'flex-row-reverse' : ''}`}>
                         <span className="text-[12px] font-semibold leading-none text-white/95">
                           {isSystemMsg ? systemMsgName : ((msg.user as any)?.name || (msg.user as any)?.email)}
                           {isSystemMsg && <span className="ml-1.5 text-[10px] font-normal text-violet-400/70">bot</span>}
@@ -1514,7 +1519,17 @@ FORMATO:
                         </div>
                       </div>
                     ) : (
-                      <div className="text-[12.5px] leading-[1.45] text-white/75">
+                      <div className={`text-[12.5px] leading-[1.45] ${
+                        isSystemMsg
+                          ? 'text-white/70' // mensajes del bot — sin burbuja
+                          : isMe
+                            ? 'inline-block rounded-[18px] rounded-tr-[4px] px-3.5 py-2 text-white max-w-full'  // burbuja propia — morada
+                            : 'inline-block rounded-[18px] rounded-tl-[4px] px-3.5 py-2 text-white/85 max-w-full' // burbuja ajena — gris
+                      }`}
+                        style={isSystemMsg ? {} : isMe
+                          ? { background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' }
+                          : { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.05)' }
+                        }>
                         {renderMessage(msg.message)}
                       </div>
                     )}

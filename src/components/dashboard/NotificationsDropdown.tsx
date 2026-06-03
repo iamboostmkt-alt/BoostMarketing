@@ -347,7 +347,13 @@ export function NotificationsDropdown() {
                             </button>
                           </div>
                         )}
-                        <p className="text-[11px] text-white/30 mt-1">{timeAgo}</p>
+                        <p className="text-[11px] text-white/30 mt-1 flex items-center gap-1.5">
+                          <span>{new Date(n.createdAt).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                          <span className="text-white/15">·</span>
+                          <span>{new Date(n.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</span>
+                          <span className="text-white/15">·</span>
+                          <span>{timeAgo}</span>
+                        </p>
                       </div>
                       {/* Dot no leído */}
                       {!n.read && (
