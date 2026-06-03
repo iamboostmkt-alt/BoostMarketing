@@ -628,7 +628,7 @@ export async function PUT(req: NextRequest) {
       }
       if (pm) {
         await createNotification({
-          userId: pm.id, workspaceId, message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`, type: "task", actorId: userId, actorName: userName, actorImage: userImage,
+          userId: pm.id, workspaceId, message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`, type: "task", actorId: userId, actorName: userName, actorImage: userImage ?? undefined,
         });
         if (pm.email) {
           sendMail(pm.email, `⏳ Tarea lista para revisión: ${task.title}`,
