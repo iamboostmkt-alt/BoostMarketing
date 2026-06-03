@@ -338,11 +338,11 @@ function ChannelList({
           </ul>
         )}
 
-        {/* Cuentas — DM directo con PM de cada cuenta (solo para clientes) */}
-        {role === 'CLIENT' && clients.length > 0 && (
+        {/* Chats con clientes — visible para ADMIN y el propio cliente */}
+        {(role === 'CLIENT' || role === 'ADMIN') && clients.length > 0 && (
           <>
             <div className="flex items-center px-2 pb-1 pt-4">
-              <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Cuentas</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Chats con clientes</span>
             </div>
             <ul className="flex flex-col gap-0.5">
               {clients.map(c => {
