@@ -38,6 +38,8 @@ export const RT_EVENTS = {
   MEETING_SCHEDULED:  'meeting.scheduled',
   INVITE_SENT:        'invite.sent',
   TASK_DUE_SOON:      'task.due_soon',
+  CLIENT_UPDATED:     'client.updated',
+  USER_UPDATED:       'user.updated',
 } as const;
 
 export type RTEventName = (typeof RT_EVENTS)[keyof typeof RT_EVENTS];

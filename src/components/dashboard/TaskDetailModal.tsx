@@ -214,16 +214,20 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
           ?.find((au: any) => ['ADMIN','PROJECT_MANAGER'].includes(au.role ?? ''))
           ?.name || 'PM';
         // Team members que hicieron la tarea
-        const assigneeNames = (task as any).assignedUsers
-          ?.filter((au: any) => !['ADMIN','PROJECT_MANAGER'].includes(au.role ?? ''))
-          .map((au: any) => au.name || au.email?.split('@')[0])
+        // Obtener team members correctamente (excluir PM y ADMIN por role)
+        const _allAssigned = (task as any).assignedUsers ?? [];
+        const _teamMembers = _allAssigned.filter((au: any) =>
+          !['ADMIN','PROJECT_MANAGER'].includes(au.role ?? au.user?.role ?? '')
+        );
+        const assigneeNames = _teamMembers
+          .map((au: any) => au.name || au.user?.name || au.email?.split('@')[0])
           .filter(Boolean)
           .map((n: string) => `@${n}`)
           .join(' ') || '';
         const msgMap = {
           approved:    assigneeNames
-            ? `@${pmName} marcó como aprobada ✅\n🎉 ¡Felicidades ${assigneeNames}! Tu entrega fue aprobada`
-            : `@${pmName} marcó como aprobada: "${fileName}" ✅`,
+            ? `🎉 ¡Felicidades ${assigneeNames}! Tu entrega fue aprobada ✅\n📎 ${fileName}`
+            : `✅ Entrega aprobada: "${fileName}"`,
           comments:    `💬 Comentarios sobre "${fileName}": ${reviewComment}`,
           new_version: `🔄 Se solicita nueva versión de: "${fileName}"`,
         };
@@ -821,19 +825,24 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 // Mensaje de felicitacion en chat
                 const clientId = (task as any).clientId || (task as any).client?.id;
                 if (clientId) {
-                  const assigneeNames = (task as any).assignedUsers
-                    ?.filter((au: any) => !['ADMIN','PROJECT_MANAGER'].includes(au.role ?? ''))
-                    .map((au: any) => au.name || au.email?.split('@')[0])
+                  // Obtener team members correctamente para el mensaje de felicitación
+                  const _assigned2 = (task as any).assignedUsers ?? [];
+                  const _team2 = _assigned2.filter((au: any) =>
+                    !['ADMIN','PROJECT_MANAGER'].includes(au.role ?? au.user?.role ?? '')
+                  );
+                  const mentions2 = _team2
+                    .map((au: any) => au.name || au.user?.name || au.email?.split('@')[0])
                     .filter(Boolean).map((n: string) => `@${n}`).join(' ') || '';
                   await fetch('/api/chat', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       room: clientId,
-                      message: assigneeNames
-                        ? `🎉 ¡Felicidades ${assigneeNames}! La tarea "${task.title}" fue aprobada ✅`
+                      message: mentions2
+                        ? `🎉 ¡Felicidades ${mentions2}! La tarea "${task.title}" fue aprobada ✅`
                         : `✅ Tarea aprobada: "${task.title}"`,
                       isSystem: true,
                       systemName: 'Weeklink',
+                      isInternal: false,
                     }),
                   }).catch(() => {});
                 }

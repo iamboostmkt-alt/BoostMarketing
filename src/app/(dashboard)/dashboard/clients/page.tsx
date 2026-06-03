@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
+import { bus, RT_EVENTS } from '@/lib/event-bus';
 import {
   Plus, Search, Mail, Building2, Phone,
   UserCheck, MoreHorizontal, X, Pencil, Trash2, Calendar,
@@ -380,6 +381,12 @@ export default function ClientsPage() {
     } catch { toast.error('Error al cargar'); }
     finally { setLoading(false); }
   }, [search]);
+
+  // Auto-refresh cuando otro usuario activa su portal o se actualiza un cliente
+  useEffect(() => {
+    const unsub = bus.on(RT_EVENTS.CLIENT_UPDATED, () => { fetchClients(); });
+    return () => unsub();
+  }, [fetchClients]);
 
   useEffect(() => {
     const t = setTimeout(() => fetchClients(), 300);

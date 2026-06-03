@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { sendMail, templateNuevaReunion } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
 import { broadcastRealtime } from '@/lib/realtime-server';
+import { sendChatBotMessage } from '@/lib/chat-bot';
 
 const include = {
   assignedUsers: { include: { user: { select: { id: true, name: true, email: true, color: true, image: true } } } },
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
   const validation = validateBody(MeetingCreateSchema, rawBody);
   if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
   const { name, date, notes, meetUrl, assignedUserIds, status } = validation.data;
+  const clientId = (rawBody as any).clientId as string | null ?? null;
   const parsed = new Date(date);
   const allMeetingIds = [...new Set([userId, ...(assignedUserIds ?? [])])] as string[];
   const meeting = await db.appointment.create({
@@ -47,6 +49,7 @@ export async function POST(req: NextRequest) {
       meetUrl: (meetUrl ?? "").trim(),
       status: (status as string) || "pending",
       workspaceId,
+      ...(clientId ? { clientId } : {}),
       assignedUsers: { create: allMeetingIds.map((uid: string) => ({ userId: uid })) },
     },
     include,
@@ -64,6 +67,30 @@ export async function POST(req: NextRequest) {
     scheduledBy: result.ctx.name || result.ctx.email,
     assignedUserIds: allMeetingIds,
   }).catch(() => {});
+  // Mensaje bot en chat: room del cliente si existe, o DM a los asignados
+  const dateLabel = parsed.toLocaleDateString('es-MX', {
+    weekday: 'short', day: 'numeric', month: 'short',
+    hour: '2-digit', minute: '2-digit',
+  });
+  const meetLink  = (meetUrl ?? '').trim();
+  const chatMsg   = [
+    `📅 **Reunión agendada: ${name.trim()}**`,
+    `🗓 ${dateLabel}`,
+    meetLink ? `🔗 ${meetLink}` : null,
+    allMeetingIds.length > 1
+      ? `👥 ${allMeetingIds.length} participantes`
+      : null,
+  ].filter(Boolean).join('\n');
+
+  sendChatBotMessage({
+    workspaceId,
+    message: chatMsg,
+    clientId,
+    assignedUserIds: allMeetingIds.filter(id => id !== userId),
+    senderId: userId,
+    isInternal: true,
+  }).catch(() => {});
+
   return NextResponse.json({ meeting }, { status: 201 });
 }
 

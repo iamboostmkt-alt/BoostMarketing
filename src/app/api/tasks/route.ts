@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { logAction } from "@/lib/audit";
 import { createNotification, createNotifications } from "@/lib/notifications";
+import { sendChatBotMessage, buildMentions } from "@/lib/chat-bot";
 import { normalizeTaskStatus } from "@/lib/task-status";
 import {
   sendMail,
@@ -426,6 +427,30 @@ export async function POST(req: NextRequest) {
   await logAction({ userId, workspaceId, action: "TASK_CREATED", entity: "task", entityId: task.id, details: { title: task.title } });
   // Broadcast para toasts en tiempo real (non-blocking)
   broadcastRealtime('task.created', { task: flattenTask(task as any) }).catch(() => {});
+
+  // Mensaje bot en chat: room del cliente o DM personal a asignados (non-blocking)
+  try {
+    const _assignedIds: string[] = [];
+    if (task.assignedUserId) _assignedIds.push(task.assignedUserId);
+    (task.assignedUsers ?? []).forEach((au: any) => { if (au.userId || au.user?.id) _assignedIds.push(au.userId ?? au.user.id); });
+    const _uniqueIds = [...new Set(_assignedIds)].filter(id => id !== userId);
+    if (_uniqueIds.length > 0 || task.clientId) {
+      const _users = _uniqueIds.length > 0
+        ? await db.user.findMany({ where: { id: { in: _uniqueIds } }, select: { id: true, name: true, email: true, role: true } })
+        : [];
+      const _mentions = buildMentions(_users);
+      const _chatMsg  = _mentions
+        ? `📌 Nueva tarea asignada a ${_mentions}: **${task.title}**`
+        : `📌 Nueva tarea: **${task.title}**`;
+      sendChatBotMessage({
+        workspaceId, message: _chatMsg,
+        clientId: task.clientId ?? null,
+        assignedUserIds: _uniqueIds,
+        senderId: userId, isInternal: true,
+      }).catch(() => {});
+    }
+  } catch { /* non-critical */ }
+
   return NextResponse.json({ task: flattenTask(task) }, { status: 201 });
 }
 

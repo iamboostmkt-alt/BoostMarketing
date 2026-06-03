@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { bus, RT_EVENTS } from '@/lib/event-bus';
 import { toast } from 'sonner';
 import {
   Shield,
@@ -568,6 +569,12 @@ export default function AdminDashboardPage() {
     const t = setTimeout(() => { fetchUsers(search, userListView); }, 350);
     return () => clearTimeout(t);
   }, [search, fetchUsers, isAdmin, userListView]);
+
+  // Auto-refresh cuando un usuario acepta invitación o cambia de rol
+  useEffect(() => {
+    const unsub = bus.on(RT_EVENTS.USER_UPDATED, () => { void fetchUsers(search, userListView); });
+    return () => unsub();
+  }, [fetchUsers, search, userListView]);
 
   async function handleToggleActive(user: AdminUser) {
     setTogglingUser(user.id);

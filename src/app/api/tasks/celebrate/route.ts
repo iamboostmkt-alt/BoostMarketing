@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
+import { sendChatBotMessage, buildMentions } from "@/lib/chat-bot";
 import { sendMail, templateFelicitacion, templateCambioEstado } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
 
@@ -18,7 +19,11 @@ export async function POST(req: NextRequest) {
 
   const task = await db.task.findFirst({
     where: { id: taskId, workspaceId },
-    select: { title: true, userId: true },
+    select: {
+      title: true, userId: true, clientId: true,
+      assignedUsers: { include: { user: { select: { id: true, name: true, email: true, role: true } } } },
+      parentTask: { select: { id: true, title: true } },
+    },
   });
   if (!task) return NextResponse.json({ ok: true });
 
@@ -89,5 +94,34 @@ export async function POST(req: NextRequest) {
   }
 
   await Promise.allSettled(sends);
+
+  // Mensaje bot en chat con @menciones correctas
+  // Solo team members (no PM/ADMIN) reciben la felicitación
+  const flatAssignees = (task.assignedUsers ?? []).map((au: any) => au.user ?? au);
+  const teamMembers   = flatAssignees.filter((u: any) =>
+    !['ADMIN', 'PROJECT_MANAGER'].includes(u.role ?? '')
+  );
+  const mentions = buildMentions(teamMembers);
+
+  let chatMsg: string;
+  if (parentCompleted) {
+    chatMsg = mentions
+      ? `🏆 ¡Proyecto completado! ${mentions} — ¡Excelente trabajo en "${task.title}"!`
+      : `🏆 ¡Proyecto completado! "${task.title}" fue aprobado exitosamente.`;
+  } else if (teamMembers.length > 0) {
+    chatMsg = `🎉 ¡Felicidades ${mentions}! Tu entrega fue aprobada ✅\n📌 ${task.title}`;
+  } else {
+    chatMsg = `✅ Tarea aprobada: "${task.title}"`;
+  }
+
+  sendChatBotMessage({
+    workspaceId,
+    message: chatMsg,
+    clientId: task.clientId ?? null,
+    assignedUserIds: teamMembers.map((u: any) => u.id),
+    senderId: actorId,
+    isInternal: false, // visible al cliente en su portal
+  }).catch(() => {});
+
   return NextResponse.json({ ok: true });
 }

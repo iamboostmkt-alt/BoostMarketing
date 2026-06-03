@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { broadcastRealtime } from '@/lib/realtime-server';
 
 const Schema = z.object({
   token: z.string().min(1),
@@ -68,6 +69,10 @@ export async function POST(req: NextRequest) {
     },
     data: { portalStatus: 'active' },
   });
+
+  // Broadcast RT para que gestión de clientes y admin se actualicen sin F5
+  broadcastRealtime('client.updated', { workspaceId: invite.workspaceId }).catch(() => {});
+  broadcastRealtime('user.updated',   { workspaceId: invite.workspaceId }).catch(() => {});
 
   return NextResponse.json({ ok: true, email: invite.email });
 }
