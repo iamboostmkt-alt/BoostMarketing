@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
     const emails = sidebarClients.map((c) => c.email).filter(Boolean);
     const portalUsers = emails.length > 0
       ? await db.user.findMany({
-          where: { workspaceId, email: { in: emails }, role: "CLIENT" },
+          where: { workspaceId, email: { in: emails } }, // cualquier rol — el email define el portal
           select: { id: true, email: true },
         })
       : [];

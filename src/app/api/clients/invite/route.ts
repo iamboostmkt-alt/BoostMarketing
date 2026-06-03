@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { requireWorkspace } from '@/core/auth/require-workspace';
 import { sendMail, templateBienvenidaCliente } from '@/lib/mailer';
 import { getBranding, emailLayout } from '@/lib/branding';
+import { randomBytes } from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,11 +56,35 @@ export async function POST(req: NextRequest) {
     });
 
     const branding = await getBranding();
-    const loginUrl = `${process.env.NEXTAUTH_URL}/login`;
-    const registerUrl = `${process.env.NEXTAUTH_URL}/register`;
     const portalUrl = `${process.env.NEXTAUTH_URL}/dashboard/client-portal`;
-
+    const APP_URL = process.env.NEXTAUTH_URL || '';
     const pmName = client.assignedManager?.name || 'Tu Project Manager';
+
+    let inviteUrl = portalUrl;
+
+    if (!existingUser) {
+      // Fix 2: cliente sin cuenta → crear WorkspaceInvite con role=CLIENT
+      // y mandar a /invite/[token] en lugar de /register (que crearía un workspace nuevo)
+      await db.workspaceInvite.updateMany({
+        where: { email: { equals: client.email, mode: 'insensitive' }, workspaceId, usedAt: null },
+        data: { expiresAt: new Date() },
+      });
+      const token = randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      await db.workspaceInvite.create({
+        data: {
+          workspaceId,
+          email: client.email.toLowerCase(),
+          role: 'CLIENT',
+          token,
+          invitedBy: result.ctx.userId,
+          expiresAt,
+          isClient: true,
+          clientName: client.name,
+        },
+      });
+      inviteUrl = `${APP_URL}/invite/${token}`;
+    }
 
     const bodyHtml = existingUser ? `
       <h2 style="color:white;margin:0 0 16px">Accede a tu portal de cliente</h2>
@@ -75,13 +100,14 @@ export async function POST(req: NextRequest) {
     ` : `
       <h2 style="color:white;margin:0 0 16px">Bienvenido a ${branding.brandName}</h2>
       <p style="color:rgba(255,255,255,0.7);margin:0 0 24px">
-        Hola <strong style="color:white">${client.name}</strong>, ${pmName} ha creado tu espacio de trabajo en ${branding.brandName}. Crea tu cuenta para acceder a tu portal de cliente.
+        Hola <strong style="color:white">${client.name}</strong>, ${pmName} ha creado tu espacio en ${branding.brandName}.
+        Crea tu cuenta para acceder a tu portal de cliente y seguir el avance de tus proyectos.
       </p>
-      <a href="${registerUrl}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin-bottom:24px">
+      <a href="${inviteUrl}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin-bottom:24px">
         Crear mi cuenta →
       </a>
       <p style="color:rgba(255,255,255,0.4);font-size:13px">
-        Usa este email al registrarte: <strong style="color:rgba(255,255,255,0.6)">${client.email}</strong>
+        Este link expira en 7 días. Tu email de acceso: <strong style="color:rgba(255,255,255,0.6)">${client.email}</strong>
       </p>
     `;
 
