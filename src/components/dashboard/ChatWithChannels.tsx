@@ -348,11 +348,14 @@ function ChannelList({
               {clients.map(c => {
                 const clientColor = (c as any).color || '#8B5CF6';
                 const initials = (c.name || 'C').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
-                const isActive = activeId === c.id;
-                const unread = unreads[c.id] || 0;
+                // DM room entre el PM asignado y el cliente
+                const pmId = (c as any).assignedManagerId;
+                const clientRoomId = pmId ? [myId, pmId].sort().join('_DM_') : c.id;
+                const isActive = activeId === clientRoomId;
+                const unread = unreads[clientRoomId] || 0;
                 return (
                   <li key={c.id}>
-                    <button onClick={() => setActiveId(c.id)}
+                    <button onClick={() => setActiveId(clientRoomId)}
                       className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${
                         isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
                       }`}>

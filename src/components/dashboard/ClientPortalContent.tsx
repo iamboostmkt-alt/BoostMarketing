@@ -123,6 +123,7 @@ interface ClientSummary {
 
 export default function ClientPortalContent() {
   const { data: session } = useSession();
+  const myUserId = (session?.user as any)?.id;
   const router            = useRouter();
   const currentUserRole   = (session?.user as { role?: string })?.role ?? 'CLIENT';
   const isManager         = MANAGER_ROLES.includes(currentUserRole as any);
@@ -637,7 +638,17 @@ export default function ClientPortalContent() {
       {/* Chat + Tareas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 <div className="glass-card rounded-2xl p-5">
-          <ChatContent room={client.id} portalMode={true} title="Chat con tu Project Manager" subtitle="Mensajes directos con tu equipo" />
+          {(() => {
+            const pmId = client.assignedManagerId;
+            const dmRoom = pmId && myUserId ? [myUserId, pmId].sort().join('_DM_') : null;
+            return dmRoom ? (
+              <ChatContent room={dmRoom} title="Chat con tu Project Manager" subtitle="Mensajes directos con tu PM" />
+            ) : (
+              <div className="flex items-center justify-center py-8 text-white/30 text-sm">
+                Sin Project Manager asignado
+              </div>
+            );
+          })()}
         </div>
         <div className="glass-card rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between gap-2">
