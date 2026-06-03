@@ -392,19 +392,63 @@ export function templateNuevoClienteAsignado(pmName: string, clientName: string,
   return b ? emailLayout(content, b) : content;
 }
 
-export function templateBienvenidaCliente(clientName: string, pmName: string, pmEmail: string, portalUrl: string, tempPassword?: string, b?: Branding) {
+export function templateBienvenidaCliente(clientName: string, pmName: string, pmEmail: string, portalUrl: string, _tempPassword?: string, b?: Branding) {
+  // _tempPassword ignorado — flujo nuevo usa link mágico de activación
   const color = b?.brandColor || '#7c3aed';
   const brandName = b?.brandName || 'BoostMarketing';
   const content = `
     <h2 style="color:#18181b;margin:0 0 8px;font-size:22px;">👋 Bienvenido/a, ${clientName}!</h2>
-    <p style="color:#6b7280;margin:0 0 20px;">Tu cuenta en <strong style="color:#18181b;">${brandName}</strong> ha sido creada. Tu Project Manager asignado es <strong style="color:#18181b;">${pmName}</strong>.</p>
-    ${tempPassword ? infoBox(`
-      <p style="margin:0 0 4px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Contraseña temporal</p>
-      <p style="margin:0;font-family:monospace;font-size:20px;font-weight:700;color:#18181b;letter-spacing:3px;">${tempPassword}</p>
-      <p style="margin:8px 0 0;color:#9ca3af;font-size:12px;">Cámbiala al ingresar por primera vez.</p>
-    `, color) : ''}
+    <p style="color:#6b7280;margin:0 0 20px;">
+      Tu Project Manager <strong style="color:#18181b;">${pmName}</strong> te ha dado acceso al portal de clientes en
+      <strong style="color:#18181b;">${brandName}</strong>.
+    </p>
     ${btn(portalUrl, 'Acceder a mi portal →', color)}
     <p style="color:#9ca3af;font-size:13px;text-align:center;">¿Dudas? Escríbele a tu PM: <a href="mailto:${pmEmail}" style="color:${color};">${pmEmail}</a></p>`;
+  return b ? emailLayout(content, b) : content;
+}
+
+// Template invitación de activación portal (link mágico)
+export function templateActivacionPortal(clientName: string, workspaceName: string, inviteUrl: string, pmName: string, pmEmail: string, b?: Branding) {
+  const color = b?.brandColor || '#7c3aed';
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:22px;">🔐 Activa tu portal de cliente</h2>
+    <p style="color:#6b7280;margin:0 0 8px;">
+      Hola <strong style="color:#18181b;">${clientName}</strong>, <strong style="color:#18181b;">${pmName}</strong> te ha dado acceso al portal de clientes en
+      <strong style="color:#18181b;">${workspaceName}</strong>.
+    </p>
+    <p style="color:#6b7280;margin:0 0 20px;">
+      Haz clic en el botón para elegir tu contraseña y activar tu cuenta.
+    </p>
+    ${infoBox(`
+      <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Este link expira en 7 días</p>
+      <p style="margin:0;color:#18181b;font-size:13px;">Una vez activada tu cuenta, podrás seguir el avance de tus proyectos, aprobar entregables y comunicarte con el equipo.</p>
+    `, color)}
+    ${btn(inviteUrl, 'Activar mi portal →', color)}
+    <p style="color:#9ca3af;font-size:13px;text-align:center;">¿Dudas? Escríbele a tu PM: <a href="mailto:${pmEmail}" style="color:${color};">${pmEmail}</a></p>`;
+  return b ? emailLayout(content, b) : content;
+}
+
+// Template invitación para miembros del equipo
+export function templateInvitacionEquipo(inviterName: string, workspaceName: string, role: string, inviteUrl: string, b?: Branding) {
+  const color = b?.brandColor || '#7c3aed';
+  const roleLabels: Record<string, string> = {
+    ADMIN: 'Administrador', PROJECT_MANAGER: 'Project Manager',
+    TEAM_MEMBER: 'Miembro del equipo', DESIGNER: 'Diseñador',
+    MARKETING: 'Marketing', SALES_REP: 'Ventas',
+  };
+  const roleLabel = roleLabels[role] ?? role;
+  const content = `
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:22px;">✉️ Tienes una invitación</h2>
+    <p style="color:#6b7280;margin:0 0 20px;">
+      <strong style="color:#18181b;">${inviterName}</strong> te invitó a unirte al workspace
+      <strong style="color:#18181b;">${workspaceName}</strong>.
+    </p>
+    ${infoBox(`
+      <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Tu rol</p>
+      <p style="margin:0;color:#18181b;font-weight:600;font-size:16px;">${roleLabel}</p>
+    `, color)}
+    ${btn(inviteUrl, 'Aceptar invitación →', color)}
+    <p style="color:#9ca3af;font-size:13px;text-align:center;">Este link expira en 7 días. Si no esperabas esta invitación, ignóralo.</p>`;
   return b ? emailLayout(content, b) : content;
 }
 

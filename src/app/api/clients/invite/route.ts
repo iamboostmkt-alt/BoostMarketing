@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireWorkspace } from '@/core/auth/require-workspace';
-import { sendMail, templateBienvenidaCliente } from '@/lib/mailer';
-import { getBranding, emailLayout } from '@/lib/branding';
+import { sendMail, templateBienvenidaCliente, templateActivacionPortal } from '@/lib/mailer';
+import { getBranding } from '@/lib/branding';
 import { randomBytes } from 'crypto';
 
 export async function POST(req: NextRequest) {
@@ -91,32 +91,16 @@ export async function POST(req: NextRequest) {
       inviteUrl = `${APP_URL}/invite/${token}`;
     }
 
-    const bodyHtml = existingUser ? `
-      <h2 style="color:white;margin:0 0 16px">Accede a tu portal de cliente</h2>
-      <p style="color:rgba(255,255,255,0.7);margin:0 0 24px">
-        Hola <strong style="color:white">${client.name}</strong>, ${pmName} te ha invitado a revisar el avance de tu proyecto en ${branding.brandName}.
-      </p>
-      <a href="${portalUrl}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin-bottom:24px">
-        Ver mi portal →
-      </a>
-      <p style="color:rgba(255,255,255,0.4);font-size:13px">
-        Inicia sesión con tu cuenta: <strong style="color:rgba(255,255,255,0.6)">${client.email}</strong>
-      </p>
-    ` : `
-      <h2 style="color:white;margin:0 0 16px">Bienvenido a ${branding.brandName}</h2>
-      <p style="color:rgba(255,255,255,0.7);margin:0 0 24px">
-        Hola <strong style="color:white">${client.name}</strong>, ${pmName} ha creado tu espacio en ${branding.brandName}.
-        Crea tu cuenta para acceder a tu portal de cliente y seguir el avance de tus proyectos.
-      </p>
-      <a href="${inviteUrl}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin-bottom:24px">
-        Crear mi cuenta →
-      </a>
-      <p style="color:rgba(255,255,255,0.4);font-size:13px">
-        Este link expira en 7 días. Tu email de acceso: <strong style="color:rgba(255,255,255,0.6)">${client.email}</strong>
-      </p>
-    `;
+    // Usar templates dedicados con emailLayout y branding consistente
+    const mailHtml = existingUser
+      ? templateBienvenidaCliente(client.name, pmName, client.assignedManager?.email ?? '', portalUrl, undefined, branding)
+      : templateActivacionPortal(client.name, branding.brandName, inviteUrl, pmName, client.assignedManager?.email ?? '', branding);
 
-    await sendMail(client.email, `${pmName} te invita a tu portal en ${branding.brandName}`, emailLayout(bodyHtml, branding));
+    const subject = existingUser
+      ? `${pmName} te invita a revisar tu portal en ${branding.brandName}`
+      : `Activa tu portal en ${branding.brandName}`;
+
+    await sendMail(client.email, subject, mailHtml);
 
     return NextResponse.json({ success: true, hasAccount: !!existingUser });
   } catch (error) {

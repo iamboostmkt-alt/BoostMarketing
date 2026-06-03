@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkspace } from '@/core/auth/require-workspace';
 import { db } from '@/lib/db';
 import { rateLimit } from '@/lib/security/rate-limit';
-import { sendMail } from '@/lib/mailer';
+import { sendMail, templateInvitacionEquipo } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
 import { randomBytes } from 'crypto';
 import { z } from 'zod';
@@ -44,19 +44,20 @@ export async function POST(req: NextRequest) {
   const workspace = await db.workspace.findUnique({ where: { id: workspaceId }, select: { name: true } });
   const inviter = await db.user.findUnique({ where: { id: userId }, select: { name: true } });
   const branding = await getBranding();
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
+  // Usar NEXTAUTH_URL consistente con el resto del sistema
+  const APP_URL = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || '';
   const inviteUrl = `${APP_URL}/invite/${token}`;
 
   await sendMail(
     email,
-    `Te invitaron a unirte a ${workspace?.name ?? 'BoostMarketing'}`,
-    `<!DOCTYPE html><html><body style="font-family:sans-serif;background:#07070A;color:#F5F7FA;padding:40px;">
-    <h2 style="color:#8B5CF6;">¡Tienes una invitación!</h2>
-    <p><strong>${inviter?.name ?? 'Un administrador'}</strong> te invitó a unirte a <strong>${workspace?.name}</strong> como <strong>${role}</strong>.</p>
-    <p>Este link expira en 7 días.</p>
-    <a href="${inviteUrl}" style="display:inline-block;background:#8B5CF6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px;">Aceptar invitación</a>
-    <p style="color:#666;margin-top:24px;font-size:12px;">Si no esperabas esta invitación, ignora este correo.</p>
-    </body></html>`
+    `${inviter?.name ?? 'Alguien'} te invitó a unirte a ${workspace?.name ?? 'Weeklink'}`,
+    templateInvitacionEquipo(
+      inviter?.name ?? 'Un administrador',
+      workspace?.name ?? 'Weeklink',
+      role,
+      inviteUrl,
+      branding,
+    )
   );
 
   return NextResponse.json({ ok: true });
