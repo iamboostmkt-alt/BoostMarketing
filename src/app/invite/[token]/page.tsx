@@ -46,7 +46,7 @@ export default function InvitePage() {
     setDone(true);
     // Auto login
     await signIn('credentials', { email: invite.email, password, redirect: false });
-    setTimeout(() => router.push(invite.isClient ? '/client-portal' : '/dashboard'), 1500);
+    setTimeout(() => router.push(invite.isClient ? '/dashboard/client-portal' : '/dashboard'), 1500);
   }
 
   const isClient = invite?.isClient ?? false;
