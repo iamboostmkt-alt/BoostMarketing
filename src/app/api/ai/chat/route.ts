@@ -100,6 +100,8 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const messages = body.messages;
   const tier: ModelTier = ['pro','medium','free','turbo'].includes(body.model) ? body.model : 'turbo';
+  // chatSystemPrompt: system prompt específico del chat (sobrescribe el default solo para el contexto del chat)
+  const chatSystemPrompt: string | undefined = body.chatSystemPrompt;
 
   if (!messages?.length) return NextResponse.json({ error: 'messages requerido' }, { status: 400 });
   if (messages.length > 20) return NextResponse.json({ error: 'Máximo 20 mensajes.' }, { status: 400 });
@@ -177,7 +179,12 @@ export async function POST(req: NextRequest) {
   // Solo incluir contexto completo en modelos confiables (no Llama open-source)
   const model = MODELS[tier];
   const trustedProviders = ['anthropic', 'deepseek', 'gemini'];
-  const system = SYSTEM_PROMPT + (trustedProviders.includes(model.provider) ? ctx : '');
+  // Si viene chatSystemPrompt del chat, usarlo como base (tiene instrucciones de formato)
+  // Si no, usar el SYSTEM_PROMPT estándar del AI Assistant
+  const basePrompt = chatSystemPrompt
+    ? chatSystemPrompt + '\n\nEXPERTISE: Marketing digital, contenido, redes sociales, campañas, branding, copywriting, métricas, SEO/SEM.'
+    : SYSTEM_PROMPT;
+  const system = basePrompt + (trustedProviders.includes(model.provider) ? ctx : '');
 
   // Timeout de 25s para evitar que quede cargando
   const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>

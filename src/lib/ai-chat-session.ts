@@ -81,10 +81,17 @@ export function buildAiHistory(
   const history: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 
   for (const m of messages) {
-    // Respuestas de Boosti → rol assistant
-    if (m.isSystem && m.systemName === 'Weeklink' && m.message.startsWith('✨')) {
-      const clean = m.message.replace(/^✨ \*\*(AI|Boosti):\*\* /, '').trim();
-      if (clean) history.push({ role: 'assistant', content: clean });
+    // Respuestas de Boosti — dos formas: local (userId='ai') o DB (isSystem+systemName)
+    const isBoostiMsg = m.userId === 'ai' ||
+      (m.isSystem && m.systemName === 'Weeklink' && m.message.startsWith('✨'));
+    if (isBoostiMsg) {
+      const clean = m.message
+        .replace(/^✨ \*\*(AI|Boosti):\*\* /, '')
+        .replace(/^🤖 .*$/, '') // ignorar mensajes de sistema de sesión
+        .trim();
+      if (clean && !clean.startsWith('Sesión') && !clean.startsWith('sesión')) {
+        history.push({ role: 'assistant', content: clean });
+      }
       continue;
     }
     // En modo individual: solo mensajes del activador

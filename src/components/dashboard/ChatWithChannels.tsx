@@ -913,30 +913,40 @@ function ChatMain({
           msgHistory.push({ role: 'user', content: query });
         }
 
-        // System prompt conciso para chat
+        // System prompt específico para el chat — formato rico, no básico
         const isTasks = query.toLowerCase().includes('tarea') ||
           query.toLowerCase().includes('pendiente') ||
           query.toLowerCase().includes('completad') ||
           query.toLowerCase().includes('resumen');
-        const modeHint = mode === 'group' ? ' (sesión grupal — el equipo está escuchando)' : '';
+        const modeCtx = mode === 'group'
+          ? 'Estás en un chat grupal de equipo. Todo el equipo puede leer.'
+          : 'Estás en un chat privado con un miembro del equipo.';
 
-        // Hint de brevedad al último mensaje
+        // Chat system prompt: formato rico con listas, ejemplos y estructura
+        const chatSystemPrompt = isTasks
+          ? `Eres Boost AI. ${modeCtx} Responde con datos concretos del workspace. Usa listas y números. Máximo 5 líneas.`
+          : `Eres Boost AI, asistente de marketing digital. ${modeCtx}
+
+FORMATO DE RESPUESTA (siempre usar):
+- Si piden ideas/opciones: numera con 1. 2. 3. y da 3-5 opciones con descripción breve
+- Si piden un texto/script/speech: entrégalo completo entre comillas o con formato claro
+- Si piden análisis: usa puntos clave con • o -
+- Si es conversacional: responde natural pero estructurado
+- Emojis con moderación para hacer más visual
+- NO respondas con un solo párrafo plano — siempre estructura la respuesta
+- Máximo 8 líneas salvo que pidan un texto completo (speech, caption, etc.)`;
+
+        // Mensajes sin modificar el contenido del usuario
         const finalMessages = [...msgHistory];
-        if (finalMessages.length > 0) {
-          finalMessages[finalMessages.length - 1] = {
-            ...finalMessages[finalMessages.length - 1],
-            content: finalMessages[finalMessages.length - 1].content +
-              (isTasks ? ' (responde en máximo 3 líneas con números clave)' : ` (responde conciso, máximo 4 líneas${modeHint})`),
-          };
-        }
-        // Usar Gemini (free) como default — mejor calidad que Groq para chat
-        // Fallback automático a Groq si Gemini falla (maneja la API)
+
+        // Usar Gemini (free) como default
         const res = await fetch('/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: finalMessages,
             model: 'free',
+            chatSystemPrompt, // system prompt específico del chat
           }),
         });
         const data = await res.json();
