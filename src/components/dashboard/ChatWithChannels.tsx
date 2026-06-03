@@ -16,6 +16,7 @@ import { Avatar } from '@/components/weeklink/avatar';
 import { VideoCard, PdfCard, TaskCard, ArchiveCard } from '@/components/weeklink/chat-cards';
 import SupportTicket from '@/components/dashboard/SupportTicket';
 import type { ChatMessage } from '@/lib/types';
+import { shouldBoostiRespond, buildAiHistory } from '@/lib/ai-chat-session';
 
 const QUICK_EMOJIS = ['👍','🔥','💜','✅','😂','🎉'];
 
@@ -576,6 +577,11 @@ function ChatMain({
   const myImage = (session?.user as any)?.image || null;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
+  // Estado de sesión IA en el chat
+  const [aiSession, setAiSession] = useState<{
+    id: string; mode: 'individual' | 'group'; activatedBy: string; expiresAt: string;
+  } | null>(null);
+  const aiTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const broadcastTypingRef = useRef<(() => void) | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -745,6 +751,47 @@ function ChatMain({
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  // Cargar sesión IA activa al cambiar de room
+  useEffect(() => {
+    if (!room) return;
+    fetch(`/api/ai/session?room=${encodeURIComponent(room)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setAiSession(d?.session ?? null))
+      .catch(() => {});
+  }, [room]);
+
+  // Escuchar eventos RT de sesión IA (otros usuarios activan/desactivan)
+  useEffect(() => {
+    const unsub1 = bus.on(RT_EVENTS.AI_SESSION_STARTED, (payload: any) => {
+      if (payload?.room === room) {
+        setAiSession({ id: payload.sessionId, mode: payload.mode, activatedBy: payload.activatedBy, expiresAt: payload.expiresAt });
+      }
+    });
+    const unsub2 = bus.on(RT_EVENTS.AI_SESSION_ENDED, (payload: any) => {
+      if (payload?.room === room) setAiSession(null);
+    });
+    return () => { unsub1(); unsub2(); };
+  }, [room]);
+
+  // Auto-cerrar sesión IA cuando expira el timeout
+  useEffect(() => {
+    if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
+    if (!aiSession) return;
+    const msLeft = new Date(aiSession.expiresAt).getTime() - Date.now();
+    if (msLeft <= 0) { setAiSession(null); return; }
+    aiTimeoutRef.current = setTimeout(() => {
+      setAiSession(null);
+      const closeMsg: ChatMessage = {
+        id: 'ai-timeout-' + Date.now(),
+        message: '🤖 Sesión de Boosti cerrada por inactividad. Escribe `/ai on` para reactivar.',
+        room, createdAt: new Date().toISOString(), userId: 'ai',
+        user: { name: 'Boosti', email: 'boosti@weeklink', color: '#8B5CF6', image: null } as any,
+      };
+      setMessages(prev => [...prev, closeMsg]);
+    }, msLeft);
+    return () => { if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current); };
+  }, [aiSession, room]);
+
   useEffect(() => {
     return bus.on<{ message: ChatMessage; room: string }>(RT_EVENTS.MESSAGE_SENT, (p) => {
       if (p.room === room)
@@ -768,18 +815,64 @@ function ChatMain({
     const AI_TRIGGERS = /^@(boosti|ai|ia|boostai|asistente)\s+/i;
     const aiMentionMatch = text.match(AI_TRIGGERS);
 
-    // Detectar si el último mensaje fue de Boosti — continuar hilo sin mención
-    const lastMsg = messages[messages.length - 1];
-    const lastWasBoosti = lastMsg?.userId === 'ai';
-    const isFollowUp = lastWasBoosti && !text.startsWith('/') && !aiMentionMatch;
+    // ── Comandos de sesión IA ──────────────────────────────────────────────
+    // /ai on         → sesión individual (solo yo)
+    // /ai grupal     → sesión grupal (todo el equipo)
+    // /ai off /exit  → desactivar sesión
+    if (text === '/ai on' || text === '/ia on') {
+      setInput('');
+      const res = await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'individual' }) });
+      if (res.ok) {
+        const d = await res.json();
+        setAiSession({ ...d.session, activatedBy: myId });
+        const botMsg: ChatMessage = { id: 'ai-on-'+Date.now(), message: '🤖 Sesión individual activa (5 min). Solo tú interactúas con Boosti. Escribe `/ai off` para desactivar.', room, createdAt: new Date().toISOString(), userId: 'ai', user: { name: 'Boosti', email: 'boosti@weeklink', color: '#8B5CF6', image: null } as any };
+        setMessages(prev => [...prev, botMsg]);
+      }
+      return;
+    }
+    if (text === '/ai grupal' || text === '/ia grupal' || text === '/ai group') {
+      setInput('');
+      const res = await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'group' }) });
+      if (res.ok) {
+        const d = await res.json();
+        setAiSession({ ...d.session, activatedBy: myId });
+        const botMsg: ChatMessage = { id: 'ai-group-'+Date.now(), message: '🤖 Sesión grupal activa (10 min). Todo el equipo puede interactuar con Boosti. Escribe `/ai off` para desactivar.', room, createdAt: new Date().toISOString(), userId: 'ai', user: { name: 'Boosti', email: 'boosti@weeklink', color: '#8B5CF6', image: null } as any };
+        setMessages(prev => [...prev, botMsg]);
+      }
+      return;
+    }
+    if (text === '/ai off' || text === '/ia off' || text === '/exit' || text === '/salir') {
+      setInput('');
+      await fetch(`/api/ai/session?room=${encodeURIComponent(room)}`, { method: 'DELETE' });
+      setAiSession(null);
+      const botMsg: ChatMessage = { id: 'ai-off-'+Date.now(), message: '🤖 Sesión de Boosti desactivada.', room, createdAt: new Date().toISOString(), userId: 'ai', user: { name: 'Boosti', email: 'boosti@weeklink', color: '#8B5CF6', image: null } as any };
+      setMessages(prev => [...prev, botMsg]);
+      return;
+    }
 
-    // Comando /ai o mención @boosti o seguimiento del hilo
-    if (text.startsWith('/ai ') || text.startsWith('/ia ') || aiMentionMatch || isFollowUp) {
+    // Decidir si Boosti responde usando lógica selectiva
+    const shouldRespond = (() => {
+      // Respuesta puntual sin sesión activa
+      if (text.startsWith('/ai ') || text.startsWith('/ia ') || aiMentionMatch)
+        return { respond: true, reason: 'comando/mención' };
+      // Sesión activa: usar lógica selectiva
+      if (aiSession) {
+        return shouldBoostiRespond({
+          message: text, senderId: myId,
+          sessionMode: aiSession.mode,
+          activatedBy: aiSession.activatedBy,
+          myBotId: 'ai',
+        });
+      }
+      return { respond: false, reason: 'sin sesión' };
+    })();
+
+    if (shouldRespond.respond) {
       const query = aiMentionMatch
         ? text.replace(AI_TRIGGERS, '').trim()
-        : isFollowUp
-          ? text.trim()
-          : text.slice(4).trim();
+        : text.startsWith('/ai ') || text.startsWith('/ia ')
+          ? text.slice(4).trim()
+          : text.trim();
       if (!query) return;
       setInput('');
       // 1. Mostrar mensaje del usuario primero
@@ -805,42 +898,35 @@ function ChatMain({
       };
       setMessages(prev => [...prev, aiMsg]);
       try {
-        // Construir historial solo de intercambios AI (user-ai, user-ai...)
-        // Buscar mensajes del usuario que empezaron con /ai y respuestas AI
-        const aiPairs: {role: 'user'|'assistant', content: string}[] = [];
-        for (let idx = 0; idx < messages.length; idx++) {
-          const m = messages[idx];
-          if (m.id.startsWith('user-ai-')) {
-            const q = m.message.startsWith('/ai ') || m.message.startsWith('/ia ') ? m.message.slice(4).trim() : m.message.replace(/^@(boosti|ai|ia|boostai|asistente)\s*/i, '').trim();
-            if (q) aiPairs.push({ role: 'user', content: q });
-          } else if (m.userId === 'ai') {
-            const clean = m.message.replace(/^✨ \*\*(AI|Boosti):\*\* /, '');
-            aiPairs.push({ role: 'assistant', content: clean });
-          }
+        // Renovar timeout de sesión activa
+        if (aiSession?.id) {
+          fetch('/api/ai/session', { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, sessionId: aiSession.id }) }).catch(() => {});
         }
-        // Mantener solo últimos 8 intercambios + query actual
-        const aiHistory = aiPairs.slice(-8);
-        aiHistory.push({ role: 'user', content: query });
 
-        // System prompt conciso para chat grupal
+        // Construir historial usando el helper — incluye mensajes grupales si modo=group
+        const mode = aiSession?.mode ?? 'individual';
+        const activatedBy = aiSession?.activatedBy ?? myId;
+        const msgHistory = buildAiHistory(messages, mode, activatedBy, 16);
+        // Agregar el query actual si no está ya
+        const lastInHistory = msgHistory[msgHistory.length - 1];
+        if (!lastInHistory || lastInHistory.role !== 'user' || lastInHistory.content !== query) {
+          msgHistory.push({ role: 'user', content: query });
+        }
+
+        // System prompt conciso para chat
         const isTasks = query.toLowerCase().includes('tarea') ||
           query.toLowerCase().includes('pendiente') ||
           query.toLowerCase().includes('completad') ||
           query.toLowerCase().includes('resumen');
-        const systemMsg = isTasks
-          ? 'Responde en máximo 3 líneas con números clave. Ejemplo: "15 tareas: 8 completadas, 4 en progreso, 3 pendientes. Ruperto tiene 2 pendientes."'
-          : 'Eres AI Assistant en un chat grupal. Responde conciso, máximo 4 líneas.';
+        const modeHint = mode === 'group' ? ' (sesión grupal — el equipo está escuchando)' : '';
 
-        // Mandar historial completo con instrucción de concisión en el último mensaje
-        const finalMessages = aiHistory.length > 1
-          ? aiHistory
-          : [{ role: 'user' as const, content: query }];
-        // Agregar hint de brevedad al último mensaje sin sobreescribir el historial
+        // Hint de brevedad al último mensaje
+        const finalMessages = [...msgHistory];
         if (finalMessages.length > 0) {
           finalMessages[finalMessages.length - 1] = {
             ...finalMessages[finalMessages.length - 1],
             content: finalMessages[finalMessages.length - 1].content +
-              (isTasks ? ' (responde en máximo 3 líneas con números)' : ' (responde conciso, máximo 4 líneas)'),
+              (isTasks ? ' (responde en máximo 3 líneas con números clave)' : ` (responde conciso, máximo 4 líneas${modeHint})`),
           };
         }
         // Usar Gemini (free) como default — mejor calidad que Groq para chat
@@ -1069,6 +1155,20 @@ function ChatMain({
               <Hash className="h-4 w-4 text-white/40" strokeWidth={1.75} />
             )}
             <h1 className="text-[15px] font-semibold tracking-tight">{title}</h1>
+            {/* Badge sesión IA activa */}
+            {aiSession && (
+              <button
+                onClick={async () => {
+                  await fetch(`/api/ai/session?room=${encodeURIComponent(room)}`, { method: 'DELETE' });
+                  setAiSession(null);
+                }}
+                className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors hover:opacity-80"
+                style={{ background: 'rgba(139,92,246,0.18)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.30)' }}
+                title="Clic para desactivar sesión IA">
+                🤖 Boosti {aiSession.mode === 'group' ? 'grupal' : 'activo'}
+                <span className="opacity-60">×</span>
+              </button>
+            )}
           </div>
           <div className="ml-auto flex items-center gap-1 relative">
             <div className="relative group/tip">
@@ -1810,7 +1910,10 @@ function ChatMain({
                     <p className="px-3 py-1.5 text-[10px] text-white/30 uppercase tracking-wide">Comandos</p>
                     {[
                       { cmd: '/tarea', desc: 'Crear tarea rápida', icon: '📋' },
-                      { cmd: '/ai', desc: 'Preguntar al AI Assistant (/ia)', icon: '✨' },
+                      { cmd: '/ai on',     desc: 'Activar Boosti modo individual (5 min)',   icon: '🤖' },
+                      { cmd: '/ai grupal', desc: 'Activar Boosti para todo el equipo (10 min)', icon: '👥' },
+                      { cmd: '/ai off',    desc: 'Desactivar sesión de Boosti',                  icon: '⏹' },
+                      { cmd: '/ai',        desc: 'Pregunta puntual a Boosti',                    icon: '✨' },
                       { cmd: '/anuncio', desc: 'Enviar anuncio al equipo', icon: '📢' },
                       { cmd: '/recordar', desc: 'Recordatorio', icon: '⏰' },
                     ].map(({ cmd, desc, icon }) => (

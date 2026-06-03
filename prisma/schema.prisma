@@ -768,10 +768,18 @@ model AiSession {
   model       String   @default("turbo")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  // Sesión de chat en tiempo real
+  room        String?  // room del chat donde está activa
+  mode        String   @default("standalone") // standalone | individual | group
+  active      Boolean  @default(true)
+  activatedBy String?  @map("activated_by") // userId que activó la sesión
+  lastActivity DateTime? @map("last_activity")
+  expiresAt   DateTime? @map("expires_at")
 
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([userId, workspaceId])
+  @@index([room, workspaceId, active])
   @@map("ai_sessions")
 }

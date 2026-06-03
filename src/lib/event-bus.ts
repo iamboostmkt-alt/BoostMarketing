@@ -40,6 +40,8 @@ export const RT_EVENTS = {
   TASK_DUE_SOON:      'task.due_soon',
   CLIENT_UPDATED:     'client.updated',
   USER_UPDATED:       'user.updated',
+  AI_SESSION_STARTED: 'ai.session.started',
+  AI_SESSION_ENDED:   'ai.session.ended',
 } as const;
 
 export type RTEventName = (typeof RT_EVENTS)[keyof typeof RT_EVENTS];
