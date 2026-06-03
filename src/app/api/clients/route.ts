@@ -78,7 +78,8 @@ export async function GET(req: NextRequest) {
     // ADMIN y SALES_REP ven todos
     const sidebarClients = await db.client.findMany({
       where: sidebarWhere,
-      select: { id: true, name: true, color: true, assignedManagerId: true, email: true },
+      select: { id: true, name: true, assignedManagerId: true, email: true,
+        assignedManager: { select: { color: true } } },
       orderBy: { name: "asc" },
       take: 20,
     });
@@ -94,7 +95,11 @@ export async function GET(req: NextRequest) {
     const portalUserMap = Object.fromEntries(portalUsers.map((u) => [u.email, u.id]));
 
     const clientsWithPortal = sidebarClients.map((c) => ({
-      ...c,
+      id: c.id,
+      name: c.name,
+      assignedManagerId: c.assignedManagerId,
+      email: c.email,
+      color: c.assignedManager?.color ?? '#8B5CF6',
       clientUserId: portalUserMap[c.email] ?? null,
     }));
 
