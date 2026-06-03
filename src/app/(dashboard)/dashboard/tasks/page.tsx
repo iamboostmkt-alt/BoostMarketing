@@ -400,6 +400,25 @@ function TasksContent() {
       const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: task.id, status: newStatus }) });
       if (!res.ok) throw new Error();
       toast.success(isManager ? 'Tarea completada' : 'Tarea enviada a revisión');
+
+      // BUG-04 fix: enviar mensaje en chat del cliente al marcar como completada/en revisión
+      if (task.clientId) {
+        const emoji = newStatus === 'completed' ? '✅' : '👀';
+        const msg   = newStatus === 'completed'
+          ? `${emoji} Tarea completada: **${task.title}**`
+          : `${emoji} Tarea enviada a revisión: **${task.title}**`;
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: msg,
+            room: task.clientId,
+            isSystem: true,
+            systemName: 'Weeklink',
+            isInternal: true,
+          }),
+        }).catch(() => {});
+      }
     } catch {
       setMyTasks(prevMy);
       setAllTasks(prevAll);

@@ -169,9 +169,10 @@ export async function GET(req: NextRequest) {
       tasksByClient.get(cid)!.push(t);
     }
 
+    // BUG-01 fix: siempre incluir todos los clientes aunque no tengan tareas activas
+    // El PM necesita ver el cliente para poder agregar nuevas tareas
     const result = clients
-      .map((client) => ({ ...client, tasks: tasksByClient.get(client.id) ?? [] }))
-      .filter((c) => c.tasks.length > 0);
+      .map((client) => ({ ...client, tasks: tasksByClient.get(client.id) ?? [] }));
 
     return NextResponse.json({ clients: result });
   }
@@ -558,8 +559,13 @@ export async function PUT(req: NextRequest) {
       ...(_taskWithUsers?.assignedUser ? [{ email: _taskWithUsers.assignedUser.email, name: _taskWithUsers.assignedUser.name }] : []),
       ...(_taskWithUsers?.assignedUsers?.map((au: any) => ({ email: au.user?.email, name: au.user?.name })) ?? []),
     ].filter((u, i, arr) => u.email && arr.findIndex(x => x.email === u.email) === i);
-    for (const u of _assignedUsers) {
-      if (u.email) await sendMail(u.email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending", _branding, u.name ?? undefined));
+    // BUG-05 fix: no enviar templateCambioEstado para approved (celebrate lo hace)
+    // ni para completed (templateTareaCompletada lo cubre abajo)
+    const skipCambioEstado = task.status === "approved" || task.status === "completed";
+    if (!skipCambioEstado) {
+      for (const u of _assignedUsers) {
+        if (u.email) await sendMail(u.email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending", _branding, u.name ?? undefined));
+      }
     }
     if (task.status === "completed") {
       for (const u of _assignedUsers) {

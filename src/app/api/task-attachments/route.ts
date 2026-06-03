@@ -148,15 +148,22 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 30, windowMs: 60_000, identifier: 'task-attachments-delete' });
+  if (!rl.success) return rl.response;
   try {
     const result = await requireWorkspace();
     if (!result.ok) return result.response;
+    const { workspaceId } = result.ctx;
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 });
 
-    const attachment = await db.taskAttachment.findUnique({ where: { id } });
+    // BUG-02 fix: usar findFirst con workspaceId para asegurar que el attachment
+    // pertenece al workspace del usuario (evita 404 silencioso con findUnique sin scope)
+    const attachment = await db.taskAttachment.findFirst({
+      where: { id, task: { workspaceId } },
+    });
     if (!attachment) return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
 
     const role = result.ctx.role as string;
