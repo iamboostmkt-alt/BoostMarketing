@@ -83,6 +83,11 @@ export async function POST(req: NextRequest) {
           clientName: client.name,
         },
       });
+      // Actualizar portalStatus del cliente a 'invited'
+      await db.client.updateMany({
+        where: { id: clientId, workspaceId },
+        data: { portalStatus: 'invited', invitedAt: new Date() },
+      });
       inviteUrl = `${APP_URL}/invite/${token}`;
     }
 

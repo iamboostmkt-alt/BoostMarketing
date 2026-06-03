@@ -4,9 +4,11 @@ import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 import { logAction } from "@/lib/audit";
 import { sendMail, templateBienvenida } from "@/lib/mailer";
-import { getBranding } from "@/lib/branding";
+import { getBranding, emailLayout } from "@/lib/branding";
 import { ClientCreateSchema, ClientUpdateSchema, validateBody } from "@/lib/schemas";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { randomBytes } from "crypto";
+import bcrypt from "bcryptjs";
 
 
 
@@ -193,9 +195,35 @@ export async function POST(req: NextRequest) {
     ? (assignedManagerId || null)
     : userId;
 
+  // --- Portal automático al crear cliente ---
+  // 1. Verificar si ya existe usuario con ese email en el workspace
+  const existingPortalUser = await db.user.findFirst({
+    where: { email: { equals: email.toLowerCase(), mode: 'insensitive' }, workspaceId },
+  });
+
+  // 2. Si no existe, crear usuario CLIENT con contraseña aleatoria temporal
+  let portalUserId = existingPortalUser?.id ?? null;
+  if (!existingPortalUser) {
+    const tempPassword = randomBytes(12).toString('base64').slice(0, 12);
+    const hashed = await bcrypt.hash(tempPassword, 10);
+    const portalUser = await db.user.create({
+      data: {
+        name,
+        email: email.toLowerCase(),
+        password: hashed,
+        role: 'CLIENT',
+        workspaceId,
+        color: '#7c3aed',
+        active: true,
+      },
+      select: { id: true },
+    });
+    portalUserId = portalUser.id;
+  }
+
   const client = await db.client.create({
     data: {
-      userId,
+      userId: portalUserId ?? userId,
       workspaceId,
       assignedManagerId: resolvedManagerId,
       name,
@@ -203,6 +231,7 @@ export async function POST(req: NextRequest) {
       company: company || "",
       phone:   phone   || "",
       status:  status  || "active",
+      portalStatus: 'pending',
     },
     select: clientSelect,
   });

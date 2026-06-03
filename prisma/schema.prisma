@@ -290,6 +290,10 @@ model Client {
   phone             String  @default("")
   status            String  @default("active")
   workspaceId       String  @map("workspace_id")
+  // Portal de cliente
+  portalId          String  @unique @default(cuid()) @map("portal_id")
+  portalStatus      String  @default("pending") @map("portal_status") // pending | invited | active
+  invitedAt         DateTime? @map("invited_at")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

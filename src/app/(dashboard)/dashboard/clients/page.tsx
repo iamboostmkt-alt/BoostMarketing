@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 import {
   Plus, Search, Mail, Building2, Phone,
   UserCheck, MoreHorizontal, X, Pencil, Trash2, Calendar,
+  Send, AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -162,7 +163,10 @@ function ClientDetail({ client, onClose, onEdit, onDelete, isAdmin }: {
   );
 }
 
-function ClientCard({ client, onClick, onPortal }: { client: Client; onClick: () => void; onPortal: () => void }) {
+function ClientCard({ client, onClick, onPortal, onResendInvite, onReportIssue, isAdmin }: {
+  client: Client; onClick: () => void; onPortal: () => void;
+  onResendInvite?: () => void; onReportIssue?: () => void; isAdmin?: boolean;
+}) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const sm = STATUS_META[client.status] ?? STATUS_META.inactive;
   const assignedUsers = (client as any).assignedUsers ?? [];
@@ -226,6 +230,26 @@ function ClientCard({ client, onClick, onPortal }: { client: Client; onClick: ()
               style={{ background: st.bg, color: st.text, borderColor: st.border }}>
               {sm.label}
             </span>
+            {/* Badge portal status */}
+            {(client as any).portalStatus === 'active' && (
+              <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium border"
+                style={{ background: 'rgba(34,197,94,0.10)', color: '#4ade80', borderColor: 'rgba(34,197,94,0.18)' }}>
+                ● Portal activo
+              </span>
+            )}
+            {(client as any).portalStatus === 'invited' && (
+              <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium border"
+                style={{ background: 'rgba(234,179,8,0.10)', color: '#fbbf24', borderColor: 'rgba(234,179,8,0.18)' }}
+                title={(client as any).invitedAt ? `Enviada ${new Date((client as any).invitedAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}` : ''}>
+                ✉ Invitación enviada{(client as any).invitedAt ? ` · ${Math.floor((Date.now() - new Date((client as any).invitedAt).getTime()) / 86400000)}d` : ''}
+              </span>
+            )}
+            {(client as any).portalStatus === 'pending' && (
+              <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium border"
+                style={{ background: 'rgba(148,163,184,0.08)', color: '#94a3b8', borderColor: 'rgba(148,163,184,0.14)' }}>
+                ⏳ Pendiente
+              </span>
+            )}
           </div>
           {(client as any).company && <p className="text-[11px] text-white/35 truncate">{(client as any).company}</p>}
           <p className="text-[10px] text-white/20 truncate mt-0.5">{client.email}</p>
@@ -281,12 +305,35 @@ function ClientCard({ client, onClick, onPortal }: { client: Client; onClick: ()
                     className="absolute bottom-full right-0 z-20 mb-1 w-36 overflow-hidden rounded-lg border border-white/[0.08] bg-[#141418] shadow-xl"
                   >
                     <div className="py-1">
-                      {["Ver portal", "Editar", "Asignar PM"].map(item => (
-                        <button key={item} onClick={() => { setMenuOpen(false); item === "Ver portal" ? onPortal() : onClick(); }}
-                          className="w-full px-3 py-2 text-left text-[12px] text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/90">
-                          {item}
+                      <button onClick={() => { setMenuOpen(false); onPortal(); }}
+                        className="w-full px-3 py-2 text-left text-[12px] text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/90">
+                        Ver portal
+                      </button>
+                      <button onClick={() => { setMenuOpen(false); onClick(); }}
+                        className="w-full px-3 py-2 text-left text-[12px] text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/90">
+                        Editar
+                      </button>
+                      <button onClick={() => { setMenuOpen(false); onClick(); }}
+                        className="w-full px-3 py-2 text-left text-[12px] text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white/90">
+                        Asignar PM
+                      </button>
+                      {/* Reenviar invitación — solo si portalStatus NO es active */}
+                      {(client as any).portalStatus !== 'active' && onResendInvite && (
+                        <>
+                          <div className="my-1 border-t border-white/[0.06]" />
+                          <button onClick={() => { setMenuOpen(false); onResendInvite(); }}
+                            className="w-full px-3 py-2 text-left text-[12px] text-violet-400 transition-colors hover:bg-violet-500/10 flex items-center gap-2">
+                            <Send className="w-3 h-3" /> Reenviar invitación
+                          </button>
+                        </>
+                      )}
+                      {/* Reportar problema — solo para PM (no ADMIN) */}
+                      {!isAdmin && onReportIssue && (
+                        <button onClick={() => { setMenuOpen(false); onReportIssue(); }}
+                          className="w-full px-3 py-2 text-left text-[12px] text-amber-400 transition-colors hover:bg-amber-500/10 flex items-center gap-2">
+                          <AlertCircle className="w-3 h-3" /> Reportar problema
                         </button>
-                      ))}
+                      )}
                       <div className="my-1 border-t border-white/[0.06]" />
                       <button onClick={() => setMenuOpen(false)}
                         className="w-full px-3 py-2 text-left text-[12px] text-red-400 transition-colors hover:bg-red-500/10">
@@ -430,7 +477,37 @@ export default function ClientsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map(client => (
-            <ClientCard key={client.id} client={client} onClick={() => setSelected(client)} onPortal={() => router.push('/dashboard/client-portal?clientId=' + client.id)} />
+            <ClientCard
+                key={client.id}
+                client={client}
+                isAdmin={isAdmin}
+                onClick={() => setSelected(client)}
+                onPortal={() => router.push('/dashboard/client-portal?clientId=' + client.id)}
+                onResendInvite={async () => {
+                  try {
+                    const res = await fetch('/api/clients/invite', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ clientId: client.id }),
+                    });
+                    if (res.ok) toast.success('Invitación reenviada a ' + client.email);
+                    else { const d = await res.json(); toast.error(d.error || 'Error al reenviar'); }
+                  } catch { toast.error('Error de conexión'); }
+                }}
+                onReportIssue={!isAdmin ? async () => {
+                  const issue = prompt('Describe el problema con el portal de ' + client.name + ':');
+                  if (!issue?.trim()) return;
+                  try {
+                    const res = await fetch('/api/clients/report-issue', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ clientId: client.id, issue: issue.trim() }),
+                    });
+                    if (res.ok) toast.success('Reporte enviado al admin');
+                    else toast.error('Error al enviar reporte');
+                  } catch { toast.error('Error de conexión'); }
+                } : undefined}
+              />
           ))}
         </div>
       )}

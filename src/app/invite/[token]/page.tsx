@@ -22,6 +22,7 @@ export default function InvitePage() {
   const [showPass, setShowPass] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [confirm, setConfirm] = useState('');
 
   useEffect(() => {
     fetch(`/api/invite/${token}`)
@@ -47,6 +48,8 @@ export default function InvitePage() {
     await signIn('credentials', { email: invite.email, password, redirect: false });
     setTimeout(() => router.push(invite.isClient ? '/client-portal' : '/dashboard'), 1500);
   }
+
+  const isClient = invite?.isClient ?? false;
 
   if (loading) return (
     <div className="min-h-screen bg-[#07070A] flex items-center justify-center">
@@ -79,27 +82,42 @@ export default function InvitePage() {
     </div>
   );
 
+
+  const passwordsMatch = password === confirm;
+
   return (
     <div className="min-h-screen bg-[#07070A] flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
           <div className="flex justify-center"><LogoBrand /></div>
-          <h1 className="text-2xl font-bold text-white mt-4">Crea tu cuenta</h1>
-          <p className="text-white/50 text-sm">
-            Fuiste invitado a <strong className="text-white">{invite.workspace.name}</strong>
-            {invite.role !== 'CLIENT' && <> como <strong className="text-primary">{ROLE_LABELS[invite.role] ?? invite.role}</strong></>}
-          </p>
+          {isClient ? (
+            <>
+              <h1 className="text-2xl font-bold text-white mt-4">Activa tu portal</h1>
+              <p className="text-white/50 text-sm">
+                <strong className="text-white">{invite.workspace.name}</strong> te ha dado acceso a tu portal de cliente.
+                Elige una contraseña para entrar.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold text-white mt-4">Crea tu cuenta</h1>
+              <p className="text-white/50 text-sm">
+                Fuiste invitado a <strong className="text-white">{invite.workspace.name}</strong>
+                {' '}como <strong className="text-primary">{ROLE_LABELS[invite.role] ?? invite.role}</strong>
+              </p>
+            </>
+          )}
           <p className="text-white/30 text-xs">{invite.email}</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs text-white/50">Tu nombre completo</label>
+            <label className="text-xs text-white/50">Tu nombre</label>
             <input value={name} onChange={e => setName(e.target.value)} required
-              placeholder="Juan García"
+              placeholder={invite.clientName || 'Tu nombre completo'}
               className="w-full rounded-xl border border-white/[0.08] bg-[#0F1117] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50" />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-white/50">Contraseña</label>
+            <label className="text-xs text-white/50">Nueva contraseña</label>
             <div className="relative">
               <input value={password} onChange={e => setPassword(e.target.value)} required
                 type={showPass ? 'text' : 'password'} minLength={8}
@@ -111,10 +129,23 @@ export default function InvitePage() {
               </button>
             </div>
           </div>
+          <div className="space-y-1">
+            <label className="text-xs text-white/50">Confirmar contraseña</label>
+            <input value={confirm} onChange={e => setConfirm(e.target.value)} required
+              type="password" minLength={8}
+              placeholder="Repite tu contraseña"
+              className={`w-full rounded-xl border bg-[#0F1117] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50 ${
+                confirm && !passwordsMatch ? 'border-red-500/50' : 'border-white/[0.08]'
+              }`} />
+            {confirm && !passwordsMatch && (
+              <p className="text-red-400 text-[10px]">Las contraseñas no coinciden</p>
+            )}
+          </div>
           {error && <p className="text-red-400 text-xs">{error}</p>}
-          <button type="submit" disabled={submitting || !name.trim() || password.length < 8}
+          <button type="submit"
+            disabled={submitting || !name.trim() || password.length < 8 || !passwordsMatch}
             className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-40 transition-opacity">
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : 'Crear cuenta y entrar'}
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : isClient ? 'Activar mi portal' : 'Crear cuenta y entrar'}
           </button>
         </form>
       </div>

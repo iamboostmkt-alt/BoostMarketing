@@ -87,52 +87,7 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
         assignedManagerId: assignedManagerId || null,
         assignedUserIds,
       };
-      // Validar contraseña si se pidió acceso al portal
-      if (createUser && !userPassword) {
-        toast.error('La contraseña es requerida para crear acceso al portal');
-        setLoading(false);
-        return;
-      }
-      if (createUser && userPassword.length < 6) {
-        toast.error('La contraseña debe tener al menos 6 caracteres');
-        setLoading(false);
-        return;
-      }
-
-      // Crear usuario del sistema si se solicitó
-      if (createUser && userPassword && !client) {
-        setCreatingUser(true);
-        try {
-          const userRes = await fetch('/api/admin/users', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name,
-              email,
-              password: userPassword,
-              role: 'CLIENT',
-              color: '#7c3aed',
-            }),
-          });
-          // Enviar email de bienvenida al cliente
-          if (userRes.ok) {
-            await fetch('/api/clients/invite', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                clientName: name,
-                clientEmail: email,
-                tempPassword: userPassword,
-                assignedManagerId,
-              }),
-            }).catch(() => {});
-          }
-        } catch (e) {
-          console.error('Error creando usuario:', e);
-        } finally {
-          setCreatingUser(false);
-        }
-      }
+      // Portal se crea automáticamente en el backend al crear el cliente
 
       const res = await fetch('/api/clients', {
         method: isEditing ? 'PUT' : 'POST',
@@ -268,84 +223,11 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
           )}
 
           <DialogFooter className="pt-2">
-            {/* Acceso al portal — solo al crear cliente nuevo */}
+            {/* Portal creado automáticamente — sin toggle ni contraseña manual */}
             {!client && (
-              <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-white/70">Acceso al portal</p>
-                    <p className="text-xs text-white/30">Crear cuenta de usuario para este cliente</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCreateUser(v => !v)}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                      createUser ? 'bg-violet-600' : 'bg-white/[0.08]'
-                    }`}
-                  >
-                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                      createUser ? 'translate-x-4' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
-                {createUser && (
-                  <div className="space-y-2">
-                    <Label className="text-white/60 text-xs">Contraseña temporal <span className="text-red-400">*</span></Label>
-                    <Input
-                      type="password"
-                      value={userPassword}
-                      onChange={e => setUserPassword(e.target.value)}
-                      placeholder="Mín. 6 caracteres"
-                      minLength={6}
-                      required={createUser}
-                      className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:ring-brand"
-                    />
-                    <p className="text-[10px] text-white/25">
-                      El cliente podrá acceder al portal con su email y esta contraseña.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Si ya es cliente existente — botón para crear usuario si no tiene */}
-            {client && (
-              <div className="pt-2 border-t border-white/[0.06]">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const pwd = prompt('Contraseña temporal para el cliente (mín. 6 caracteres):');
-                    if (!pwd || pwd.length < 6) return;
-                    setCreatingUser(true);
-                    try {
-                      const res = await fetch('/api/admin/users', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          name: client.name,
-                          email: client.email,
-                          password: pwd,
-                          role: 'CLIENT',
-                          color: '#7c3aed',
-                        }),
-                      });
-                      const data = await res.json();
-                      if (!res.ok) throw new Error(data.error || 'Error');
-                      alert('Usuario creado correctamente. El cliente ya puede acceder al portal.');
-                    } catch (e: any) {
-                      alert(e.message || 'Error al crear usuario');
-                    } finally {
-                      setCreatingUser(false);
-                    }
-                  }}
-                  disabled={creatingUser}
-                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-violet-500/30 bg-violet-600/10 text-violet-300/80 hover:bg-violet-600/20 text-sm transition-all disabled:opacity-50"
-                >
-                  {creatingUser ? '⏳ Creando...' : '🔑 Crear acceso al portal'}
-                </button>
-                <p className="text-[10px] text-white/25 text-center mt-1">
-                  Solo si el cliente aún no tiene usuario en el sistema
-                </p>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-violet-600/10 border border-violet-500/20 text-[11px] text-violet-300/80 w-full">
+                <span>🔐</span>
+                <span>Se creará acceso al portal automáticamente. El cliente recibirá un link de activación por email.</span>
               </div>
             )}
 

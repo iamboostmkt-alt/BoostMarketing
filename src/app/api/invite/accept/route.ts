@@ -24,32 +24,49 @@ export async function POST(req: NextRequest) {
   if (invite.usedAt) return NextResponse.json({ error: 'Esta invitación ya fue usada.' }, { status: 410 });
   if (invite.expiresAt < new Date()) return NextResponse.json({ error: 'Esta invitación expiró.' }, { status: 410 });
 
-  // Verificar si ya existe usuario
+  const hashed = await bcrypt.hash(password, 12);
+
+  // Verificar si ya existe usuario (creado automáticamente al registrar cliente)
   const existing = await db.user.findFirst({
     where: { email: { equals: invite.email, mode: 'insensitive' } },
   });
-  if (existing) return NextResponse.json({ error: 'Ya existe una cuenta con este email.' }, { status: 409 });
 
-  const hashed = await bcrypt.hash(password, 12);
-  const colors = ['#7c3aed','#2563eb','#059669','#d97706','#dc2626','#7c3aed'];
-  const color = colors[Math.floor(Math.random() * colors.length)];
-
-  await db.user.create({
-    data: {
-      name,
-      email: invite.email.toLowerCase(),
-      password: hashed,
-      role: invite.role,
-      workspaceId: invite.workspaceId,
-      color,
-      active: true,
-    },
-  });
+  if (existing) {
+    // Activar cuenta existente: actualizar nombre + contraseña elegida por el cliente
+    await db.user.update({
+      where: { id: existing.id },
+      data: { name, password: hashed, active: true },
+    });
+  } else {
+    // Edge case: usuario no pre-creado → crear normalmente
+    const colors = ['#7c3aed','#2563eb','#059669','#d97706','#dc2626'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    await db.user.create({
+      data: {
+        name,
+        email: invite.email.toLowerCase(),
+        password: hashed,
+        role: invite.role,
+        workspaceId: invite.workspaceId,
+        color,
+        active: true,
+      },
+    });
+  }
 
   // Marcar invitación como usada
   await db.workspaceInvite.update({
     where: { token },
     data: { usedAt: new Date() },
+  });
+
+  // Marcar cliente como activo en el portal
+  await db.client.updateMany({
+    where: {
+      email: { equals: invite.email, mode: 'insensitive' },
+      workspaceId: invite.workspaceId,
+    },
+    data: { portalStatus: 'active' },
   });
 
   return NextResponse.json({ ok: true, email: invite.email });
