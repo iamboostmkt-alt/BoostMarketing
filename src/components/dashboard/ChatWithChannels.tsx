@@ -7,7 +7,7 @@ import {
   Search, Sparkles, Bell, HelpCircle, X, Menu,
   Pin, Users, MoreHorizontal, SmilePlus, Reply,
   ListPlus, Send, Smile, Paperclip, AtSign, Slash, Mic,
-  CheckCheck, Video, Folder
+  CheckCheck, Video, Folder, ChevronRight
 } from 'lucide-react';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
@@ -632,6 +632,7 @@ function ChatMain({
   const [editText, setEditText] = useState('');
   const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
+  const [rightPanelTab, setRightPanelTab] = useState<'members'|'apps'|'context'>('members');
   const [showChannelMore, setShowChannelMore] = useState(false);
   const [showComposerEmoji, setShowComposerEmoji] = useState(false);
   const [showSlashMenu, setShowSlashMenu] = useState(false);
@@ -1207,7 +1208,7 @@ FORMATO:
             <div className="relative group/tip">
               <button
                 onClick={() => setShowMembersPanel(p => !p)}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showMembersPanel ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showMembersPanel && rightPanelTab === 'members' ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
                 <Users className="h-4 w-4" strokeWidth={1.75} />
               </button>
               <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-300 group-hover/tip:opacity-100 z-30">
@@ -2033,41 +2034,154 @@ FORMATO:
       </div>
       {/* Emoji picker portal fixed */}
       {/* Members Panel */}
+      {/* Panel derecho deslizable — Miembros / Apps / Contexto */}
       {showMembersPanel && (
-        <div className="absolute right-0 top-[52px] bottom-0 z-40 w-64 border-l border-white/[0.05] bg-[#0F1117] flex flex-col shadow-2xl">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]">
-            <span className="text-[13px] font-semibold text-white/80">Miembros</span>
-            <button onClick={() => setShowMembersPanel(false)} className="text-white/30 hover:text-white transition-colors">
-              <X className="h-4 w-4" strokeWidth={1.75} />
+        <div className="absolute right-0 top-[52px] bottom-0 z-40 w-72 border-l border-white/[0.05] bg-[#0D0F18] flex flex-col shadow-2xl"
+          style={{ animation: 'slideInRight 0.18s ease-out' }}>
+          {/* Header del panel con tabs */}
+          <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/[0.05] shrink-0">
+            <div className="flex gap-0.5">
+              {([
+                { id: 'members', label: 'Equipo' },
+                { id: 'apps',    label: 'Apps' },
+                { id: 'context', label: 'Contexto' },
+              ] as const).map(tab => (
+                <button key={tab.id} onClick={() => setRightPanelTab(tab.id)}
+                  className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
+                    rightPanelTab === tab.id
+                      ? 'bg-white/[0.08] text-white'
+                      : 'text-white/35 hover:text-white/60'
+                  }`}>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setShowMembersPanel(false)} className="text-white/30 hover:text-white transition-colors p-1">
+              <X className="h-3.5 w-3.5" strokeWidth={1.75} />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-3 flex flex-col gap-1">
-            {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST').map(m => (
-              <div key={m.id} className="flex items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-white/[0.03] transition-colors">
-                <div className="relative shrink-0">
-                  <Avatar
-                    initials={(m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()}
-                    color={m.color || '#8b5cf6'}
-                    size={30}
-                    image={m.image}
-                  />
+
+          {/* Tab: Equipo */}
+          {rightPanelTab === 'members' && (
+            <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-3 flex flex-col gap-1">
+              {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST').map(m => (
+                <div key={m.id} className="flex items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-white/[0.03] transition-colors">
+                  <div className="relative shrink-0">
+                    <Avatar
+                      initials={(m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()}
+                      color={m.color || '#8b5cf6'}
+                      size={30}
+                      image={m.image}
+                    />
+                    {(m as any).presence?.status === 'online' && (
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0D0F18]" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-medium text-white/80 truncate">{m.name || m.email}</p>
+                    <p className="text-[10px] text-white/30 truncate">
+                      {(m as any).presence?.status === 'online'
+                        ? <span className="text-emerald-400">En línea</span>
+                        : (m as any).presence?.lastSeen
+                          ? `Visto ${formatLastSeen((m as any).presence.lastSeen)}`
+                          : m.role?.toLowerCase().replace('_', ' ')}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[12px] font-medium text-white/80 truncate">{m.name || m.email}</p>
-                  <p className="text-[10px] text-white/30 truncate">
-                    {(m as any).presence?.status === 'online'
-                      ? <span className="text-emerald-400">En línea</span>
-                      : (m as any).presence?.lastSeen
-                        ? `Visto ${formatLastSeen((m as any).presence.lastSeen)}`
-                        : m.role?.toLowerCase().replace('_', ' ')}
-                  </p>
+              ))}
+              {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST').length === 0 && (
+                <p className="text-[12px] text-white/20 text-center py-8">Sin miembros</p>
+              )}
+            </div>
+          )}
+
+          {/* Tab: Apps */}
+          {rightPanelTab === 'apps' && (
+            <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 flex flex-col gap-3">
+              <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 px-1 mb-1">Accesos rápidos</p>
+              {[
+                { href: '/dashboard/tasks',    icon: '✅', label: 'Tareas',    sub: 'Ver y gestionar tareas' },
+                { href: '/dashboard/calendar', icon: '📅', label: 'Reuniones', sub: 'Agenda y videollamadas' },
+                { href: '/dashboard/projects', icon: '📁', label: 'Proyectos', sub: 'Campañas y proyectos' },
+                { href: '/dashboard/clients',  icon: '👥', label: 'Clientes',  sub: 'Gestión de cuentas' },
+                { href: '/dashboard/crm',      icon: '🎯', label: 'CRM',       sub: 'Leads y prospectos' },
+                { href: '/dashboard/analytics',icon: '📊', label: 'Analytics', sub: 'Métricas del workspace' },
+              ].map(app => (
+                <a key={app.href} href={app.href}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group border border-transparent hover:border-white/[0.06]">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
+                    style={{ background: 'rgba(139,92,246,0.1)' }}>
+                    {app.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-medium text-white/80 group-hover:text-white transition-colors">{app.label}</p>
+                    <p className="text-[11px] text-white/30 truncate">{app.sub}</p>
+                  </div>
+                  <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/20 group-hover:text-white/40 shrink-0 transition-colors" />
+                </a>
+              ))}
+              <div className="mt-2 px-1">
+                <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 mb-2">Boosti IA</p>
+                <div className="rounded-xl border border-violet-500/20 bg-violet-500/[0.06] p-3">
+                  <p className="text-[12px] font-medium text-violet-300 mb-1">🤖 Asistente de marketing</p>
+                  <p className="text-[11px] text-white/40 mb-2.5">Activa Boosti para ayuda con scripts, ideas y más.</p>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={async () => {
+                        const res = await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'individual' }) });
+                        if (res.ok) { const d = await res.json(); setAiSession({ ...d.session, activatedBy: myId }); setShowMembersPanel(false); }
+                      }}
+                      className="flex-1 py-1.5 rounded-lg text-[11px] font-medium text-violet-300 border border-violet-500/25 hover:bg-violet-500/10 transition-colors">
+                      Solo yo
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const res = await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'group' }) });
+                        if (res.ok) { const d = await res.json(); setAiSession({ ...d.session, activatedBy: myId }); setShowMembersPanel(false); }
+                      }}
+                      className="flex-1 py-1.5 rounded-lg text-[11px] font-medium text-violet-300 border border-violet-500/25 hover:bg-violet-500/10 transition-colors">
+                      Grupal
+                    </button>
+                  </div>
                 </div>
               </div>
-            ))}
-            {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST').length === 0 && (
-              <p className="text-[12px] text-white/20 text-center py-8">Sin miembros</p>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Tab: Contexto del room */}
+          {rightPanelTab === 'context' && (
+            <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 flex flex-col gap-4">
+              {/* Tareas del room */}
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 mb-2.5">Tareas activas</p>
+                {roomTasks.filter(t => !['completed','approved','cancelled'].includes(t.status)).length > 0 ? (
+                  <div className="flex flex-col gap-1.5">
+                    {roomTasks.filter(t => !['completed','approved','cancelled'].includes(t.status)).slice(0,5).map(t => (
+                      <div key={t.id} className="flex items-start gap-2 rounded-xl px-2.5 py-2 bg-white/[0.03] border border-white/[0.05]">
+                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                          style={{ background: t.priority === 'high' ? '#f87171' : t.priority === 'medium' ? '#fbbf24' : '#4ade80' }} />
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-medium text-white/75 leading-tight truncate">{t.title}</p>
+                          {t.dueDate && (
+                            <p className="text-[10px] text-white/30 mt-0.5">
+                              {new Date(t.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-white/20 text-center py-3">Sin tareas activas</p>
+                )}
+              </div>
+              {/* Archivos recientes */}
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 mb-2.5">Archivos recientes</p>
+                <p className="text-[11px] text-white/20 text-center py-3">Ver en la pestaña Files ↑</p>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>
@@ -2175,6 +2289,15 @@ function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; on
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
+
+// Animación slide-in para el panel derecho
+const slideInRightStyle = `
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+`;
+
 export default function ChatWithChannels() {
   const { data: session } = useSession();
   const role = (session?.user as any)?.role ?? '';
@@ -2280,6 +2403,7 @@ export default function ChatWithChannels() {
 
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
+      <style>{slideInRightStyle}</style>
       {/* Channel list desktop */}
       <div className="hidden md:flex">{channelList}</div>
 
