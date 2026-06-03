@@ -438,8 +438,23 @@ function TasksContent() {
       ...c,
       tasks: c.tasks.map((t: any) => t.id === taskId ? { ...t, status: newStatus } : t),
     })));
-    // Remover de reviewTasks si ya no es internal_review ni client_review
-    if (!['internal_review', 'client_review'].includes(newStatus)) {
+    // Sincronizar reviewTasks con el nuevo status
+    const REVIEW_STATUSES = ['internal_review', 'client_review'];
+    if (REVIEW_STATUSES.includes(newStatus)) {
+      // BUG-03 fix: agregar a reviewTasks si no está ya (ej: drag desde tablero → columna Revisión)
+      const taskObj =
+        myTasks.find(t => t.id === taskId) ??
+        allTasks.find(t => t.id === taskId) ??
+        clientsWithTasks.flatMap(c => c.tasks).find((t: any) => t.id === taskId);
+      if (taskObj) {
+        setReviewTasks(prev => {
+          const already = prev.some(t => t.id === taskId);
+          if (already) return prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t);
+          return [{ ...taskObj, status: newStatus }, ...prev];
+        });
+      }
+    } else {
+      // Quitar de reviewTasks si ya no es status de revisión
       setReviewTasks(prev => prev.filter(t => t.id !== taskId));
     }
     try {
