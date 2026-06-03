@@ -70,6 +70,31 @@ function FileIcon({ type }: { type: string }) {
   return <FileText className="w-4 h-4 text-white/40" />;
 }
 
+// Descripción colapsable — muestra máximo 5 líneas, botón "ver más" si es larga
+function DescriptionBlock({ description }: { description: string }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const lines = description.split('\n');
+  const isTall = lines.length > 5 || description.length > 280;
+  return (
+    <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] px-3 py-2.5">
+      <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1.5">Descripción</p>
+      <div className={`relative ${!expanded && isTall ? 'max-h-24 overflow-hidden' : ''}`}>
+        <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{description}</p>
+        {!expanded && isTall && (
+          <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none"
+            style={{ background: 'linear-gradient(to bottom, transparent, rgba(15,17,23,0.95))' }} />
+        )}
+      </div>
+      {isTall && (
+        <button onClick={() => setExpanded(v => !v)}
+          className="mt-1.5 text-[11px] text-violet-400/70 hover:text-violet-400 transition-colors">
+          {expanded ? '▲ Ver menos' : '▼ Ver descripción completa'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusChange, isManager = false, currentUserId }: TaskDetailModalProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
@@ -503,12 +528,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               )}
             </div>
 
-            {/* Description */}
+            {/* Description — colapsable si es larga */}
             {task.description && (
-              <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] px-3 py-2.5">
-                <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1.5">Descripción</p>
-                <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{task.description}</p>
-              </div>
+              <DescriptionBlock description={task.description} />
             )}
 
             {/* Attachments */}
@@ -582,6 +604,55 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                   <p className="text-[10px] text-white/25 uppercase tracking-wider">Archivos ({attachments.length})</p>
                 </div>
               )}
+
+              {/* Referencias de imagen (subidas desde el form de crear/editar) */}
+              {(() => {
+                const refImages = Array.isArray((task as any).references)
+                  ? (task as any).references.filter((r: any) => r.type === 'file' && (r.fileType || '').startsWith('image'))
+                  : [];
+                if (refImages.length === 0) return null;
+                return (
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-white/25 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>📎</span> Referencias visuales ({refImages.length})
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {refImages.map((r: any, i: number) => (
+                        <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.06] cursor-pointer"
+                          onClick={() => setLightbox(r.url)}>
+                          <img src={r.url} alt={r.title || 'referencia'} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button onClick={e => { e.stopPropagation(); window.open(r.url, '_blank'); }}
+                              className="p-1 bg-white/20 rounded hover:bg-white/30">
+                              <ExternalLink className="w-3 h-3 text-white" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Referencias de links (no imagen) del form */}
+              {(() => {
+                const refLinks = Array.isArray((task as any).references)
+                  ? (task as any).references.filter((r: any) => r.type !== 'file')
+                  : [];
+                if (refLinks.length === 0) return null;
+                return (
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] text-white/25 uppercase tracking-wider">Referencias ({refLinks.length})</p>
+                    {refLinks.map((r: any, i: number) => (
+                      <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05] hover:border-violet-500/30 transition-colors group">
+                        <span className="text-[10px] font-bold px-1 rounded bg-white/10 text-white/40 uppercase">{r.type || 'link'}</span>
+                        <span className="text-[11px] text-blue-400 group-hover:text-blue-300 truncate">{r.title || r.url}</span>
+                      </a>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* Image previews */}
               {imageAttachments.length > 0 && (
