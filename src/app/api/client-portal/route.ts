@@ -158,7 +158,15 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ client, activities, tasks: shapedTasks, appointments });
+    // Buscar el userId del usuario CLIENT cuyo email coincide con el cliente
+    // Necesario para construir el DM room correcto en el portal (PM + cliente, no PM + admin)
+    const clientPortalUser = await db.user.findFirst({
+      where: { workspaceId, email: { equals: client.email, mode: 'insensitive' } },
+      select: { id: true },
+    });
+    const clientUserId = clientPortalUser?.id ?? null;
+
+    return NextResponse.json({ client, activities, tasks: shapedTasks, appointments, clientUserId });
   } catch (error) {
     log.err('/api/client-portal GET', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });

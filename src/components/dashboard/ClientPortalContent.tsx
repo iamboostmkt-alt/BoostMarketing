@@ -169,7 +169,7 @@ export default function ClientPortalContent() {
 
   // ── Data layer (hook limpio) ─────────────────────────────────────────────
   const {
-    client, deliverables, appointments: rawAppointments, activities,
+    client, clientUserId, deliverables, appointments: rawAppointments, activities,
     loading, error, noClient, refetch, refetchSilent, milestones,
   } = useClientPortal({ isManager, previewClientId });
 
@@ -640,7 +640,10 @@ export default function ClientPortalContent() {
 <div className="glass-card rounded-2xl p-5">
           {(() => {
             const pmId = client.assignedManagerId;
-            const dmRoom = pmId && myUserId ? [myUserId, pmId].sort().join('_DM_') : null;
+            // Usar clientUserId (usuario CLIENT del portal) para el DM, no myUserId (admin que preview)
+            // Si el admin está viendo el portal, el chat debe mostrar la conversación PM-cliente real
+            const chatUserId = clientUserId ?? (isManager ? null : myUserId);
+            const dmRoom = pmId && chatUserId ? [chatUserId, pmId].sort().join('_DM_') : null;
             return dmRoom ? (
               <ChatContent room={dmRoom} title="Chat con tu Project Manager" subtitle="Mensajes directos con tu PM" />
             ) : (

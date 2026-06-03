@@ -127,6 +127,7 @@ export interface ClientPortalResponse {
 
 export interface ClientPortalState {
   client:       PortalClient | null;
+  clientUserId: string | null;
   deliverables: PortalDeliverable[];
   appointments: PortalAppointment[];
   activities:   PortalActivity[];

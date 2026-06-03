@@ -27,6 +27,7 @@ export function useClientPortal({
   isManager = false,
 }: UseClientPortalOptions = {}): ClientPortalState {
   const [client,       setClient]       = useState<PortalClient | null>(null);
+  const [clientUserId, setClientUserId] = useState<string | null>(null);
   const [deliverables, setDeliverables] = useState<PortalDeliverable[]>([]);
   const [appointments, setAppointments] = useState<PortalAppointment[]>([]);
   const [activities,   setActivities]   = useState<PortalActivity[]>([]);
@@ -62,6 +63,7 @@ export function useClientPortal({
       if (data.error)       { setError(data.error); return; }
 
       setClient(data.client ?? null);
+      setClientUserId((data as any).clientUserId ?? null);
       // Compatibilidad con API actual que devuelve `tasks` — renombrar a deliverables
       const rawDeliverables = (data as any).deliverables ?? (data as any).tasks ?? [];
       setDeliverables(rawDeliverables);
@@ -91,6 +93,7 @@ export function useClientPortal({
 
   return {
     client,
+    clientUserId,
     deliverables,
     appointments,
     activities,
