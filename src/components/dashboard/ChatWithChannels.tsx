@@ -348,9 +348,14 @@ function ChannelList({
               {clients.map(c => {
                 const clientColor = (c as any).color || '#8B5CF6';
                 const initials = (c.name || 'C').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
-                // DM room entre el PM asignado y el cliente
-                const pmId = (c as any).assignedManagerId;
-                const clientRoomId = pmId ? [myId, pmId].sort().join('_DM_') : c.id;
+                // DM room entre el usuario actual y el usuario CLIENT del portal
+                // clientUserId viene de la API (User con role=CLIENT y email=client.email)
+                const clientUserId = (c as any).clientUserId as string | null;
+                // Si el cliente no tiene portal (clientUserId null), usar el room interno del cliente
+                const clientRoomId = clientUserId
+                  ? [myId, clientUserId].sort().join('_DM_')
+                  : c.id;
+                const hasPortal = !!clientUserId;
                 const isActive = activeId === clientRoomId;
                 const unread = unreads[clientRoomId] || 0;
                 return (
@@ -361,9 +366,15 @@ function ChannelList({
                       }`}>
                       <div className="relative shrink-0">
                         <Avatar initials={initials} color={clientColor} size={20} />
-                        <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-card bg-violet-400" />
+                        {/* Punto verde solo si tiene portal activo */}
+                        {hasPortal && (
+                          <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-card bg-violet-400" />
+                        )}
                       </div>
                       <span className="flex-1 truncate text-left">{c.name}</span>
+                      {!hasPortal && (
+                        <span className="text-[10px] text-white/25" title="Sin portal activo">sin portal</span>
+                      )}
                       {unread > 0 && (
                         <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white">
                           {unread}

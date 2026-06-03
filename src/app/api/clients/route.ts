@@ -78,11 +78,27 @@ export async function GET(req: NextRequest) {
     // ADMIN y SALES_REP ven todos
     const sidebarClients = await db.client.findMany({
       where: sidebarWhere,
-      select: { id: true, name: true },
+      select: { id: true, name: true, color: true, assignedManagerId: true, email: true },
       orderBy: { name: "asc" },
       take: 20,
     });
-    return NextResponse.json({ clients: sidebarClients });
+
+    // Buscar el userId del usuario CLIENT cuyo email coincide con cada cliente
+    const emails = sidebarClients.map((c) => c.email).filter(Boolean);
+    const portalUsers = emails.length > 0
+      ? await db.user.findMany({
+          where: { workspaceId, email: { in: emails }, role: "CLIENT" },
+          select: { id: true, email: true },
+        })
+      : [];
+    const portalUserMap = Object.fromEntries(portalUsers.map((u) => [u.email, u.id]));
+
+    const clientsWithPortal = sidebarClients.map((c) => ({
+      ...c,
+      clientUserId: portalUserMap[c.email] ?? null,
+    }));
+
+    return NextResponse.json({ clients: clientsWithPortal });
   }
 
   const where: Record<string, unknown> = { workspaceId };
