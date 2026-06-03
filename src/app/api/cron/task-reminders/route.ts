@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { TASK_STATUS } from "@/lib/constants/status";
 import { sendMail, templateRecordatorio, templateTareaVencida, templateEscalacionPM } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
+import { sendChatBotMessage } from "@/lib/chat-bot";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,16 @@ async function sendReminder(task: any, users: any[], flag: string, horasRestante
         data: { userId: u.id, workspaceId: task.workspaceId, message: `⏰ Tu tarea "${task.title}" vence en ${horasRestantes}h`, type: "task", read: false, link: "/dashboard/tasks" },
       }).catch(() => {});
       await sendMail(u.email, `⏰ Recordatorio: ${task.title}`, templateRecordatorio(task.title, dueDate, horasRestantes, branding));
+      // DM personal en chat — Weeklink bot avisa directamente
+      const horaLabel = horasRestantes >= 24 ? `${Math.round(horasRestantes/24)} día(s)` : `${horasRestantes}h`;
+      sendChatBotMessage({
+        workspaceId: task.workspaceId,
+        message: `⏰ **Recordatorio:** Tu tarea **"${task.title}"** vence en ${horaLabel}\n📅 Fecha límite: ${dueDate}`,
+        clientId: task.clientId ?? null,
+        assignedUserIds: [u.id],
+        senderId: u.id,
+        isInternal: true,
+      }).catch(() => {});
     })
   );
   await db.task.update({ where: { id: task.id }, data: { [flag]: true, lastReminderAt: new Date() } });
@@ -66,7 +77,7 @@ export async function GET(req: NextRequest) {
     include: {
       assignedUser: { select: { id: true, email: true, name: true } },
       assignedUsers: { include: { user: { select: { id: true, email: true, name: true } } } },
-      client: { select: { assignedManager: { select: { id: true, email: true, name: true } } } },
+      client: { select: { id: true, assignedManager: { select: { id: true, email: true, name: true } } } },
     },
   });
 
@@ -74,6 +85,8 @@ export async function GET(req: NextRequest) {
     const due = new Date(task.dueDate!);
     const days = daysUntil(now, due);
     const users = await getAssignees(task);
+    // Asignar clientId para routing del chat
+    (task as any).clientId = (task as any).client?.id ?? null;
     const dueStr = due.toLocaleDateString("es-MX");
 
     // ── 3 días antes → 10am ──────────────────────────────────────
@@ -115,6 +128,15 @@ export async function GET(req: NextRequest) {
             data: { userId: u.id, workspaceId: task.workspaceId, message: `🚨 Tu tarea "${task.title}" está vencida`, type: "task", read: false, link: "/dashboard/tasks" },
           }).catch(() => {});
           await sendMail(u.email, `🚨 Tarea vencida: ${task.title}`, templateTareaVencida(task.title, dueStr, branding, u.name ?? undefined));
+          // DM urgente en chat
+          sendChatBotMessage({
+            workspaceId: task.workspaceId,
+            message: `🚨 **Tarea vencida:** **"${task.title}"**\n📅 Venció el ${dueStr} — por favor complétala o actualiza su estado`,
+            clientId: task.clientId ?? null,
+            assignedUserIds: [u.id],
+            senderId: u.id,
+            isInternal: true,
+          }).catch(() => {});
         }
         await db.task.update({ where: { id: task.id }, data: { overdueCount: { increment: 1 }, lastReminderAt: now } });
         results.overdue++;
@@ -133,6 +155,15 @@ export async function GET(req: NextRequest) {
             `⚠️ ${assigneeNames} no ha completado: ${task.title}`,
             templateEscalacionPM(pm.name ?? "PM", assigneeNames, task.title, dueStr, task.overdueCount, branding)
           );
+          // Mensaje en canal TEAM alertando al PM
+          sendChatBotMessage({
+            workspaceId: task.workspaceId,
+            message: `⚠️ **Escalación:** ${assigneeNames} lleva ${task.overdueCount} días sin completar **"${task.title}"** (vencida el ${dueStr})`,
+            clientId: task.clientId ?? null,
+            assignedUserIds: [pm.id],
+            senderId: pm.id,
+            isInternal: true,
+          }).catch(() => {});
           results.escalated++;
         }
         await db.task.update({ where: { id: task.id }, data: { overdueEscalated: true } });

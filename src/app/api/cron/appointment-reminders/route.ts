@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sendMail, templateRecordatorioVideollamada } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
+import { sendChatBotMessage } from '@/lib/chat-bot';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +39,7 @@ export async function GET(req: NextRequest) {
         assignedUsers: {
           include: { user: { select: { id: true, name: true, email: true } } },
         },
+        client: { select: { id: true } },
       },
     });
 
@@ -80,6 +82,32 @@ export async function GET(req: NextRequest) {
           })),
           skipDuplicates: true,
         });
+      }
+
+      // Mensaje bot en chat del cliente (solo en recordatorio 24h para no spamear)
+      if (window.label === '24h') {
+        const clientId = (appt as any).client?.id ?? appt.clientId ?? null;
+        const assignedIds = appt.assignedUsers.map((au: any) => au.user.id);
+        const timeLabel = appt.date.toLocaleDateString('es-MX', {
+          weekday: 'short', day: 'numeric', month: 'short',
+          hour: '2-digit', minute: '2-digit',
+          timeZone: appt.timezone || 'America/Mexico_City',
+        });
+        const chatMsg = [
+          `📅 **Recordatorio de reunión mañana**`,
+          `📌 ${appt.name || appt.title || 'Reunión'}`,
+          `🗓 ${timeLabel}`,
+          appt.meetUrl ? `🔗 ${appt.meetUrl}` : null,
+        ].filter(Boolean).join('\n');
+        const senderId = assignedIds[0] ?? appt.workspaceId;
+        sendChatBotMessage({
+          workspaceId: appt.workspaceId,
+          message: chatMsg,
+          clientId,
+          assignedUserIds: assignedIds,
+          senderId,
+          isInternal: true,
+        }).catch(() => {});
       }
 
       // Marcar enviado

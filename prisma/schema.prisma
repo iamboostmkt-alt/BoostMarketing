@@ -50,6 +50,7 @@ model Workspace {
   chatUnreads   ChatUnread[]
   channels      Channel[]
   aiSessions    AiSession[]
+  projects      Project[]
   invites       WorkspaceInvite[]
   taskTemplates      TaskTemplate[]
   customRoles        CustomRole[]
@@ -133,6 +134,8 @@ model User {
   createdChannels       Channel[]             @relation("ChannelCreator")
   aiSessions            AiSession[]
   managedClients         Client[]                  @relation("ClientManager")
+  createdProjects        Project[]                 @relation("ProjectCreator")
+  projectAssignments     ProjectAssignedUser[]     @relation("ProjectUsers")
   activityComments       ActivityComment[]
   appointmentAssignments AppointmentAssignedUser[]
   presence               UserPresence?
@@ -209,6 +212,7 @@ model Task {
   deletedAt    DateTime? @map("deleted_at")
   workspaceId  String    @map("workspace_id")
   parentTaskId String?   @map("parent_task_id")
+  projectId    String?   @map("project_id")
   templateId   String?   @map("template_id")
 
   user          User               @relation("OwnedTasks", fields: [userId], references: [id], onDelete: Cascade)
@@ -217,6 +221,7 @@ model Task {
   assignedUsers TaskAssignedUser[]
   attachments   TaskAttachment[]
   subtasks      Task[]            @relation("TaskSubtasks")
+  project       Project?          @relation("ProjectTasks", fields: [projectId], references: [id], onDelete: SetNull)
   parentTask    Task?             @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
   template      TaskTemplate?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
   feedback      TaskFeedback[]
@@ -310,6 +315,7 @@ model Client {
   assignedUsers   ClientAssignedUser[]
   milestones      Milestone[]
   appointments    Appointment[]
+  projects        Project[]      @relation("ClientProjects")
 
   @@index([workspaceId, status])
   @@index([assignedManagerId, workspaceId])
@@ -656,6 +662,46 @@ model TaskFeedback {
   @@map("task_feedback")
 }
 
+// ── Proyectos / Campañas ───────────────────────────────────────────
+model Project {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  clientId    String?   @map("client_id")
+  name        String
+  description String    @default("")
+  status      String    @default("active")
+  color       String    @default("#8B5CF6")
+  startDate   DateTime? @map("start_date")
+  endDate     DateTime? @map("end_date")
+  budget      Float?
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  workspace     Workspace              @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  client        Client?                @relation("ClientProjects", fields: [clientId], references: [id], onDelete: SetNull)
+  creator       User                   @relation("ProjectCreator", fields: [createdBy], references: [id])
+  assignedUsers ProjectAssignedUser[]
+  milestones    Milestone[]            @relation("ProjectMilestones")
+  tasks         Task[]                 @relation("ProjectTasks")
+
+  @@index([workspaceId, status])
+  @@map("projects")
+}
+
+model ProjectAssignedUser {
+  id        String  @id @default(cuid())
+  projectId String  @map("project_id")
+  userId    String  @map("user_id")
+  role      String  @default("member")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("ProjectUsers", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_assigned_users")
+}
+
 model Milestone {
   id               String   @id @default(cuid())
   clientId         String   @map("client_id")
@@ -669,12 +715,14 @@ model Milestone {
   visibleToClient  Boolean  @default(true) @map("visible_to_client")
   comments         String   @default("")
   workspaceId      String   @map("workspace_id")
+  projectId        String?  @map("project_id")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
   client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   responsible User?  @relation("MilestoneResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
   tasks       Task[] @relation("MilestoneTasks")
+  project     Project?  @relation("ProjectMilestones", fields: [projectId], references: [id], onDelete: SetNull)
   @@index([clientId, workspaceId])
   @@map("milestones")
 }

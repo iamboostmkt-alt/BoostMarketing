@@ -28,6 +28,7 @@ import {
   HelpCircle,
   Palette,
   Home,
+  FolderOpen,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -50,6 +51,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/dashboard",               label: "Home",       icon: Home },
   { href: "/dashboard/tasks",         label: "Tareas",     icon: CheckSquare },
+  { href: "/dashboard/projects",      label: "Proyectos",  icon: FolderOpen },
   { href: "/dashboard/calendar",      label: "Calendario", icon: Calendar },
   { href: "/dashboard/chat",          label: "Chat",       icon: MessageSquare },
   { href: "/dashboard/client-portal", label: "Mi Portal",  icon: Briefcase, roles: ["CLIENT", "ADMIN", "PROJECT_MANAGER"] },
