@@ -104,6 +104,8 @@ function ChannelList({
 }) {
   const [openClients, setOpenClients] = useState(true);
   const [openDMs, setOpenDMs] = useState(true);
+  const [clientsOpen, setClientsOpen] = useState(true);
+  const [appsOpen, setAppsOpen] = useState(true);
   const [showChannelMenu, setShowChannelMenu] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [showDMSearch, setShowDMSearch] = useState(false);
@@ -341,10 +343,14 @@ function ChannelList({
         {/* Chats con clientes — visible para ADMIN y el propio cliente */}
         {(role === 'CLIENT' || role === 'ADMIN') && clients.length > 0 && (
           <>
-            <div className="flex items-center px-2 pb-1 pt-4">
-              <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Chats con clientes</span>
-            </div>
-            <ul className="flex flex-col gap-0.5">
+            <button onClick={() => setClientsOpen(v => !v)}
+              className="flex w-full items-center gap-1 px-2 pb-1 pt-4 group">
+              <span className={`text-[9px] text-white/30 transition-transform duration-150 ${clientsOpen ? 'rotate-90' : ''}`}>▶</span>
+              <span className="ml-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 group-hover:text-white/60">Chats con clientes</span>
+              <span className="ml-1 text-[10px] text-white/25">({clients.length})</span>
+            </button>
+            {clientsOpen && (
+            <ul className="flex flex-col gap-0.5 overflow-y-auto scrollbar-thin" style={{ maxHeight: '200px' }}>
               {clients.map(c => {
                 const clientColor = (c as any).color || '#8B5CF6';
                 const initials = (c.name || 'C').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
@@ -384,13 +390,17 @@ function ChannelList({
                   </li>
                 );
               })}
-            </ul>
+              </ul>
+            )}
           </>
         )}
-        {/* Apps */}
-        <div className="px-2 pb-1 pt-4">
-          <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Apps</span>
-        </div>
+        {/* Apps — colapsable */}
+        <button onClick={() => setAppsOpen(v => !v)}
+          className="flex w-full items-center gap-1 px-2 pb-1 pt-4 group">
+          <span className={`text-[9px] text-white/30 transition-transform duration-150 ${appsOpen ? 'rotate-90' : ''}`}>▶</span>
+          <span className="ml-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 group-hover:text-white/60">Apps</span>
+        </button>
+        {appsOpen && (
         <ul className="flex flex-col gap-0.5">
           {[
             { id: 'tasks',    label: 'Tareas',       Icon: CheckCheck, href: '/dashboard/tasks' },
@@ -406,7 +416,8 @@ function ChannelList({
               </a>
             </li>
           ))}
-        </ul>
+                </ul>
+        )}
       </div>
     </div>
   );

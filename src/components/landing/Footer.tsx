@@ -135,7 +135,27 @@ export default function Footer({
             )}
           </div>
 
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
+          {/* Banner Weeklink */}
+          <div className="mt-10 rounded-2xl border border-violet-100 bg-violet-50/60 px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600 shrink-0">
+                <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+                  <path d="M8 11L12 21L16 13L20 21L24 11" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-violet-900">BoostMarketing usa Weeklink internamente</p>
+                <p className="text-xs text-violet-600">La plataforma todo en uno para agencias modernas</p>
+              </div>
+            </div>
+            <a href="/weeklink"
+              className="shrink-0 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-violet-700 hover:-translate-y-px"
+              style={{ boxShadow: '0 4px 15px rgba(124,58,237,0.25)' }}>
+              Ver Weeklink →
+            </a>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
             <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()} {agencyName}. Todos los derechos reservados.
             </p>

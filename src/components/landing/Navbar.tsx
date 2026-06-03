@@ -75,13 +75,8 @@ export default function Navbar({ agencyName = 'BoostMarketing', logoUrl }: Navba
         {/* Desktop CTA */}
         <div className="hidden items-center gap-3 md:flex">
           <Link href="/login">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              Iniciar Sesión
-            </Button>
-          </Link>
-          <Link href="/login">
             <Button size="sm" className="bg-brand hover:bg-brand-dark text-white">
-              Empezar Gratis
+              Iniciar Sesión
             </Button>
           </Link>
         </div>
@@ -127,7 +122,7 @@ export default function Navbar({ agencyName = 'BoostMarketing', logoUrl }: Navba
             </Link>
             <Link href="/login" onClick={() => setMobileOpen(false)}>
               <Button className="w-full justify-center bg-brand text-white hover:bg-brand-dark">
-                Empezar Gratis
+                Iniciar Sesión
               </Button>
             </Link>
           </div>

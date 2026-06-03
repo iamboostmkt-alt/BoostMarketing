@@ -484,6 +484,7 @@ export default function AdminDashboardPage() {
   const [deletingUser, setDeletingUser] = useState(false);
   const [togglingUser, setTogglingUser] = useState<string | null>(null);
   const [userListView, setUserListView] = useState<'all' | 'prospects'>('all');
+  const [activeRoleFilter, setActiveRoleFilter] = useState<string | null>(null);
   const [activatingUser, setActivatingUser] = useState<string | null>(null);
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
 
@@ -836,15 +837,41 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* Role chips (solo vista “Todos”: los conteos reflejan la página actual) */}
+            {/* Role chips clickeables para filtrar */}
             {userListView === 'all' && (
-              <div className="flex flex-wrap gap-2">
-                {ROLES.map((r) => (
-                  <span key={r} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${roleColorMap[r]}`}>
-                    {getRoleLabel(r)} <span className="opacity-70">({roleCounts[r] ?? 0})</span>
-                  </span>
-                ))}
-              </div>
+              <>
+                {/* Banner sin asignar */}
+                {(roleCounts['UNASSIGNED'] ?? 0) > 0 && (
+                  <button
+                    onClick={() => setActiveRoleFilter(f => f === 'UNASSIGNED' ? null : 'UNASSIGNED')}
+                    className="flex w-full items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-2.5 text-left transition-colors hover:bg-amber-500/10">
+                    <span className="text-base">⚠️</span>
+                    <div className="flex-1">
+                      <span className="text-sm font-medium text-amber-300">
+                        {roleCounts['UNASSIGNED']} usuario{(roleCounts['UNASSIGNED'] ?? 0) > 1 ? 's' : ''} sin rol asignado
+                      </span>
+                      <span className="ml-2 text-xs text-amber-400/60">— Haz clic para filtrar y asignar</span>
+                    </div>
+                    {activeRoleFilter === 'UNASSIGNED' && (
+                      <span className="text-xs text-amber-400 font-medium">Filtrando ✓</span>
+                    )}
+                  </button>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {activeRoleFilter && (
+                    <button onClick={() => setActiveRoleFilter(null)}
+                      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-xs text-white/50 hover:text-white/80">
+                      ✕ Quitar filtro
+                    </button>
+                  )}
+                  {ROLES.map((r) => (
+                    <button key={r} onClick={() => setActiveRoleFilter(f => f === r ? null : r)}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-all ${roleColorMap[r]} ${activeRoleFilter === r ? 'ring-2 ring-white/20 scale-105' : 'opacity-80 hover:opacity-100'}`}>
+                      {getRoleLabel(r)} <span className="opacity-70">({roleCounts[r] ?? 0})</span>
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
             {/* Users table */}
             <div className="glass-card rounded-xl overflow-hidden">
@@ -878,7 +905,7 @@ export default function AdminDashboardPage() {
                             </td>
                           </tr>
                         )
-                      : users.map((user) => (
+                      : users.filter(u => activeRoleFilter ? u.role === activeRoleFilter : true).map((user) => (
                           <tr key={user.id} className={`hover:bg-white/[0.02] transition-colors ${!user.active ? 'opacity-50' : ''}`}>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-3">
