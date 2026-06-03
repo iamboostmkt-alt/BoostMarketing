@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
         });
         const chatMsg = [
           `📅 **Recordatorio de reunión mañana**`,
-          `📌 ${appt.name || appt.title || 'Reunión'}`,
+          `📌 ${appt.name || 'Reunión'}`,
           `🗓 ${timeLabel}`,
           appt.meetUrl ? `🔗 ${appt.meetUrl}` : null,
         ].filter(Boolean).join('\n');

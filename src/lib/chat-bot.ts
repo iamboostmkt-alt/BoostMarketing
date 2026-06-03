@@ -20,10 +20,14 @@ export async function sendChatBotMessage(params: {
   fileName?: string;
   fileType?: string;
   isInternal?: boolean;
-  senderId: string; // quien genera la acción (para crear el mensaje en DB)
+  visibility?: string; // 'internal' | 'client_visible' — si internal, no va al room del cliente
+  senderId: string;
 }) {
   const { workspaceId, message, clientId, assignedUserIds = [], fileUrl, fileName, fileType, senderId } = params;
   const isInternal = params.isInternal ?? true;
+  // Si visibility=internal, aunque haya clientId, NO mandar al room del cliente
+  // La tarea es solo para el equipo interno
+  const isVisibleToClient = params.visibility !== 'internal';
 
   const baseMsg = {
     message,
@@ -34,12 +38,13 @@ export async function sendChatBotMessage(params: {
     ...(fileUrl ? { fileUrl, fileName, fileType } : {}),
   };
 
-  // Caso 1: hay clientId → mensaje en room del cliente
-  if (clientId) {
+  // Caso 1: hay clientId Y la tarea es visible al cliente → mensaje en room del cliente
+  // Si visibility=internal, saltar al Caso 2 (DM al equipo)
+  if (clientId && isVisibleToClient) {
     await db.chatMessage.create({
       data: { ...baseMsg, room: clientId, isInternal },
     });
-    return; // El equipo ve este mensaje en el room del cliente
+    return;
   }
 
   // Caso 2: sin clientId → DM individual a cada asignado

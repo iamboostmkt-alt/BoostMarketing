@@ -447,6 +447,7 @@ export async function POST(req: NextRequest) {
         clientId: task.clientId ?? null,
         assignedUserIds: _uniqueIds,
         senderId: userId, isInternal: true,
+        visibility: task.visibility ?? 'internal',
       }).catch(() => {});
     }
   } catch { /* non-critical */ }

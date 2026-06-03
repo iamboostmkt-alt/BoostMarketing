@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import React, { useState, useEffect, useId } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Loader2, CalendarIcon, X, Sparkles } from 'lucide-react';
+import { Loader2, CalendarIcon, X, Sparkles, Paperclip, FileText, ImageIcon } from 'lucide-react';
+import { useUploadThing } from '@/lib/uploadthing';
 import { toast } from 'sonner';
 import {
   Sheet, SheetContent,
@@ -71,6 +72,18 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   const [clientId, setClientId]           = useState('');
   const [visibility, setVisibility]       = useState('internal');
   const [references, setReferences]       = useState<{title:string;url:string;type:string}[]>([]);
+  const [refFiles, setRefFiles]           = useState<{name:string;url:string;fileType:string}[]>([]);
+  const [uploadingRef, setUploadingRef]   = useState(false);
+
+  const { startUpload } = useUploadThing('taskAttachment', {
+    onClientUploadComplete: (files) => {
+      if (!files) return;
+      setRefFiles(prev => [...prev, ...files.map(f => ({ name: f.name, url: f.url, fileType: f.type || 'file' }))]);
+      setUploadingRef(false);
+      toast.success(files.length + ' archivo(s) adjunto(s)');
+    },
+    onUploadError: () => { setUploadingRef(false); toast.error('Error al subir archivo'); },
+  });
   const [refTitle, setRefTitle]           = useState('');
   const [refUrl, setRefUrl]               = useState('');
   const [refType, setRefType]             = useState('generic');
@@ -107,7 +120,9 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         : (task.assignedUserId ? [task.assignedUserId] : []);
       setAssigneeIds(ids);
       setVisibility(task.visibility || 'internal');
-      setReferences(Array.isArray(task.references) ? task.references : []);
+      const allRefs = Array.isArray(task.references) ? task.references : [];
+      setReferences(allRefs.filter((r: any) => r.type !== 'file'));
+      setRefFiles(allRefs.filter((r: any) => r.type === 'file').map((r: any) => ({ name: r.title, url: r.url, fileType: r.fileType || 'file' })));
       setClientId(task.clientId ?? '');
       // Cargar subtareas existentes en edición
       if (!task.parentTaskId) {
@@ -222,6 +237,10 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
         clientId:        isManager ? (clientId || null) : (initialClientId || null),
         visibility:      isManager ? visibility : undefined,
         type: isManager ? (visibility === 'client_visible' ? 'deliverable' : 'internal_task') : 'deliverable',
+        references: [
+          ...references,
+          ...refFiles.map(f => ({ title: f.name, url: f.url, type: 'file', fileType: f.fileType })),
+        ],
         ...(isEditing ? { id: task!.id } : {}),
         ...(parentTaskId ? { parentTaskId } : {}),
       };
@@ -637,7 +656,32 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           )}
 
           {isManager && <div className="space-y-2">
-            <label className="text-white/70 text-sm">Referencias</label>
+            <label className="text-white/70 text-sm">Referencias y archivos</label>
+            {refFiles.length > 0 && (
+              <div className="space-y-1 mb-2">
+                {refFiles.map((f, i) => (
+                  <div key={i} className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-md px-3 py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {f.fileType.startsWith('image') ? <ImageIcon className="w-3.5 h-3.5 text-violet-400 shrink-0" /> : <FileText className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+                      <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:underline truncate">{f.name}</a>
+                    </div>
+                    <button type="button" onClick={() => setRefFiles(refFiles.filter((_,j)=>j!==i))} className="text-white/30 hover:text-red-400 ml-2 text-xs">x</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md bg-white/[0.04] border border-dashed border-white/[0.12] hover:border-violet-500/40 hover:bg-white/[0.06] transition-colors">
+              {uploadingRef ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white/50" /> : <Paperclip className="w-3.5 h-3.5 text-white/50" />}
+              <span className="text-sm text-white/50">{uploadingRef ? 'Subiendo...' : 'Subir archivo de referencia'}</span>
+              <input type="file" multiple accept="image/*,.pdf,.doc,.docx,.zip,.mp4,.mov,.png,.jpg" className="hidden"
+                disabled={uploadingRef}
+                onChange={async (e) => {
+                  if (!e.target.files?.length) return;
+                  setUploadingRef(true);
+                  await startUpload(Array.from(e.target.files));
+                  e.target.value = '';
+                }} />
+            </label>
             {references.length > 0 && (
               <div className="space-y-1 mb-2">
                 {references.map((r, i) => (

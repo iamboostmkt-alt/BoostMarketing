@@ -48,7 +48,7 @@ function renderMessage(text: string) {
     // Parsear inline: **bold**, _italic_, @menciones
     function parseInline(str: string): React.ReactNode[] {
       const parts: React.ReactNode[] = [];
-      const regex = /(@\w+)|\*\*(.+?)\*\*|_(.+?)_|`(.+?)`/g;
+      const regex = /(@[\wáéíóúÁÉÍÓÚñÑ]+(?:\s[\wáéíóúÁÉÍÓÚñÑ]+)*)|\*\*(.+?)\*\*|_(.+?)_|`(.+?)`/g;
       let last = 0;
       let match;
       while ((match = regex.exec(str)) !== null) {
