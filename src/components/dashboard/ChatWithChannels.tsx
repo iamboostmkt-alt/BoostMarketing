@@ -922,19 +922,42 @@ function ChatMain({
           ? 'Estás en un chat grupal de equipo. Todo el equipo puede leer.'
           : 'Estás en un chat privado con un miembro del equipo.';
 
-        // Chat system prompt: formato rico con listas, ejemplos y estructura
-        const chatSystemPrompt = isTasks
-          ? `Eres Boost AI. ${modeCtx} Responde con datos concretos del workspace. Usa listas y números. Máximo 5 líneas.`
-          : `Eres Boost AI, asistente de marketing digital. ${modeCtx}
+        // Sistema de prompts adaptativo según tipo de solicitud
+        const isScript = /speech|script|guion|caption|copy|texto para video|reel|hook|intro|historia|storytelling/i.test(query);
+        const isList   = /ideas?|opciones?|ejemplos?|tips?|pasos?|estrategia|formas?/i.test(query);
 
-FORMATO DE RESPUESTA (siempre usar):
-- Si piden ideas/opciones: numera con 1. 2. 3. y da 3-5 opciones con descripción breve
-- Si piden un texto/script/speech: entrégalo completo entre comillas o con formato claro
-- Si piden análisis: usa puntos clave con • o -
-- Si es conversacional: responde natural pero estructurado
-- Emojis con moderación para hacer más visual
-- NO respondas con un solo párrafo plano — siempre estructura la respuesta
-- Máximo 8 líneas salvo que pidan un texto completo (speech, caption, etc.)`;
+        const scriptPrompt = `Eres Boost AI, experto en marketing y copywriting. ${modeCtx}
+
+FORMATO PARA SPEECH/SCRIPT/VIDEO:
+- Una idea por línea (no párrafos)
+- Usa (Pausa) o (Pausa breve) para ritmo
+- Hook potente en la primera línea
+- Puntos suspensivos... para tensión y ritmo
+- Lenguaje conversacional, nunca corporativo
+- Entrega el texto completo listo para grabar
+- Encabezado: 🎤 Speech — "Título del tema"`;
+
+        const listPrompt = `Eres Boost AI, asistente de marketing digital. ${modeCtx}
+
+FORMATO PARA IDEAS/OPCIONES:
+- Lista numerada: 1. **Título** — descripción breve
+- 3 a 5 opciones con contexto de cuándo usarla
+- Emoji de apoyo al inicio de cada punto
+- Al final: recomendación de cuál preferir`;
+
+        const generalPrompt = `Eres Boost AI, asistente de marketing digital. ${modeCtx}
+
+FORMATO:
+- Conversacional pero estructurado
+- Múltiples puntos: lista con bullets o numerada
+- Respuesta directa: máximo 4 líneas
+- Emojis moderados — nunca un párrafo plano`;
+
+        const chatSystemPrompt = isTasks
+          ? `Eres Boost AI. ${modeCtx} Responde con datos concretos. Usa listas y números. Máximo 5 líneas.`
+          : isScript ? scriptPrompt
+          : isList   ? listPrompt
+          : generalPrompt;
 
         // Mensajes sin modificar el contenido del usuario
         const finalMessages = [...msgHistory];
