@@ -117,6 +117,7 @@ export async function POST(req: NextRequest) {
         userId: pmId, workspaceId: task.workspaceId,
         message: `Cliente solicitó cambios en: "${task.title}"`,
         type: 'task',
+        actorId: user.id, actorName: user.name || result.ctx.email,
       }).catch(() => undefined);
     }
 

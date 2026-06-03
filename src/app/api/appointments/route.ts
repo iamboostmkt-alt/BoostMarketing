@@ -137,8 +137,9 @@ export async function POST(req: NextRequest) {
       data: notifyUsers.map((u) => ({
         userId:      u.id,
         workspaceId: workspaceId,
-        message:     "Nuevo prospecto: " + nameTrim + " agendo videollamada para el " + dateStr,
+        message:     "Nuevo prospecto: " + nameTrim + " agendó videollamada para el " + dateStr,
         type:        "appointment",
+        actorName:   nameTrim, // prospecto externo, sin imagen
         link:        "/dashboard/calendar",
       })),
     });

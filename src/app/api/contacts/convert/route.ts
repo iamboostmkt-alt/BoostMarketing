@@ -57,6 +57,8 @@ export async function POST(req: NextRequest) {
         message:     `${contact.name} fue convertido a cliente activo`,
         type:        'client',
         link:        '/dashboard/clients',
+        actorId:     userId,
+        actorName:   result.ctx.name || result.ctx.email,
       })),
       skipDuplicates: true,
     });

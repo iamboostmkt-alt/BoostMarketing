@@ -439,6 +439,9 @@ export async function PUT(req: NextRequest) {
   const workspaceId = result.ctx.workspaceId;
   const userName    = result.ctx.name || "Un usuario";
   const isManager   = hasRole(result.ctx.role as string, MANAGER_ROLES);
+  // Obtener imagen del actor para notificaciones
+  const _actorUser  = await db.user.findFirst({ where: { id: userId }, select: { image: true, color: true } });
+  const userImage   = _actorUser?.image ?? null;
   if (!workspaceId) return NextResponse.json({ error: 'Workspace no encontrado' }, { status: 400 });
   const rawBody    = await req.json();
   const validation = validateBody(TaskUpdateSchema, rawBody);
@@ -545,7 +548,7 @@ export async function PUT(req: NextRequest) {
     }
     notifyIds.delete(userId);
     for (const uid of notifyIds) {
-      await createNotification({ userId: uid, workspaceId, message: `"${task.title}" cambió a estado: ${task.status}`, type: "task" });
+      await createNotification({ userId: uid, workspaceId, message: `"${task.title}" cambió a estado: ${task.status}`, type: "task", actorId: userId, actorName: userName, actorImage: userImage ?? undefined });
     }
     const _branding = await getBranding();
     const _taskWithUsers = await db.task.findUnique({
@@ -583,7 +586,7 @@ export async function PUT(req: NextRequest) {
           templateTareaCompletada(task.title, userName, b)
         )).catch(() => {});
         await db.notification.create({
-          data: { userId: pmCompleted.id, workspaceId: existing.workspaceId, message: `✅ ${userName} completó: "${task.title}"`, type: 'task', read: false, link: '/dashboard/tasks' }
+          data: { userId: pmCompleted.id, workspaceId: existing.workspaceId, message: `✅ ${userName} completó: "${task.title}"`, type: 'task', read: false, link: '/dashboard/tasks', actorId: userId, actorName: userName, actorImage: userImage }
         }).catch(() => {});
       }
     }
@@ -625,7 +628,7 @@ export async function PUT(req: NextRequest) {
       }
       if (pm) {
         await createNotification({
-          userId: pm.id, workspaceId, message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`, type: "task",
+          userId: pm.id, workspaceId, message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`, type: "task", actorId: userId, actorName: userName, actorImage: userImage,
         });
         if (pm.email) {
           sendMail(pm.email, `⏳ Tarea lista para revisión: ${task.title}`,
@@ -704,7 +707,7 @@ export async function PUT(req: NextRequest) {
   if (isManager && assignedUserId && assignedUserId !== existing.assignedUserId) {
     const newAssignee = await db.user.findUnique({ where: { id: assignedUserId }, select: { id: true, email: true, name: true } });
     if (newAssignee && newAssignee.id !== userId) {
-      await createNotification({ userId: newAssignee.id, workspaceId, message: `${userName} te asignó la tarea: "${task.title}"`, type: "task" });
+      await createNotification({ userId: newAssignee.id, workspaceId, message: `${userName} te asignó la tarea: "${task.title}"`, type: "task", actorId: userId, actorName: userName, actorImage: userImage ?? undefined });
       if (newAssignee.email) {
         getBranding().then(b => sendMail(newAssignee.email!, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b, newAssignee.name ?? undefined))).catch(console.error);
       }
@@ -726,7 +729,7 @@ export async function PUT(req: NextRequest) {
     if (task.assignedUser?.id && task.assignedUser.id !== userId) notifyIds.add(task.assignedUser.id);
     existing.assignedUsers?.forEach((au: any) => { if (au.user.id !== userId) notifyIds.add(au.user.id); });
     for (const uid of notifyIds) {
-      await createNotification({ userId: uid, workspaceId, message: `"${task.title}" fue editada por ${userName}`, type: "task" });
+      await createNotification({ userId: uid, workspaceId, message: `"${task.title}" fue editada por ${userName}`, type: "task", actorId: userId, actorName: userName, actorImage: userImage ?? undefined });
     }
     const emails = await getAssignedEmails(task.id);
     for (const email of emails) {

@@ -12,6 +12,10 @@ interface CreateNotificationParams {
   type:        NotificationType;
   link?:       string;
   broadcast?:  boolean; // default true — emite realtime al receptor
+  // Actor: quien generó la acción (omitir para notificaciones de sistema/cron)
+  actorId?:    string;
+  actorName?:  string;
+  actorImage?: string;
 }
 
 const DEFAULT_LINKS: Record<NotificationType, string> = {
@@ -50,8 +54,11 @@ export async function createNotification(params: CreateNotificationParams): Prom
         workspaceId,
         message,
         type,
-        read:  false,
-        link:  resolvedLink,
+        read:       false,
+        link:       resolvedLink,
+        actorId:    params.actorId    ?? null,
+        actorName:  params.actorName  ?? null,
+        actorImage: params.actorImage ?? null,
       },
     });
 

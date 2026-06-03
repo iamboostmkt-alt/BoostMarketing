@@ -279,10 +279,41 @@ export function NotificationsDropdown() {
                       style={{ borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.04)' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.025)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      {/* Avatar/emoji */}
-                      <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-base"
-                        style={{ background: n.read ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.12)' }}>
-                        {emoji}
+                      {/* Avatar del actor o emoji del sistema */}
+                      <div className="relative w-9 h-9 shrink-0">
+                        {(n as any).actorImage ? (
+                          // Foto real del usuario que generó la acción
+                          <>
+                            <img
+                              src={(n as any).actorImage}
+                              alt={(n as any).actorName || ''}
+                              className="w-9 h-9 rounded-full object-cover"
+                            />
+                            {/* Badge de tipo en la esquina */}
+                            <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px]"
+                              style={{ background: '#07070A' }}>
+                              {emoji}
+                            </span>
+                          </>
+                        ) : (n as any).actorName && !(n as any).actorImage ? (
+                          // Iniciales del actor si no tiene foto
+                          <>
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-semibold text-white"
+                              style={{ background: n.read ? 'rgba(139,92,246,0.12)' : 'rgba(139,92,246,0.22)' }}>
+                              {(n as any).actorName.split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()}
+                            </div>
+                            <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px]"
+                              style={{ background: '#07070A' }}>
+                              {emoji}
+                            </span>
+                          </>
+                        ) : (
+                          // Emoji solo para notificaciones de sistema (cron, leads, etc.)
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-base"
+                            style={{ background: n.read ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.12)' }}>
+                            {emoji}
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={`text-[13px] leading-snug ${n.read ? 'text-white/50' : 'text-white/88'}`}>

@@ -151,16 +151,20 @@ model VerificationToken {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  message   String
-  type      String   @default("info")
-  read      Boolean  @default(false)
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  message     String
+  type        String    @default("info")
+  read        Boolean   @default(false)
   link        String?
-  workspaceId String   @map("workspace_id")
-  createdAt   DateTime @default(now()) @map("created_at")
+  workspaceId String    @map("workspace_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  // Actor: quien generó la acción (null = sistema/cron)
+  actorId     String?   @map("actor_id")
+  actorName   String?   @map("actor_name")
+  actorImage  String?   @map("actor_image")
 
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([userId, read])

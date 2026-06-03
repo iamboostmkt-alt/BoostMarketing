@@ -36,6 +36,8 @@ export async function POST(req: NextRequest) {
         type: 'task',
         read: false,
         link: '/dashboard/clients',
+        actorId:   userId,
+        actorName: reporterName ?? 'PM',
       })),
       skipDuplicates: true,
     });

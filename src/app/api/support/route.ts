@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
       message: `🎫 Nuevo ticket de soporte: ${ticketLabel} — ${userName}`,
       type: "info",
       link: "/dashboard/chat",
+      actorId: userId, actorName: name || email,
     })
   ));
 

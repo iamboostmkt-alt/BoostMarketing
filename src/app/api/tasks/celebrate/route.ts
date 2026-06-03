@@ -8,6 +8,10 @@ export async function POST(req: NextRequest) {
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
   const { workspaceId } = result.ctx;
+  const actorId    = result.ctx.userId;
+  const actorName  = result.ctx.name || 'PM';
+  const _actorImg  = await db.user.findFirst({ where: { id: actorId }, select: { image: true } });
+  const actorImage = _actorImg?.image ?? null;
 
   const { taskId, parentCompleted, assigneeIds, pmId } = await req.json();
   if (!taskId) return NextResponse.json({ ok: true });
@@ -51,6 +55,7 @@ export async function POST(req: NextRequest) {
           userId: resolvedPmId, workspaceId,
           message: `🏆 ¡Proyecto completado! El proyecto "${task.title}" fue completado exitosamente. ¡Felicita a tu equipo!`,
           type: 'task', read: false, link: '/dashboard/tasks',
+          actorId, actorName, actorImage,
         }}).then(() => undefined).catch(() => undefined)
       );
     }
@@ -78,6 +83,7 @@ export async function POST(req: NextRequest) {
         userId: uid, workspaceId,
           message: parentCompleted ? `🏆 ¡Proyecto completado! "${task.title}" fue aprobado. ¡Excelente trabajo!` : `⭐ Tu entrega fue aprobada: "${task.title}"`,
         type: 'task', read: false, link: '/dashboard/tasks',
+        actorId, actorName, actorImage,
       }}).then(() => undefined).catch(() => undefined)
     );
   }
