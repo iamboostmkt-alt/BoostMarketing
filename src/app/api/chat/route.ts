@@ -108,8 +108,11 @@ export async function GET(req: NextRequest) {
   }
 
   const portalMode = req.nextUrl.searchParams.get('portalMode') === '1';
+  // portalMode: solo mensajes explicitamente no-internos (isInternal=false)
+  // Mensajes sin el campo (null) se tratan como internos en portal
+  const portalFilter = portalMode ? { isInternal: false } : {};
   const messages = await db.chatMessage.findMany({
-    where:   { room, workspaceId, ...(pinnedOnly ? { pinned: true } : {}), ...(portalMode ? { isInternal: false } : {}) },
+    where:   { room, workspaceId, ...(pinnedOnly ? { pinned: true } : {}), ...portalFilter },
     take:    50,
     orderBy: { createdAt: 'desc' },
     select: messageSelect,
@@ -146,7 +149,10 @@ export async function POST(req: NextRequest) {
   const fileType: string | undefined = body.fileType;
   const isSystem: boolean = body.isSystem ?? false;
   const systemName: string | undefined = body.systemName;
-  const isInternal: boolean = body.isInternal ?? false;
+  // Forzar isInternal=true para canales internos del equipo (independiente de lo que mande el cliente)
+  const INTERNAL_ROOM_IDS = ['TEAM', 'SUPPORT', 'PROJECTS', 'PRIVATE'];
+  const isInternalRoom = INTERNAL_ROOM_IDS.includes(room) || room.includes('_DM_');
+  const isInternal: boolean = isInternalRoom ? true : (body.isInternal ?? false);
   const chatMessage = await db.chatMessage.create({
     data: { userId, workspaceId, message: text, room, fileUrl, fileName, fileType, isSystem, systemName, isInternal },
     select: messageSelect,
