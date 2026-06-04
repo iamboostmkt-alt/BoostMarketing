@@ -1508,7 +1508,7 @@ FORMATO:
 
                 {/* Emoji picker — absolute encima del hover bar */}
                 {showEmoji?.id === msg.id && (
-                  <div data-emoji-picker className="absolute -top-11 left-0 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
+                  <div data-emoji-picker className={`absolute -top-11 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl ${isMe ? "right-0" : "left-0"}`}
                     onMouseLeave={() => setShowEmoji(null)}>
                     {QUICK_EMOJIS.map(e => (
                       <button key={e} onClick={() => handleReaction(msg.id, e)}
@@ -2525,11 +2525,11 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
         {tab === 'members' && (
           <div>
             {/* Apps / Links del cliente — scroll horizontal */}
-            {(clientInfo?.links?.length > 0 || channelClient) && (
+            {channelClient && (
               <div className="pt-3 pb-2 border-b border-white/[0.04]">
                 <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Apps y links</p>
                 <div className="flex gap-2 px-3 overflow-x-auto scrollbar-none pb-1" style={{ scrollbarWidth: 'none' }}>
-                  {(clientInfo?.links ?? []).map((l: any, i: number) => (
+                  {(Array.isArray(clientInfo?.links) ? clientInfo.links : (typeof clientInfo?.links === 'string' ? (() => { try { return JSON.parse(clientInfo.links as any); } catch { return []; } })() : [])).map((l: any, i: number) => (
                     <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 h-8 px-3 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-violet-500/10 hover:border-violet-500/30 transition-colors shrink-0">
                       <span className="text-sm">{l.icon}</span>
@@ -2537,8 +2537,8 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/70 shrink-0" />
                     </a>
                   ))}
-                  {(!clientInfo?.links || clientInfo.links.length === 0) && channelClient && (
-                    <p className="text-[11px] text-white/20 px-1 py-1">Sin links configurados</p>
+                  {(!clientInfo?.links || (Array.isArray(clientInfo.links) && clientInfo.links.length === 0)) && (
+                    <p className="text-[11px] text-white/20 px-1 py-1">Sin links — agrégalos en la ficha del cliente</p>
                   )}
                 </div>
               </div>
@@ -2611,25 +2611,33 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
               </div>
             )}
 
-            {/* Participantes del canal */}
-            <div className="pt-3 pb-2 border-b border-white/[0.04]">
-              <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Participantes</p>
-              <div className="px-4 flex items-center gap-1 flex-wrap">
-                {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED').slice(0, 8).map((m, i) => {
-                  const ini = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
-                  const online = (m as any).presence?.status === 'online';
-                  return (
-                    <div key={m.id} className="relative" title={m.name || m.email}>
-                      <Avatar initials={ini} color={m.color || '#8b5cf6'} size={20} image={m.image} />
-                      {online && <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 border border-[#0B0D12]" />}
-                    </div>
-                  );
-                })}
-                {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED').length > 8 && (
-                  <span className="text-[11px] text-white/30 ml-1">+{members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED').length - 8}</span>
-                )}
-              </div>
-            </div>
+            {/* Participantes — solo los del room actual */}
+            {(() => {
+              const isDM = room.includes('_DM_');
+              const channelParticipants = isDM
+                ? members.filter(m => room.includes(m.id))
+                : members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED');
+              const visible = channelParticipants.slice(0, 10);
+              const extra   = channelParticipants.length - visible.length;
+              return (
+                <div className="pt-3 pb-2 border-b border-white/[0.04]">
+                  <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Participantes</p>
+                  <div className="px-4 flex items-center gap-1 flex-wrap">
+                    {visible.map(m => {
+                      const ini = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+                      const online = (m as any).presence?.status === 'online';
+                      return (
+                        <div key={m.id} className="relative" title={m.name || m.email}>
+                          <Avatar initials={ini} color={m.color || '#8b5cf6'} size={22} image={m.image ?? undefined} />
+                          {online && <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 border border-[#0B0D12]" />}
+                        </div>
+                      );
+                    })}
+                    {extra > 0 && <span className="text-[11px] text-white/30 ml-1">+{extra}</span>}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Asset contextual — tareas activas */}
             {roomTasks.length > 0 && (
@@ -2654,7 +2662,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
             <div className="pt-3 pb-3">
               <div className="flex items-center justify-between px-4 mb-2">
                 <p className="text-[9px] font-medium uppercase tracking-widest text-white/20">Archivos</p>
-                <button className="text-[10px] text-violet-400/50 hover:text-violet-400 transition-colors">Ver todos</button>
+                <button className="text-[10px] text-violet-400/50 hover:text-violet-400 transition-colors" onClick={() => onSetTab('members' as any)}>Ver todos</button>
               </div>
               {/* Filtros */}
               <div className="flex gap-1.5 px-3 mb-2">
@@ -2671,24 +2679,47 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
               </div>
               {filteredFiles.length > 0 ? (
                 <div className="space-y-0.5">
-                  {filteredFiles.slice(0, 4).map((msg: any, i) => {
-                    const isImg = (msg.fileType || '').startsWith('image');
-                    const isPdf = (msg.fileName || '').endsWith('.pdf');
+                  {filteredFiles.slice(0, 8).map((msg: any, i) => {
+                    const isImg = (msg.fileType || '').startsWith('image') ||
+                      /\.(png|jpg|jpeg|gif|webp)($|\?)/.test((msg.fileUrl || '').toLowerCase());
+                    const isPdf = (msg.fileName || '').toLowerCase().endsWith('.pdf');
                     const icon  = isImg ? '🖼' : isPdf ? '📄' : '📎';
+                    const bg    = isImg ? 'rgba(239,68,68,0.1)' : isPdf ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.1)';
                     return (
-                      <div key={i} className="flex items-center gap-2.5 px-3 py-2 hover:bg-white/[0.04] transition-colors group cursor-pointer">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
-                          style={{ background: isImg ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)' }}>
-                          {icon}
-                        </div>
+                      <div key={i} className="flex items-center gap-2.5 px-3 py-2 hover:bg-white/[0.04] transition-colors group">
+                        {/* Preview de imagen o ícono */}
+                        {isImg ? (
+                          <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 cursor-pointer border border-white/[0.06]"
+                            onClick={() => window.open(msg.fileUrl, '_blank')}>
+                            <img src={msg.fileUrl} alt={msg.fileName || ''} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0"
+                            style={{ background: bg }}>
+                            {icon}
+                          </div>
+                        )}
+                        {/* Nombre y quien lo subió */}
                         <div className="min-w-0 flex-1">
                           <p className="text-[11px] font-medium text-white/65 truncate">{msg.fileName || 'Archivo'}</p>
                           <p className="text-[10px] text-white/25">{msg.user?.name?.split(' ')[0] || ''}</p>
                         </div>
-                        <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ChevronRight className="w-3.5 h-3.5 text-white/30" />
-                        </a>
+                        {/* Botones: abrir + descargar */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer"
+                            title="Abrir"
+                            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-white/70 transition-colors">
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </a>
+                          <a href={msg.fileUrl} download={msg.fileName || 'archivo'}
+                            title="Descargar"
+                            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-white/70 transition-colors"
+                            onClick={e => e.stopPropagation()}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                          </a>
+                        </div>
                       </div>
                     );
                   })}
