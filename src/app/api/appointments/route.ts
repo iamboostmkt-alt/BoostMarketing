@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   const rawBody = await req.json();
   const validation = validateBody(AppointmentCreateSchema, rawBody);
   if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
-  const { name, email, phone, date, notes, assignedUserIds, meetUrl } = validation.data;
+  const { name, email, phone, date, notes, assignedUserIds, meetUrl, clientId: bodyClientId } = validation.data;
 
   const parsedDate = new Date(date);
   if (isNaN(parsedDate.getTime())) {
@@ -57,10 +57,14 @@ export async function POST(req: NextRequest) {
   const workspaceId = sessionWsId ?? firstAdmin?.workspaceId ?? null;
   if (!workspaceId) return NextResponse.json({ error: 'Workspace no disponible' }, { status: 503 });
 
-  const matchingClient = await db.client.findFirst({
-    where: { email: { equals: emailNorm, mode: "insensitive" }, workspaceId },
-    select: { id: true },
-  });
+  // Si viene clientId en el body, usarlo directamente; sino buscar por email
+  const resolvedClientId = bodyClientId ?? null;
+  const matchingClient = resolvedClientId
+    ? { id: resolvedClientId }
+    : await db.client.findFirst({
+        where: { email: { equals: emailNorm, mode: "insensitive" }, workspaceId },
+        select: { id: true },
+      });
 
   const appointment = await db.appointment.create({
     data: {
@@ -71,7 +75,7 @@ export async function POST(req: NextRequest) {
       notes:    (notes ?? "").trim(),
       meetUrl:  (meetUrl ?? "").trim(),
       status:   "pending",
-      clientId: matchingClient?.id ?? null,
+      clientId: matchingClient?.id ?? null,  // null = sin cliente (prospecto externo)
       workspaceId: workspaceId,
       ...(allAssignedIds.length > 0 && {
         assignedUsers: {
@@ -88,7 +92,8 @@ export async function POST(req: NextRequest) {
   });
 
   const isPublic = !authResult.ok;
-  if (firstAdmin && isPublic) {
+  // Solo crear prospecto si es reunión pública (sin sesión) y no hay cliente registrado
+  if (firstAdmin && isPublic && !matchingClient?.id) {
     const existingContact = await db.contact.findFirst({ where: { email: emailNorm } });
     if (!existingContact) {
       await db.contact.create({
@@ -157,8 +162,28 @@ export async function POST(req: NextRequest) {
   sendMail(
     emailNorm,
     "Tu videollamada fue agendada - BoostMarketing",
-    templateVideollamadaConfirmada(nameTrim, dateStr)
+    templateVideollamadaConfirmada(nameTrim, dateStr, appointment.meetUrl || undefined)
   ).catch(console.error);
+
+  // Si hay cliente asignado y es sesión interna, mandar mensaje al canal del cliente
+  if (authResult.ok && matchingClient?.id) {
+    const { userId: creatorId2, workspaceId: wsId2 } = authResult.ctx;
+    const msgDate = parsedDate.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
+    const meetLine = appointment.meetUrl ? `\n🔗 ${appointment.meetUrl}` : '';
+    await fetch(`${process.env.NEXTAUTH_URL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `📅 Reunión agendada: **${appointment.name}**\n🗓 ${msgDate}${meetLine}\n👥 ${appointment.assignedUsers?.length ?? 0} participantes`,
+        room: matchingClient.id,  // canal del cliente
+        isInternal: false,
+        isSystem: true,
+        systemName: 'Weeklink',
+        userId: creatorId2,
+        workspaceId: wsId2,
+      }),
+    }).catch(() => {});
+  }
 
   return NextResponse.json({ appointment }, { status: 201 });
 }

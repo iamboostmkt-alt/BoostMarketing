@@ -364,7 +364,7 @@ function ChannelList({
             <button onClick={() => setClientsOpen(v => !v)}
               className="flex w-full items-center gap-1 px-2 pb-1 pt-4 group">
               <span className={`text-[9px] text-white/30 transition-transform duration-150 ${clientsOpen ? 'rotate-90' : ''}`}>▶</span>
-              <span className="ml-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 group-hover:text-white/60">Chats con clientes</span>
+              <span className="ml-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 group-hover:text-white/60">Chats con cuentas</span>
               <span className="ml-1 text-[10px] text-white/25">({clients.length})</span>
             </button>
             {clientsOpen && (
@@ -1028,10 +1028,17 @@ FORMATO:
           : m
         ));
         // Persistir respuesta AI en DB para que sobreviva refresh
+        // Persistir respuesta de Boosti con isSystem=true para que no aparezca como mensaje del usuario
         fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: fullMsg, room, isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) || room.includes('_DM_') }),
+          body: JSON.stringify({
+            message: fullMsg,
+            room,
+            isSystem: true,
+            systemName: 'Boosti',
+            isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) || room.includes('_DM_'),
+          }),
         }).then(r => r.ok ? r.json() : null).then(d => {
           if (d?.message) {
             setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: d.message.id } : m));
@@ -2213,7 +2220,7 @@ FORMATO:
                 { href: '/dashboard/tasks',    icon: '✅', label: 'Tareas',    sub: 'Ver y gestionar tareas' },
                 { href: '/dashboard/calendar', icon: '📅', label: 'Reuniones', sub: 'Agenda y videollamadas' },
                 { href: '/dashboard/projects', icon: '📁', label: 'Proyectos', sub: 'Campañas y proyectos' },
-                { href: '/dashboard/clients',  icon: '👥', label: 'Clientes',  sub: 'Gestión de cuentas' },
+                { href: '/dashboard/clients',  icon: '👥', label: 'Cuentas',   sub: 'Gestión' },
                 { href: '/dashboard/crm',      icon: '🎯', label: 'CRM',       sub: 'Leads y prospectos' },
                 { href: '/dashboard/analytics',icon: '📊', label: 'Analytics', sub: 'Métricas del workspace' },
               ].map(app => (
@@ -2740,7 +2747,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                 { href: '/dashboard/tasks',     Icon: CheckCheck, label: 'Tareas',     id: 'tasks' },
                 { href: '/dashboard/calendar',  Icon: Video,      label: 'Reuniones',  id: 'meetings' },
                 { href: '/dashboard/projects',  Icon: Folder,     label: 'Proyectos',  id: 'projects' },
-                { href: '/dashboard/clients',   Icon: Users,      label: 'Clientes',   id: 'clients' },
+                { href: '/dashboard/clients',   Icon: Users,      label: 'Cuentas',    id: 'clients' },
                 { href: '/dashboard/crm',       Icon: Sparkles,   label: 'Leads',      id: 'leads' },
                 { href: '/dashboard/analytics', Icon: MoreHorizontal, label: 'Analytics', id: 'analytics' },
               ] as const).map(({ id, label, Icon, href }) => (

@@ -71,6 +71,7 @@ export const AppointmentCreateSchema = z.object({
   notes:           z.string().max(2000).optional().nullable(),
   meetUrl:         z.string().url('URL inválida').optional().nullable(),
   assignedUserIds: z.array(z.string()).optional(),
+  clientId:        z.string().optional().nullable(),
   status:          z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
 });
 
