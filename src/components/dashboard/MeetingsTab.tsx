@@ -281,8 +281,8 @@ export default function MeetingsTab() {
                       {meet.notes && <p className="text-xs text-white/40 truncate max-w-[180px]">{meet.notes}</p>}
                       {meet.meetUrl && (
                         <a href={meet.meetUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-[10px] text-brand-light hover:underline flex items-center gap-1 mt-0.5">
-                          <Video className="h-2.5 w-2.5" />Abrir enlace
+                          className="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium text-green-400 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 transition-colors w-fit">
+                          <Video className="h-3 w-3" />Unirse a la reunión
                         </a>
                       )}
                     </td>
