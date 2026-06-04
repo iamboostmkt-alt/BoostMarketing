@@ -627,6 +627,7 @@ function ChatMain({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [rightPanelTab, setRightPanelTab] = useState<'members'|'apps'|'context'>('members');
@@ -759,6 +760,31 @@ function ChatMain({
     const interval = setInterval(() => { fetchMessages(); }, 8000);
     return () => clearInterval(interval);
   }, [fetchMessages]);
+  // Cerrar menú de más opciones al click fuera
+  useEffect(() => {
+    if (!showMoreMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(null);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showMoreMenu]);
+
+  // Cerrar emoji de reacción al click fuera
+  useEffect(() => {
+    if (!showEmoji) return;
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Element;
+      if (!t.closest('[data-emoji-picker]') && !t.closest('[data-emoji-btn]')) {
+        setShowEmoji(null);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showEmoji]);
+
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   // Cargar sesión IA activa al cambiar de room
@@ -1482,7 +1508,7 @@ FORMATO:
 
                 {/* Emoji picker — absolute encima del hover bar */}
                 {showEmoji?.id === msg.id && (
-                  <div className="absolute -top-11 left-0 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
+                  <div data-emoji-picker className="absolute -top-11 left-0 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
                     onMouseLeave={() => setShowEmoji(null)}>
                     {QUICK_EMOJIS.map(e => (
                       <button key={e} onClick={() => handleReaction(msg.id, e)}
@@ -1586,7 +1612,7 @@ FORMATO:
                     )}
                     {/* More options dropdown */}
                     {showMoreMenu === msg.id && (
-                      <div className="absolute bottom-8 left-[280px] z-30 w-44 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
+                      <div ref={moreMenuRef} className="absolute bottom-8 right-2 z-30 w-44 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
                         <button onClick={() => { navigator.clipboard.writeText(msg.message); setShowMoreMenu(null); }}
                           className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
                           Copiar texto
@@ -1935,7 +1961,7 @@ FORMATO:
                 {showComposerEmoji && (
                   <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowComposerEmoji(false)} />
-                  <div className="absolute bottom-10 right-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
+                  <div className="absolute bottom-full mb-2 right-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
                     {['😀','😂','🥹','😍','🤔','😅','🙌','👍','🔥','❤️','✅','🎉','💪','🚀','👀','💡','⚡','🎯'].map(e => (
                       <button key={e} type="button"
                         onClick={() => { setInput(prev => prev + e); setShowComposerEmoji(false); }}
@@ -2362,17 +2388,21 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
       .then(r => r.ok ? r.json() : null)
       .then(d => setChannelMsgs((d?.messages ?? []).filter((m: any) => !m.isSystem)))
       .catch(() => {});
-    // Cargar archivos del canal
-    fetch(`/api/chat?room=${encodeURIComponent(room)}&pinned=true`)
+    // Cargar archivos del canal (mensajes con fileUrl)
+    fetch(`/api/chat?room=${encodeURIComponent(room)}&limit=50`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => setRoomFiles(d?.messages?.filter((m: any) => m.fileUrl) ?? []))
+      .then(d => setRoomFiles((d?.messages ?? []).filter((m: any) => m.fileUrl)))
       .catch(() => {});
-    // Si room corresponde a un clientId, cargar info del cliente
+    // Cargar info completa del cliente si el room corresponde a un cliente
     const matchClient = clients.find(cl => cl.id === room);
     if (matchClient) {
-      fetch(`/api/clients?id=${matchClient.id}`)
+      // Buscar cliente completo (con links) desde la API
+      fetch(`/api/clients?sidebar=0`)
         .then(r => r.ok ? r.json() : null)
-        .then(d => setClientInfo(d?.client ?? null))
+        .then(d => {
+          const found = (d?.clients ?? []).find((cl: any) => cl.id === matchClient.id);
+          if (found) setClientInfo(found);
+        })
         .catch(() => {});
     }
     // Tareas activas del canal
