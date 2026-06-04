@@ -413,30 +413,7 @@ function ChannelList({
             )}
           </>
         )}
-        {/* Apps — colapsable */}
-        <button onClick={() => setAppsOpen(v => !v)}
-          className="flex w-full items-center gap-1 px-2 pb-1 pt-4 group">
-          <span className={`text-[9px] text-white/30 transition-transform duration-150 ${appsOpen ? 'rotate-90' : ''}`}>▶</span>
-          <span className="ml-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 group-hover:text-white/60">Apps</span>
-        </button>
-        {appsOpen && (
-        <ul className="flex flex-col gap-0.5">
-          {[
-            { id: 'tasks',    label: 'Tareas',       Icon: CheckCheck, href: '/dashboard/tasks' },
-            { id: 'meetings', label: 'Reuniones',     Icon: Video,      href: '/dashboard/meetings' },
-            { id: 'files',    label: 'Archivos',      Icon: Folder,     href: '/dashboard/files' },
-            { id: 'ai',       label: 'AI Assistant',  Icon: Sparkles,   href: '/dashboard/ai' },
-          ].map(({ id, label, Icon, href }) => (
-            <li key={id}>
-              <a href={href} className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/40 transition-colors hover:bg-white/[0.03] hover:text-white/70"
-                onClick={e => { e.preventDefault(); window.location.href = href; }}>
-                <Icon className={`h-4 w-4 ${id === 'ai' ? 'text-primary' : 'text-white/30'}`} strokeWidth={1.75} />
-                <span>{label}</span>
-              </a>
-            </li>
-          ))}
-                </ul>
-        )}
+
       </div>
     </div>
   );
@@ -652,6 +629,7 @@ function ChatMain({
   const [editText, setEditText] = useState('');
   const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
+  const [showMembersModal, setShowMembersModal] = useState(false);
   const [rightPanelTab, setRightPanelTab] = useState<'members'|'apps'|'context'>('members');
   const [showChannelMore, setShowChannelMore] = useState(false);
   const [showComposerEmoji, setShowComposerEmoji] = useState(false);
@@ -1237,7 +1215,7 @@ FORMATO:
           <div className="ml-auto flex items-center gap-1 relative">
             <div className="relative group/tip">
               <button
-                onClick={() => { if (onToggleRightPanel) onToggleRightPanel(); else setShowMembersPanel(p => !p); }}
+                onClick={() => setShowMembersModal(p => !p)}
                 className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showMembersPanel ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
                 <Users className="h-4 w-4" strokeWidth={1.75} />
               </button>
@@ -2217,6 +2195,47 @@ FORMATO:
           )}
         </div>
       )}
+      {/* ── Modal independiente de Miembros ── */}
+      {showMembersModal && (
+        <div className="absolute inset-0 z-50 flex items-start justify-end pt-14 pr-3 pointer-events-none">
+          <div className="pointer-events-auto w-72 rounded-2xl border border-white/[0.07] bg-[#0F1117] shadow-2xl overflow-hidden"
+            style={{ animation: 'slideInRight 0.15s ease-out' }}>
+            {/* Header del modal */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]">
+              <span className="text-[13px] font-semibold text-white/80">Miembros del canal</span>
+              <button onClick={() => setShowMembersModal(false)}
+                className="text-white/30 hover:text-white/70 transition-colors p-1">
+                <X className="w-4 h-4" strokeWidth={1.5} />
+              </button>
+            </div>
+            {/* Lista de miembros */}
+            <div className="overflow-y-auto max-h-80 p-2">
+              {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED').map(m => {
+                const ini = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+                const isOnline = (m as any).presence?.status === 'online';
+                return (
+                  <div key={m.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors">
+                    <div className="relative shrink-0">
+                      <Avatar initials={ini} color={m.color || '#8b5cf6'} size={32} image={m.image} />
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#0F1117] ${isOnline ? 'bg-emerald-400' : 'bg-white/[0.15]'}`} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-medium text-white/80 truncate">{m.name || m.email}</p>
+                      <p className="text-[11px] text-white/30 truncate">
+                        {isOnline
+                          ? <span className="text-emerald-400/80">En línea</span>
+                          : (m as any).presence?.lastSeen
+                            ? `Visto ${formatLastSeen((m as any).presence.lastSeen)}`
+                            : m.role?.toLowerCase().replace('_', ' ')}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -2357,8 +2376,9 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
 
         {/* ══ TAB CREW — DMs del equipo ══ */}
         {tab === 'messages' && (
-          <div className="py-3">
-            <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Mensajes directos</p>
+          <div className="flex flex-col" style={{ height: '100%' }}>
+            <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 pt-3 pb-2 shrink-0">Mensajes directos</p>
+            <div className="flex-1 overflow-y-auto scrollbar-thin pb-3" style={{ scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
             {teamMembers
               .sort((a, b) => {
                 const aO = (a as any).presence?.status === 'online' ? 1 : 0;
@@ -2395,6 +2415,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                 );
               })}
             {teamMembers.length === 0 && <p className="text-[11px] text-white/20 text-center py-8">Sin miembros de equipo</p>}
+            </div>
           </div>
         )}
 
