@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
 
 // GET: listar citas (managers)
 export async function GET(req: NextRequest) {
-  const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER", "SALES_REP"] });
+  const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER", "SALES_REP", "TEAM_MEMBER", "DESIGNER", "MARKETING"] });
   if (!result.ok) return result.response;
   const { workspaceId } = result.ctx;
 

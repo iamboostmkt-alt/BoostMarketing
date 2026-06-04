@@ -15,7 +15,7 @@ const include = {
 export async function GET(req: NextRequest) {
   const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'meetings-get' });
   if (!rl.success) return rl.response;
-  const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER"] });
+  const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER", "TEAM_MEMBER", "DESIGNER", "MARKETING"] });
   if (!result.ok) return result.response;
   const { workspaceId } = result.ctx;
   const { searchParams } = new URL(req.url);
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const rl = await rateLimit(req, { limit: 20, windowMs: 60_000, identifier: "meeting-post" });
   if (!rl.success) return rl.response;
-  const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER"] });
+  const result = await requireWorkspace({ roles: ["ADMIN", "PROJECT_MANAGER", "TEAM_MEMBER", "DESIGNER", "MARKETING"] });
   if (!result.ok) return result.response;
   const { userId, workspaceId } = result.ctx;
   const rawBody = await req.json();
