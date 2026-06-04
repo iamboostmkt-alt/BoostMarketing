@@ -55,6 +55,11 @@ export const ClientCreateSchema = z.object({
   status:            z.enum(['prospect', 'active', 'inactive']).optional(),
   assignedManagerId: z.string().cuid().optional().nullable(),
   notes:             z.string().max(2000).optional().nullable(),
+  links:             z.array(z.object({
+    label: z.string(),
+    url:   z.string(),
+    icon:  z.string().optional().default('🔗'),
+  })).optional().nullable(),
 });
 
 export const ClientUpdateSchema = ClientCreateSchema.partial().extend({

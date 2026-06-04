@@ -327,7 +327,7 @@ export async function PUT(req: NextRequest) {
   const body = validation.data;
   const { id, name, email, company, phone, status, assignedManagerId } = body;
   const assignedUserIds = (rawBody as Record<string, unknown>).assignedUserIds;
-  const links = (rawBody as Record<string, unknown>).links;
+  const links = (body as any).links ?? (rawBody as Record<string, unknown>).links;
 
   if (!id) return NextResponse.json({ error: "El id es requerido" }, { status: 400 });
 

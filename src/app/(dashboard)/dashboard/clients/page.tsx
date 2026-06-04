@@ -43,14 +43,32 @@ type TabKey = typeof TABS[number]['key'];
 
 // ─── Links esenciales del cliente ─────────────────────────────────────────────
 const LINK_PRESETS = [
-  { icon: '📁', label: 'Drive', placeholder: 'https://drive.google.com/...' },
-  { icon: '📸', label: 'Instagram', placeholder: 'https://instagram.com/...' },
-  { icon: '👤', label: 'Facebook', placeholder: 'https://facebook.com/...' },
-  { icon: '▶️', label: 'YouTube', placeholder: 'https://youtube.com/...' },
-  { icon: '🎵', label: 'TikTok', placeholder: 'https://tiktok.com/@...' },
-  { icon: '🌐', label: 'Sitio web', placeholder: 'https://...' },
-  { icon: '🔗', label: 'Otro', placeholder: 'https://...' },
+  { icon: 'drive',    label: 'Drive',     placeholder: 'https://drive.google.com/...' },
+  { icon: 'instagram',label: 'Instagram', placeholder: 'https://instagram.com/...' },
+  { icon: 'facebook', label: 'Facebook',  placeholder: 'https://facebook.com/...' },
+  { icon: 'youtube',  label: 'YouTube',   placeholder: 'https://youtube.com/...' },
+  { icon: 'tiktok',   label: 'TikTok',    placeholder: 'https://tiktok.com/@...' },
+  { icon: 'web',      label: 'Sitio web', placeholder: 'https://...' },
+  { icon: 'link',     label: 'Otro',      placeholder: 'https://...' },
 ];
+
+// Íconos SVG monocromáticos para los links del cliente
+function LinkIcon({ type, size = 13 }: { type: string; size?: number }) {
+  const s = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'currentColor', strokeWidth: 1.75 };
+  if (type === 'drive')
+    return <svg {...s}><path d="M22 16.92l-6.56-11.36a2 2 0 0 0-3.48 0L5.4 16.92A2 2 0 0 0 7.14 20h9.72a2 2 0 0 0 1.74-3.08z"/><path d="m2 16.92 6.56-11.36"/><path d="m22 16.92H2"/></svg>;
+  if (type === 'instagram')
+    return <svg {...s}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>;
+  if (type === 'facebook')
+    return <svg {...s}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>;
+  if (type === 'youtube')
+    return <svg {...s}><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>;
+  if (type === 'tiktok')
+    return <svg {...s}><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>;
+  if (type === 'web')
+    return <svg {...s}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
+  return <svg {...s}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
+}
 
 function ClientLinksSection({ client, isAdmin, onSaved }: { client: any; isAdmin: boolean; onSaved: () => void }) {
   const [links, setLinks] = React.useState<{label:string;url:string;icon:string}[]>(
@@ -105,7 +123,7 @@ function ClientLinksSection({ client, isAdmin, onSaved }: { client: any; isAdmin
       <div className="space-y-1.5">
         {links.map((l, i) => (
           <div key={i} className="flex items-center gap-2 glass-card rounded-lg px-3 py-2 group">
-            <span className="text-base shrink-0">{l.icon}</span>
+            <span className="text-white/40 shrink-0"><LinkIcon type={l.icon || 'link'} /></span>
             <a href={l.url} target="_blank" rel="noopener noreferrer"
               className="flex-1 min-w-0 text-xs text-white/65 hover:text-white/90 transition-colors truncate">
               {l.label}
@@ -137,7 +155,7 @@ function ClientLinksSection({ client, isAdmin, onSaved }: { client: any; isAdmin
                 className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] transition-colors ${
                   newLabel === p.label ? 'bg-violet-600/30 text-violet-300 border border-violet-500/40' : 'bg-white/[0.04] text-white/40 hover:text-white/70'
                 }`}>
-                <span>{p.icon}</span>
+                <span className="opacity-60"><LinkIcon type={p.icon} size={11} /></span>
                 <span>{p.label}</span>
               </button>
             ))}
