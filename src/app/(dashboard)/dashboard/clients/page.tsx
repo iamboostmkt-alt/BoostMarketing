@@ -9,7 +9,7 @@ import { bus, RT_EVENTS } from '@/lib/event-bus';
 import {
   Plus, Search, Mail, Building2, Phone,
   UserCheck, MoreHorizontal, X, Pencil, Trash2, Calendar,
-  Send, AlertCircle,
+  Send, AlertCircle, Link2, ExternalLink, Instagram, Youtube,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -39,6 +39,127 @@ const TABS = [
   { key: 'inactive', label: 'Inactivos',  color: '#94a3b8' },
 ] as const;
 type TabKey = typeof TABS[number]['key'];
+
+
+// ─── Links esenciales del cliente ─────────────────────────────────────────────
+const LINK_PRESETS = [
+  { icon: '📁', label: 'Drive', placeholder: 'https://drive.google.com/...' },
+  { icon: '📸', label: 'Instagram', placeholder: 'https://instagram.com/...' },
+  { icon: '👤', label: 'Facebook', placeholder: 'https://facebook.com/...' },
+  { icon: '▶️', label: 'YouTube', placeholder: 'https://youtube.com/...' },
+  { icon: '🎵', label: 'TikTok', placeholder: 'https://tiktok.com/@...' },
+  { icon: '🌐', label: 'Sitio web', placeholder: 'https://...' },
+  { icon: '🔗', label: 'Otro', placeholder: 'https://...' },
+];
+
+function ClientLinksSection({ client, isAdmin, onSaved }: { client: any; isAdmin: boolean; onSaved: () => void }) {
+  const [links, setLinks] = React.useState<{label:string;url:string;icon:string}[]>(
+    Array.isArray(client.links) ? client.links : []
+  );
+  const [adding, setAdding] = React.useState(false);
+  const [newLabel, setNewLabel] = React.useState('');
+  const [newUrl, setNewUrl]     = React.useState('');
+  const [newIcon, setNewIcon]   = React.useState('🔗');
+  const [saving, setSaving]     = React.useState(false);
+
+  async function saveLinks(updated: typeof links) {
+    setSaving(true);
+    try {
+      await fetch('/api/clients', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: client.id, links: updated }),
+      });
+      setLinks(updated);
+      onSaved();
+    } catch { /* silencioso */ }
+    finally { setSaving(false); }
+  }
+
+  function addLink() {
+    if (!newUrl.trim()) return;
+    const url = newUrl.startsWith('http') ? newUrl.trim() : 'https://' + newUrl.trim();
+    const preset = LINK_PRESETS.find(p => p.label === newLabel);
+    const updated = [...links, { label: newLabel || 'Link', url, icon: newIcon }];
+    saveLinks(updated);
+    setNewLabel(''); setNewUrl(''); setNewIcon('🔗'); setAdding(false);
+  }
+
+  function removeLink(i: number) {
+    saveLinks(links.filter((_, j) => j !== i));
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[10px] uppercase tracking-widest text-white/20">Links esenciales</p>
+        {isAdmin && !adding && (
+          <button onClick={() => setAdding(true)}
+            className="text-[11px] text-violet-400/60 hover:text-violet-400 transition-colors">
+            + Agregar
+          </button>
+        )}
+      </div>
+
+      {/* Lista de links guardados */}
+      <div className="space-y-1.5">
+        {links.map((l, i) => (
+          <div key={i} className="flex items-center gap-2 glass-card rounded-lg px-3 py-2 group">
+            <span className="text-base shrink-0">{l.icon}</span>
+            <a href={l.url} target="_blank" rel="noopener noreferrer"
+              className="flex-1 min-w-0 text-xs text-white/65 hover:text-white/90 transition-colors truncate">
+              {l.label}
+            </a>
+            <a href={l.url} target="_blank" rel="noopener noreferrer"
+              className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <ExternalLink className="w-3 h-3 text-white/30 hover:text-white/70" />
+            </a>
+            {isAdmin && (
+              <button onClick={() => removeLink(i)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-white/25 hover:text-red-400">
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        ))}
+        {links.length === 0 && !adding && (
+          <p className="text-[11px] text-white/15 text-center py-2">Sin links agregados</p>
+        )}
+      </div>
+
+      {/* Form agregar link */}
+      {adding && (
+        <div className="mt-2 space-y-2 glass-card rounded-lg px-3 py-3">
+          {/* Presets rápidos */}
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {LINK_PRESETS.map(p => (
+              <button key={p.label} onClick={() => { setNewLabel(p.label); setNewIcon(p.icon); }}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] transition-colors ${
+                  newLabel === p.label ? 'bg-violet-600/30 text-violet-300 border border-violet-500/40' : 'bg-white/[0.04] text-white/40 hover:text-white/70'
+                }`}>
+                <span>{p.icon}</span>
+                <span>{p.label}</span>
+              </button>
+            ))}
+          </div>
+          <input value={newUrl} onChange={e => setNewUrl(e.target.value)}
+            placeholder={LINK_PRESETS.find(p => p.label === newLabel)?.placeholder || 'https://...'}
+            className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 text-xs text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/50" />
+          <div className="flex gap-2">
+            <button onClick={addLink} disabled={!newUrl.trim() || saving}
+              className="flex-1 py-1.5 rounded-lg bg-violet-600 text-xs text-white font-medium hover:bg-violet-500 transition-colors disabled:opacity-40">
+              {saving ? '...' : 'Guardar'}
+            </button>
+            <button onClick={() => { setAdding(false); setNewLabel(''); setNewUrl(''); }}
+              className="px-3 py-1.5 rounded-lg bg-white/[0.04] text-xs text-white/50 hover:text-white/80 transition-colors">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ClientDetail({ client, onClose, onEdit, onDelete, isAdmin }: {
   client: Client; onClose: () => void; onEdit: (c: Client) => void;
@@ -158,6 +279,12 @@ function ClientDetail({ client, onClose, onEdit, onDelete, isAdmin }: {
               </div>
             </div>
           )}
+          {/* Links esenciales del cliente */}
+          <ClientLinksSection
+            client={client}
+            isAdmin={isAdmin}
+            onSaved={() => {}}
+          />
         </div>
       </div>
     </div>

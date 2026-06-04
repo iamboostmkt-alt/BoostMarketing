@@ -123,6 +123,9 @@ export interface Client {
   updatedAt: string;
   assignedManager?: { id: string; name: string | null; email: string; color: string; image: string | null } | null;
   assignedUsers?: ActivityAssignee[];
+  links?: Array<{ label: string; url: string; icon: string }>;
+  portalStatus?: string;
+  portalId?: string;
 }
 
 export interface DashboardStats {

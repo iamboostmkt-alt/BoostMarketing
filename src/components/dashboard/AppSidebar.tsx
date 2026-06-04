@@ -300,7 +300,7 @@ function WorkspaceSwitcher({
 function SectionLabel({ children, collapsed }: { children: React.ReactNode; collapsed: boolean }) {
   if (collapsed) return null;
   return (
-    <div className="mb-1 mt-4 px-3 text-[10px] font-medium uppercase tracking-widest text-white/20">
+    <div className="mb-0.5 mt-3 px-3 text-[9px] font-medium uppercase tracking-widest text-white/15">
       {children}
     </div>
   );
@@ -327,16 +327,16 @@ function NavItemButton({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "group relative mx-2 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150",
+        "group relative mx-2 flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-all duration-150",
         collapsed && "mx-0 justify-center px-2",
-        isActive ? "text-white/90" : "text-white/60 hover:text-white/90"
+        isActive ? "text-white/85" : "text-white/40 hover:text-white/70"
       )}
     >
       {/* Active background */}
       {isActive && (
         <motion.div
           layoutId="nav-active-bg"
-          className="absolute inset-0 rounded-lg bg-[#1a1a1a]"
+          className="absolute inset-0 rounded-lg bg-white/[0.05]"
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
         />
       )}
@@ -346,7 +346,7 @@ function NavItemButton({
         <div
           className="pointer-events-none absolute inset-y-0 right-0 w-20 rounded-r-lg"
           style={{
-            background: "linear-gradient(to left, rgba(124,58,237,0.25) 0%, rgba(124,58,237,0.05) 50%, transparent 100%)",
+            background: "linear-gradient(to left, rgba(139,92,246,0.12) 0%, transparent 70%)",
           }}
         />
       )}
@@ -355,7 +355,7 @@ function NavItemButton({
       {isActive && (
         <motion.div
           layoutId="nav-active-dot"
-          className="absolute right-2 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-purple-500"
+          className="absolute right-1.5 top-1/2 h-1 w-1 -translate-y-1/2 rounded-full bg-violet-400/60"
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
         />
       )}
@@ -367,8 +367,8 @@ function NavItemButton({
 
       <Icon
         className={cn(
-          "relative z-10 h-[15px] w-[15px] shrink-0 transition-colors duration-150",
-          isActive ? "text-purple-400" : "text-white/55 group-hover:text-purple-400"
+          "relative z-10 h-[14px] w-[14px] shrink-0 transition-colors duration-150",
+          isActive ? "text-violet-400/80" : "text-white/30 group-hover:text-white/60"
         )}
         strokeWidth={1.5}
       />
