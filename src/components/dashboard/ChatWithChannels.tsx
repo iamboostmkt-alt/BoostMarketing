@@ -35,6 +35,23 @@ function formatLastSeen(dateStr: string): string {
   return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
 }
 
+async function downloadFile(url: string, filename: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objectUrl;
+    a.download = filename || 'archivo';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(objectUrl);
+  } catch {
+    window.open(url, '_blank');
+  }
+}
+
 function renderMessage(text: string) {
   // Procesar línea por línea para soportar listas y saltos
   const lines = text.split('\n');
@@ -2718,14 +2735,14 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                             className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-white/70 transition-colors">
                             <ChevronRight className="w-3.5 h-3.5" />
                           </a>
-                          <a href={msg.fileUrl} download={msg.fileName || 'archivo'}
+                          <button
                             title="Descargar"
                             className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-white/70 transition-colors"
-                            onClick={e => e.stopPropagation()}>
+                            onClick={e => { e.stopPropagation(); downloadFile(msg.fileUrl!, msg.fileName || 'archivo'); }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                          </a>
+                          </button>
                         </div>
                       </div>
                     );
