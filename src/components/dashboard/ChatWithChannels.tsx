@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Hash, Lock, LifeBuoy, Briefcase, ChevronDown, Plus,
@@ -636,6 +636,11 @@ function ChatMain({
   const [uploading, setUploading] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<{ name: string; type: string; preview?: string; progress: number }[]>([]);
   const [roomTasks, setRoomTasks] = useState<any[]>([]);
+  // Archivos del canal actual derivados de los mensajes ya cargados
+  const roomFilesForApps = useMemo(
+    () => messages.filter(m => m.fileUrl).slice(-20).reverse(),
+    [messages]
+  );
   const [pinnedMessages, setPinnedMessages] = useState<ChatMessage[]>([]);
   const [pinLoading, setPinLoading] = useState(false);
   const [linkModal, setLinkModal] = useState<{ fileUrl: string; fileName: string; fileType: string } | null>(null);
@@ -2241,9 +2246,7 @@ FORMATO:
                 { href: '/dashboard/tasks',    icon: '✅', label: 'Tareas',    sub: 'Ver y gestionar tareas' },
                 { href: '/dashboard/calendar', icon: '📅', label: 'Reuniones', sub: 'Agenda y videollamadas' },
                 { href: '/dashboard/projects', icon: '📁', label: 'Proyectos', sub: 'Campañas y proyectos' },
-                { href: '/dashboard/clients',  icon: '👥', label: 'Cuentas',   sub: 'Gestión' },
-                { href: '/dashboard/crm',      icon: '🎯', label: 'CRM',       sub: 'Leads y prospectos' },
-                { href: '/dashboard/analytics',icon: '📊', label: 'Analytics', sub: 'Métricas del workspace' },
+                { href: '/dashboard/clients',  icon: '👥', label: 'Cuentas',   sub: 'Gestión de cuentas' },
               ].map(app => (
                 <a key={app.href} href={app.href}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group border border-transparent hover:border-white/[0.06]">
@@ -2258,6 +2261,47 @@ FORMATO:
                   <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/20 group-hover:text-white/40 shrink-0 transition-colors" />
                 </a>
               ))}
+              {/* ── Archivos de este canal ── */}
+              {roomFilesForApps.length > 0 && (
+                <div className="mt-1">
+                  <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 px-1 mb-2">Archivos en este canal</p>
+                  <div className="flex flex-col gap-1">
+                    {roomFilesForApps.slice(0, 5).map((msg: any, i: number) => {
+                      const isImg = (msg.fileType || '').startsWith('image') || /\.(png|jpg|jpeg|gif|webp)($|\?)/.test((msg.fileUrl || '').toLowerCase());
+                      const isPdf = (msg.fileName || '').toLowerCase().endsWith('.pdf');
+                      const icon  = isImg ? '🖼' : isPdf ? '📄' : '📎';
+                      return (
+                        <div key={i} className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-white/[0.04] transition-colors group">
+                          {isImg ? (
+                            <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-white/[0.06]">
+                              <img src={msg.fileUrl} alt={msg.fileName || ''} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 bg-white/[0.05]">{icon}</div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] text-white/65 truncate">{msg.fileName || 'Archivo'}</p>
+                            <p className="text-[10px] text-white/25">{msg.user?.name?.split(' ')[0] || ''}</p>
+                          </div>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              title="Descargar"
+                              onClick={() => downloadFile(msg.fileUrl, msg.fileName || 'archivo')}
+                              className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-white/70 transition-colors">
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {roomFilesForApps.length > 5 && (
+                    <p className="text-[10px] text-white/25 text-center pt-1">+{roomFilesForApps.length - 5} archivos más en la pestaña Files</p>
+                  )}
+                </div>
+              )}
               <div className="mt-2 px-1">
                 <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 mb-2">Boosti IA</p>
                 <div className="rounded-xl border border-violet-500/20 bg-violet-500/[0.06] p-3">
@@ -2770,8 +2814,6 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                 { href: '/dashboard/calendar',  Icon: Video,      label: 'Reuniones',  id: 'meetings' },
                 { href: '/dashboard/projects',  Icon: Folder,     label: 'Proyectos',  id: 'projects' },
                 { href: '/dashboard/clients',   Icon: Users,      label: 'Cuentas',    id: 'clients' },
-                { href: '/dashboard/crm',       Icon: Sparkles,   label: 'Leads',      id: 'leads' },
-                { href: '/dashboard/analytics', Icon: MoreHorizontal, label: 'Analytics', id: 'analytics' },
               ] as const).map(({ id, label, Icon, href }) => (
                 <li key={id}>
                   <a href={href}
