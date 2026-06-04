@@ -420,7 +420,7 @@ export async function POST(req: NextRequest) {
     ...(task.assignedUsers?.map((au: any) => ({ email: au.user?.email, name: au.user?.name })) ?? []),
   ].filter((u, i, arr) => u.email && arr.findIndex(x => x.email === u.email) === i);
   for (const u of assignedWithNames) {
-    if (u.email) await sendMail(u.email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding, u.name ?? undefined));
+    if (u.email) await sendMail(u.email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding, u.name || u.email?.split("@")[0] || undefined));
   }
 
   await logAction({ userId, workspaceId, action: "TASK_CREATED", entity: "task", entityId: task.id, details: { title: task.title } });
@@ -592,7 +592,7 @@ export async function PUT(req: NextRequest) {
     const skipCambioEstado = task.status === "approved" || task.status === "completed";
     if (!skipCambioEstado) {
       for (const u of _assignedUsers) {
-        if (u.email) await sendMail(u.email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending", _branding, u.name ?? undefined));
+        if (u.email) await sendMail(u.email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending", _branding, u.name || u.email?.split("@")[0] || undefined));
       }
     }
     if (task.status === "completed") {
@@ -659,7 +659,7 @@ export async function PUT(req: NextRequest) {
           getBranding().then(b => sendMail(
             pm.email!,
             `⏳ Tarea lista para revisión: ${task.title}`,
-            templateCambioEstado(task.title, task.status, 'internal_review', b, pm.name ?? undefined)
+            templateCambioEstado(task.title, task.status, 'internal_review', b, pm.name || pm.email?.split("@")[0] || undefined)
           )).catch(console.error);
         }
       }
@@ -687,7 +687,7 @@ export async function PUT(req: NextRequest) {
         getBranding().then(b => sendMail(
           u.email!,
           task.status === "completed" ? `✅ Tarea aprobada: ${task.title}` : `🔄 Cambios solicitados: ${task.title}`,
-          templateCambioEstado(task.title, existing.status, task.status, b, u.name ?? undefined)
+          templateCambioEstado(task.title, existing.status, task.status, b, u.name || u.email?.split("@")[0] || undefined)
         )).catch(console.error);
       }
     }
@@ -700,7 +700,7 @@ export async function PUT(req: NextRequest) {
     if (newAssignee && newAssignee.id !== userId) {
       await createNotification({ userId: newAssignee.id, workspaceId, message: `${userName} te asignó la tarea: "${task.title}"`, type: "task", actorId: userId, actorName: userName, actorImage: userImage ?? undefined });
       if (newAssignee.email) {
-        getBranding().then(b => sendMail(newAssignee.email!, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b, newAssignee.name ?? undefined))).catch(console.error);
+        getBranding().then(b => sendMail(newAssignee.email!, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b, newAssignee.name || newAssignee.email?.split("@")[0] || undefined))).catch(console.error);
       }
     }
   }
