@@ -632,6 +632,7 @@ function ChatMain({
   const [rightPanelTab, setRightPanelTab] = useState<'members'|'apps'|'context'>('members');
   const [showChannelMore, setShowChannelMore] = useState(false);
   const [showComposerEmoji, setShowComposerEmoji] = useState(false);
+  const [replyingTo, setReplyingTo]   = useState<ChatMessage | null>(null);
   const [collapsedBotGroups, setCollapsedBotGroups] = useState<Record<string, boolean>>({});
   const [showSlashMenu, setShowSlashMenu] = useState(false);
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
@@ -1456,13 +1457,13 @@ FORMATO:
                 </div>
               )}
             <div className={isSame ? 'mt-0.5' : 'mt-2'}>
-              <div className={`group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02] ${isMe && !isSystemMsg ? 'flex flex-col items-end' : ''}`}
+              <div className={`group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02] ${isMe && !isSystemMsg ? 'flex flex-col items-end pr-3' : ''}`}
                 style={{ paddingTop: isSame ? '1px' : '8px', paddingBottom: '1px' }}>
                 {/* Hover actions */}
-                <div className={`absolute top-0 left-[280px] z-10 items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl ${showEmoji?.id === msg.id ? 'flex' : 'hidden group-hover:flex'}`}>
+                <div className={`absolute top-0 right-2 z-10 items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl ${showEmoji?.id === msg.id ? 'flex' : 'hidden group-hover:flex'}`}>
                   {[
                     { Icon: SmilePlus, fn: () => { setShowEmoji(showEmoji?.id === msg.id ? null : {id: msg.id, x: 0, y: 0}); }, tip: 'Reaccionar' },
-                    { Icon: Reply, fn: () => onOpenThread(msg), tip: 'Responder en hilo' },
+                    { Icon: Reply, fn: () => setReplyingTo(msg), tip: 'Responder' },
                     { Icon: ListPlus, fn: () => setTaskModal({ title: msg.message.slice(0, 80), description: msg.message }), tip: 'Crear tarea' },
                     { Icon: Pin, fn: () => togglePin(msg), tip: msg.pinned ? 'Desfijar mensaje' : 'Fijar mensaje' },
                     { Icon: MoreHorizontal, fn: () => setShowMoreMenu(showMoreMenu === msg.id ? null : msg.id), tip: 'Más opciones' },
@@ -1493,6 +1494,20 @@ FORMATO:
                 )}
 
                 {/* Layout de burbuja: propio (derecha) vs ajeno (izquierda) */}
+                {/* Cita del mensaje al que responde — estilo WhatsApp */}
+                {(msg as any).parentId && (msg as any).parent && (
+                  <div className={`mb-1 ${isMe && !isSystemMsg ? 'flex justify-end' : ''}`}>
+                    <div className="max-w-[72%] rounded-xl px-3 py-2 border-l-2 border-violet-500/60 bg-white/[0.03] cursor-pointer hover:bg-white/[0.05] transition-colors"
+                      onClick={() => onOpenThread((msg as any).parent)}>
+                      <p className="text-[10px] font-medium text-violet-400/80 mb-0.5 truncate">
+                        {(msg as any).parent?.user?.name?.split(' ')[0] || 'Usuario'}
+                      </p>
+                      <p className="text-[11px] text-white/40 truncate leading-tight">
+                        {((msg as any).parent?.message || '').replace(/\*\*/g,'').slice(0,60)}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className={`flex gap-2.5 ${isMe && !isSystemMsg ? 'flex-row-reverse' : ''}`}>
                   {/* Avatar — solo para mensajes ajenos y sistema */}
                   {(!isMe || isSystemMsg) && (
@@ -1885,6 +1900,24 @@ FORMATO:
               </div>
             );
           })}
+        </div>
+      )}
+      {/* Banner reply estilo WhatsApp */}
+      {replyingTo && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] border-t border-white/[0.04]">
+          <div className="w-0.5 h-7 rounded-full bg-violet-500/60 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-medium text-violet-400/80">
+              Respondiendo a {(replyingTo.user as any)?.name?.split(' ')[0] || 'alguien'}
+            </p>
+            <p className="text-[11px] text-white/35 truncate">
+              {replyingTo.message.replace(/\*\*/g, '').slice(0, 60)}
+            </p>
+          </div>
+          <button onClick={() => setReplyingTo(null)}
+            className="text-white/25 hover:text-white/60 transition-colors p-1 shrink-0">
+            <X className="w-3.5 h-3.5" strokeWidth={1.5} />
+          </button>
         </div>
       )}
       {/* Composer */}
@@ -2395,7 +2428,6 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
         {/* Tabs — navegación interna */}
         <div className="flex gap-0.5">
           {([
-            { id: 'messages' as const, label: 'Crew' },
             { id: 'members'  as const, label: 'Info' },
             { id: 'apps'     as const, label: 'Apps' },
           ]).map(t => (
@@ -2640,28 +2672,27 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
 
         {/* ══ TAB APPS ══ */}
         {tab === 'apps' && (
-          <div className="py-3">
-            <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Accesos rápidos</p>
-            {[
-              { href: '/dashboard/tasks',     icon: '✅', label: 'Tareas',    sub: 'Ver y gestionar' },
-              { href: '/dashboard/calendar',  icon: '📅', label: 'Reuniones', sub: 'Agenda' },
-              { href: '/dashboard/projects',  icon: '📁', label: 'Proyectos', sub: 'Campañas' },
-              { href: '/dashboard/clients',   icon: '👥', label: 'Clientes',  sub: 'Cuentas' },
-              { href: '/dashboard/crm',       icon: '🎯', label: 'Leads',     sub: 'CRM' },
-              { href: '/dashboard/analytics', icon: '📊', label: 'Analytics', sub: 'Métricas' },
-            ].map(app => (
-              <a key={app.href} href={app.href}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-colors group">
-                <span className="text-base shrink-0">{app.icon}</span>
-                <div className="min-w-0">
-                  <p className="text-[12px] font-medium text-white/65 group-hover:text-white/85 transition-colors">{app.label}</p>
-                  <p className="text-[10px] text-white/25">{app.sub}</p>
-                </div>
-                <ChevronRight className="w-3 h-3 text-white/15 group-hover:text-white/35 ml-auto shrink-0 transition-colors" />
-              </a>
-            ))}
-            {/* Boosti IA */}
-            <div className="mx-3 mt-4 rounded-xl border border-violet-500/15 bg-violet-500/[0.04] p-3">
+          <div className="py-1">
+            <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 pt-3 pb-1">Accesos rápidos</p>
+            <ul className="flex flex-col gap-0.5 px-2">
+              {([
+                { href: '/dashboard/tasks',     Icon: CheckCheck, label: 'Tareas',     id: 'tasks' },
+                { href: '/dashboard/calendar',  Icon: Video,      label: 'Reuniones',  id: 'meetings' },
+                { href: '/dashboard/projects',  Icon: Folder,     label: 'Proyectos',  id: 'projects' },
+                { href: '/dashboard/clients',   Icon: Users,      label: 'Clientes',   id: 'clients' },
+                { href: '/dashboard/crm',       Icon: Sparkles,   label: 'Leads',      id: 'leads' },
+                { href: '/dashboard/analytics', Icon: MoreHorizontal, label: 'Analytics', id: 'analytics' },
+              ] as const).map(({ id, label, Icon, href }) => (
+                <li key={id}>
+                  <a href={href}
+                    className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/40 transition-colors hover:bg-white/[0.03] hover:text-white/70">
+                    <Icon className="h-4 w-4 text-white/30 shrink-0" strokeWidth={1.75} />
+                    <span>{label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="mx-3 mt-3 rounded-xl border border-violet-500/15 bg-violet-500/[0.04] p-3">
               <p className="text-[11px] font-medium text-violet-400/75 mb-2.5">🤖 Boosti IA</p>
               <div className="flex gap-2">
                 <button
@@ -2801,7 +2832,7 @@ export default function ChatWithChannels() {
   const [threadMsg, setThreadMsg] = useState<ChatMessage | null>(null);
   // Panel derecho fijo — elevado fuera del ChatMain
   const [showRightPanel, setShowRightPanel] = useState(true); // siempre visible como columna fija
-  const [rightTab, setRightTab]             = useState<'messages'|'members'|'apps'>('members');
+  const [rightTab, setRightTab]             = useState<'members'|'apps'>('members');
   const [accentColor] = useState('#8B5CF6');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreads, setUnreads] = useState<Record<string, number>>({});
@@ -2846,6 +2877,14 @@ export default function ChatWithChannels() {
       }
     });
   }, [activeId]);
+
+  // Listener switch.room — para navegar desde el RightPanel
+  useEffect(() => {
+    return bus.on('switch.room' as any, (payload: any) => {
+      if (payload?.room) handleSetActive(payload.room);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Clear unread when switching
   const handleSetActive = (id: string) => {
