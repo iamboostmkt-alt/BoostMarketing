@@ -560,11 +560,13 @@ function TasksTab({ roomTasks, room, onRefresh }: { roomTasks: any[]; room: stri
 // ─── Main Chat ─────────────────────────────────────────────────────────────────
 function ChatMain({
   room, title, accentColor, onOpenThread, dmUser, role = '', members = [], clients = [],
+  onToggleRightPanel,
 }: {
   room: string;
   title: string;
   accentColor: string;
   onOpenThread: (msg: ChatMessage) => void;
+  onToggleRightPanel?: () => void;
   dmUser?: { id: string; name: string | null; email: string; color?: string; image?: string | null } | null;
   role?: string;
   members?: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string; presence?: { status: string; lastSeen: string } | null }[];
@@ -1217,8 +1219,8 @@ FORMATO:
           <div className="ml-auto flex items-center gap-1 relative">
             <div className="relative group/tip">
               <button
-                onClick={() => setShowMembersPanel(p => !p)}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showMembersPanel && rightPanelTab === 'members' ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
+                onClick={() => { if (onToggleRightPanel) onToggleRightPanel(); else setShowMembersPanel(p => !p); }}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showMembersPanel ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
                 <Users className="h-4 w-4" strokeWidth={1.75} />
               </button>
               <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-300 group-hover/tip:opacity-100 z-30">
@@ -2201,6 +2203,161 @@ FORMATO:
   );
 }
 
+
+// ─── Right Panel (fijo, columna lateral) ────────────────────────────────────
+interface RightPanelProps {
+  tab: 'members' | 'apps' | 'context';
+  onSetTab: (tab: 'members' | 'apps' | 'context') => void;
+  onClose: () => void;
+  members: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string; presence?: any }[];
+  room: string;
+  accentColor: string;
+}
+
+function RightPanel({ tab, onSetTab, onClose, members, room, accentColor }: RightPanelProps) {
+  const [roomTasks, setRoomTasks] = useState<any[]>([]);
+  const [recentDMs, setRecentDMs] = useState<any[]>([]);
+  const { data: session } = useSession();
+  const myId = (session?.user as any)?.id ?? '';
+
+  useEffect(() => {
+    if (tab === 'context' && room) {
+      fetch(`/api/tasks?room=${encodeURIComponent(room)}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(d => setRoomTasks(d?.tasks ?? []))
+        .catch(() => {});
+    }
+  }, [tab, room]);
+
+  const TABS = [
+    { id: 'members' as const, label: 'Equipo' },
+    { id: 'apps'    as const, label: 'Apps'  },
+    { id: 'context' as const, label: 'Info'  },
+  ];
+
+  return (
+    <div className="hidden lg:flex flex-col w-64 shrink-0 border-l border-white/[0.05] bg-[#0D0F18]"
+      style={{ minHeight: 0 }}>
+      {/* Header tabs minimalista */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.04] shrink-0">
+        <div className="flex gap-0.5">
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => onSetTab(t.id)}
+              className={`px-2.5 py-1 rounded-md text-[12px] font-medium transition-colors ${
+                tab === t.id ? 'text-white/90 bg-white/[0.06]' : 'text-white/30 hover:text-white/60'
+              }`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <button onClick={onClose} className="text-white/20 hover:text-white/60 transition-colors p-1">
+          <X className="w-3.5 h-3.5" strokeWidth={1.5} />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
+        {/* Tab Equipo */}
+        {tab === 'members' && (
+          <div className="px-3 py-3 space-y-0.5">
+            {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST' && m.role !== 'UNASSIGNED').map(m => {
+              const initials = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
+              const isOnline = (m as any).presence?.status === 'online';
+              return (
+                <div key={m.id} className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-white/[0.03] transition-colors group">
+                  <div className="relative shrink-0">
+                    <Avatar initials={initials} color={m.color || '#8b5cf6'} size={28} image={m.image} />
+                    <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-[#0D0F18] ${isOnline ? 'bg-emerald-400' : 'bg-white/20'}`} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[12px] font-medium text-white/75 truncate leading-tight">{m.name || m.email}</p>
+                    <p className="text-[10px] text-white/25 truncate">
+                      {isOnline ? <span className="text-emerald-400/80">En línea</span>
+                        : (m as any).presence?.lastSeen ? `Visto ${formatLastSeen((m as any).presence.lastSeen)}`
+                        : m.role?.toLowerCase().replace('_',' ')}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+            {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST' && m.role !== 'UNASSIGNED').length === 0 && (
+              <p className="text-[11px] text-white/20 text-center py-6">Sin miembros</p>
+            )}
+          </div>
+        )}
+
+        {/* Tab Apps */}
+        {tab === 'apps' && (
+          <div className="px-2 py-3 space-y-0.5">
+            {[
+              { href: '/dashboard/tasks',    emoji: '✅', label: 'Tareas'    },
+              { href: '/dashboard/calendar', emoji: '📅', label: 'Reuniones' },
+              { href: '/dashboard/projects', emoji: '📁', label: 'Proyectos' },
+              { href: '/dashboard/clients',  emoji: '👥', label: 'Clientes'  },
+              { href: '/dashboard/crm',      emoji: '🎯', label: 'Leads'     },
+              { href: '/dashboard/analytics',emoji: '📊', label: 'Analytics' },
+            ].map(app => (
+              <a key={app.href} href={app.href}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/[0.04] transition-colors group">
+                <span className="text-base">{app.emoji}</span>
+                <span className="text-[13px] text-white/60 group-hover:text-white/85 transition-colors font-medium">{app.label}</span>
+              </a>
+            ))}
+            {/* Boosti */}
+            <div className="mx-2 mt-3 rounded-xl border border-violet-500/15 bg-violet-500/[0.04] p-3">
+              <p className="text-[11px] font-medium text-violet-400/80 mb-2">🤖 Boosti IA</p>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={async () => {
+                    await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'individual' }) });
+                  }}
+                  className="flex-1 py-1.5 rounded-lg text-[11px] text-violet-400/70 border border-violet-500/20 hover:bg-violet-500/10 transition-colors">
+                  Solo yo
+                </button>
+                <button
+                  onClick={async () => {
+                    await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'group' }) });
+                  }}
+                  className="flex-1 py-1.5 rounded-lg text-[11px] text-violet-400/70 border border-violet-500/20 hover:bg-violet-500/10 transition-colors">
+                  Grupal
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab Info/Contexto */}
+        {tab === 'context' && (
+          <div className="px-3 py-3 space-y-4">
+            <div>
+              <p className="text-[10px] font-medium uppercase tracking-widest text-white/20 mb-2">Tareas activas</p>
+              {roomTasks.filter(t => !['completed','approved','cancelled'].includes(t.status)).length > 0 ? (
+                <div className="space-y-1.5">
+                  {roomTasks.filter(t => !['completed','approved','cancelled'].includes(t.status)).slice(0,5).map((t: any) => (
+                    <div key={t.id} className="flex items-start gap-2 rounded-lg px-2.5 py-2 bg-white/[0.02] border border-white/[0.04]">
+                      <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                        style={{ background: t.priority === 'high' ? '#f87171' : t.priority === 'medium' ? '#fbbf24' : '#4ade80' }} />
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-medium text-white/65 leading-tight truncate">{t.title}</p>
+                        {t.dueDate && (
+                          <p className="text-[10px] text-white/25 mt-0.5">
+                            {new Date(t.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-white/20 text-center py-3">Sin tareas activas</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Thread Panel ──────────────────────────────────────────────────────────────
 function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; onClose: () => void; accentColor: string; room: string }) {
   const color = (msg.user as any)?.color || accentColor;
@@ -2316,6 +2473,9 @@ export default function ChatWithChannels() {
   const role = (session?.user as any)?.role ?? '';
   const [activeId, setActiveId] = useState('TEAM');
   const [threadMsg, setThreadMsg] = useState<ChatMessage | null>(null);
+  // Panel derecho fijo — elevado fuera del ChatMain
+  const [showRightPanel, setShowRightPanel] = useState(false);
+  const [rightTab, setRightTab]             = useState<'members'|'apps'|'context'>('members');
   const [accentColor] = useState('#8B5CF6');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreads, setUnreads] = useState<Record<string, number>>({});
@@ -2458,6 +2618,7 @@ export default function ChatWithChannels() {
             role={role}
             members={members}
             clients={clients}
+            onToggleRightPanel={() => setShowRightPanel(p => !p)}
           />
         )}
       </div>
@@ -2467,6 +2628,18 @@ export default function ChatWithChannels() {
         <div className="hidden lg:flex">
           <ThreadPanel msg={threadMsg} onClose={() => setThreadMsg(null)} accentColor={accentColor} room={activeId} />
         </div>
+      )}
+
+      {/* Panel derecho FIJO — fuera del ChatMain */}
+      {showRightPanel && (
+        <RightPanel
+          tab={rightTab}
+          onSetTab={setRightTab}
+          onClose={() => setShowRightPanel(false)}
+          members={members}
+          room={activeId}
+          accentColor={accentColor}
+        />
       )}
     </div>
   );
