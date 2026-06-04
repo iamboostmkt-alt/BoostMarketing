@@ -2242,7 +2242,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
   // DM previews — último mensaje de cada crew member
   const [dmPreviews, setDmPreviews] = useState<Record<string, { message: string; createdAt: string }>>({});
   useEffect(() => {
-    if (tab !== 'messages' || !myId || members.length === 0) return;
+    if ((!['messages','members'].includes(tab)) || !myId || members.length === 0) return;
     const team = members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId);
     Promise.allSettled(
       team.slice(0, 10).map(async m => {
@@ -2308,7 +2308,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
 
   return (
     <div className="hidden lg:flex flex-col border-l border-white/[0.05] bg-[#0B0D12] shrink-0"
-      style={{ width: 280, minHeight: 0 }}>
+      style={{ width: 320, minHeight: 0 }}>
 
       {/* ── HEADER FIJO ── */}
       <div className="shrink-0 px-4 pt-4 pb-3 border-b border-white/[0.04]">
@@ -2421,35 +2421,45 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
               </div>
             )}
 
-            {/* Mensajes recientes del canal */}
+            {/* DMs recientes del usuario — no mensajes del canal */}
             <div className="pt-3 pb-2 border-b border-white/[0.04]">
-              <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Mensajes recientes</p>
-              {channelMsgs.length > 0 ? (
-                <div>
-                  {channelMsgs.slice(-5).reverse().map((msg: any) => {
-                    const msgInitials = (msg.user?.name || msg.user?.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+              <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Mensajes directos</p>
+              <div>
+                {members
+                  .filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId)
+                  .sort((a, b) => (dmPreviews[b.id]?.createdAt ?? '').localeCompare(dmPreviews[a.id]?.createdAt ?? ''))
+                  .filter(m => dmPreviews[m.id])
+                  .slice(0, 4)
+                  .map(m => {
+                    const ini2 = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+                    const isOnline2 = (m as any).presence?.status === 'online';
+                    const preview = dmPreviews[m.id];
+                    const cleanMsg2 = preview.message.replace(/\*\*/g, '').replace(/📌|🎉|⏰|🚨|⚠️|✅/g, '').trim();
+                    const dmRoomKey2 = [myId, m.id].sort().join('_DM_');
                     return (
-                      <div key={msg.id} className="flex items-start gap-2.5 px-3 py-2 hover:bg-white/[0.03] transition-colors cursor-pointer group">
-                        <Avatar initials={msgInitials} color={msg.user?.color || '#8b5cf6'} size={26} image={msg.user?.image} />
+                      <button key={m.id}
+                        onClick={() => bus.emit('switch.room' as any, { room: dmRoomKey2, dmUser: m })}
+                        className="w-full flex items-start gap-2.5 px-3 py-2 hover:bg-white/[0.03] transition-colors cursor-pointer text-left">
+                        <div className="relative shrink-0 mt-0.5">
+                          <Avatar initials={ini2} color={m.color || '#8b5cf6'} size={24} image={m.image} />
+                          {isOnline2 && <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#0B0D12]" />}
+                        </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-baseline gap-2 mb-0.5">
-                            <span className="text-[11px] font-medium text-white/70 shrink-0">{msg.user?.name?.split(' ')[0] || 'Usuario'}</span>
-                            <span className="text-[10px] text-white/20">{new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="text-[11px] font-medium text-white/70 shrink-0">{m.name?.split(' ')[0] || m.email?.split('@')[0]}</span>
+                            <span className="text-[10px] text-white/20">{new Date(preview.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
-                          <p className="text-[11px] text-white/40 leading-snug line-clamp-2">
-                            {msg.message.replace(/\*\*/g, '').slice(0, 80)}
+                          <p className="text-[11px] text-white/40 leading-snug truncate">
+                            {cleanMsg2 ? cleanMsg2.slice(0, 55) + (cleanMsg2.length > 55 ? '…' : '') : 'Archivo adjunto'}
                           </p>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
-                  <button className="w-full text-[11px] text-violet-400/60 hover:text-violet-400 py-2 px-3 text-left transition-colors">
-                    Ver toda la actividad →
-                  </button>
-                </div>
-              ) : (
-                <p className="text-[11px] text-white/20 px-4 py-2">Sin mensajes recientes</p>
-              )}
+                {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId && dmPreviews[m.id]).length === 0 && (
+                  <p className="text-[11px] text-white/20 px-4 py-2">Sin conversaciones recientes</p>
+                )}
+              </div>
             </div>
 
             {/* Detalles del cliente */}
@@ -2487,8 +2497,8 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                   const online = (m as any).presence?.status === 'online';
                   return (
                     <div key={m.id} className="relative" title={m.name || m.email}>
-                      <Avatar initials={ini} color={m.color || '#8b5cf6'} size={26} image={m.image} />
-                      {online && <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#0B0D12]" />}
+                      <Avatar initials={ini} color={m.color || '#8b5cf6'} size={20} image={m.image} />
+                      {online && <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 border border-[#0B0D12]" />}
                     </div>
                   );
                 })}
@@ -2730,7 +2740,7 @@ export default function ChatWithChannels() {
   const [threadMsg, setThreadMsg] = useState<ChatMessage | null>(null);
   // Panel derecho fijo — elevado fuera del ChatMain
   const [showRightPanel, setShowRightPanel] = useState(false);
-  const [rightTab, setRightTab]             = useState<'messages'|'members'|'apps'>('messages');
+  const [rightTab, setRightTab]             = useState<'messages'|'members'|'apps'>('members');
   const [accentColor] = useState('#8B5CF6');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreads, setUnreads] = useState<Record<string, number>>({});

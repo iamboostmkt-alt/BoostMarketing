@@ -621,19 +621,35 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 return (
                   <div className="space-y-2">
                     <p className="text-[10px] text-white/25 uppercase tracking-wider flex items-center gap-1.5">
-                      <span>📎</span> Referencias visuales ({refImages.length})
+                      <span>🖼</span> Referencias visuales ({refImages.length})
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {refImages.map((r: any, i: number) => (
-                        <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.06] cursor-pointer"
-                          onClick={() => setLightbox(r.url)}>
-                          <img src={r.url} alt={r.title || 'referencia'} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button onClick={e => { e.stopPropagation(); window.open(r.url, '_blank'); }}
-                              className="p-1 bg-white/20 rounded hover:bg-white/30">
-                              <ExternalLink className="w-3 h-3 text-white" />
-                            </button>
+                        <div key={i} className="group cursor-pointer" onClick={() => setLightbox(r.url)}>
+                          <div className="relative rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06]"
+                            style={{ aspectRatio: '1' }}>
+                            <img
+                              src={r.url}
+                              alt={r.title || 'referencia'}
+                              className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                              onError={e => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                            <div className="hidden absolute inset-0 flex items-center justify-center">
+                              <span className="text-2xl">📎</span>
+                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-end pb-2 gap-1">
+                              <button onClick={e => { e.stopPropagation(); window.open(r.url, '_blank'); }}
+                                className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded-lg text-white text-[10px] hover:bg-white/30">
+                                <ExternalLink className="w-3 h-3" /> Abrir
+                              </button>
+                            </div>
                           </div>
+                          {r.title && (
+                            <p className="text-[10px] text-white/30 truncate mt-1 px-0.5">{r.title}</p>
+                          )}
                         </div>
                       ))}
                     </div>
