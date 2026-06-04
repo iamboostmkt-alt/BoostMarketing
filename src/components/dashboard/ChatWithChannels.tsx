@@ -1479,7 +1479,7 @@ FORMATO:
 
                 {/* Emoji picker — absolute encima del hover bar */}
                 {showEmoji?.id === msg.id && (
-                  <div className="absolute -top-12 left-[280px] z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
+                  <div className="absolute -top-11 left-0 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl"
                     onMouseLeave={() => setShowEmoji(null)}>
                     {QUICK_EMOJIS.map(e => (
                       <button key={e} onClick={() => handleReaction(msg.id, e)}
@@ -1884,7 +1884,7 @@ FORMATO:
                 {showComposerEmoji && (
                   <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowComposerEmoji(false)} />
-                  <div className="absolute bottom-16 left-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
+                  <div className="absolute bottom-10 right-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
                     {['😀','😂','🥹','😍','🤔','😅','🙌','👍','🔥','❤️','✅','🎉','💪','🚀','👀','💡','⚡','🎯'].map(e => (
                       <button key={e} type="button"
                         onClick={() => { setInput(prev => prev + e); setShowComposerEmoji(false); }}

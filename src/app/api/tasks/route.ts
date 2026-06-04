@@ -14,7 +14,6 @@ import {
   templateCambioEstado,
   templateTareaCompletada,
   templateTareaEditada,
-  templateEntregaListaParaRevisar,
 } from "@/lib/mailer";
 import { getBranding, type Branding } from "@/lib/branding";
 import { AccessControl } from "@/core/access/access-control";
@@ -657,27 +656,11 @@ export async function PUT(req: NextRequest) {
           userId: pm.id, workspaceId, message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`, type: "task", actorId: userId, actorName: userName, actorImage: userImage ?? undefined,
         });
         if (pm.email) {
-          sendMail(pm.email, `⏳ Tarea lista para revisión: ${task.title}`,
-            `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="color-scheme" content="light only"/></head>
-            <body style="margin:0;padding:0;background-color:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f7" style="padding:32px 16px;"><tr><td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
-                <tr><td bgcolor="#7c3aed" style="background:linear-gradient(135deg,#7c3aed,#9333ea);padding:28px 32px;text-align:center;">
-                  <h1 style="margin:0;font-size:20px;color:#fff;font-weight:700;">BoostMarketing</h1>
-                </td></tr>
-                <tr><td style="padding:32px;background-color:#ffffff;color:#18181b;font-size:15px;line-height:1.6;">
-                  <h2 style="color:#18181b;margin:0 0 12px;font-size:20px;">⏳ Tarea lista para revisión</h2>
-                  <p style="color:#6b7280;"><strong style="color:#18181b;">${userName}</strong> marcó como terminada: <strong style="color:#18181b;">${task.title}</strong></p>
-                  <div style="text-align:center;margin-top:24px;">
-                    <a href="${process.env.NEXT_PUBLIC_APP_URL ?? ""}/dashboard/tasks" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Revisar ahora</a>
-                  </div>
-                </td></tr>
-                <tr><td bgcolor="#f9fafb" style="background-color:#f9fafb;border-top:1px solid #e4e4e7;padding:16px 32px;text-align:center;">
-                  <p style="margin:0;color:#9ca3af;font-size:12px;">BoostMarketing &copy; ${new Date().getFullYear()} &middot; Mensaje automático</p>
-                </td></tr>
-              </table></td></tr></table>
-            </body></html>`
-          ).catch(console.error);
+          getBranding().then(b => sendMail(
+            pm.email!,
+            `⏳ Tarea lista para revisión: ${task.title}`,
+            templateCambioEstado(task.title, task.status, 'internal_review', b, pm.name ?? undefined)
+          )).catch(console.error);
         }
       }
     }
@@ -701,29 +684,11 @@ export async function PUT(req: NextRequest) {
       }
       for (const u of _assignedUsers) {
         if (!u.email) continue;
-        sendMail(
-          u.email,
+        getBranding().then(b => sendMail(
+          u.email!,
           task.status === "completed" ? `✅ Tarea aprobada: ${task.title}` : `🔄 Cambios solicitados: ${task.title}`,
-          `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="color-scheme" content="light only"/></head>
-          <body style="margin:0;padding:0;background-color:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f7" style="padding:32px 16px;"><tr><td align="center">
-            <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
-              <tr><td bgcolor="#7c3aed" style="background:linear-gradient(135deg,#7c3aed,#9333ea);padding:28px 32px;text-align:center;">
-                <h1 style="margin:0;font-size:20px;color:#fff;font-weight:700;">BoostMarketing</h1>
-              </td></tr>
-              <tr><td style="padding:32px;background-color:#ffffff;color:#18181b;font-size:15px;line-height:1.6;">
-                <h2 style="color:#18181b;margin:0 0 12px;font-size:20px;">${task.status === "completed" ? "✅ Tarea aprobada" : "🔄 Se solicitaron cambios"}</h2>
-                <p style="color:#6b7280;">La tarea <strong style="color:#18181b;">${task.title}</strong> ${task.status === "completed" ? "fue aprobada por el PM." : "requiere cambios según el PM."}</p>
-                <div style="text-align:center;margin-top:24px;">
-                  <a href="${process.env.NEXT_PUBLIC_APP_URL ?? ""}/dashboard/tasks" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Ver tarea</a>
-                </div>
-              </td></tr>
-              <tr><td bgcolor="#f9fafb" style="background-color:#f9fafb;border-top:1px solid #e4e4e7;padding:16px 32px;text-align:center;">
-                <p style="margin:0;color:#9ca3af;font-size:12px;">BoostMarketing &copy; ${new Date().getFullYear()} &middot; Mensaje automático</p>
-              </td></tr>
-            </table></td></tr></table>
-          </body></html>`
-        ).catch(console.error);
+          templateCambioEstado(task.title, existing.status, task.status, b, u.name ?? undefined)
+        )).catch(console.error);
       }
     }
 
