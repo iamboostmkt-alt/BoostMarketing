@@ -49,7 +49,12 @@ export default function InvitePage() {
     if (!res.ok) { setError(d.error); setSubmitting(false); return; }
     setDone(true);
     // Auto login
-    await signIn('credentials', { email: invite.email, password, redirect: false });
+    const signInResult = await signIn('credentials', { email: invite.email, password, redirect: false });
+    if (signInResult?.error) {
+      setError('Error al iniciar sesión automáticamente. Usa tu email y contraseña para entrar.');
+      setSubmitting(false);
+      return;
+    }
     setTimeout(() => router.push(invite.isClient ? '/dashboard/client-portal' : '/dashboard'), 1500);
   }
 

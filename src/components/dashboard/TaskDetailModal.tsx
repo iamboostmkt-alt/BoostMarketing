@@ -608,7 +608,14 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               {/* Referencias de imagen (subidas desde el form de crear/editar) */}
               {(() => {
                 const refImages = Array.isArray((task as any).references)
-                  ? (task as any).references.filter((r: any) => r.type === 'file' && (r.fileType || '').startsWith('image'))
+                  ? (task as any).references.filter((r: any) => {
+                    if (r.type !== 'file') return false;
+                    const ft = (r.fileType || '').toLowerCase();
+                    const url = (r.url || '').toLowerCase();
+                    // Detectar por fileType o por extensión de URL
+                    return ft.startsWith('image') ||
+                      /\.(png|jpg|jpeg|gif|webp|svg|avif|heic)($|\?)/.test(url);
+                  })
                   : [];
                 if (refImages.length === 0) return null;
                 return (
@@ -637,7 +644,13 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               {/* Referencias de links (no imagen) del form */}
               {(() => {
                 const refLinks = Array.isArray((task as any).references)
-                  ? (task as any).references.filter((r: any) => r.type !== 'file')
+                  ? (task as any).references.filter((r: any) => {
+                    if (r.type !== 'file') return true; // links siempre se muestran
+                    // archivos que NO son imagen también en la lista de links
+                    const ft = (r.fileType || '').toLowerCase();
+                    const url = (r.url || '').toLowerCase();
+                    return !(ft.startsWith('image') || /\.(png|jpg|jpeg|gif|webp|svg|avif|heic)($|\?)/.test(url));
+                  })
                   : [];
                 if (refLinks.length === 0) return null;
                 return (
