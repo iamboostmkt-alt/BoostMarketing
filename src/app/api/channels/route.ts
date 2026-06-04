@@ -46,9 +46,22 @@ export async function POST(req: NextRequest) {
   if (existing)
     return NextResponse.json({ error: 'Ya existe un canal con ese nombre.' }, { status: 409 });
 
+  const isPrivate   = (body as any).isPrivate  ?? false;
+  const memberIds   = (body as any).memberIds as string[] ?? [];
+
   const channel = await db.channel.create({
-    data: { workspaceId, name, icon, subtitle, createdBy: userId },
-    select: { id: true, name: true, icon: true, subtitle: true },
+    data: {
+      workspaceId, name, icon, subtitle, createdBy: userId,
+      isPrivate,
+      members: memberIds.length > 0
+        ? { create: [...new Set([userId, ...memberIds])].map(uid => ({ userId: uid })) }
+        : undefined,
+    },
+    select: {
+      id: true, name: true, icon: true, subtitle: true,
+      isPrivate: true,
+      members: { select: { userId: true } },
+    },
   });
 
   return NextResponse.json({ channel }, { status: 201 });

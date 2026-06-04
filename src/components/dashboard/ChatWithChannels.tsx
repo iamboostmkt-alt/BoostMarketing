@@ -112,6 +112,8 @@ function ChannelList({
   const [showDMSearch, setShowDMSearch] = useState(false);
   const [dmSearchQuery, setDmSearchQuery] = useState('');
   const [showCreateChannel, setShowCreateChannel] = useState(false);
+  const [isPrivateGroup, setIsPrivateGroup]   = useState(false);
+  const [groupMemberIds, setGroupMemberIds]   = useState<string[]>([]);
   const [newChannelName, setNewChannelName] = useState('');
   const createChannelRef = useRef<HTMLDivElement>(null);
   const channelMenuRef = useRef<HTMLDivElement>(null);
@@ -130,7 +132,7 @@ function ChannelList({
             </button>
             {showChannelMenu && (
               <div className="fixed z-[9999] w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl" style={{ top: menuPos.top, left: menuPos.left }}>
-                <button onClick={() => { setShowChannelMenu(false); setShowCreateChannel(true); }}
+                <button onClick={() => { setShowChannelMenu(false); setIsPrivateGroup(false); setGroupMemberIds([]); setShowCreateChannel(true); }}
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
                   <span className="text-[14px]">＃</span>Crear canal
                 </button>
@@ -140,9 +142,9 @@ function ChannelList({
                     <span className="text-[14px]">◉</span>Crear espacio cliente
                   </button>
                 )}
-                <button onClick={() => setShowChannelMenu(false)}
+                <button onClick={() => { setShowChannelMenu(false); setIsPrivateGroup(true); setGroupMemberIds([]); setShowCreateChannel(true); }}
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
-                  <span className="text-[14px]">⊕</span>Chat grupal
+                  <span className="text-[14px]">🔒</span>Grupo privado
                 </button>
                 {isManager && (
                   <button onClick={() => setShowChannelMenu(false)}
@@ -155,9 +157,25 @@ function ChannelList({
             {showCreateChannel && (
               <div ref={createChannelRef} className="fixed z-[9999] w-56 rounded-xl border border-white/[0.08] bg-[#141824] p-3 shadow-2xl" style={{ top: menuPos.top, left: menuPos.left }}>
                 <p className="text-[12px] font-medium text-white/70 mb-2">Nuevo canal</p>
-                <input autoFocus value={newChannelName} onChange={e => setNewChannelName(e.target.value.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,''))}
-                  placeholder="nombre-del-canal"
+                <input autoFocus value={newChannelName} onChange={e => setNewChannelName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/\s+/g, '-'))}
+                  placeholder={isPrivateGroup ? 'nombre-del-grupo' : 'nombre-del-canal'}
                   className="w-full rounded-lg border border-white/[0.08] bg-[#0f1117] px-2.5 py-1.5 text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 mb-2" />
+                {/* Miembros para grupo privado */}
+                {isPrivateGroup && (
+                  <div className="mb-2">
+                    <p className="text-[11px] text-white/40 mb-1.5">Agregar miembros al grupo</p>
+                    <div className="max-h-28 overflow-y-auto space-y-0.5 bg-[#0f1117] rounded-lg p-1.5 border border-white/[0.06]">
+                      {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED').map(m => (
+                        <label key={m.id} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-white/[0.04] cursor-pointer">
+                          <input type="checkbox" checked={groupMemberIds.includes(m.id)}
+                            onChange={e => setGroupMemberIds(prev => e.target.checked ? [...prev, m.id] : prev.filter(id => id !== m.id))}
+                            className="rounded accent-violet-500 w-3 h-3" />
+                          <span className="text-[11px] text-white/60 truncate">{m.name || m.email}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button onClick={() => { setShowCreateChannel(false); setNewChannelName(''); }}
                     className="flex-1 rounded-lg border border-white/[0.08] py-1.5 text-[12px] text-white/50 hover:text-white transition-colors">
@@ -171,7 +189,7 @@ function ChannelList({
                         const res = await fetch('/api/channels', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ name }),
+                          body: JSON.stringify({ name, isPrivate: isPrivateGroup, memberIds: groupMemberIds }),
                         });
                         const data = await res.json();
                         if (!res.ok) { alert(data.error ?? 'Error al crear canal'); return; }
@@ -193,7 +211,7 @@ function ChannelList({
           {rooms.map(r => {
             const isActive = activeId === r.id;
             const unread = unreads[r.id] || 0;
-            const Icon = r.locked ? Lock : r.icon === 'support' ? LifeBuoy : r.icon === 'projects' ? Briefcase : Hash;
+            const Icon = r.locked || (r as any).isPrivate ? Lock : r.icon === 'support' ? LifeBuoy : r.icon === 'projects' ? Briefcase : Hash;
             return (
               <li key={r.id} className="group/ch relative">
                 <button onClick={() => setActiveId(r.id)}
@@ -2206,8 +2224,8 @@ FORMATO:
 
 // ─── Right Panel (fijo, columna lateral) ────────────────────────────────────
 interface RightPanelProps {
-  tab: 'members' | 'apps' | 'context';
-  onSetTab: (tab: 'members' | 'apps' | 'context') => void;
+  tab: 'messages' | 'members' | 'apps';
+  onSetTab: (tab: 'messages' | 'members' | 'apps') => void;
   onClose: () => void;
   members: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string; presence?: any }[];
   room: string;
@@ -2221,7 +2239,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor }: Righ
   const myId = (session?.user as any)?.id ?? '';
 
   useEffect(() => {
-    if (tab === 'context' && room) {
+    if ((tab as string) === 'context' && room) {
       fetch(`/api/tasks?room=${encodeURIComponent(room)}`)
         .then(r => r.ok ? r.json() : null)
         .then(d => setRoomTasks(d?.tasks ?? []))
@@ -2230,9 +2248,9 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor }: Righ
   }, [tab, room]);
 
   const TABS = [
-    { id: 'members' as const, label: 'Equipo' },
-    { id: 'apps'    as const, label: 'Apps'  },
-    { id: 'context' as const, label: 'Info'  },
+    { id: 'messages' as const, label: 'Mensajes' },
+    { id: 'members'  as const, label: 'Equipo'   },
+    { id: 'apps'     as const, label: 'Apps'      },
   ];
 
   return (
@@ -2256,6 +2274,43 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor }: Righ
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-thin">
+        {/* Tab Mensajes DM */}
+        {tab === 'messages' && (
+          <div className="px-3 py-3 space-y-1">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-white/20 px-1 mb-2">Mensajes directos</p>
+            {members
+              .filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== '')
+              .map(m => {
+                const dmRoom = [m.id].sort().join('_DM_');
+                const initials2 = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
+                const isOnline2 = (m as any).presence?.status === 'online';
+                return (
+                  <button key={m.id}
+                    onClick={() => {
+                      // Navegar al DM desde el panel derecho
+                      const myId2 = '';
+                      const targetRoom = dmRoom;
+                      // Emitir evento para cambiar al DM
+                      bus.emit('switch.room' as any, { room: targetRoom });
+                    }}
+                    className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-white/[0.04] transition-colors group text-left">
+                    <div className="relative shrink-0">
+                      <Avatar initials={initials2} color={m.color || '#8b5cf6'} size={28} image={m.image} />
+                      <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-[#0D0F18] ${isOnline2 ? 'bg-emerald-400' : 'bg-white/15'}`} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[12px] font-medium text-white/70 group-hover:text-white/90 truncate leading-tight">{m.name || m.email}</p>
+                      <p className="text-[10px] text-white/25 truncate">
+                        {isOnline2 ? <span className="text-emerald-400/70">En línea</span> : 'Mensaje directo'}
+                      </p>
+                    </div>
+                    <span className="text-white/15 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  </button>
+                );
+              })}
+          </div>
+        )}
+
         {/* Tab Equipo */}
         {tab === 'members' && (
           <div className="px-3 py-3 space-y-0.5">
@@ -2325,8 +2380,8 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor }: Righ
           </div>
         )}
 
-        {/* Tab Info/Contexto */}
-        {tab === 'context' && (
+        {/* Tab Info/Contexto — eliminado, reemplazado por Mensajes */}
+        {false && (
           <div className="px-3 py-3 space-y-4">
             <div>
               <p className="text-[10px] font-medium uppercase tracking-widest text-white/20 mb-2">Tareas activas</p>
@@ -2475,7 +2530,7 @@ export default function ChatWithChannels() {
   const [threadMsg, setThreadMsg] = useState<ChatMessage | null>(null);
   // Panel derecho fijo — elevado fuera del ChatMain
   const [showRightPanel, setShowRightPanel] = useState(false);
-  const [rightTab, setRightTab]             = useState<'members'|'apps'|'context'>('members');
+  const [rightTab, setRightTab]             = useState<'messages'|'members'|'apps'>('messages');
   const [accentColor] = useState('#8B5CF6');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreads, setUnreads] = useState<Record<string, number>>({});
@@ -2633,8 +2688,8 @@ export default function ChatWithChannels() {
       {/* Panel derecho FIJO — fuera del ChatMain */}
       {showRightPanel && (
         <RightPanel
-          tab={rightTab}
-          onSetTab={setRightTab}
+          tab={rightTab as any}
+          onSetTab={setRightTab as any}
           onClose={() => setShowRightPanel(false)}
           members={members}
           room={activeId}

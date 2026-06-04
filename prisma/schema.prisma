@@ -135,6 +135,7 @@ model User {
   aiSessions            AiSession[]
   managedClients         Client[]                  @relation("ClientManager")
   createdProjects        Project[]                 @relation("ProjectCreator")
+  channelMemberships     ChannelMember[]
   projectAssignments     ProjectAssignedUser[]     @relation("ProjectUsers")
   activityComments       ActivityComment[]
   appointmentAssignments AppointmentAssignedUser[]
@@ -796,15 +797,29 @@ model Channel {
   name        String
   icon        String   @default("hash")
   subtitle    String?
+  isPrivate   Boolean  @default(false) @map("is_private")  // canal privado de grupo
   createdBy   String   @map("created_by")
   createdAt   DateTime @default(now()) @map("created_at")
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  creator   User      @relation("ChannelCreator", fields: [createdBy], references: [id])
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User             @relation("ChannelCreator", fields: [createdBy], references: [id])
+  members   ChannelMember[]
 
   @@unique([workspaceId, name])
   @@index([workspaceId])
   @@map("channels")
+}
+
+model ChannelMember {
+  id        String @id @default(cuid())
+  channelId String @map("channel_id")
+  userId    String @map("user_id")
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+  @@map("channel_members")
 }
 
 
