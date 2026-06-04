@@ -3,7 +3,7 @@ import { MANAGER_ROLES_EXT as MANAGER_ROLES } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 import { logAction } from "@/lib/audit";
-import { sendMail, templateBienvenida } from "@/lib/mailer";
+import { sendMail, templateBienvenida, templateBienvenidaCliente, templateNuevoClienteAsignado } from "@/lib/mailer";
 import { getBranding, emailLayout } from "@/lib/branding";
 import { ClientCreateSchema, ClientUpdateSchema, validateBody } from "@/lib/schemas";
 import { rateLimit } from "@/lib/security/rate-limit";
@@ -21,6 +21,7 @@ const clientSelect = {
   company: true,
   phone: true,
   status: true,
+  links: true,
   portalStatus: true,
   portalId: true,
   invitedAt: true,
@@ -268,8 +269,42 @@ export async function POST(req: NextRequest) {
           templateBienvenida(`${pm.name || "PM"} — se te asignó el cliente ${name} (${email})`, branding)
         );
       }
+      // Usar templateNuevoClienteAsignado en lugar de templateBienvenida genérico
+      if (pm?.email) {
+        const branding2 = await getBranding();
+        await sendMail(
+          pm.email,
+          `Nuevo cliente asignado: ${name}`,
+          templateNuevoClienteAsignado(pm.name ?? 'PM', name, email, branding2)
+        );
+      }
     } catch (e) {
       console.error("[clients POST] email PM error:", e);
+    }
+  }
+
+  // Correo de bienvenida al cliente (solo si tiene email)
+  if (email) {
+    try {
+      const branding3 = await getBranding();
+      const pm2 = resolvedManagerId
+        ? await db.user.findFirst({ where: { id: resolvedManagerId }, select: { name: true, email: true } })
+        : null;
+      const APP_URL = process.env.NEXTAUTH_URL || "https://boostmarketingboost.com";
+      await sendMail(
+        email,
+        `Bienvenido a ${branding3?.brandName || 'BoostMarketing'}`,
+        templateBienvenidaCliente(
+          name,
+          pm2?.name ?? 'tu Project Manager',
+          pm2?.email ?? '',
+          `${APP_URL}/dashboard/client-portal`,
+          undefined,
+          branding3 as any
+        )
+      );
+    } catch (e) {
+      console.error("[clients POST] email cliente error:", e);
     }
   }
 

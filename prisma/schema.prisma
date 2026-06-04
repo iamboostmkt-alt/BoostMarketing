@@ -298,6 +298,7 @@ model Client {
   company           String  @default("")
   phone             String  @default("")
   status            String  @default("active")
+  links             Json    @default("[]")   @map("links")  // [{label,url,icon}]
   workspaceId       String  @map("workspace_id")
   // Portal de cliente
   portalId          String  @unique @default(cuid()) @map("portal_id")

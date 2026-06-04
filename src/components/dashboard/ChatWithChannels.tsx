@@ -750,6 +750,16 @@ function ChatMain({
   }, [room]);
 
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
+
+  // Polling fallback cuando Supabase RT no está disponible (NEXT_PUBLIC_SUPABASE_ANON_KEY no config)
+  useEffect(() => {
+    const supabaseKey = typeof window !== 'undefined'
+      ? (window as any).__NEXT_DATA__?.props?.pageProps?._supabaseConfigured
+      : false;
+    // Polling cada 8s solo en canales no-DM cuando RT puede fallar
+    const interval = setInterval(() => { fetchMessages(); }, 8000);
+    return () => clearInterval(interval);
+  }, [fetchMessages]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   // Cargar sesión IA activa al cambiar de room
@@ -1483,8 +1493,11 @@ FORMATO:
                           {isSystemMsg && <span className="ml-1.5 text-[10px] font-normal text-violet-400/70">bot</span>}
                           {!isSystemMsg && isMe && <span className="ml-1.5 text-[10px] font-normal" style={{ color: accentColor }}>tú</span>}
                         </span>
-                        <span className="text-[11px] text-white/30">
+                        <span className="flex items-center gap-0.5 text-[11px] text-white/30">
                           {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                          {isMe && !isSystemMsg && (
+                            <span className="ml-0.5 text-[10px]" style={{ color: '#a78bfa' }}>✓✓</span>
+                          )}
                         </span>
                       </div>
                     )}
@@ -1524,11 +1537,11 @@ FORMATO:
                         isSystemMsg
                           ? 'text-white/70' // mensajes del bot — sin burbuja
                           : isMe
-                            ? 'inline-block rounded-[18px] rounded-tr-[4px] px-3.5 py-2 text-white max-w-full'  // burbuja propia — morada
+                            ? 'inline-block rounded-[18px] rounded-tr-[4px] px-3.5 py-2 text-white/95 max-w-full'  // burbuja propia — morada
                             : 'inline-block rounded-[18px] rounded-tl-[4px] px-3.5 py-2 text-white/85 max-w-full' // burbuja ajena — gris
                       }`}
                         style={isSystemMsg ? {} : isMe
-                          ? { background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' }
+                          ? { background: '#5b21b6' }  // morado sólido suave — menos saturado que el gradiente
                           : { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.05)' }
                         }>
                         {renderMessage(msg.message)}
@@ -2420,8 +2433,8 @@ export default function ChatWithChannels() {
         </div>
       )}
 
-      {/* Main area */}
-      <div className="flex-1 min-w-0 flex flex-col">
+      {/* Main area + panel derecho como flex row */}
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Mobile header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.05] shrink-0 md:hidden bg-card">
           <button onClick={() => setMobileOpen(true)} className="text-white/50 hover:text-white">

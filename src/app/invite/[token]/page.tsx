@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { Loader2, Eye, EyeOff, Check, X } from 'lucide-react';
 import { LogoBrand } from '@/components/shared/LogoBrand';
 
@@ -14,6 +14,10 @@ const ROLE_LABELS: Record<string, string> = {
 export default function InvitePage() {
   const { token } = useParams<{ token: string }>();
   const router = useRouter();
+  const { data: currentSession, status: sessionStatus } = useSession();
+  const currentRole = (currentSession?.user as any)?.role;
+  const isAlreadyLoggedIn = sessionStatus === 'authenticated';
+  const isLoggedInAsNonClient = isAlreadyLoggedIn && currentRole !== 'CLIENT';
   const [invite, setInvite] = useState<any>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -50,6 +54,29 @@ export default function InvitePage() {
   }
 
   const isClient = invite?.isClient ?? false;
+
+  // Guard: si el PM/ADMIN abre el link del cliente, mostrar advertencia
+  if (!loading && invite && isLoggedInAsNonClient && isClient) {
+    return (
+      <div className="min-h-screen bg-[#07070A] flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4 text-2xl">⚠️</div>
+          <h2 className="text-[18px] font-semibold text-white mb-2">Este link es para un cliente</h2>
+          <p className="text-[13px] text-white/50 mb-6 leading-relaxed">
+            Este link de activación es para <strong className="text-white/80">{invite.email}</strong>.
+            Tú estás logueado como <strong className="text-white/80">{(currentSession?.user as any)?.name || (currentSession?.user as any)?.email}</strong>.
+          </p>
+          <p className="text-[12px] text-white/30 mb-6">
+            Para activar el portal del cliente, este link debe abrirse en una sesión de incógnito o cuando el cliente no haya iniciado sesión.
+          </p>
+          <button onClick={() => router.push('/dashboard')}
+            className="w-full py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-500 transition-colors">
+            Ir a mi dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return (
     <div className="min-h-screen bg-[#07070A] flex items-center justify-center">
