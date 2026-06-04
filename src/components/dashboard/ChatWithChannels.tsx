@@ -633,6 +633,7 @@ function ChatMain({
   const [rightPanelTab, setRightPanelTab] = useState<'members'|'apps'|'context'>('members');
   const [showChannelMore, setShowChannelMore] = useState(false);
   const [showComposerEmoji, setShowComposerEmoji] = useState(false);
+  const [collapsedBotGroups, setCollapsedBotGroups] = useState<Record<string, boolean>>({});
   const [showSlashMenu, setShowSlashMenu] = useState(false);
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
@@ -1396,7 +1397,31 @@ FORMATO:
           </div>
         )}
 
-        {messages.map((msg, idx) => {
+        {(() => {
+          // Pre-calcular grupos de bot para colapsar (3+ consecutivos)
+          const botGroupSizes: Record<number, number> = {};
+          const botGroupHidden = new Set<number>();
+          let gi = 0;
+          while (gi < messages.length) {
+            if ((messages[gi] as any).isSystem) {
+              let gj = gi + 1;
+              while (gj < messages.length && (messages[gj] as any).isSystem) gj++;
+              const gsz = gj - gi;
+              if (gsz >= 3) {
+                botGroupSizes[gi] = gsz;
+                for (let gk = gi + 1; gk < gj; gk++) botGroupHidden.add(gk);
+              }
+              gi = gj;
+            } else gi++;
+          }
+          return messages.map((msg, idx) => {
+            // Saltar mensajes colapsados del bot (respeta estado expandido)
+            if (botGroupHidden.has(idx)) {
+              let firstBot = idx - 1;
+              while (firstBot >= 0 && botGroupHidden.has(firstBot)) firstBot--;
+              if (collapsedBotGroups[String(firstBot)] !== false) return null;
+            }
+
           const isMe = msg.userId === myId;
           const msgDate = new Date(msg.createdAt);
           const prevDate = idx > 0 ? new Date(messages[idx - 1].createdAt) : null;
@@ -1432,7 +1457,7 @@ FORMATO:
                 </div>
               )}
             <div className={isSame ? 'mt-0.5' : 'mt-2'}>
-              <div className="group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02]"
+              <div className={`group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02] ${isMe && !isSystemMsg ? 'flex flex-col items-end' : ''}`}
                 style={{ paddingTop: isSame ? '1px' : '8px', paddingBottom: '1px' }}>
                 {/* Hover actions */}
                 <div className={`absolute top-0 left-[280px] z-10 items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl ${showEmoji?.id === msg.id ? 'flex' : 'hidden group-hover:flex'}`}>
@@ -1620,9 +1645,25 @@ FORMATO:
                 </div>
               </div>
             </div>
+            {/* Botón para expandir grupo de tareas del bot */}
+            {isSystemMsg && botGroupSizes[idx] !== undefined && botGroupSizes[idx] >= 3 && (
+              <div className="flex items-center gap-2 px-4 mt-0.5 mb-1.5">
+                <div className="flex-1 h-px bg-white/[0.04]" />
+                <button
+                  onClick={() => setCollapsedBotGroups(prev => ({
+                    ...prev, [String(idx)]: prev[String(idx)] === false ? undefined as any : false
+                  }))}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-white/30 hover:text-white/60 hover:bg-white/[0.04] transition-colors border border-white/[0.06]">
+                  <span>{botGroupSizes[idx] - 1} mensajes más</span>
+                  <span className="text-[9px] opacity-60">{collapsedBotGroups[String(idx)] === false ? '▲' : '▼'}</span>
+                </button>
+                <div className="flex-1 h-px bg-white/[0.04]" />
+              </div>
+            )}
             </div>
           );
-        })}
+          });
+        })()}
 
         {/* Typing indicator */}
         {typingUsers.length > 0 && (
@@ -2760,7 +2801,7 @@ export default function ChatWithChannels() {
   const [activeId, setActiveId] = useState('TEAM');
   const [threadMsg, setThreadMsg] = useState<ChatMessage | null>(null);
   // Panel derecho fijo — elevado fuera del ChatMain
-  const [showRightPanel, setShowRightPanel] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(true); // siempre visible como columna fija
   const [rightTab, setRightTab]             = useState<'messages'|'members'|'apps'>('members');
   const [accentColor] = useState('#8B5CF6');
   const [mobileOpen, setMobileOpen] = useState(false);

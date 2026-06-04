@@ -132,6 +132,14 @@ export const authOptions: NextAuthOptions = {
         token.color = user.color;
         token.picture = user.image ?? undefined;
 
+        // Si es un usuario CLIENT que inicia sesión, marcar su portal como activo
+        if (user.role === 'CLIENT') {
+          db.client.updateMany({
+            where: { email: { equals: user.email ?? '', mode: 'insensitive' }, workspaceId: user.workspaceId ?? '' },
+            data: { portalStatus: 'active' },
+          }).catch(() => {});
+        }
+
         try {
           const dbUser = await db.user.findUnique({
             where: { id: user.id },

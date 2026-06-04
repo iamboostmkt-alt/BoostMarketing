@@ -607,8 +607,10 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
               {/* Referencias de imagen (subidas desde el form de crear/editar) */}
               {(() => {
-                const refImages = Array.isArray((task as any).references)
-                  ? (task as any).references.filter((r: any) => {
+                const rawRefs = (task as any).references;
+                const parsedRefs = Array.isArray(rawRefs) ? rawRefs : (typeof rawRefs === 'string' ? (() => { try { return JSON.parse(rawRefs); } catch { return []; } })() : []);
+                const refImages = Array.isArray(parsedRefs)
+                  ? parsedRefs.filter((r: any) => {
                     if (r.type !== 'file') return false;
                     const ft = (r.fileType || '').toLowerCase();
                     const url = (r.url || '').toLowerCase();
@@ -659,8 +661,10 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
               {/* Referencias de links (no imagen) del form */}
               {(() => {
-                const refLinks = Array.isArray((task as any).references)
-                  ? (task as any).references.filter((r: any) => {
+                const rawRefs2 = (task as any).references;
+                const parsedRefs2 = Array.isArray(rawRefs2) ? rawRefs2 : (typeof rawRefs2 === 'string' ? (() => { try { return JSON.parse(rawRefs2); } catch { return []; } })() : []);
+                const refLinks = Array.isArray(parsedRefs2)
+                  ? parsedRefs2.filter((r: any) => {
                     if (r.type !== 'file') return true; // links siempre se muestran
                     // archivos que NO son imagen también en la lista de links
                     const ft = (r.fileType || '').toLowerCase();
