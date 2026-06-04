@@ -2291,39 +2291,72 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor }: Righ
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {/* Tab Mensajes DM */}
+        {/* Tab Mensajes DM — lista del crew con scroll */}
         {tab === 'messages' && (
-          <div className="px-3 py-3 space-y-0.5">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-white/20 px-1 mb-2">Mensajes directos</p>
-            {members
-              .filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId && m.id !== '')
-              .map(m => {
-                const dmRoomKey = [myId, m.id].sort().join('_DM_');
-                const initials2 = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
-                const isOnline2 = (m as any).presence?.status === 'online';
-                const preview = dmPreviews[m.id];
-                return (
-                  <button key={m.id}
-                    onClick={() => bus.emit('switch.room' as any, { room: dmRoomKey, dmUser: m })}
-                    className="w-full flex items-start gap-2.5 px-2 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group text-left">
-                    <div className="relative shrink-0 mt-0.5">
-                      <Avatar initials={initials2} color={m.color || '#8b5cf6'} size={26} image={m.image} />
-                      <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-[#0D0F18] ${isOnline2 ? 'bg-emerald-400' : 'bg-white/15'}`} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline justify-between gap-1">
-                        <p className="text-[12px] font-medium text-white/75 group-hover:text-white/90 truncate leading-tight">{m.name || m.email}</p>
-                        {preview && <span className="text-[10px] text-white/20 shrink-0">{new Date(preview.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</span>}
+          <div className="flex flex-col h-full min-h-0">
+            {/* Header fijo */}
+            <div className="px-4 pt-3 pb-2 shrink-0">
+              <p className="text-[10px] font-medium uppercase tracking-widest text-white/20">Crew</p>
+            </div>
+            {/* Lista scrollable */}
+            <div className="flex-1 overflow-y-auto scrollbar-thin px-2 pb-3 space-y-0.5">
+              {members
+                .filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId && m.id !== '')
+                .sort((a, b) => {
+                  // Ordenar: online primero, luego por último mensaje
+                  const aOnline = (a as any).presence?.status === 'online' ? 1 : 0;
+                  const bOnline = (b as any).presence?.status === 'online' ? 1 : 0;
+                  if (aOnline !== bOnline) return bOnline - aOnline;
+                  const aTime = dmPreviews[a.id]?.createdAt ?? '';
+                  const bTime = dmPreviews[b.id]?.createdAt ?? '';
+                  return bTime.localeCompare(aTime);
+                })
+                .map(m => {
+                  const dmRoomKey = [myId, m.id].sort().join('_DM_');
+                  const initials2 = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
+                  const isOnline2 = (m as any).presence?.status === 'online';
+                  const preview = dmPreviews[m.id];
+                  const cleanMsg = preview?.message
+                    .replace(/\*\*/g, '')
+                    .replace(/📌|🎉|⏰|🚨|⚠️/g, '')
+                    .trim()
+                    .slice(0, 42);
+                  return (
+                    <button key={m.id}
+                      onClick={() => bus.emit('switch.room' as any, { room: dmRoomKey, dmUser: m })}
+                      className="w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl hover:bg-white/[0.05] active:bg-white/[0.07] transition-colors group text-left">
+                      {/* Avatar con indicador de presencia */}
+                      <div className="relative shrink-0">
+                        <Avatar initials={initials2} color={m.color || '#8b5cf6'} size={34} image={m.image} />
+                        <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-[1.5px] border-[#0D0F18] transition-colors ${isOnline2 ? 'bg-emerald-400' : 'bg-white/[0.15]'}`} />
                       </div>
-                      <p className="text-[11px] text-white/30 truncate mt-0.5 leading-tight">
-                        {preview
-                          ? preview.message.replace(/\*\*/g, '').slice(0, 45) + (preview.message.length > 45 ? '...' : '')
-                          : isOnline2 ? <span className="text-emerald-400/60">En línea</span> : <span>Sin mensajes aún</span>}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+                      {/* Contenido */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-1.5 mb-0.5">
+                          <p className="text-[13px] font-medium leading-none truncate"
+                            style={{ color: isOnline2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)' }}>
+                            {m.name?.split(' ')[0] || m.email?.split('@')[0]}
+                          </p>
+                          {preview && (
+                            <span className="text-[10px] text-white/20 shrink-0">
+                              {new Date(preview.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] leading-tight truncate"
+                          style={{ color: preview ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.2)' }}>
+                          {preview
+                            ? (cleanMsg && cleanMsg.length > 0 ? cleanMsg + (preview.message.length > 42 ? '...' : '') : 'Archivo adjunto')
+                            : isOnline2 ? '● En línea' : 'Sin mensajes'}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId && m.id !== '').length === 0 && (
+                <p className="text-[11px] text-white/20 text-center py-8">Sin miembros de equipo</p>
+              )}
+            </div>
           </div>
         )}
 
