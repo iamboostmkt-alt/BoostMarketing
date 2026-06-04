@@ -2601,15 +2601,32 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
               <div className="pt-3 pb-2 border-b border-white/[0.04]">
                 <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Apps y links</p>
                 <div className="flex gap-2 px-3 overflow-x-auto scrollbar-none pb-1" style={{ scrollbarWidth: 'none' }}>
-                  {(Array.isArray(clientInfo?.links) ? clientInfo.links : (typeof clientInfo?.links === 'string' ? (() => { try { return JSON.parse(clientInfo.links as any); } catch { return []; } })() : [])).map((l: any, i: number) => (
-                    <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-violet-500/[0.08] hover:border-violet-500/25 transition-all duration-150 shrink-0 group"
-                      style={{ height: 34, padding: '0 12px' }}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80 shrink-0" />
-                      <span className="text-[11px] leading-none">{l.icon}</span>
-                      <span className="text-[12px] text-white/60 group-hover:text-white/85 font-medium transition-colors">{l.label}</span>
-                    </a>
-                  ))}
+                  {(Array.isArray(clientInfo?.links) ? clientInfo.links : (typeof clientInfo?.links === 'string' ? (() => { try { return JSON.parse(clientInfo.links as any); } catch { return []; } })() : [])).map((l: any, i: number) => {
+                    return (() => {
+                      const lbl = (l.label || '').toLowerCase();
+                      // Íconos SVG monocromáticos según el tipo de link
+                      const iconSvg = lbl.includes('drive')
+                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M22 16.92l-6.56-11.36a2 2 0 0 0-3.48 0L5.4 16.92A2 2 0 0 0 7.14 20h9.72a2 2 0 0 0 1.74-3.08z"/><path d="m2 16.92 6.56-11.36"/><path d="m22 16.92H2"/></svg>
+                        : lbl.includes('instagram')
+                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                        : lbl.includes('facebook')
+                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                        : lbl.includes('tiktok')
+                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+                        : lbl.includes('youtube')
+                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>
+                        : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
+                      return (
+                        <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-150 shrink-0 group"
+                          style={{ height: 34, padding: '0 12px' }}>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/90 shrink-0" />
+                          <span className="text-white/45 group-hover:text-white/70 transition-colors">{iconSvg}</span>
+                          <span className="text-[12px] text-white/65 group-hover:text-white/90 font-medium tracking-[-0.01em] transition-colors">{l.label}</span>
+                        </a>
+                      );
+                    })();
+                  })}
                   {(!clientInfo?.links || (Array.isArray(clientInfo.links) && clientInfo.links.length === 0)) && (
                     <p className="text-[11px] text-white/20 px-1 py-1">Sin links — agrégalos en la ficha del cliente</p>
                   )}
