@@ -15,6 +15,7 @@ import { useUploadThing } from '@/lib/uploadthing';
 import { Avatar } from '@/components/weeklink/avatar';
 import { VideoCard, PdfCard, TaskCard, ArchiveCard } from '@/components/weeklink/chat-cards';
 import SupportTicket from '@/components/dashboard/SupportTicket';
+import { MeetingDialog, type TeamUser as MeetTeamUser } from '@/components/dashboard/MeetingsTab';
 import type { ChatMessage } from '@/lib/types';
 import { shouldBoostiRespond, buildAiHistory } from '@/lib/ai-chat-session';
 
@@ -636,6 +637,8 @@ function ChatMain({
   const [uploading, setUploading] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<{ name: string; type: string; preview?: string; progress: number }[]>([]);
   const [roomTasks, setRoomTasks] = useState<any[]>([]);
+  const [showMeetingModal, setShowMeetingModal] = useState(false);
+  const [clientsWithEmail, setClientsWithEmail] = useState<{ id: string; name: string; email: string; company: string }[]>([]);
   // Archivos del canal actual derivados de los mensajes ya cargados
   const roomFilesForApps = useMemo(
     () => messages.filter(m => m.fileUrl).slice(-20).reverse(),
@@ -762,6 +765,17 @@ function ChatMain({
     fetch(url).then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.tasks) setRoomTasks(d.tasks); }).catch(() => {});
   }, [activeTab, room, role, clients]);
+
+  // Cargar clientes con email para MeetingDialog
+  useEffect(() => {
+    if (['CLIENT'].includes(role ?? '')) return;
+    fetch('/api/clients?sidebar=0').then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.clients) setClientsWithEmail(
+          d.clients.map((c: any) => ({ id: c.id, name: c.name, email: c.email || '', company: c.company || '' }))
+        );
+      }).catch(() => {});
+  }, [role]);
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -1825,6 +1839,21 @@ FORMATO:
           </div>
         </div>
       )}
+      {/* Meeting Modal — abierto desde Tab Apps del chat */}
+      <MeetingDialog
+        open={showMeetingModal}
+        onOpenChange={setShowMeetingModal}
+        teamUsers={members
+          .filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED')
+          .map(m => ({ id: m.id, name: m.name, email: m.email, color: m.color || '#8b5cf6', image: m.image || null })) as MeetTeamUser[]}
+        clients={clientsWithEmail}
+        initialClientEmail={
+          // Pre-seleccionar cliente si el room activo es un clientId
+          clientsWithEmail.find(c => c.id === room)?.email ?? ''
+        }
+        onSaved={() => setShowMeetingModal(false)}
+      />
+
       {/* Create Task Modal */}
       {taskModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -2243,23 +2272,39 @@ FORMATO:
             <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 flex flex-col gap-3">
               <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 px-1 mb-1">Accesos rápidos</p>
               {[
-                { href: '/dashboard/tasks',    icon: '✅', label: 'Tareas',    sub: 'Ver y gestionar tareas' },
-                { href: '/dashboard/calendar', icon: '📅', label: 'Reuniones', sub: 'Agenda y videollamadas' },
-                { href: '/dashboard/projects', icon: '📁', label: 'Proyectos', sub: 'Campañas y proyectos' },
-                { href: '/dashboard/clients',  icon: '👥', label: 'Cuentas',   sub: 'Gestión de cuentas' },
+                { href: '/dashboard/tasks',    icon: '✅', label: 'Tareas',    sub: 'Ver y gestionar tareas',    action: null },
+                { href: '',                    icon: '📅', label: 'Reuniones', sub: 'Agendar videollamada',       action: 'meeting' },
+                { href: '/dashboard/projects', icon: '📁', label: 'Proyectos', sub: 'Campañas y proyectos',       action: null },
+                { href: '/dashboard/clients',  icon: '👥', label: 'Cuentas',   sub: 'Gestión de cuentas',        action: null },
               ].map(app => (
-                <a key={app.href} href={app.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group border border-transparent hover:border-white/[0.06]">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
-                    style={{ background: 'rgba(139,92,246,0.1)' }}>
-                    {app.icon}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-medium text-white/80 group-hover:text-white transition-colors">{app.label}</p>
-                    <p className="text-[11px] text-white/30 truncate">{app.sub}</p>
-                  </div>
-                  <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/20 group-hover:text-white/40 shrink-0 transition-colors" />
-                </a>
+                app.action === 'meeting' ? (
+                  <button key="meetings" type="button"
+                    onClick={() => setShowMeetingModal(true)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group border border-transparent hover:border-white/[0.06] w-full text-left">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
+                      style={{ background: 'rgba(139,92,246,0.1)' }}>
+                      {app.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-medium text-white/80 group-hover:text-white transition-colors">{app.label}</p>
+                      <p className="text-[11px] text-white/30 truncate">{app.sub}</p>
+                    </div>
+                    <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/20 group-hover:text-white/40 shrink-0 transition-colors" />
+                  </button>
+                ) : (
+                  <a key={app.href} href={app.href}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group border border-transparent hover:border-white/[0.06]">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
+                      style={{ background: 'rgba(139,92,246,0.1)' }}>
+                      {app.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-medium text-white/80 group-hover:text-white transition-colors">{app.label}</p>
+                      <p className="text-[11px] text-white/30 truncate">{app.sub}</p>
+                    </div>
+                    <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/20 group-hover:text-white/40 shrink-0 transition-colors" />
+                  </a>
+                )
               ))}
               {/* ── Archivos de este canal ── */}
               {roomFilesForApps.length > 0 && (
