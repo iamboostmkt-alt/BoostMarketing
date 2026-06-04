@@ -1559,7 +1559,7 @@ FORMATO:
                   </div>
                 )}
                 <div className={`flex gap-2.5 ${isMe && !isSystemMsg ? 'flex-row-reverse' : ''}`}>
-                  {/* Avatar — solo para mensajes ajenos y sistema */}
+                  {/* Avatar — mensajes ajenos y sistema */}
                   {(!isMe || isSystemMsg) && (
                     isSame && !isSystemMsg ? (
                       <div className="w-7 shrink-0" />
@@ -1567,7 +1567,11 @@ FORMATO:
                       <Avatar initials={initials} color={color} size={28} className="mt-0.5 shrink-0" image={(msg.user as any)?.image} />
                     )
                   )}
-                  {/* Mensaje propio — sin avatar, alineado derecha */}
+                  {/* Avatar propio — primer mensaje del grupo */}
+                  {isMe && !isSystemMsg && !isSame && (
+                    <Avatar initials={getInitials(myName, myEmail)} color={accentColor} size={28} className="mt-0.5 shrink-0" image={myImage ?? undefined} />
+                  )}
+                  {/* Espacio para mensajes agrupados propios */}
                   {isMe && !isSystemMsg && isSame && (
                     <div className="w-7 shrink-0" />
                   )}
