@@ -62,7 +62,9 @@ export async function GET(req: NextRequest) {
   const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, identifier: 'clients-get' });
   if (!rl.success) return rl.response;
   const isSidebar = new URL(req.url).searchParams.get("sidebar") === "1";
-  const result = await requireWorkspace({ roles: isSidebar ? ["ADMIN","PROJECT_MANAGER","SALES_REP","TEAM_MEMBER","DESIGNER","MARKETING"] as any : ["ADMIN","PROJECT_MANAGER","SALES_REP"] });
+  const isInfo    = new URL(req.url).searchParams.get("info")    === "1";
+  const TEAM_ROLES_EXT = ["ADMIN","PROJECT_MANAGER","SALES_REP","TEAM_MEMBER","DESIGNER","MARKETING"] as any;
+  const result = await requireWorkspace({ roles: (isSidebar || isInfo) ? TEAM_ROLES_EXT : ["ADMIN","PROJECT_MANAGER","SALES_REP"] });
   if (!result.ok) return result.response;
   const { userId, workspaceId, role } = result.ctx;
 
@@ -71,6 +73,28 @@ export async function GET(req: NextRequest) {
   const segment = searchParams.get("segment");
   const search  = searchParams.get("search")?.trim() ?? "";
   const sidebar = searchParams.get("sidebar") === "1";
+
+  // Modo info: para el RightPanel — devolver datos del cliente incluyendo links
+  // Accesible para TEAM_MEMBER si el cliente está asignado a ellos
+  if (isInfo) {
+    const TEAM_ROLES = ['TEAM_MEMBER', 'DESIGNER', 'MARKETING'];
+    const infoWhere: Record<string, unknown> = { workspaceId };
+    if (role === 'PROJECT_MANAGER') {
+      infoWhere.OR = [{ assignedManagerId: userId }, { assignedUsers: { some: { userId } } }];
+    } else if (TEAM_ROLES.includes(role)) {
+      infoWhere.assignedUsers = { some: { userId } };
+    }
+    const infoClients = await db.client.findMany({
+      where: infoWhere,
+      select: {
+        id: true, name: true, company: true, status: true, email: true,
+        links: true, createdAt: true,
+        assignedManager: { select: { id: true, name: true, email: true, color: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
+    return NextResponse.json({ clients: infoClients });
+  }
 
   // Modo sidebar: devolver solo id, name, color para el nav
   if (sidebar) {

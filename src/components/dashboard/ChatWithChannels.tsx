@@ -2514,7 +2514,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
     const matchClient = clients.find(cl => cl.id === room);
     if (matchClient) {
       // Buscar cliente completo (con links) desde la API
-      fetch(`/api/clients?sidebar=0`)
+      fetch(`/api/clients?info=1`)
         .then(r => r.ok ? r.json() : null)
         .then(d => {
           const found = (d?.clients ?? []).find((cl: any) => cl.id === matchClient.id);
