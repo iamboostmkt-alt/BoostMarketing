@@ -2559,10 +2559,11 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                 <div className="flex gap-2 px-3 overflow-x-auto scrollbar-none pb-1" style={{ scrollbarWidth: 'none' }}>
                   {(Array.isArray(clientInfo?.links) ? clientInfo.links : (typeof clientInfo?.links === 'string' ? (() => { try { return JSON.parse(clientInfo.links as any); } catch { return []; } })() : [])).map((l: any, i: number) => (
                     <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 h-8 px-3 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-violet-500/10 hover:border-violet-500/30 transition-colors shrink-0">
-                      <span className="text-sm">{l.icon}</span>
-                      <span className="text-[11px] text-white/50 hover:text-white/80 font-medium">{l.label}</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/70 shrink-0" />
+                      className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-violet-500/[0.08] hover:border-violet-500/25 transition-all duration-150 shrink-0 group"
+                      style={{ height: 42, padding: '0 14px' }}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80 shrink-0" />
+                      <span className="text-[13px]">{l.icon}</span>
+                      <span className="text-[12px] text-white/55 group-hover:text-white/85 font-medium transition-colors">{l.label}</span>
                     </a>
                   ))}
                   {(!clientInfo?.links || (Array.isArray(clientInfo.links) && clientInfo.links.length === 0)) && (
