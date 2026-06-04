@@ -2223,6 +2223,7 @@ FORMATO:
 
 
 // ─── Right Panel (fijo, columna lateral) ────────────────────────────────────
+// Panel contextual completo estilo visual del diseño
 interface RightPanelProps {
   tab: 'messages' | 'members' | 'apps';
   onSetTab: (tab: 'messages' | 'members' | 'apps') => void;
@@ -2230,30 +2231,21 @@ interface RightPanelProps {
   members: { id: string; name: string | null; email: string; color?: string; image?: string | null; role?: string; presence?: any }[];
   room: string;
   accentColor: string;
+  clients?: { id: string; name: string; color?: string }[];
+  dmUser?: { id: string; name: string | null; email: string; color?: string; image?: string | null } | null;
 }
 
-function RightPanel({ tab, onSetTab, onClose, members, room, accentColor }: RightPanelProps) {
-  const [roomTasks, setRoomTasks] = useState<any[]>([]);
-  const [recentDMs, setRecentDMs] = useState<any[]>([]);
+function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, clients = [], dmUser }: RightPanelProps) {
   const { data: session } = useSession();
   const myId = (session?.user as any)?.id ?? '';
 
-  useEffect(() => {
-    if ((tab as string) === 'context' && room) {
-      fetch(`/api/tasks?room=${encodeURIComponent(room)}`)
-        .then(r => r.ok ? r.json() : null)
-        .then(d => setRoomTasks(d?.tasks ?? []))
-        .catch(() => {});
-    }
-  }, [tab, room]);
-
-  // Cargar el último mensaje de cada miembro para mostrar en tab Mensajes
-  const [dmPreviews, setDmPreviews] = useState<Record<string, {message:string;createdAt:string}>>({});
+  // DM previews — último mensaje de cada crew member
+  const [dmPreviews, setDmPreviews] = useState<Record<string, { message: string; createdAt: string }>>({});
   useEffect(() => {
     if (tab !== 'messages' || !myId || members.length === 0) return;
-    const teamMembers = members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId);
+    const team = members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId);
     Promise.allSettled(
-      teamMembers.slice(0, 8).map(async m => {
+      team.slice(0, 10).map(async m => {
         const dmRoom = [myId, m.id].sort().join('_DM_');
         const res = await fetch(`/api/chat?room=${encodeURIComponent(dmRoom)}&limit=1`);
         if (!res.ok) return;
@@ -2264,164 +2256,351 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor }: Righ
     );
   }, [tab, members, myId]);
 
-  const TABS = [
-    { id: 'messages' as const, label: 'Mensajes' },
-    { id: 'members'  as const, label: 'Equipo'   },
-    { id: 'apps'     as const, label: 'Apps'      },
-  ];
+  // Mensajes recientes del canal (para tab info)
+  const [channelMsgs, setChannelMsgs] = useState<any[]>([]);
+  const [roomTasks, setRoomTasks]   = useState<any[]>([]);
+  const [roomFiles, setRoomFiles]   = useState<any[]>([]);
+  const [clientInfo, setClientInfo] = useState<any>(null);
+  const [fileFilter, setFileFilter] = useState<'all' | 'image' | 'pdf' | 'other'>('all');
+
+  useEffect(() => {
+    if (!room) return;
+    // Cargar mensajes recientes del canal
+    fetch(`/api/chat?room=${encodeURIComponent(room)}&limit=6`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setChannelMsgs((d?.messages ?? []).filter((m: any) => !m.isSystem)))
+      .catch(() => {});
+    // Cargar archivos del canal
+    fetch(`/api/chat?room=${encodeURIComponent(room)}&pinned=true`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setRoomFiles(d?.messages?.filter((m: any) => m.fileUrl) ?? []))
+      .catch(() => {});
+    // Si room corresponde a un clientId, cargar info del cliente
+    const matchClient = clients.find(cl => cl.id === room);
+    if (matchClient) {
+      fetch(`/api/clients?id=${matchClient.id}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(d => setClientInfo(d?.client ?? null))
+        .catch(() => {});
+    }
+    // Tareas activas del canal
+    fetch(`/api/tasks?clientId=${encodeURIComponent(room)}&status=pending,in_progress`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setRoomTasks((d?.tasks ?? []).filter((t: any) => !['completed','approved','cancelled'].includes(t.status)).slice(0, 4)))
+      .catch(() => {});
+  }, [room, clients]);
+
+  // Info del canal para el header
+  const channelClient = clients.find(cl => cl.id === room) ?? (dmUser ? null : null);
+  const channelLabel  = dmUser ? dmUser.name || dmUser.email : channelClient?.name ?? '';
+  const channelSub    = dmUser ? 'Mensaje directo' : channelClient ? 'Cliente · Cuenta' : 'Canal del equipo';
+  const channelInitials = (channelLabel || 'CH').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+  const channelColor  = dmUser?.color || channelClient?.color || accentColor;
+
+  const filteredFiles = roomFiles.filter(m => {
+    if (fileFilter === 'all')   return true;
+    if (fileFilter === 'image') return (m.fileType || '').startsWith('image');
+    if (fileFilter === 'pdf')   return (m.fileType || '').includes('pdf');
+    return true;
+  });
+
+  const teamMembers = members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId);
 
   return (
-    <div className="hidden lg:flex flex-col w-64 shrink-0 border-l border-white/[0.05] bg-[#0D0F18]"
-      style={{ minHeight: 0 }}>
-      {/* Header tabs minimalista */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.04] shrink-0">
+    <div className="hidden lg:flex flex-col border-l border-white/[0.05] bg-[#0B0D12] shrink-0"
+      style={{ width: 280, minHeight: 0 }}>
+
+      {/* ── HEADER FIJO ── */}
+      <div className="shrink-0 px-4 pt-4 pb-3 border-b border-white/[0.04]">
+        <div className="flex items-center gap-3 mb-3">
+          {/* Avatar canal */}
+          <div className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-[13px] font-bold text-white"
+            style={{ background: channelColor + '33', border: `1px solid ${channelColor}55` }}>
+            {channelInitials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[14px] font-semibold text-white/90 truncate leading-tight">{channelLabel || room}</p>
+            <p className="text-[11px] text-white/35 mt-0.5">{channelSub}</p>
+          </div>
+          {/* Botones header */}
+          <div className="flex items-center gap-0.5 ml-auto">
+            <button className="w-7 h-7 flex items-center justify-center rounded-lg text-white/25 hover:text-white/60 hover:bg-white/[0.05] transition-colors">
+              <Search className="w-3.5 h-3.5" strokeWidth={1.5} />
+            </button>
+            <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg text-white/25 hover:text-white/60 hover:bg-white/[0.05] transition-colors">
+              <X className="w-3.5 h-3.5" strokeWidth={1.5} />
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs — navegación interna */}
         <div className="flex gap-0.5">
-          {TABS.map(t => (
+          {([
+            { id: 'messages' as const, label: 'Crew' },
+            { id: 'members'  as const, label: 'Info' },
+            { id: 'apps'     as const, label: 'Apps' },
+          ]).map(t => (
             <button key={t.id} onClick={() => onSetTab(t.id)}
-              className={`px-2.5 py-1 rounded-md text-[12px] font-medium transition-colors ${
-                tab === t.id ? 'text-white/90 bg-white/[0.06]' : 'text-white/30 hover:text-white/60'
+              className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+                tab === t.id
+                  ? 'bg-white/[0.08] text-white/90'
+                  : 'text-white/30 hover:text-white/55'
               }`}>
               {t.label}
             </button>
           ))}
         </div>
-        <button onClick={onClose} className="text-white/20 hover:text-white/60 transition-colors p-1">
-          <X className="w-3.5 h-3.5" strokeWidth={1.5} />
-        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {/* Tab Mensajes DM — lista del crew con scroll */}
+      {/* ── CUERPO SCROLLABLE ── */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin" style={{ scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
+
+        {/* ══ TAB CREW — DMs del equipo ══ */}
         {tab === 'messages' && (
-          <div className="flex flex-col h-full min-h-0">
-            {/* Header fijo */}
-            <div className="px-4 pt-3 pb-2 shrink-0">
-              <p className="text-[10px] font-medium uppercase tracking-widest text-white/20">Crew</p>
-            </div>
-            {/* Lista scrollable */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin px-2 pb-3 space-y-0.5">
-              {members
-                .filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId && m.id !== '')
-                .sort((a, b) => {
-                  // Ordenar: online primero, luego por último mensaje
-                  const aOnline = (a as any).presence?.status === 'online' ? 1 : 0;
-                  const bOnline = (b as any).presence?.status === 'online' ? 1 : 0;
-                  if (aOnline !== bOnline) return bOnline - aOnline;
-                  const aTime = dmPreviews[a.id]?.createdAt ?? '';
-                  const bTime = dmPreviews[b.id]?.createdAt ?? '';
-                  return bTime.localeCompare(aTime);
-                })
-                .map(m => {
-                  const dmRoomKey = [myId, m.id].sort().join('_DM_');
-                  const initials2 = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
-                  const isOnline2 = (m as any).presence?.status === 'online';
-                  const preview = dmPreviews[m.id];
-                  const cleanMsg = preview?.message
-                    .replace(/\*\*/g, '')
-                    .replace(/📌|🎉|⏰|🚨|⚠️/g, '')
-                    .trim()
-                    .slice(0, 42);
-                  return (
-                    <button key={m.id}
-                      onClick={() => bus.emit('switch.room' as any, { room: dmRoomKey, dmUser: m })}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl hover:bg-white/[0.05] active:bg-white/[0.07] transition-colors group text-left">
-                      {/* Avatar con indicador de presencia */}
-                      <div className="relative shrink-0">
-                        <Avatar initials={initials2} color={m.color || '#8b5cf6'} size={34} image={m.image} />
-                        <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-[1.5px] border-[#0D0F18] transition-colors ${isOnline2 ? 'bg-emerald-400' : 'bg-white/[0.15]'}`} />
-                      </div>
-                      {/* Contenido */}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline justify-between gap-1.5 mb-0.5">
-                          <p className="text-[13px] font-medium leading-none truncate"
-                            style={{ color: isOnline2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)' }}>
-                            {m.name?.split(' ')[0] || m.email?.split('@')[0]}
-                          </p>
-                          {preview && (
-                            <span className="text-[10px] text-white/20 shrink-0">
-                              {new Date(preview.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] leading-tight truncate"
-                          style={{ color: preview ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.2)' }}>
-                          {preview
-                            ? (cleanMsg && cleanMsg.length > 0 ? cleanMsg + (preview.message.length > 42 ? '...' : '') : 'Archivo adjunto')
-                            : isOnline2 ? '● En línea' : 'Sin mensajes'}
+          <div className="py-3">
+            <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Mensajes directos</p>
+            {teamMembers
+              .sort((a, b) => {
+                const aO = (a as any).presence?.status === 'online' ? 1 : 0;
+                const bO = (b as any).presence?.status === 'online' ? 1 : 0;
+                if (aO !== bO) return bO - aO;
+                return (dmPreviews[b.id]?.createdAt ?? '').localeCompare(dmPreviews[a.id]?.createdAt ?? '');
+              })
+              .map(m => {
+                const dmRoomKey = [myId, m.id].sort().join('_DM_');
+                const initials = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+                const isOnline = (m as any).presence?.status === 'online';
+                const preview  = dmPreviews[m.id];
+                const cleanMsg = preview?.message.replace(/\*\*/g, '').replace(/📌|🎉|⏰|🚨|⚠️|✅/g, '').trim();
+                return (
+                  <button key={m.id}
+                    onClick={() => bus.emit('switch.room' as any, { room: dmRoomKey, dmUser: m })}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors group text-left">
+                    <div className="relative shrink-0">
+                      <Avatar initials={initials} color={m.color || '#8b5cf6'} size={32} image={m.image} />
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#0B0D12] ${isOnline ? 'bg-emerald-400' : 'bg-white/[0.12]'}`} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-1">
+                        <p className="text-[12px] font-medium truncate" style={{ color: isOnline ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)' }}>
+                          {m.name?.split(' ')[0] || m.email?.split('@')[0]}
                         </p>
+                        {preview && <span className="text-[10px] text-white/20 shrink-0">{new Date(preview.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</span>}
                       </div>
-                    </button>
+                      <p className="text-[11px] truncate mt-0.5" style={{ color: preview ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.18)' }}>
+                        {preview ? (cleanMsg ? cleanMsg.slice(0, 40) + (cleanMsg.length > 40 ? '…' : '') : 'Archivo adjunto') : isOnline ? '● En línea' : 'Sin mensajes'}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            {teamMembers.length === 0 && <p className="text-[11px] text-white/20 text-center py-8">Sin miembros de equipo</p>}
+          </div>
+        )}
+
+        {/* ══ TAB INFO — Detalles del canal ══ */}
+        {tab === 'members' && (
+          <div>
+            {/* Apps / Links del cliente — scroll horizontal */}
+            {(clientInfo?.links?.length > 0 || channelClient) && (
+              <div className="pt-3 pb-2 border-b border-white/[0.04]">
+                <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Apps y links</p>
+                <div className="flex gap-2 px-3 overflow-x-auto scrollbar-none pb-1" style={{ scrollbarWidth: 'none' }}>
+                  {(clientInfo?.links ?? []).map((l: any, i: number) => (
+                    <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 h-8 px-3 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-violet-500/10 hover:border-violet-500/30 transition-colors shrink-0">
+                      <span className="text-sm">{l.icon}</span>
+                      <span className="text-[11px] text-white/50 hover:text-white/80 font-medium">{l.label}</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/70 shrink-0" />
+                    </a>
+                  ))}
+                  {(!clientInfo?.links || clientInfo.links.length === 0) && channelClient && (
+                    <p className="text-[11px] text-white/20 px-1 py-1">Sin links configurados</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Mensajes recientes del canal */}
+            <div className="pt-3 pb-2 border-b border-white/[0.04]">
+              <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Mensajes recientes</p>
+              {channelMsgs.length > 0 ? (
+                <div>
+                  {channelMsgs.slice(-5).reverse().map((msg: any) => {
+                    const msgInitials = (msg.user?.name || msg.user?.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+                    return (
+                      <div key={msg.id} className="flex items-start gap-2.5 px-3 py-2 hover:bg-white/[0.03] transition-colors cursor-pointer group">
+                        <Avatar initials={msgInitials} color={msg.user?.color || '#8b5cf6'} size={26} image={msg.user?.image} />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline gap-2 mb-0.5">
+                            <span className="text-[11px] font-medium text-white/70 shrink-0">{msg.user?.name?.split(' ')[0] || 'Usuario'}</span>
+                            <span className="text-[10px] text-white/20">{new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                          <p className="text-[11px] text-white/40 leading-snug line-clamp-2">
+                            {msg.message.replace(/\*\*/g, '').slice(0, 80)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <button className="w-full text-[11px] text-violet-400/60 hover:text-violet-400 py-2 px-3 text-left transition-colors">
+                    Ver toda la actividad →
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[11px] text-white/20 px-4 py-2">Sin mensajes recientes</p>
+              )}
+            </div>
+
+            {/* Detalles del cliente */}
+            {(clientInfo || channelClient) && (
+              <div className="pt-3 pb-2 border-b border-white/[0.04]">
+                <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Detalles {channelClient?.name || ''}</p>
+                <div className="px-3">
+                  <div className="rounded-xl bg-white/[0.025] border border-white/[0.05] p-3 space-y-2">
+                    {[
+                      { key: 'Cliente',     val: clientInfo?.name || channelClient?.name },
+                      { key: 'Estado',      val: clientInfo?.status || 'Activo', dot: true },
+                      { key: 'PM',          val: clientInfo?.assignedManager?.name },
+                      { key: 'Empresa',     val: clientInfo?.company },
+                      { key: 'Alta',        val: clientInfo?.createdAt ? new Date(clientInfo.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) : null },
+                    ].filter(r => r.val).map(r => (
+                      <div key={r.key} className="flex items-start justify-between gap-2">
+                        <span className="text-[10px] text-white/25 shrink-0">{r.key}</span>
+                        <span className="text-[11px] text-white/65 text-right">
+                          {r.dot && <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 align-middle" />}
+                          {r.val}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Participantes del canal */}
+            <div className="pt-3 pb-2 border-b border-white/[0.04]">
+              <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Participantes</p>
+              <div className="px-4 flex items-center gap-1 flex-wrap">
+                {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED').slice(0, 8).map((m, i) => {
+                  const ini = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+                  const online = (m as any).presence?.status === 'online';
+                  return (
+                    <div key={m.id} className="relative" title={m.name || m.email}>
+                      <Avatar initials={ini} color={m.color || '#8b5cf6'} size={26} image={m.image} />
+                      {online && <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#0B0D12]" />}
+                    </div>
                   );
                 })}
-              {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId && m.id !== '').length === 0 && (
-                <p className="text-[11px] text-white/20 text-center py-8">Sin miembros de equipo</p>
+                {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED').length > 8 && (
+                  <span className="text-[11px] text-white/30 ml-1">+{members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED').length - 8}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Asset contextual — tareas activas */}
+            {roomTasks.length > 0 && (
+              <div className="pt-3 pb-2 border-b border-white/[0.04]">
+                <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Tareas activas</p>
+                <div className="px-3 space-y-1.5">
+                  {roomTasks.map((t: any) => (
+                    <div key={t.id} className="flex items-start gap-2 rounded-xl bg-white/[0.03] border border-white/[0.05] px-3 py-2.5 cursor-pointer hover:border-violet-500/25 transition-colors">
+                      <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                        style={{ background: t.priority === 'high' ? '#f87171' : t.priority === 'medium' ? '#fbbf24' : '#4ade80' }} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-medium text-white/70 truncate">{t.title}</p>
+                        {t.dueDate && <p className="text-[10px] text-white/25 mt-0.5">{new Date(t.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Archivos compartidos */}
+            <div className="pt-3 pb-3">
+              <div className="flex items-center justify-between px-4 mb-2">
+                <p className="text-[9px] font-medium uppercase tracking-widest text-white/20">Archivos</p>
+                <button className="text-[10px] text-violet-400/50 hover:text-violet-400 transition-colors">Ver todos</button>
+              </div>
+              {/* Filtros */}
+              <div className="flex gap-1.5 px-3 mb-2">
+                {(['all', 'image', 'pdf'] as const).map(f => (
+                  <button key={f} onClick={() => setFileFilter(f)}
+                    className={`text-[10px] px-2 py-0.5 rounded-md border transition-colors ${
+                      fileFilter === f
+                        ? 'border-violet-500/35 bg-violet-500/10 text-white/70'
+                        : 'border-white/[0.06] text-white/30 hover:text-white/55'
+                    }`}>
+                    {f === 'all' ? 'Todos' : f === 'image' ? 'Imágenes' : 'PDFs'}
+                  </button>
+                ))}
+              </div>
+              {filteredFiles.length > 0 ? (
+                <div className="space-y-0.5">
+                  {filteredFiles.slice(0, 4).map((msg: any, i) => {
+                    const isImg = (msg.fileType || '').startsWith('image');
+                    const isPdf = (msg.fileName || '').endsWith('.pdf');
+                    const icon  = isImg ? '🖼' : isPdf ? '📄' : '📎';
+                    return (
+                      <div key={i} className="flex items-center gap-2.5 px-3 py-2 hover:bg-white/[0.04] transition-colors group cursor-pointer">
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
+                          style={{ background: isImg ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)' }}>
+                          {icon}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-medium text-white/65 truncate">{msg.fileName || 'Archivo'}</p>
+                          <p className="text-[10px] text-white/25">{msg.user?.name?.split(' ')[0] || ''}</p>
+                        </div>
+                        <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ChevronRight className="w-3.5 h-3.5 text-white/30" />
+                        </a>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-[11px] text-white/20 px-4 py-2">Sin archivos compartidos</p>
               )}
             </div>
           </div>
         )}
 
-        {/* Tab Equipo */}
-        {tab === 'members' && (
-          <div className="px-3 py-3 space-y-0.5">
-            {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST' && m.role !== 'UNASSIGNED').map(m => {
-              const initials = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
-              const isOnline = (m as any).presence?.status === 'online';
-              return (
-                <div key={m.id} className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-white/[0.03] transition-colors group">
-                  <div className="relative shrink-0">
-                    <Avatar initials={initials} color={m.color || '#8b5cf6'} size={28} image={m.image} />
-                    <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-[#0D0F18] ${isOnline ? 'bg-emerald-400' : 'bg-white/20'}`} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[12px] font-medium text-white/75 truncate leading-tight">{m.name || m.email}</p>
-                    <p className="text-[10px] text-white/25 truncate">
-                      {isOnline ? <span className="text-emerald-400/80">En línea</span>
-                        : (m as any).presence?.lastSeen ? `Visto ${formatLastSeen((m as any).presence.lastSeen)}`
-                        : m.role?.toLowerCase().replace('_',' ')}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-            {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST' && m.role !== 'UNASSIGNED').length === 0 && (
-              <p className="text-[11px] text-white/20 text-center py-6">Sin miembros</p>
-            )}
-          </div>
-        )}
-
-        {/* Tab Apps */}
+        {/* ══ TAB APPS ══ */}
         {tab === 'apps' && (
-          <div className="px-2 py-3 space-y-0.5">
+          <div className="py-3">
+            <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Accesos rápidos</p>
             {[
-              { href: '/dashboard/tasks',    emoji: '✅', label: 'Tareas'    },
-              { href: '/dashboard/calendar', emoji: '📅', label: 'Reuniones' },
-              { href: '/dashboard/projects', emoji: '📁', label: 'Proyectos' },
-              { href: '/dashboard/clients',  emoji: '👥', label: 'Clientes'  },
-              { href: '/dashboard/crm',      emoji: '🎯', label: 'Leads'     },
-              { href: '/dashboard/analytics',emoji: '📊', label: 'Analytics' },
+              { href: '/dashboard/tasks',     icon: '✅', label: 'Tareas',    sub: 'Ver y gestionar' },
+              { href: '/dashboard/calendar',  icon: '📅', label: 'Reuniones', sub: 'Agenda' },
+              { href: '/dashboard/projects',  icon: '📁', label: 'Proyectos', sub: 'Campañas' },
+              { href: '/dashboard/clients',   icon: '👥', label: 'Clientes',  sub: 'Cuentas' },
+              { href: '/dashboard/crm',       icon: '🎯', label: 'Leads',     sub: 'CRM' },
+              { href: '/dashboard/analytics', icon: '📊', label: 'Analytics', sub: 'Métricas' },
             ].map(app => (
               <a key={app.href} href={app.href}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/[0.04] transition-colors group">
-                <span className="text-base">{app.emoji}</span>
-                <span className="text-[13px] text-white/60 group-hover:text-white/85 transition-colors font-medium">{app.label}</span>
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-colors group">
+                <span className="text-base shrink-0">{app.icon}</span>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-medium text-white/65 group-hover:text-white/85 transition-colors">{app.label}</p>
+                  <p className="text-[10px] text-white/25">{app.sub}</p>
+                </div>
+                <ChevronRight className="w-3 h-3 text-white/15 group-hover:text-white/35 ml-auto shrink-0 transition-colors" />
               </a>
             ))}
-            {/* Boosti */}
-            <div className="mx-2 mt-3 rounded-xl border border-violet-500/15 bg-violet-500/[0.04] p-3">
-              <p className="text-[11px] font-medium text-violet-400/80 mb-2">🤖 Boosti IA</p>
-              <div className="flex gap-1.5">
+            {/* Boosti IA */}
+            <div className="mx-3 mt-4 rounded-xl border border-violet-500/15 bg-violet-500/[0.04] p-3">
+              <p className="text-[11px] font-medium text-violet-400/75 mb-2.5">🤖 Boosti IA</p>
+              <div className="flex gap-2">
                 <button
-                  onClick={async () => {
-                    await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'individual' }) });
-                  }}
-                  className="flex-1 py-1.5 rounded-lg text-[11px] text-violet-400/70 border border-violet-500/20 hover:bg-violet-500/10 transition-colors">
+                  onClick={async () => { await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'individual' }) }); }}
+                  className="flex-1 py-1.5 rounded-lg text-[11px] text-violet-400/65 border border-violet-500/20 hover:bg-violet-500/10 transition-colors">
                   Solo yo
                 </button>
                 <button
-                  onClick={async () => {
-                    await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'group' }) });
-                  }}
-                  className="flex-1 py-1.5 rounded-lg text-[11px] text-violet-400/70 border border-violet-500/20 hover:bg-violet-500/10 transition-colors">
+                  onClick={async () => { await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'group' }) }); }}
+                  className="flex-1 py-1.5 rounded-lg text-[11px] text-violet-400/65 border border-violet-500/20 hover:bg-violet-500/10 transition-colors">
                   Grupal
                 </button>
               </div>
@@ -2429,34 +2608,6 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor }: Righ
           </div>
         )}
 
-        {/* Tab Info/Contexto — eliminado, reemplazado por Mensajes */}
-        {false && (
-          <div className="px-3 py-3 space-y-4">
-            <div>
-              <p className="text-[10px] font-medium uppercase tracking-widest text-white/20 mb-2">Tareas activas</p>
-              {roomTasks.filter(t => !['completed','approved','cancelled'].includes(t.status)).length > 0 ? (
-                <div className="space-y-1.5">
-                  {roomTasks.filter(t => !['completed','approved','cancelled'].includes(t.status)).slice(0,5).map((t: any) => (
-                    <div key={t.id} className="flex items-start gap-2 rounded-lg px-2.5 py-2 bg-white/[0.02] border border-white/[0.04]">
-                      <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                        style={{ background: t.priority === 'high' ? '#f87171' : t.priority === 'medium' ? '#fbbf24' : '#4ade80' }} />
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-white/65 leading-tight truncate">{t.title}</p>
-                        {t.dueDate && (
-                          <p className="text-[10px] text-white/25 mt-0.5">
-                            {new Date(t.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[11px] text-white/20 text-center py-3">Sin tareas activas</p>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -2743,6 +2894,8 @@ export default function ChatWithChannels() {
           members={members}
           room={activeId}
           accentColor={accentColor}
+          clients={clients}
+          dmUser={activeDmUser}
         />
       )}
     </div>
