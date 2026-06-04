@@ -106,7 +106,6 @@ function ChannelList({
   const [openClients, setOpenClients] = useState(true);
   const [openDMs, setOpenDMs] = useState(true);
   const [clientsOpen, setClientsOpen] = useState(true);
-  const [appsOpen, setAppsOpen] = useState(true);
   const [showChannelMenu, setShowChannelMenu] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [showDMSearch, setShowDMSearch] = useState(false);
