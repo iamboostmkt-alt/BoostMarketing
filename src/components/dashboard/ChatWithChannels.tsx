@@ -1429,7 +1429,7 @@ FORMATO:
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 mb-1">
                       {pm.user?.image ? (
-                        <img src={pm.user.image} className="h-5 w-5 rounded-full object-cover" />
+                        <img src={pm.user.image} referrerPolicy="no-referrer" onError={e => { (e.target as HTMLImageElement).style.display='none'; }} className="h-5 w-5 rounded-full object-cover" />
                       ) : (
                         <div className="h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
                           style={{ background: pm.user?.color ?? '#8B5CF6' }}>
@@ -2928,6 +2928,14 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                   </a>
                 </li>
               ))}
+              <li>
+                <button type="button"
+                  onClick={() => bus.emit('open.meeting.modal' as any, {})}
+                  className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/40 transition-colors hover:bg-white/[0.03] hover:text-white/70">
+                  <Video className="h-4 w-4 text-white/30 shrink-0" strokeWidth={1.75} />
+                  <span>Reuniones</span>
+                </button>
+              </li>
             </ul>
 
 

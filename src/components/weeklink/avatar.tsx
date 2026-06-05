@@ -18,9 +18,19 @@ const statusColor: Record<string, string> = {
   offline: 'rgba(245,247,250,0.3)',
 };
 
+function isValidUrl(url: string | null | undefined): boolean {
+  if (!url || url.trim() === '') return false;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export function Avatar({ initials, color, size = 32, status, className, ring, image }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
-  const showImage = image && !imgError;
+  const showImage = isValidUrl(image) && !imgError;
 
   return (
     <span className={cn('relative inline-flex shrink-0', className)} style={{ width: size, height: size }}>
@@ -29,13 +39,14 @@ export function Avatar({ initials, color, size = 32, status, className, ring, im
           src={image!}
           alt={initials}
           referrerPolicy="no-referrer"
+          crossOrigin="anonymous"
           onError={() => setImgError(true)}
           className={cn('h-full w-full rounded-full object-cover', ring && 'ring-2 ring-background')}
         />
       ) : (
         <span
           className={cn(
-            'flex h-full w-full items-center justify-center rounded-full font-medium text-white',
+            'flex h-full w-full items-center justify-center rounded-full font-medium text-white select-none',
             ring && 'ring-2 ring-background',
           )}
           style={{
