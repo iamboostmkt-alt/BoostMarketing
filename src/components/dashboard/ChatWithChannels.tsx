@@ -637,6 +637,8 @@ function ChatMain({
   const presenceChannelRef = useRef<any>(null);
   const [uploading, setUploading] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<{ name: string; type: string; preview?: string; progress: number }[]>([]);
+  const [batchFiles,   setBatchFiles]   = useState<{ file: File; preview?: string; caption: string }[]>([]);
+  const [batchCaption, setBatchCaption] = useState('');
   const [roomTasks, setRoomTasks] = useState<any[]>([]);
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [clientsWithEmail, setClientsWithEmail] = useState<{ id: string; name: string; email: string; company: string }[]>([]);
@@ -1180,13 +1182,39 @@ FORMATO:
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const rawFiles = Array.from(e.target.files || []);
     if (!rawFiles.length) return;
-    setUploading(true);
-    setPendingFiles(rawFiles.map(f => ({
-      name: f.name, type: f.type, progress: 0,
+    // Mostrar panel de confirmación antes de subir
+    const batch = rawFiles.map(f => ({
+      file: f,
+      caption: '',
       preview: f.type.startsWith('image') ? URL.createObjectURL(f) : undefined,
+    }));
+    setBatchFiles(batch);
+    setBatchCaption('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  async function handleBatchSend() {
+    if (!batchFiles.length) return;
+    setUploading(true);
+    const caption = batchCaption.trim();
+    // Si hay descripción, enviarla primero como texto
+    if (caption) {
+      const isInternalMsg = ['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room) || room.includes('_DM_');
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: caption, room, isInternal: isInternalMsg }),
+      }).catch(() => {});
+    }
+    setPendingFiles(batchFiles.map(b => ({
+      name: b.file.name, type: b.file.type, progress: 0,
+      preview: b.preview,
     })));
+    setBatchFiles([]);
+    setBatchCaption('');
     try {
-      for (const rawFile of rawFiles) {
+      for (const batch of batchFiles) {
+        const rawFile = batch.file;
         const file = rawFile.type.startsWith('video') && rawFile.size > 10 * 1024 * 1024
           ? await compressVideo(rawFile) : rawFile;
         const uploaded = await startUpload([file]);
@@ -1196,7 +1224,6 @@ FORMATO:
         const url = ufsUrl ?? _url;
         const isClientRoom = !['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room);
         if (isClientRoom) {
-          // Mostrar modal primero — el mensaje se envía desde handleLinkTask o al omitir
           setLinkModal({ fileUrl: url, fileName: name, fileType: type });
           setLinkTaskId('');
         } else {
@@ -1206,7 +1233,6 @@ FORMATO:
     } catch {}
     setUploading(false);
     setPendingFiles([]);
-    if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
   async function handleLinkTask() {
@@ -1727,15 +1753,26 @@ FORMATO:
                         <PdfCard name={msg.fileName || 'Documento'} meta="PDF" />
                       </div>
                     )}
-                    {msg.fileUrl && msg.fileType && !msg.fileType.startsWith('video') && msg.fileType !== 'application/pdf' && msg.fileType.startsWith('image') && (
-                      <div className="mt-2">
-                        <img src={msg.fileUrl} alt={msg.fileName || 'imagen'} className="max-w-[320px] rounded-xl border border-white/[0.08]" />
-                      </div>
-                    )}
-                    {msg.fileUrl && msg.fileType && !msg.fileType.startsWith('video') && msg.fileType !== 'application/pdf' && !msg.fileType.startsWith('image') && (
-                      <div className="mt-2">
-                        <ArchiveCard name={msg.fileName || 'Archivo'} meta={msg.fileType} />
-                      </div>
+                    {msg.fileUrl && (() => {
+                      const ft = msg.fileType || '';
+                      const fu = (msg.fileUrl || '').toLowerCase().split('?')[0];
+                      const isImage = ft.startsWith('image') || /\.(png|jpg|jpeg|gif|webp|avif|svg)$/.test(fu);
+                      const isPdf2  = ft === 'application/pdf' || fu.endsWith('.pdf');
+                      const isVideo = ft.startsWith('video');
+                      if (isVideo) return null;
+                      if (isPdf2) return <div className="mt-2"><PdfCard name={msg.fileName || 'Documento'} meta="PDF" /></div>;
+                      if (isImage) return (
+                        <div className="mt-2">
+                          <img src={msg.fileUrl} alt={msg.fileName || 'imagen'}
+                            referrerPolicy="no-referrer"
+                            className="max-w-[320px] w-full rounded-xl border border-white/[0.08] cursor-pointer"
+                            onClick={() => window.open(msg.fileUrl!, '_blank')} />
+                        </div>
+                      );
+                      return <div className="mt-2"><ArchiveCard name={msg.fileName || 'Archivo'} meta={ft || 'archivo'} /></div>;
+                    })()}
+                    {msg.fileUrl && msg.fileType === 'application/pdf' && false && (
+                      <div className="mt-2"><PdfCard name={msg.fileName || 'Documento'} meta="PDF" /></div>
                     )}
                     {msg.taskId && (
                       <div className="mt-2">
@@ -1982,6 +2019,55 @@ FORMATO:
         </div>
       )}
       {/* Pending files preview */}
+      {/* ── Panel de confirmación batch upload ── */}
+      {batchFiles.length > 0 && (
+        <div className="mx-4 mb-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
+          {/* Previews */}
+          <div className="flex flex-wrap gap-2 p-3 pb-2">
+            {batchFiles.map((b, i) => (
+              <div key={i} className="relative group">
+                {b.preview ? (
+                  <img src={b.preview} alt={b.file.name}
+                    className="h-16 w-16 rounded-xl object-cover border border-white/[0.08]" />
+                ) : (
+                  <div className="h-16 w-16 rounded-xl bg-white/[0.05] border border-white/[0.08] flex flex-col items-center justify-center gap-1">
+                    <Paperclip className="h-5 w-5 text-white/30" />
+                    <span className="text-[9px] text-white/30 truncate w-full px-1 text-center">
+                      {b.file.name.slice(0, 10)}
+                    </span>
+                  </div>
+                )}
+                <button onClick={() => setBatchFiles(prev => prev.filter((_, idx) => idx !== i))}
+                  className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+          {/* Descripción opcional */}
+          <div className="px-3 pb-2">
+            <input
+              value={batchCaption}
+              onChange={e => setBatchCaption(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleBatchSend(); } }}
+              placeholder={`Agregar descripción (opcional)… ${batchFiles.length > 1 ? `· ${batchFiles.length} archivos` : ''}`}
+              className="w-full bg-transparent text-[13px] text-white/70 placeholder-white/25 outline-none" />
+          </div>
+          {/* Acciones */}
+          <div className="flex items-center justify-between px-3 py-2 border-t border-white/[0.05]">
+            <button onClick={() => { setBatchFiles([]); setBatchCaption(''); }}
+              className="text-[12px] text-white/30 hover:text-white/60 transition-colors">
+              Cancelar
+            </button>
+            <button onClick={handleBatchSend} disabled={uploading}
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-medium text-white hover:bg-primary/90 transition-colors disabled:opacity-60">
+              <Send className="h-3 w-3" />
+              Enviar {batchFiles.length > 1 ? `(${batchFiles.length})` : ''}
+            </button>
+          </div>
+        </div>
+      )}
+
       {pendingFiles.length > 0 && (
         <div className="mx-4 mb-2 flex flex-col gap-1.5">
           {pendingFiles.map((f, i) => {
