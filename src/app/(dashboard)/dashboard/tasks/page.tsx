@@ -105,7 +105,11 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
     const task = tasks.find(t => t.id === draggableId);
     if (!task) return;
     if (group.statuses.includes(task.status)) return;
-    await onStatusChange(draggableId, group.dropStatus);
+    // TEAM_MEMBER arrastrar a "Listo" → internal_review (no completed)
+    const effectiveStatus = (!isManager && group.dropStatus === 'completed')
+      ? 'internal_review'
+      : group.dropStatus;
+    await onStatusChange(draggableId, effectiveStatus);
   };
 
   // F1: equipo ve internal_review en Listo, managers en Revisión
@@ -457,9 +461,86 @@ function TasksContent() {
       // Quitar de reviewTasks si ya no es status de revisión
       setReviewTasks(prev => prev.filter(t => t.id !== taskId));
     }
+    // Obtener objeto de tarea del estado local para notificaciones
+    const taskObj =
+      myTasks.find(t => t.id === taskId) ??
+      allTasks.find(t => t.id === taskId) ??
+      clientsWithTasks.flatMap(c => c.tasks).find((t: any) => t.id === taskId);
+
     try {
       const res = await fetch('/api/tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: taskId, status: newStatus }) });
       if (!res.ok) throw new Error();
+
+      // ── Notificaciones PM → TEAM_MEMBER ──────────────────────────────────
+      if (taskObj && isManager) {
+        const assignees: { id: string; name: string | null; email: string }[] =
+          (taskObj as any).assignedUsers ?? [];
+        const clientId = (taskObj as any).clientId ?? null;
+        const title    = (taskObj as any).title ?? 'Tarea';
+
+        if (newStatus === 'completed') {
+          // PM aprueba: notificar a cada assignee por correo + chat
+          assignees.forEach(u => {
+            if (!u.email) return;
+            fetch('/api/tasks/celebrate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ taskId, taskTitle: title, assigneeIds: [u.id], celebrateType: 'approved' }),
+            }).catch(() => {});
+          });
+          if (clientId) {
+            fetch('/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                message: `✅ Tarea aprobada por PM: **${title}**`,
+                room: clientId, isSystem: true, systemName: 'Weeklink', isInternal: true,
+              }),
+            }).catch(() => {});
+          }
+          toast.success('Tarea aprobada ✅');
+        }
+
+        if (newStatus === 'changes_requested') {
+          // PM pide cambios: regresar a in_progress + notificar assignees
+          // Segundo PUT para fijar in_progress en la API
+          await fetch('/api/tasks', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: taskId, status: 'in_progress' }),
+          }).catch(() => {});
+          // Actualizar UI a in_progress
+          setMyTasks(prev  => prev.map(t => t.id === taskId ? { ...t, status: 'in_progress' } : t));
+          setAllTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'in_progress' } : t));
+          setClientsWithTasks(prev => prev.map(c => ({
+            ...c,
+            tasks: c.tasks.map((t: any) => t.id === taskId ? { ...t, status: 'in_progress' } : t),
+          })));
+
+          // Notificar por correo a cada assignee
+          assignees.forEach(u => {
+            if (!u.email) return;
+            fetch('/api/tasks/notify-changes', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ taskId, assigneeEmail: u.email, assigneeName: u.name, comment: 'El PM revisó la tarea y solicitó correcciones.' }),
+            }).catch(() => {});
+          });
+
+          // Notificar por chat
+          if (clientId) {
+            fetch('/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                message: `🔄 Se solicitaron correcciones en: **${title}** — regresa a En curso`,
+                room: clientId, isSystem: true, systemName: 'Weeklink', isInternal: true,
+              }),
+            }).catch(() => {});
+          }
+          toast.warning('Correcciones enviadas al equipo 🔄');
+        }
+      }
     } catch {
       // Revert on error
       setMyTasks(prevMy);

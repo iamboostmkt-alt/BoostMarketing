@@ -950,6 +950,17 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                     }),
                   }).catch(() => {});
                 }
+                // Notificar a assignees por correo (celebrate)
+                const _assignees = (task as any).assignedUsers ?? [];
+                const _memberIds = _assignees
+                  .filter((u: any) => !['ADMIN','PROJECT_MANAGER'].includes(u.role ?? u.user?.role ?? ''))
+                  .map((u: any) => u.id ?? u.userId).filter(Boolean);
+                if (_memberIds.length > 0) {
+                  fetch('/api/tasks/celebrate', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ taskId: task.id, taskTitle: task.title, assigneeIds: _memberIds, celebrateType: 'approved' }),
+                  }).catch(() => {});
+                }
                 toast.success('Tarea aprobada ✓');
                 onClose();
               }}
