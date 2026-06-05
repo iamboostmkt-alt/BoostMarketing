@@ -162,6 +162,32 @@ export async function POST(req: NextRequest) {
 
   broadcastRealtime('message.sent', { message: chatMessage, room }).catch(() => undefined);
 
+  // Notificación campanita para DMs — receptor recibe aviso si no está en el room
+  if (room.includes('_DM_') && !isSystem) {
+    const parts = room.split('_DM_');
+    const recipientId = parts.find(p => p !== userId);
+    if (recipientId) {
+      const sender = await db.user.findUnique({ where: { id: userId }, select: { name: true, image: true, color: true } }).catch(() => null);
+      const senderName = sender?.name || name || 'Alguien';
+      const preview = text.length > 60 ? text.slice(0, 60) + '...' : text;
+      db.notification.create({
+        data: {
+          userId: recipientId,
+          workspaceId,
+          message: `💬 ${senderName}: ${preview}`,
+          type: 'message',
+          read: false,
+          link: `/dashboard/chat`,
+          actorId: userId,
+          actorName: senderName,
+          actorImage: sender?.image ?? null,
+        },
+      }).then(() => {
+        broadcastRealtime('notification.created', { userId: recipientId }).catch(() => {});
+      }).catch(() => {});
+    }
+  }
+
   // Si es room de cliente (clientId) y lo escribió el cliente → notificar PM si no ha leído
   if (role === 'CLIENT' && !['TEAM','SUPPORT','PROJECT','PRIVATE'].includes(room)) {
     const UNREAD_EMAIL_THRESHOLD = 3; // correo solo si lleva 3+ no leídos sin abrir

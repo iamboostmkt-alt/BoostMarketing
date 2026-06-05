@@ -84,8 +84,22 @@ export function NotificationsDropdown() {
   }, [fetchNotifications]);
 
   useEffect(() => {
-    if (open) fetchNotifications();
-  }, [open, fetchNotifications]);
+    if (open) {
+      fetchNotifications();
+      // Auto-marcar como leídas después de 2s de tener el panel abierto
+      const timer = setTimeout(async () => {
+        if (unreadCount === 0) return;
+        await fetch('/api/notifications', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ all: true }),
+        }).catch(() => {});
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setUnreadCount(0);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [open, fetchNotifications, unreadCount]);
 
   useEffect(() => {
     return bus.on(RT_EVENTS.NOTIFICATION_NEW, () => fetchNotifications());
@@ -369,7 +383,7 @@ export function NotificationsDropdown() {
 
           {/* Footer */}
           <div className="px-4 py-3 border-t border-white/[0.05]">
-            <button type="button" onClick={() => { setOpen(false); router.push('/dashboard'); }}
+            <button type="button" onClick={() => { setOpen(false); router.push('/dashboard/notifications'); }}
               className="w-full text-[12px] text-white/30 hover:text-violet-400 transition-colors text-center">
               Ver todas las notificaciones →
             </button>

@@ -3,7 +3,8 @@ import { broadcastRealtime } from "@/lib/realtime-server";
 
 export type NotificationType =
   | "task" | "activity" | "meeting" | "appointment"
-  | "lead" | "welcome" | "info" | "mention" | "file";
+  | "lead" | "welcome" | "info" | "mention" | "file"
+  | "message" | "invite";
 
 interface CreateNotificationParams {
   userId:      string;
@@ -28,6 +29,8 @@ const DEFAULT_LINKS: Record<NotificationType, string> = {
   info:        "/dashboard",
   mention:     "/dashboard/chat",
   file:        "/dashboard/tasks",
+  message:     "/dashboard/chat",
+  invite:      "/dashboard",
 };
 
 // Deduplicación: evita crear la misma notificación dos veces en 5 minutos
