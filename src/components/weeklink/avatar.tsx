@@ -1,45 +1,52 @@
-import { cn } from '@/lib/utils'
+'use client';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 type AvatarProps = {
-  initials: string
-  color: string
-  size?: number
-  status?: 'online' | 'away' | 'offline'
-  className?: string
-  ring?: boolean
-  image?: string | null
-}
+  initials: string;
+  color: string;
+  size?: number;
+  status?: 'online' | 'away' | 'offline';
+  className?: string;
+  ring?: boolean;
+  image?: string | null;
+};
 
 const statusColor: Record<string, string> = {
-  online: '#10b981',
-  away: '#f59e0b',
+  online:  '#10b981',
+  away:    '#f59e0b',
   offline: 'rgba(245,247,250,0.3)',
-}
+};
 
 export function Avatar({ initials, color, size = 32, status, className, ring, image }: AvatarProps) {
+  const [imgError, setImgError] = useState(false);
+  const showImage = image && !imgError;
+
   return (
     <span className={cn('relative inline-flex shrink-0', className)} style={{ width: size, height: size }}>
-      {image ? (
+      {showImage ? (
         <img
-          src={image}
+          src={image!}
           alt={initials}
+          referrerPolicy="no-referrer"
+          onError={() => setImgError(true)}
           className={cn('h-full w-full rounded-full object-cover', ring && 'ring-2 ring-background')}
         />
       ) : (
-      <span
-        className={cn(
-          'flex h-full w-full items-center justify-center rounded-full font-medium text-white',
-          ring && 'ring-2 ring-background',
-        )}
-        style={{
-          background: `linear-gradient(140deg, ${color}, ${color}cc)`,
-          fontSize: size * 0.36,
-          letterSpacing: '-0.02em',
-        }}
-        aria-hidden="true"
-      >
-        {initials}
-      </span>
+        <span
+          className={cn(
+            'flex h-full w-full items-center justify-center rounded-full font-medium text-white',
+            ring && 'ring-2 ring-background',
+          )}
+          style={{
+            background: `linear-gradient(140deg, ${color}, ${color}cc)`,
+            fontSize: size * 0.36,
+            letterSpacing: '-0.02em',
+          }}
+          aria-hidden="true"
+        >
+          {initials}
+        </span>
       )}
       {status && (
         <span
@@ -52,5 +59,5 @@ export function Avatar({ initials, color, size = 32, status, className, ring, im
         />
       )}
     </span>
-  )
+  );
 }

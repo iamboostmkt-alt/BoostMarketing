@@ -109,7 +109,7 @@ function renderMessage(text: string) {
 
 // ─── Channel List ──────────────────────────────────────────────────────────────
 function ChannelList({
-  activeId, setActiveId, rooms, clients, members, myId, unreads, role, onDeleteChannel,
+  activeId, setActiveId, rooms, clients, members, myId, unreads, role, onDeleteChannel, onOpenMeetingModal,
 }: {
   activeId: string;
   setActiveId: (id: string) => void;
@@ -120,6 +120,7 @@ function ChannelList({
   unreads: Record<string, number>;
   role: string;
   onDeleteChannel?: (id: string) => void;
+  onOpenMeetingModal?: () => void;
 }) {
   const [openClients, setOpenClients] = useState(true);
   const [openDMs, setOpenDMs] = useState(true);
@@ -845,6 +846,14 @@ function ChatMain({
       .then(d => setAiSession(d?.session ?? null))
       .catch(() => {});
   }, [room]);
+
+  // Escuchar evento para abrir modal de reunión desde ChannelList
+  useEffect(() => {
+    const unsub = bus.on('open.meeting.modal' as any, () => {
+      setShowMeetingModal(true);
+    });
+    return () => unsub();
+  }, []);
 
   // Escuchar eventos RT de sesión IA (otros usuarios activan/desactivan)
   useEffect(() => {
@@ -2532,14 +2541,17 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
     // Cargar info completa del cliente si el room corresponde a un cliente
     const matchClient = clients.find(cl => cl.id === room);
     if (matchClient) {
-      // Buscar cliente completo (con links) desde la API
-      fetch(`/api/clients?info=1`)
+      setClientInfo(null); // reset mientras carga
+      fetch(`/api/clients?info=1&id=${encodeURIComponent(room)}`)
         .then(r => r.ok ? r.json() : null)
         .then(d => {
-          const found = (d?.clients ?? []).find((cl: any) => cl.id === matchClient.id);
+          // Buscar el cliente en la respuesta (el API filtra por workspace/permisos)
+          const found = (d?.clients ?? []).find((cl: any) => cl.id === room);
           if (found) setClientInfo(found);
         })
         .catch(() => {});
+    } else {
+      setClientInfo(null);
     }
     // Tareas activas del canal
     fetch(`/api/tasks?clientId=${encodeURIComponent(room)}&status=pending,in_progress`)
@@ -2904,10 +2916,9 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
             <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 pt-3 pb-1">Accesos rápidos</p>
             <ul className="flex flex-col gap-0.5 px-2">
               {([
-                { href: '/dashboard/tasks',     Icon: CheckCheck, label: 'Tareas',     id: 'tasks' },
-                { href: '/dashboard/calendar',  Icon: Video,      label: 'Reuniones',  id: 'meetings' },
-                { href: '/dashboard/projects',  Icon: Folder,     label: 'Proyectos',  id: 'projects' },
-                { href: '/dashboard/clients',   Icon: Users,      label: 'Cuentas',    id: 'clients' },
+                { href: '/dashboard/tasks',    Icon: CheckCheck, label: 'Tareas',    id: 'tasks'     },
+                { href: '/dashboard/projects', Icon: Folder,     label: 'Proyectos', id: 'projects'  },
+                { href: '/dashboard/clients',  Icon: Users,      label: 'Cuentas',   id: 'clients'   },
               ] as const).map(({ id, label, Icon, href }) => (
                 <li key={id}>
                   <a href={href}
@@ -2918,6 +2929,8 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                 </li>
               ))}
             </ul>
+
+
             <div className="mx-3 mt-3 rounded-xl border border-violet-500/15 bg-violet-500/[0.04] p-3">
               <p className="text-[11px] font-medium text-violet-400/75 mb-2.5">🤖 Boosti IA</p>
               <div className="flex gap-2">
@@ -3150,6 +3163,10 @@ export default function ChatWithChannels() {
       rooms={rooms}
       clients={clients}
       role={role}
+      onOpenMeetingModal={() => {
+        // Emitir evento al ChatMain para abrir el modal de reunión
+        bus.emit('open.meeting.modal' as any, {});
+      }}
       onDeleteChannel={(id) => setCustomChannels(prev => prev.filter(c => c.id !== id))}
       members={[...members].filter(m => {
         if (m.role === 'CLIENT' || m.role === 'GUEST') return false;

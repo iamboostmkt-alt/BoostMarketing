@@ -77,8 +77,10 @@ export async function GET(req: NextRequest) {
   // Modo info: para el RightPanel — devolver datos del cliente incluyendo links
   // Accesible para TEAM_MEMBER si el cliente está asignado a ellos
   if (isInfo) {
+    const specificId = searchParams.get('id');
     const TEAM_ROLES = ['TEAM_MEMBER', 'DESIGNER', 'MARKETING'];
     const infoWhere: Record<string, unknown> = { workspaceId };
+    if (specificId) infoWhere.id = specificId;
     if (role === 'PROJECT_MANAGER') {
       infoWhere.OR = [{ assignedManagerId: userId }, { assignedUsers: { some: { userId } } }];
     } else if (TEAM_ROLES.includes(role)) {
