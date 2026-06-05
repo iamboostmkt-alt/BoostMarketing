@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import {
   Hash, Lock, LifeBuoy, Briefcase, ChevronDown, Plus,
   Search, Sparkles, Bell, HelpCircle, X, Menu,
-  Pin, Users, MoreHorizontal, SmilePlus, Reply,
+  Pin, Users, MoreHorizontal, SmilePlus, Reply, MessageSquare,
   ListPlus, Send, Smile, Paperclip, AtSign, Slash, Mic,
   CheckCheck, Video, Folder, ChevronRight
 } from 'lucide-react';
@@ -1532,8 +1532,9 @@ FORMATO:
                 <div className={`absolute top-0 right-2 z-10 items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl ${showEmoji?.id === msg.id ? 'flex' : 'hidden group-hover:flex'}`}>
                   {[
                     { Icon: SmilePlus, fn: () => { setShowEmoji(showEmoji?.id === msg.id ? null : {id: msg.id, x: 0, y: 0}); }, tip: 'Reaccionar' },
-                    { Icon: Reply, fn: () => setReplyingTo(msg), tip: 'Responder' },
-                    { Icon: ListPlus, fn: () => setTaskModal({ title: msg.message.slice(0, 80), description: msg.message }), tip: 'Crear tarea' },
+                    { Icon: Reply,         fn: () => setReplyingTo(msg),                                                        tip: 'Responder' },
+                    { Icon: MessageSquare, fn: () => onOpenThread(msg),                                                            tip: 'Ver hilo' },
+                    { Icon: ListPlus,      fn: () => setTaskModal({ title: msg.message.slice(0, 80), description: msg.message }),  tip: 'Crear tarea' },
                     { Icon: Pin, fn: () => togglePin(msg), tip: msg.pinned ? 'Desfijar mensaje' : 'Fijar mensaje' },
                     { Icon: MoreHorizontal, fn: () => setShowMoreMenu(showMoreMenu === msg.id ? null : msg.id), tip: 'Más opciones' },
                   ].map(({ Icon, fn, tip }, i) => (
@@ -1643,7 +1644,7 @@ FORMATO:
                         </div>
                       </div>
                     ) : (
-                      <div className={`text-[12.5px] leading-[1.45] ${
+                      <div className={`text-[12.5px] leading-[1.45] break-words overflow-hidden ${
                         isSystemMsg
                           ? 'text-white/70' // mensajes del bot — sin burbuja
                           : isMe
@@ -2749,9 +2750,16 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
             {/* Participantes — solo los del room actual */}
             {(() => {
               const isDM = room.includes('_DM_');
+              const isClientRoom = !isDM && !['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) && !!clients.find(c => c.id === room);
+              // Canal de cliente: mostrar solo los asignados a ese cliente (no todo el workspace)
               const channelParticipants = isDM
                 ? members.filter(m => room.includes(m.id))
-                : members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED');
+                : isClientRoom && clientInfo?.assignedUsers?.length
+                  ? members.filter(m =>
+                      (clientInfo.assignedUsers as any[]).some((au: any) => au.id === m.id || au.userId === m.id)
+                      || m.id === clientInfo?.assignedManager?.id
+                    )
+                  : members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED');
               const visible = channelParticipants.slice(0, 10);
               const extra   = channelParticipants.length - visible.length;
               return (
