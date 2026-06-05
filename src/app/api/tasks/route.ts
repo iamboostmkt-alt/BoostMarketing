@@ -388,6 +388,15 @@ export async function POST(req: NextRequest) {
       ? (visibility || "internal")
       : isClient ? "client_visible" : "internal";
 
+  // S-121 fix: si visibility=internal, limpiar clientId para evitar exposición en portal cliente
+  // Una tarea interna nunca debe aparecer vinculada a un cliente en el portal
+  if (resolvedVisibility === 'internal' && resolvedClientId) {
+    // Solo limpiar clientId si NO hay un parentTaskId que lo heredó (subtareas internas pueden tener clientId)
+    if (!parentTaskId) {
+      resolvedClientId = null;
+    }
+  }
+
   const task = await db.task.create({
     data: {
       userId,
@@ -517,7 +526,7 @@ export async function PUT(req: NextRequest) {
       ...(isManager && assignedUserId !== undefined && { assignedUserId }),
       ...(isManager && clientId       !== undefined && { clientId }),
       ...(isManager && visibility !== undefined && { visibility }),
-      ...(isManager && visibility === 'internal' && { isDeliverable: false, deliverableStatus: null }),
+      ...(isManager && visibility === 'internal' && { isDeliverable: false, deliverableStatus: null, clientId: null }),
       ...(isManager && visibility === 'client_visible' && { isDeliverable: true }),
       ...(milestoneId !== undefined && { milestoneId: milestoneId || null }),
       ...(phase !== undefined && { phase }),

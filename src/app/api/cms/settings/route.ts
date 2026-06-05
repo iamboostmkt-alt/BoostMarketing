@@ -1,3 +1,4 @@
+import { clearBrandingCache } from '@/lib/branding';
 import { NextRequest, NextResponse } from "next/server";
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
@@ -46,6 +47,7 @@ export async function PATCH(req: NextRequest) {
   const settings = existing
     ? await db.siteSettings.update({ where: { id: existing.id }, data })
     : await db.siteSettings.create({ data });
+  clearBrandingCache(); // Invalidar cache de branding
 
   revalidatePath("/");
   return NextResponse.json({ settings });

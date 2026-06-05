@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { broadcastRealtime } from '@/lib/realtime-server';
+import { sendMail, templateInvitacionEquipo } from '@/lib/mailer';
+import { getBranding } from '@/lib/branding';
 
 const Schema = z.object({
   token: z.string().min(1),
@@ -73,6 +75,23 @@ export async function POST(req: NextRequest) {
   // Broadcast RT para que gestión de clientes y admin se actualicen sin F5
   broadcastRealtime('client.updated', { workspaceId: invite.workspaceId }).catch(() => {});
   broadcastRealtime('user.updated',   { workspaceId: invite.workspaceId }).catch(() => {});
+
+  // Correo de bienvenida al workspace (solo miembros del equipo, no clientes)
+  if (!invite.isClient) {
+    try {
+      const workspace = await db.workspace.findUnique({
+        where: { id: invite.workspaceId },
+        select: { name: true },
+      });
+      const branding = await getBranding();
+      const loginUrl = `${process.env.NEXTAUTH_URL || 'https://boostmarketingboost.com'}/login`;
+      await sendMail(
+        invite.email,
+        `Bienvenido/a a ${workspace?.name ?? branding.brandName}`,
+        templateInvitacionEquipo('El equipo', workspace?.name ?? branding.brandName, invite.role, loginUrl, branding)
+      );
+    } catch { /* non-critical */ }
+  }
 
   return NextResponse.json({ ok: true, email: invite.email });
 }

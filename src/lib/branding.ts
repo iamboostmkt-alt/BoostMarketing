@@ -12,15 +12,28 @@ const DEFAULT: Branding = {
   brandColor: '#7c3aed',
 };
 
+// ── Cache en memoria — evita N+1 en 35+ llamadas por request ─────────────────
+const TTL_MS = 5 * 60 * 1000; // 5 minutos
+let _cache: { data: Branding; ts: number } | null = null;
+
+export function clearBrandingCache() {
+  _cache = null;
+}
+
 export async function getBranding(): Promise<Branding> {
+  // Devolver del cache si está fresco
+  if (_cache && Date.now() - _cache.ts < TTL_MS) {
+    return _cache.data;
+  }
   try {
     const settings = await db.siteSettings.findFirst();
-    if (!settings) return DEFAULT;
-    return {
+    const data: Branding = !settings ? DEFAULT : {
       logoUrl:    settings.logoUrl    || '',
       brandName:  settings.agencyName || DEFAULT.brandName,
-      brandColor: DEFAULT.brandColor, // SiteSettings no tiene brandColor aún
+      brandColor: DEFAULT.brandColor,
     };
+    _cache = { data, ts: Date.now() };
+    return data;
   } catch {
     return DEFAULT;
   }
