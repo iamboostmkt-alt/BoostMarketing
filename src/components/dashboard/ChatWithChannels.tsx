@@ -10,6 +10,7 @@ import {
   CheckCheck, Video, Folder, ChevronRight
 } from 'lucide-react';
 import { bus, RT_EVENTS } from '@/lib/event-bus';
+import { weeklinkDmRoom } from '@/lib/chat-bot';
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { useUploadThing } from '@/lib/uploadthing';
 import { Avatar } from '@/components/weeklink/avatar';
@@ -348,7 +349,24 @@ function ChannelList({
           </div>
         )}
         {openDMs && (
-          <ul className="flex flex-col gap-0.5 max-h-[216px] overflow-y-auto scrollbar-thin">
+          <ul className="flex flex-col gap-0.5 max-h-[240px] overflow-y-auto scrollbar-thin">
+            {/* ── Weeklink bot — DM de avisos ── */}
+            {myId && (() => {
+              const wkRoom = weeklinkDmRoom(myId);
+              const isActive = activeId === wkRoom;
+              return (
+                <li key="weeklink-bot">
+                  <button onClick={() => setActiveId(wkRoom)}
+                    className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${isActive ? 'bg-white/[0.06] text-white' : 'hover:bg-white/[0.03] text-white/50 hover:text-white/80'}`}>
+                    <div className="relative shrink-0">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }}>W</div>
+                      <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-[#07070a]" />
+                    </div>
+                    <span className="truncate font-medium">Weeklink</span>
+                  </button>
+                </li>
+              );
+            })()}
             {members.filter(m => m.id !== myId).map(m => {
               const dmId = [myId, m.id].sort().join('_DM_');
               const isActive = activeId === dmId;
@@ -2297,8 +2315,12 @@ FORMATO:
                 // Detectar / para slash commands
                 if (val === '/') setShowSlashMenu(true); else if (!val.startsWith('/')) setShowSlashMenu(false);
               }}
-                placeholder={room === 'NOTIFICATIONS' && role !== 'ADMIN' ? '📢 Canal de solo lectura — solo ADMIN puede escribir aquí' : `Escribe en #${title}…`}
-                disabled={room === 'NOTIFICATIONS' && role !== 'ADMIN'}
+                placeholder={
+                  room.startsWith('weeklink_') ? '🤖 Canal de avisos de Weeklink — solo lectura' :
+                  (room === 'NOTIFICATIONS' && role !== 'ADMIN') ? '📢 Canal de solo lectura — solo ADMIN puede escribir aquí' :
+                  `Escribe en #${title}…`
+                }
+                disabled={room.startsWith('weeklink_') || (room === 'NOTIFICATIONS' && role !== 'ADMIN')}
                 className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white placeholder:text-white/25 focus:outline-none disabled:cursor-not-allowed" />
               <button type="button"
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/[0.1]">

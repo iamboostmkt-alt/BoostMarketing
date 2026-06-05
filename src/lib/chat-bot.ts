@@ -1,11 +1,20 @@
 import { db } from "@/lib/db";
 
 /**
- * Enrutamiento de mensajes bot Weeklink en el chat.
+ * Room del DM personal con el bot Weeklink para un usuario.
+ * Formato: weeklink_{userId}
+ * Este room es de solo lectura para el usuario — solo el bot escribe.
+ */
+export function weeklinkDmRoom(userId: string): string {
+  return `weeklink_${userId}`;
+}
+
+/**
+ * Enrutamiento de mensajes bot Weeklink.
  *
  * Reglas:
- * 1. clientId              → room del cliente (canal equipo sobre esa cuenta)
- * 2. sin clientId + asignados → DM individual a cada asignado + canal NOTIFICATIONS
+ * 1. clientId              → room del cliente (equipo interno)
+ * 2. sin clientId + asigs  → DM weeklink_{uid} a cada asignado + canal NOTIFICATIONS
  * 3. sin nada              → canal NOTIFICATIONS
  */
 export async function sendChatBotMessage(params: {
@@ -13,6 +22,7 @@ export async function sendChatBotMessage(params: {
   message: string;
   clientId?: string | null;
   assignedUserIds?: string[];
+  clientPortalUserIds?: string[]; // IDs de usuarios CLIENT del portal
   fileUrl?: string;
   fileName?: string;
   fileType?: string;
@@ -23,7 +33,7 @@ export async function sendChatBotMessage(params: {
 }) {
   const {
     workspaceId, message, clientId,
-    assignedUserIds = [], fileUrl, fileName, fileType,
+    assignedUserIds = [], clientPortalUserIds = [], fileUrl, fileName, fileType,
     senderId, sendDmToAssignees = true,
   } = params;
   const isInternal = params.isInternal ?? true;
@@ -34,29 +44,38 @@ export async function sendChatBotMessage(params: {
     ...(fileUrl ? { fileUrl, fileName, fileType } : {}),
   };
 
-  // Caso 1: hay clientId → solo al room del cliente
+  // Caso 1: hay clientId → room del cliente (equipo) + DM weeklink al usuario CLIENT si es visible
   if (clientId) {
     await db.chatMessage.create({
       data: { ...baseMsg, room: clientId, isInternal },
     });
+    // Si hay usuarios del portal (CLIENT) y el mensaje no es solo interno, notificar en su DM Weeklink
+    if (clientPortalUserIds.length > 0 && !isInternal) {
+      await Promise.allSettled(
+        clientPortalUserIds.map(uid =>
+          db.chatMessage.create({
+            data: { ...baseMsg, room: weeklinkDmRoom(uid), isInternal: false },
+          })
+        )
+      );
+    }
     return;
   }
 
   // Caso 2 & 3: sin clientId
-  // 2a — DM individual a cada asignado (mensaje personal)
+  // DM personal Weeklink a cada asignado (room weeklink_{uid})
   if (sendDmToAssignees && assignedUserIds.length > 0) {
     const uniqueIds = [...new Set(assignedUserIds.filter(id => id !== senderId))];
     await Promise.allSettled(
-      uniqueIds.map(uid => {
-        const dmRoom = [senderId, uid].sort().join("_DM_");
-        return db.chatMessage.create({
-          data: { ...baseMsg, room: dmRoom, isInternal: true },
-        });
-      })
+      uniqueIds.map(uid =>
+        db.chatMessage.create({
+          data: { ...baseMsg, room: weeklinkDmRoom(uid), isInternal: true },
+        })
+      )
     );
   }
 
-  // 2b — También al canal NOTIFICATIONS para registro del equipo
+  // También al canal NOTIFICATIONS para registro del equipo
   await db.chatMessage.create({
     data: { ...baseMsg, room: "NOTIFICATIONS", isInternal: true },
   }).catch(() => {});

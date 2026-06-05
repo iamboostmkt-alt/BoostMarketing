@@ -150,9 +150,11 @@ export async function POST(req: NextRequest) {
   const isSystem: boolean = body.isSystem ?? false;
   const systemName: string | undefined = body.systemName;
   // Forzar isInternal=true para canales internos del equipo (independiente de lo que mande el cliente)
-  const INTERNAL_ROOM_IDS = ['TEAM', 'SUPPORT', 'PROJECTS', 'PRIVATE'];
+  const INTERNAL_ROOM_IDS = ['TEAM', 'SUPPORT', 'PROJECTS', 'PRIVATE', 'NOTIFICATIONS'];
+  // weeklink_* son rooms de DM con el bot Weeklink (siempre internos)
+  const isWeeklinkRoom = room.startsWith('weeklink_');
   const isInternalRoom = INTERNAL_ROOM_IDS.includes(room) || room.includes('_DM_');
-  const isInternal: boolean = isInternalRoom ? true : (body.isInternal ?? false);
+  const isInternal: boolean = (isInternalRoom || isWeeklinkRoom) ? true : (body.isInternal ?? false);
   const chatMessage = await db.chatMessage.create({
     data: { userId, workspaceId, message: text, room, fileUrl, fileName, fileType, isSystem, systemName, isInternal },
     select: messageSelect,
