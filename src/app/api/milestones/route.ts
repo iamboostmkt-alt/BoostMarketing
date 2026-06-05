@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const clientId = searchParams.get('clientId');
     if (!clientId) return NextResponse.json({ error: 'clientId requerido' }, { status: 400 });
-    const isManager = (MANAGER_ROLES as unknown as string[]).includes(user.role);
+    const isManager = (MANAGER_ROLES as readonly string[]).includes(user.role);
     const milestones = await db.milestone.findMany({
       where: {
         clientId,

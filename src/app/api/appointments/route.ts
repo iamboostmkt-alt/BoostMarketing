@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Fecha no valida." }, { status: 400 });
   }
 
-  const emailNorm = email.trim().toLowerCase();
+  const emailNorm = (email ?? '').trim().toLowerCase();
   const nameTrim  = name.trim();
 
   // Intentar obtener sesion para auto-asignar al creador

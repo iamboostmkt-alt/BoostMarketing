@@ -1,3 +1,4 @@
+import type { Role } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { INTERNAL_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
@@ -17,7 +18,7 @@ export async function GET() {
 
     const users = await db.user.findMany({
       where: {
-        role: { in: INTERNAL_ROLES as unknown as string[] },
+        role: { in: INTERNAL_ROLES as unknown as Role[] },
         active: true,
       },
       select: {

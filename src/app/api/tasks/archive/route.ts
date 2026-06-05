@@ -49,7 +49,7 @@ export async function DELETE(req: NextRequest) {
     const result2 = await requireWorkspace();
     if (!result2.ok) return result2.response;
     const user = { ...result2.ctx, id: result2.ctx.userId };
-    if (!(MANAGER_ROLES as unknown as string[]).includes(user.role))
+    if (!(MANAGER_ROLES as readonly string[]).includes(user.role))
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
     const taskId = req.nextUrl.searchParams.get('taskId');
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
     const result2 = await requireWorkspace();
     if (!result2.ok) return result2.response;
     const user = { ...result2.ctx, id: result2.ctx.userId };
-    if (!(MANAGER_ROLES as unknown as string[]).includes(user.role))
+    if (!(MANAGER_ROLES as readonly string[]).includes(user.role))
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
     const clientId = req.nextUrl.searchParams.get('clientId');

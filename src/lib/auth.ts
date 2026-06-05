@@ -168,6 +168,7 @@ export const authOptions: NextAuthOptions = {
           }).catch(() => {});
         }
 
+
         try {
           const dbUser = await db.user.findUnique({
             where: { id: user.id },
@@ -252,6 +253,18 @@ export const authOptions: NextAuthOptions = {
             token.color         = dbUser.color ?? undefined;
             // Actualizar imagen del token con la que está en DB
             if (dbUser.image) token.picture = dbUser.image;
+
+            // Sync portalStatus: si el usuario CLIENT ya está activo, actualizar el cliente
+            if (dbUser.role === 'CLIENT' && token.email) {
+              db.client.updateMany({
+                where: {
+                  email: { equals: token.email as string, mode: 'insensitive' },
+                  workspaceId: dbUser.workspaceId ?? '',
+                  portalStatus: { in: ['pending', 'invited'] },
+                },
+                data: { portalStatus: 'active' },
+              }).catch(() => {});
+            }
             token.lifecycleStatus  = dbUser.lifecycleStatus ?? null;
             token.customRoleId     = dbUser.customRoleId ?? null;
             token.customRoleLabel  = dbUser.customRole?.label ?? null;

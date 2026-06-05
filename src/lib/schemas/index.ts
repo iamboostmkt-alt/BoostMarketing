@@ -70,7 +70,7 @@ export const ClientUpdateSchema = ClientCreateSchema.partial().extend({
 
 export const AppointmentCreateSchema = z.object({
   name:            z.string().min(1, 'El nombre es requerido').max(255),
-  email:           z.string().email('Email inválido'),
+  email:           z.string().email('Email inválido').optional().nullable(),
   phone:           z.string().max(50).optional().nullable(),
   date:            z.string().min(1, 'La fecha es requerida'),
   notes:           z.string().max(2000).optional().nullable(),
@@ -78,6 +78,7 @@ export const AppointmentCreateSchema = z.object({
   assignedUserIds: z.array(z.string()).optional(),
   clientId:        z.string().optional().nullable(),
   status:          z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
+  visibility:      z.string().optional().nullable(),
 });
 
 export const AppointmentUpdateSchema = AppointmentCreateSchema.partial().extend({
