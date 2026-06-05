@@ -96,13 +96,16 @@ export async function POST(req: NextRequest) {
       : null,
   ].filter(Boolean).join('\n');
 
+  // Con cliente → room del cliente (isInternal=true, solo equipo ve la notif)
+  // Sin cliente → canal NOTIFICATIONS + DM a cada asignado
   sendChatBotMessage({
     workspaceId,
     message: chatMsg,
-    clientId,
+    clientId: clientId ?? null,
     assignedUserIds: allMeetingIds.filter(id => id !== userId),
     senderId: userId,
     isInternal: true,
+    sendDmToAssignees: !clientId, // DM solo cuando no hay cliente
   }).catch(() => {});
 
   return NextResponse.json({ meeting }, { status: 201 });

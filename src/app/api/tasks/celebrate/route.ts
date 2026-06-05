@@ -120,7 +120,8 @@ export async function POST(req: NextRequest) {
     clientId: task.clientId ?? null,
     assignedUserIds: teamMembers.map((u: any) => u.id),
     senderId: actorId,
-    isInternal: false, // visible al cliente en su portal
+    isInternal: !task.clientId, // sin cliente → interno en NOTIFICATIONS
+    sendDmToAssignees: !task.clientId, // DM solo cuando no hay cliente
   }).catch(() => {});
 
   return NextResponse.json({ ok: true });

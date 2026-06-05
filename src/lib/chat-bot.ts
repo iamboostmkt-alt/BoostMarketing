@@ -1,15 +1,16 @@
 import { db } from "@/lib/db";
 
 /**
- * Enrutamiento inteligente de mensajes bot en el chat.
- * 
- * Reglas:
- * 1. Si hay clientId → mensaje al room del cliente (canal compartido del equipo)
- * 2. Si hay assignedUserIds sin clientId → DM individual a cada uno
- * 3. Si es acción interna → canal TEAM
- * 
- * Lógica de deduplicación:
- * - Si el usuario ya ve el room del cliente, NO recibe DM adicional (evita spam)
+ * Enrutamiento inteligente de mensajes bot (Weeklink) en el chat.
+ *
+ * Reglas de enrutamiento:
+ * 1. clientId + visibleToClient  → room del cliente (canal del equipo sobre esa cuenta)
+ * 2. clientId + internal         → room del cliente (isInternal=true, solo equipo)
+ * 3. Sin clientId + assignees    → canal NOTIFICATIONS (mención) + DM individual a cada uno
+ * 4. Sin destinatarios           → canal NOTIFICATIONS
+ *
+ * El remitente siempre es el bot Weeklink (isSystem=true, systemName="Weeklink").
+ * senderId se usa para firmar el room DM cuando aplica.
  */
 export async function sendChatBotMessage(params: {
   workspaceId: string;
@@ -20,35 +21,44 @@ export async function sendChatBotMessage(params: {
   fileName?: string;
   fileType?: string;
   isInternal?: boolean;
-  visibility?: string; // 'internal' | 'client_visible' — si internal, no va al room del cliente
+  visibility?: string;
   senderId: string;
+  /** Si true, también manda DM individual a cada assignee (además del canal NOTIFICATIONS) */
+  sendDmToAssignees?: boolean;
 }) {
-  const { workspaceId, message, clientId, assignedUserIds = [], fileUrl, fileName, fileType, senderId } = params;
-  const isInternal = params.isInternal ?? true;
-  // Si visibility=internal, aunque haya clientId, NO mandar al room del cliente
-  // La tarea es solo para el equipo interno
+  const {
+    workspaceId, message, clientId,
+    assignedUserIds = [], fileUrl, fileName, fileType,
+    senderId, sendDmToAssignees = true,
+  } = params;
+  const isInternal      = params.isInternal ?? true;
   const isVisibleToClient = params.visibility !== 'internal';
 
   const baseMsg = {
     message,
     workspaceId,
-    userId: senderId,
-    isSystem: true,
+    userId:     senderId,
+    isSystem:   true,
     systemName: "Weeklink",
     ...(fileUrl ? { fileUrl, fileName, fileType } : {}),
   };
 
-  // Caso 1: hay clientId Y la tarea es visible al cliente → mensaje en room del cliente
-  // Si visibility=internal, saltar al Caso 2 (DM al equipo)
-  if (clientId && isVisibleToClient) {
+  // ── Caso 1 & 2: hay clientId → room del cliente ──────────────────────────
+  if (clientId) {
     await db.chatMessage.create({
       data: { ...baseMsg, room: clientId, isInternal },
     });
     return;
   }
 
-  // Caso 2: sin clientId → DM individual a cada asignado
-  if (assignedUserIds.length > 0) {
+  // ── Caso 3 & 4: sin clientId → canal NOTIFICATIONS + DM opcional ─────────
+  // Siempre publicar en NOTIFICATIONS (canal de avisos del sistema)
+  await db.chatMessage.create({
+    data: { ...baseMsg, room: "NOTIFICATIONS", isInternal: true },
+  }).catch(() => {});
+
+  // DM individual a cada asignado (para que llegue también al buzón personal)
+  if (sendDmToAssignees && assignedUserIds.length > 0) {
     const uniqueIds = [...new Set(assignedUserIds.filter(id => id !== senderId))];
     await Promise.allSettled(
       uniqueIds.map(uid => {
@@ -58,21 +68,17 @@ export async function sendChatBotMessage(params: {
         });
       })
     );
-    return;
   }
-
-  // Caso 3: sin destinatarios específicos → canal TEAM
-  await db.chatMessage.create({
-    data: { ...baseMsg, room: "TEAM", isInternal: true },
-  });
 }
 
 /**
  * Generar texto de mención para múltiples usuarios
- * Agrupa nombres con @ y los une limpiamente
  * Ej: "@Fer @Fabian @Esteban"
  */
-export function buildMentions(users: Array<{ name?: string | null; email?: string }>, excludeRoles?: string[]): string {
+export function buildMentions(
+  users: Array<{ name?: string | null; email?: string }>,
+  excludeRoles?: string[]
+): string {
   let filtered = users;
   if (excludeRoles) {
     filtered = users.filter((u: any) => !excludeRoles.includes(u.role ?? ""));

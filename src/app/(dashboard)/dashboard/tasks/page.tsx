@@ -405,8 +405,8 @@ function TasksContent() {
       if (!res.ok) throw new Error();
       toast.success(isManager ? 'Tarea completada' : 'Tarea enviada a revisión');
 
-      // BUG-04 fix: enviar mensaje en chat del cliente al marcar como completada/en revisión
-      if (task.clientId) {
+      // Enviar mensaje en chat: room del cliente si existe, NOTIFICATIONS si no
+      {
         const emoji = newStatus === 'completed' ? '✅' : '👀';
         const msg   = newStatus === 'completed'
           ? `${emoji} Tarea completada: **${task.title}**`
@@ -416,7 +416,7 @@ function TasksContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: msg,
-            room: task.clientId,
+            room: task.clientId || 'NOTIFICATIONS',
             isSystem: true,
             systemName: 'Weeklink',
             isInternal: true,
@@ -488,16 +488,15 @@ function TasksContent() {
               body: JSON.stringify({ taskId, taskTitle: title, assigneeIds: [u.id], celebrateType: 'approved' }),
             }).catch(() => {});
           });
-          if (clientId) {
-            fetch('/api/chat', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                message: `✅ Tarea aprobada por PM: **${title}**`,
-                room: clientId, isSystem: true, systemName: 'Weeklink', isInternal: true,
-              }),
-            }).catch(() => {});
-          }
+          fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: `✅ Tarea aprobada por PM: **${title}**`,
+              room: clientId || 'NOTIFICATIONS',
+              isSystem: true, systemName: 'Weeklink', isInternal: true,
+            }),
+          }).catch(() => {});
           toast.success('Tarea aprobada ✅');
         }
 
@@ -527,17 +526,16 @@ function TasksContent() {
             }).catch(() => {});
           });
 
-          // Notificar por chat
-          if (clientId) {
-            fetch('/api/chat', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                message: `🔄 Se solicitaron correcciones en: **${title}** — regresa a En curso`,
-                room: clientId, isSystem: true, systemName: 'Weeklink', isInternal: true,
-              }),
-            }).catch(() => {});
-          }
+          // Notificar por chat — al room del cliente o al canal NOTIFICATIONS
+          fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: `🔄 Se solicitaron correcciones en: **${title}** — regresa a En curso`,
+              room: clientId || 'NOTIFICATIONS',
+              isSystem: true, systemName: 'Weeklink', isInternal: true,
+            }),
+          }).catch(() => {});
           toast.warning('Correcciones enviadas al equipo 🔄');
         }
       }
