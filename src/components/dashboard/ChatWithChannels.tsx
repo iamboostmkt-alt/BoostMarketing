@@ -2590,11 +2590,13 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
 
   // DM previews — último mensaje de cada crew member
   const [dmPreviews, setDmPreviews] = useState<Record<string, { message: string; createdAt: string }>>({});
-  useEffect(() => {
-    if ((!['messages','members'].includes(tab)) || !myId || members.length === 0) return;
+
+  // Función de refresco reutilizable
+  const refreshDmPreviews = useCallback(async () => {
+    if (!myId || members.length === 0) return;
     const team = members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId);
-    Promise.allSettled(
-      team.slice(0, 10).map(async m => {
+    await Promise.allSettled(
+      team.slice(0, 15).map(async m => {
         const dmRoom = [myId, m.id].sort().join('_DM_');
         const res = await fetch(`/api/chat?room=${encodeURIComponent(dmRoom)}&limit=1`);
         if (!res.ok) return;
@@ -2603,7 +2605,37 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
         if (last) setDmPreviews(prev => ({ ...prev, [m.id]: { message: last.message, createdAt: last.createdAt } }));
       })
     );
-  }, [tab, members, myId]);
+  }, [myId, members]);
+
+  // Carga inicial cuando se abre el panel
+  useEffect(() => {
+    if (!['messages','members'].includes(tab) || !myId) return;
+    refreshDmPreviews();
+  }, [tab, members, myId, refreshDmPreviews]);
+
+  // RT: actualizar preview inmediatamente cuando llega/sale un mensaje DM
+  useEffect(() => {
+    const unsub = bus.on(RT_EVENTS.MESSAGE_SENT, (payload: any) => {
+      const msg = payload?.message;
+      if (!msg || !msg.room?.includes('_DM_')) return;
+      // Extraer el otro usuario del room "id1_DM_id2"
+      const parts = msg.room.split('_DM_');
+      const otherId = parts.find((p: string) => p !== myId);
+      if (!otherId) return;
+      setDmPreviews(prev => ({
+        ...prev,
+        [otherId]: { message: msg.message, createdAt: msg.createdAt ?? new Date().toISOString() },
+      }));
+    });
+    return () => unsub();
+  }, [myId]);
+
+  // Polling ligero cada 15s para DMs mientras el panel está abierto
+  useEffect(() => {
+    if (!myId || members.length === 0) return;
+    const interval = setInterval(() => refreshDmPreviews(), 15_000);
+    return () => clearInterval(interval);
+  }, [myId, members, refreshDmPreviews]);
 
   // Mensajes recientes del canal (para tab info)
   const [channelMsgs, setChannelMsgs] = useState<any[]>([]);
