@@ -228,7 +228,7 @@ function ChannelList({
           {rooms.map(r => {
             const isActive = activeId === r.id;
             const unread = unreads[r.id] || 0;
-            const Icon = r.locked || (r as any).isPrivate ? Lock : r.icon === 'support' ? LifeBuoy : r.icon === 'projects' ? Briefcase : Hash;
+            const Icon = r.locked || (r as any).isPrivate ? Lock : (r as any).announcement ? Bell : r.icon === 'support' ? LifeBuoy : r.icon === 'projects' ? Briefcase : Hash;
             return (
               <li key={r.id} className="group/ch relative">
                 <button onClick={() => setActiveId(r.id)}
@@ -244,7 +244,7 @@ function ChannelList({
                     </span>
                   )}
                 </button>
-                {!['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(r.id) && isManager && (
+                {!['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(r.id) && isManager && (
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
@@ -732,6 +732,7 @@ function ChatMain({
     }, 3000);
   }, [session]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const isAiWritingRef = useRef(false); // bloquea polls mientras IA escribe
   const { startUpload } = useUploadThing('chatAttachment', {
     onUploadProgress: (p) => {
       setPendingFiles(prev => prev.map((f, i) => i === 0 ? { ...f, progress: p } : f));
@@ -740,7 +741,7 @@ function ChatMain({
 
   useEffect(() => {
     if (!linkModal) return;
-    const clientId = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) ? undefined : room;
+    const clientId = ['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room) ? undefined : room;
     const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role);
     const assignedParam = isManager ? '' : '&assignedToMe=true';
     const url = clientId
@@ -752,7 +753,7 @@ function ChatMain({
 
   useEffect(() => {
     if (activeTab !== 'tasks') return;
-    const isInternalRoom = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room);
+    const isInternalRoom = ['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room);
     const isDM = room.includes('_DM_');
     // Si no es canal interno ni DM, es clientId directo (UUID de cuenta)
     // No depender de clients[] que puede estar vacio al montar
@@ -780,7 +781,11 @@ function ChatMain({
   const fetchMessages = useCallback(async () => {
     try {
       const res = await fetch(`/api/chat?room=${encodeURIComponent(room)}`);
-      if (res.ok) { const d = await res.json(); setMessages(d.messages || []); }
+      if (res.ok) {
+        const d = await res.json();
+        // No sobreescribir mensajes mientras la IA está escribiendo (evita parpadeo)
+        if (!isAiWritingRef.current) setMessages(d.messages || []);
+      }
     } catch {}
     setLoading(false);
   }, [room]);
@@ -1047,6 +1052,7 @@ FORMATO:
         const data = await res.json();
         const reply = data.content || 'Sin respuesta.';
         // Efecto typing — agregar letra por letra
+        isAiWritingRef.current = true; // bloquear polls durante el typing
         const fullMsg = `✨ **Boosti:** ${reply}`;
         let displayed = '';
         const chunkSize = 8; // caracteres por frame
@@ -1059,6 +1065,7 @@ FORMATO:
           ));
         }
         // Asegurar mensaje completo al final
+        isAiWritingRef.current = false; // reanudar polls
         setMessages(prev => prev.map(m => m.id === tempId
           ? { ...m, message: fullMsg }
           : m
@@ -1073,7 +1080,7 @@ FORMATO:
             room,
             isSystem: true,
             systemName: 'Boosti',
-            isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) || room.includes('_DM_'),
+            isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room) || room.includes('_DM_'),
           }),
         }).then(r => r.ok ? r.json() : null).then(d => {
           if (d?.message) {
@@ -1081,6 +1088,7 @@ FORMATO:
           }
         }).catch(() => {});
       } catch {
+        isAiWritingRef.current = false;
         setMessages(prev => prev.map(m => m.id === tempId
           ? { ...m, message: '✨ Error al contactar AI.' }
           : m
@@ -1096,7 +1104,7 @@ FORMATO:
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, room, isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) || room.includes('_DM_') }),
+          body: JSON.stringify({ message: text, room, isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room) || room.includes('_DM_') }),
         });
         if (res.ok) {
           const d = await res.json();
@@ -1140,7 +1148,7 @@ FORMATO:
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: fileName || 'Archivo', room, fileUrl, fileName, fileType, isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) || room.includes('_DM_') }),
+      body: JSON.stringify({ message: fileName || 'Archivo', room, fileUrl, fileName, fileType, isInternal: ['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room) || room.includes('_DM_') }),
     }).catch(() => null);
     if (res?.ok) {
       const d = await res.json().catch(() => null);
@@ -1168,7 +1176,7 @@ FORMATO:
         if (!uploaded?.[0]) continue;
         const { ufsUrl, url: _url, name, type } = uploaded[0] as any;
         const url = ufsUrl ?? _url;
-        const isClientRoom = !['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room);
+        const isClientRoom = !['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room);
         if (isClientRoom) {
           // Mostrar modal primero — el mensaje se envía desde handleLinkTask o al omitir
           setLinkModal({ fileUrl: url, fileName: name, fileType: type });
@@ -1433,7 +1441,7 @@ FORMATO:
       {/* Tab: Tasks */}
       {activeTab === 'tasks' && (
         <TasksTab roomTasks={roomTasks} room={room} onRefresh={() => {
-          const isInternalRoom2 = ['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room);
+          const isInternalRoom2 = ['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room);
           const isDM2 = room.includes('_DM_');
           const clientId = (!isInternalRoom2 && !isDM2 && clients.some(c => c.id === room)) ? room : undefined;
           const isManager = ['ADMIN','PROJECT_MANAGER'].includes(role || '');
@@ -1893,7 +1901,7 @@ FORMATO:
                 onClick={async () => {
                   if (!taskModal.title.trim()) return;
                   setTaskModalSending(true);
-                  const INTERNAL = ['TEAM','SUPPORT','PROJECTS','PRIVATE'];
+                  const INTERNAL = ['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'];
                   const clientId = INTERNAL.includes(room) ? undefined : room;
                   try {
                     const res = await fetch('/api/tasks', {
@@ -2185,8 +2193,9 @@ FORMATO:
                 // Detectar / para slash commands
                 if (val === '/') setShowSlashMenu(true); else if (!val.startsWith('/')) setShowSlashMenu(false);
               }}
-                placeholder={`Escribe en #${title}…`}
-                className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white placeholder:text-white/25 focus:outline-none" />
+                placeholder={room === 'NOTIFICATIONS' && role !== 'ADMIN' ? '📢 Canal de solo lectura — solo ADMIN puede escribir aquí' : `Escribe en #${title}…`}
+                disabled={room === 'NOTIFICATIONS' && role !== 'ADMIN'}
+                className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white placeholder:text-white/25 focus:outline-none disabled:cursor-not-allowed" />
               <button type="button"
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/[0.1]">
                 <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.75} />
@@ -2357,7 +2366,7 @@ FORMATO:
                     <button
                       onClick={async () => {
                         const res = await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'individual' }) });
-                        if (res.ok) { const d = await res.json(); setAiSession({ ...d.session, activatedBy: myId }); setShowMembersPanel(false); }
+                        if (res.ok) { const d = await res.json(); bus.emit('ai.session.started', { room, sessionId: d.session.id, mode: 'individual', activatedBy: myId, expiresAt: d.session.expiresAt }); }
                       }}
                       className="flex-1 py-1.5 rounded-lg text-[11px] font-medium text-violet-300 border border-violet-500/25 hover:bg-violet-500/10 transition-colors">
                       Solo yo
@@ -2365,7 +2374,7 @@ FORMATO:
                     <button
                       onClick={async () => {
                         const res = await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'group' }) });
-                        if (res.ok) { const d = await res.json(); setAiSession({ ...d.session, activatedBy: myId }); setShowMembersPanel(false); }
+                        if (res.ok) { const d = await res.json(); bus.emit('ai.session.started', { room, sessionId: d.session.id, mode: 'group', activatedBy: myId, expiresAt: d.session.expiresAt }); }
                       }}
                       className="flex-1 py-1.5 rounded-lg text-[11px] font-medium text-violet-300 border border-violet-500/25 hover:bg-violet-500/10 transition-colors">
                       Grupal
@@ -2750,7 +2759,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
             {/* Participantes — solo los del room actual */}
             {(() => {
               const isDM = room.includes('_DM_');
-              const isClientRoom = !isDM && !['TEAM','SUPPORT','PROJECTS','PRIVATE'].includes(room) && !!clients.find(c => c.id === room);
+              const isClientRoom = !isDM && !['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room) && !!clients.find(c => c.id === room);
               // Canal de cliente: mostrar solo los asignados a ese cliente (no todo el workspace)
               const channelParticipants = isDM
                 ? members.filter(m => room.includes(m.id))
@@ -2898,12 +2907,12 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
               <p className="text-[11px] font-medium text-violet-400/75 mb-2.5">🤖 Boosti IA</p>
               <div className="flex gap-2">
                 <button
-                  onClick={async () => { await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'individual' }) }); }}
+                  onClick={async () => { const r = await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'individual' }) }); if (r.ok) { const d = await r.json(); bus.emit('ai.session.started', { room, sessionId: d.session.id, mode: 'individual', activatedBy: '', expiresAt: d.session.expiresAt }); } }}
                   className="flex-1 py-1.5 rounded-lg text-[11px] text-violet-400/65 border border-violet-500/20 hover:bg-violet-500/10 transition-colors">
                   Solo yo
                 </button>
                 <button
-                  onClick={async () => { await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'group' }) }); }}
+                  onClick={async () => { const r = await fetch('/api/ai/session', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ room, mode: 'group' }) }); if (r.ok) { const d = await r.json(); bus.emit('ai.session.started', { room, sessionId: d.session.id, mode: 'group', activatedBy: '', expiresAt: d.session.expiresAt }); } }}
                   className="flex-1 py-1.5 rounded-lg text-[11px] text-violet-400/65 border border-violet-500/20 hover:bg-violet-500/10 transition-colors">
                   Grupal
                 </button>

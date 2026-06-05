@@ -61,6 +61,20 @@ export async function POST(req: NextRequest) {
       if (u.email) getBranding().then(b => sendMail(u.email!, "Nueva reunion asignada - BoostMarketing", templateNuevaReunion(u.name || u.email!, name.trim(), dateStr, (meetUrl ?? "").trim(), b))).catch(console.error);
     }
   }
+  // Crear notificaciones en DB para campanita — todos los asignados
+  if (allMeetingIds.length > 0) {
+    const dateShort = parsed.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    db.notification.createMany({
+      data: allMeetingIds.map((uid: string) => ({
+        userId:      uid,
+        workspaceId,
+        message:     `📅 Reunión agendada: "${name.trim()}" — ${dateShort}`,
+        type:        'meeting',
+        read:        false,
+        link:        '/dashboard/calendar',
+      })),
+    }).catch(() => {});
+  }
   // Broadcast MEETING_SCHEDULED para toasts en tiempo real (non-blocking)
   broadcastRealtime('meeting.scheduled', {
     meeting: { id: meeting.id, title: name.trim(), date: parsed.toISOString() },
