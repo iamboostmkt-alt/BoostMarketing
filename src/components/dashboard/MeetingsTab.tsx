@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { Video, Plus, Pencil, Trash2, RefreshCw, Clock, CheckCircle2, XCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,9 +34,11 @@ interface MeetDialogProps {
   clients?: { id: string; name: string; email: string; company: string }[];
   initialClientEmail?: string;
   initialDate?: Date;
+  userRole?: string;
 }
 
-export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved, clients = [], initialClientEmail, initialDate }: MeetDialogProps) {
+export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved, clients = [], initialClientEmail, initialDate, userRole = '' }: MeetDialogProps) {
+  const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(userRole);
   const isEdit = !!meeting;
   const [name,        setName]        = useState('');
   const [date,        setDate]        = useState('');
@@ -43,6 +46,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   const [meetUrl,     setMeetUrl]     = useState('');
   const [assigned,    setAssigned]    = useState<string[]>([]);
   const [clientEmail, setClientEmail] = useState('');
+  const [visibility,  setVisibility]  = useState<'internal' | 'team' | 'client_visible'>('team');
   const [saving,      setSaving]      = useState(false);
 
   useEffect(() => {
@@ -60,6 +64,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
       setMeetUrl(meeting?.meetUrl ?? '');
       setAssigned((meeting?.assignedUsers ?? []).map((au: any) => au.user?.id ?? au.userId));
       setClientEmail(initialClientEmail ?? (meeting as any)?.email ?? '');
+      setVisibility('team');
     }
   }, [open, meeting, initialClientEmail]);
 
@@ -72,7 +77,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     if (!name.trim() || !date) { toast.error('Nombre y fecha requeridos.'); return; }
     setSaving(true);
     try {
-      const body = { name, date: new Date(date).toISOString(), notes, meetUrl, assignedUserIds: assigned, ...(clientEmail ? { email: clientEmail } : {}) };
+      const body = { name, date: new Date(date).toISOString(), notes, meetUrl, assignedUserIds: assigned, visibility, ...(clientEmail ? { email: clientEmail } : {}) };
       // Reunión con cliente → /api/appointments; interna → /api/meetings
       const url = clientEmail ? '/api/appointments' : '/api/meetings';
       const patchUrl = '/api/appointments';
@@ -126,6 +131,28 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
             <Input value={meetUrl} onChange={e => setMeetUrl(e.target.value)} placeholder="https://meet.google.com/..."
               className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
+          {/* Tipo de reunión — solo para managers visible cliente */}
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Tipo</Label>
+            <div className="flex gap-2">
+              {[
+                { val: 'team' as const,           label: '👥 Equipo',          tip: 'Solo el equipo' },
+                { val: 'internal' as const,        label: '🔒 Interno',         tip: 'Canal interno' },
+                ...(isManager ? [{ val: 'client_visible' as const, label: '👁 Visible cliente', tip: 'El cliente lo ve' }] : []),
+              ].map(opt => (
+                <button key={opt.val} type="button" title={opt.tip}
+                  onClick={() => setVisibility(opt.val)}
+                  className={[
+                    'flex-1 py-1.5 rounded-lg text-[11px] font-medium border transition-colors',
+                    visibility === opt.val
+                      ? 'border-violet-500/50 bg-violet-500/15 text-violet-300'
+                      : 'border-white/[0.08] text-white/40 hover:text-white/70'
+                  ].join(' ')}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Notas</Label>
             <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Agenda, temas..."
@@ -169,6 +196,8 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
 }
 
 export default function MeetingsTab() {
+  const { data: session } = useSession();
+  const myRole = (session?.user as any)?.role || '';
   const [meetings,  setMeetings]  = useState<Appointment[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [filter,    setFilter]    = useState('all');
@@ -343,7 +372,7 @@ export default function MeetingsTab() {
           </table>
         </div>
       </div>
-      <MeetingDialog open={dialog} onOpenChange={setDialog} meeting={editing} teamUsers={teamUsers} clients={clients} onSaved={() => fetchMeetings(filter)} />
+      <MeetingDialog open={dialog} onOpenChange={setDialog} meeting={editing} teamUsers={teamUsers} clients={clients} userRole={myRole} onSaved={() => fetchMeetings(filter)} />
     </div>
   );
 }

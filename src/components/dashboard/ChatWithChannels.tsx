@@ -1856,8 +1856,8 @@ FORMATO:
           .filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED')
           .map(m => ({ id: m.id, name: m.name, email: m.email, color: m.color || '#8b5cf6', image: m.image || null })) as MeetTeamUser[]}
         clients={clientsWithEmail}
+        userRole={role}
         initialClientEmail={
-          // Pre-seleccionar cliente si el room activo es un clientId
           clientsWithEmail.find(c => c.id === room)?.email ?? ''
         }
         onSaved={() => setShowMeetingModal(false)}
@@ -2760,15 +2760,21 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
             {(() => {
               const isDM = room.includes('_DM_');
               const isClientRoom = !isDM && !['TEAM','SUPPORT','PROJECTS','PRIVATE','NOTIFICATIONS'].includes(room) && !!clients.find(c => c.id === room);
-              // Canal de cliente: mostrar solo los asignados a ese cliente (no todo el workspace)
+              // Canal de cliente: mostrar solo los asignados a ese cliente
+              // clientInfo.assignedUsers viene aplanado como [{id, name, ...}] por flatClientAssignees
+              const assignedIds = isClientRoom && clientInfo?.assignedUsers?.length
+                ? [
+                    ...((clientInfo.assignedUsers as any[]).map((au: any) => au.id || au.userId).filter(Boolean)),
+                    clientInfo?.assignedManager?.id,
+                  ].filter(Boolean)
+                : null;
               const channelParticipants = isDM
                 ? members.filter(m => room.includes(m.id))
-                : isClientRoom && clientInfo?.assignedUsers?.length
-                  ? members.filter(m =>
-                      (clientInfo.assignedUsers as any[]).some((au: any) => au.id === m.id || au.userId === m.id)
-                      || m.id === clientInfo?.assignedManager?.id
-                    )
-                  : members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED');
+                : assignedIds
+                  ? members.filter(m => assignedIds.includes(m.id))
+                  : isClientRoom
+                    ? [] // clientInfo aún cargando — no mostrar todos
+                    : members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED');
               const visible = channelParticipants.slice(0, 10);
               const extra   = channelParticipants.length - visible.length;
               return (

@@ -36,7 +36,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const { startUpload } = useUploadThing("imageUploader", {
+  const { startUpload: startLogoUpload } = useUploadThing("imageUploader", {
     onClientUploadComplete: (res) => { if (res?.[0]?.url) { setLogoUrl((res[0].ufsUrl ?? res[0].url)); setLogoPreview((res[0].ufsUrl ?? res[0].url)); } },
     onUploadError: (err) => { toast.error("Error: " + err.message); },
   });
@@ -126,26 +126,28 @@ export default function SettingsPage() {
     .toUpperCase()
     .slice(0, 2);
 
+  const { startUpload: startAvatarUpload } = useUploadThing('imageUploader', {
+    onClientUploadComplete: async (res) => {
+      const url = res?.[0]?.ufsUrl ?? res?.[0]?.url;
+      if (url) {
+        setImageUrl(url);
+        await updateSession({ image: url });
+        toast.success('Foto de perfil actualizada ✓');
+      }
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    },
+    onUploadError: (err) => {
+      toast.error('Error al subir: ' + err.message);
+      setUploading(false);
+    },
+  });
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/auth/avatar', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al subir');
-      setImageUrl(data.url);
-      // Refresh JWT token so TopNav + AppSidebar show the new avatar immediately
-      await updateSession({ image: data.url });
-      toast.success('Avatar actualizado');
-    } catch (err: any) {
-      toast.error(err.message || 'Error al subir el avatar');
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = '';
-    }
+    await startAvatarUpload([file]);
   };
 
   const handleSaveProfile = async () => {
@@ -556,7 +558,7 @@ export default function SettingsPage() {
                 <label className="text-white/70 text-sm font-medium">Logo</label>
                 {logoPreview && (<div className="flex items-center justify-center bg-white/[0.06] border border-white/[0.08] rounded-lg p-4 w-48 h-24"><img src={logoPreview} alt="Logo" className="max-h-16 max-w-full object-contain" /></div>)}
                 <label className="cursor-pointer inline-block">
-                  <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) startUpload([f]); }} disabled={uploading} />
+                  <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) startLogoUpload([f]); }} disabled={uploading} />
                   <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.08] rounded-lg text-white text-sm transition-colors w-fit">{uploading ? <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />&nbsp;Subiendo...</> : <><Upload className="w-4 h-4" />&nbsp;Subir logo</>}</div>
                 </label>
               </div>

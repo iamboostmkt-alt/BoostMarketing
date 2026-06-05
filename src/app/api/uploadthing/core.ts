@@ -10,8 +10,14 @@ export const ourFileRouter = {
       if (!result.ok) throw new Error("Unauthorized");
       return { userId: result.ctx.userId, workspaceId: result.ctx.workspaceId };
     })
-    .onUploadComplete(async ({ file }) => {
-      return { url: file.ufsUrl || file.url };
+    .onUploadComplete(async ({ metadata, file }) => {
+      // Guardar la URL de la imagen en el perfil del usuario
+      const url = file.ufsUrl || file.url;
+      try {
+        const { db } = await import("@/lib/db");
+        await db.user.update({ where: { id: metadata.userId }, data: { image: url } });
+      } catch { /* non-critical */ }
+      return { url };
     }),
   taskAttachment: f({
     image: { maxFileSize: "8MB", maxFileCount: 5 },
