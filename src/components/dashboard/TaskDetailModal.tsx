@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell, CheckCircle2, RotateCcw } from 'lucide-react';
+import { CheckSquare, Clock, Users, Pencil, X, Building2, AlertCircle, Calendar as CalendarIcon, Paperclip, Upload, Trash2, Download, FileText, ImageIcon, Loader2, ExternalLink, Bell, CheckCircle2, RotateCcw, Link2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion } from 'framer-motion';
@@ -136,6 +136,8 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
   }, [subtasksOpen, task?.id]);
   const [reminding, setReminding] = useState(false);
   const [showCompleteAfterUpload, setShowCompleteAfterUpload] = useState(false);
+  const [deliveryLink, setDeliveryLink]   = useState('');
+  const [showLinkInput, setShowLinkInput] = useState(false);
   const [reviewingFile, setReviewingFile]   = useState<string | null>(null); // fileId activo
   const [reviewComment, setReviewComment]   = useState('');
   const [reviewLoading, setReviewLoading]   = useState(false);
@@ -564,16 +566,58 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 e.target.value = '';
               }} disabled={isUploading} />
 
-              {/* TEAM: botón prominente de entrega */}
+              {/* TEAM: botones de entrega — archivo + link */}
               {!isManager && (
-                <label htmlFor="file-upload-input" className="cursor-pointer block">
-                  <div className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-violet-500/30 hover:border-violet-500/60 bg-violet-500/[0.04] hover:bg-violet-500/[0.08] transition-all group">
-                    {isUploading
-                      ? <><Loader2 className="w-4 h-4 text-violet-400 animate-spin" /><span className="text-sm text-violet-300">Subiendo...</span></>
-                      : <><Upload className="w-4 h-4 text-violet-400/70 group-hover:text-violet-400 transition-colors" /><span className="text-sm font-medium text-violet-300/70 group-hover:text-violet-300 transition-colors">Subir entrega</span></>
-                    }
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <label htmlFor="file-upload-input" className="cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border-2 border-dashed border-violet-500/30 hover:border-violet-500/60 bg-violet-500/[0.04] hover:bg-violet-500/[0.08] transition-all group">
+                        {isUploading
+                          ? <><Loader2 className="w-3.5 h-3.5 text-violet-400 animate-spin" /><span className="text-[12px] text-violet-300">Subiendo...</span></>
+                          : <><Upload className="w-3.5 h-3.5 text-violet-400/70 group-hover:text-violet-400 transition-colors" /><span className="text-[12px] font-medium text-violet-300/70 group-hover:text-violet-300 transition-colors">Subir archivo</span></>
+                        }
+                      </div>
+                    </label>
+                    <button type="button" onClick={() => setShowLinkInput(v => !v)}
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-violet-500/30 hover:border-violet-500/60 bg-violet-500/[0.04] hover:bg-violet-500/[0.08] transition-all">
+                      <Link2 className="w-3.5 h-3.5 text-violet-400/70" />
+                      <span className="text-[12px] font-medium text-violet-300/70">Agregar link</span>
+                    </button>
                   </div>
-                </label>
+                  {/* Input de link de entrega */}
+                  {showLinkInput && (
+                    <div className="flex gap-2">
+                      <input
+                        value={deliveryLink}
+                        onChange={e => setDeliveryLink(e.target.value)}
+                        placeholder="https://drive.google.com/... o link del trabajo"
+                        className="flex-1 h-9 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/20 outline-none focus:border-violet-500/40"
+                      />
+                      <button type="button"
+                        disabled={!deliveryLink.trim()}
+                        onClick={async () => {
+                          if (!deliveryLink.trim()) return;
+                          // Guardar el link como nota en la tarea
+                          await fetch('/api/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              room: (task as any).clientId || 'TEAM',
+                              message: `🔗 Entrega de "${task.title}": ${deliveryLink}`,
+                              isSystem: true, systemName: 'Weeklink',
+                            }),
+                          }).catch(() => {});
+                          toast.success('Link de entrega guardado ✓');
+                          setDeliveryLink('');
+                          setShowLinkInput(false);
+                          setShowCompleteAfterUpload(true);
+                        }}
+                        className="h-9 px-3 rounded-lg text-[12px] font-medium text-white bg-violet-600 hover:bg-violet-700 disabled:opacity-40 transition-colors">
+                        Guardar
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Modal confirmar completar tras subir archivo — solo team */}

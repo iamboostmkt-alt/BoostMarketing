@@ -14,6 +14,8 @@ import {
   templateCambioEstado,
   templateTareaCompletada,
   templateTareaEditada,
+  templateTareaEnRevision,
+  templateTareaListaRevisionPM,
 } from "@/lib/mailer";
 import { getBranding, type Branding } from "@/lib/branding";
 import { AccessControl } from "@/core/access/access-control";
@@ -598,9 +600,10 @@ export async function PUT(req: NextRequest) {
       ...(_taskWithUsers?.assignedUser ? [{ email: _taskWithUsers.assignedUser.email, name: _taskWithUsers.assignedUser.name }] : []),
       ...(_taskWithUsers?.assignedUsers?.map((au: any) => ({ email: au.user?.email, name: au.user?.name })) ?? []),
     ].filter((u, i, arr) => u.email && arr.findIndex(x => x.email === u.email) === i);
-    // BUG-05 fix: no enviar templateCambioEstado para approved (celebrate lo hace)
-    // ni para completed (templateTareaCompletada lo cubre abajo)
-    const skipCambioEstado = task.status === "approved" || task.status === "completed";
+    // Correos por cambio de estado — cada caso tiene su template específico
+    // skip: approved y completed tienen su propio flujo abajo
+    // skip: internal_review tiene su propio flujo abajo (con templates personalizados para member y PM)
+    const skipCambioEstado = task.status === "approved" || task.status === "completed" || task.status === "internal_review";
     if (!skipCambioEstado) {
       for (const u of _assignedUsers) {
         if (u.email) await sendMail(u.email, "Estado de tarea actualizado", templateCambioEstado(task.title, existing.status ?? "pending", task.status ?? "pending", _branding, u.name || u.email?.split("@")[0] || undefined));
@@ -667,10 +670,20 @@ export async function PUT(req: NextRequest) {
           userId: pm.id, workspaceId, message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`, type: "task", actorId: userId, actorName: userName, actorImage: userImage ?? undefined,
         });
         if (pm.email) {
+          // Correo específico al PM con plantilla de "lista para revisar"
           getBranding().then(b => sendMail(
             pm.email!,
             `⏳ Tarea lista para revisión: ${task.title}`,
-            templateCambioEstado(task.title, task.status, 'internal_review', b, pm.name || pm.email?.split("@")[0] || undefined)
+            templateTareaListaRevisionPM(task.title, userName, pm.name || pm.email?.split("@")[0] || "tu equipo", b)
+          )).catch(console.error);
+        }
+        // Correo al member que entregó la tarea — confirma que está en revisión
+        for (const u of _assignedUsers) {
+          if (!u.email) continue;
+          getBranding().then(b => sendMail(
+            u.email!,
+            `🎉 Tu tarea está en revisión: ${task.title}`,
+            templateTareaEnRevision(task.title, u.name || u.email?.split("@")[0] || "Hola", pm?.name || "tu PM", b)
           )).catch(console.error);
         }
       }

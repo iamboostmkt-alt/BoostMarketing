@@ -89,6 +89,11 @@ function extractUrls(text: string): string[] {
   return text.match(urlRegex) || [];
 }
 
+// Verifica si una URL tiene card de servicio (para no mostrarla en texto)
+function urlHasServiceCard(url: string): boolean {
+  return detectLinkService(url) !== null;
+}
+
 function renderMessage(text: string) {
   // Procesar línea por línea para soportar listas y saltos
   const lines = text.split('\n');
@@ -102,11 +107,17 @@ function renderMessage(text: string) {
     // Parsear inline: **bold**, _italic_, @menciones
     function parseInline(str: string): React.ReactNode[] {
       const parts: React.ReactNode[] = [];
+      // Primero quitar URLs con card del texto (la card ya las muestra)
+      const strWithoutServiceLinks = str.replace(/https?:\/\/[^\s<>"]+/g, (url) => {
+        return detectLinkService(url) ? '' : url;
+      }).trim();
+      if (!strWithoutServiceLinks && str.match(/https?:\/\/[^\s<>"]+/)) return []; // mensaje era solo URLs con card
+      const displayStr = strWithoutServiceLinks || str;
       const regex = /(@[\wáéíóúÁÉÍÓÚñÑ]+(?:\s[\wáéíóúÁÉÍÓÚñÑ]+)*)|\*\*(.+?)\*\*|_(.+?)_|`(.+?)`/g;
       let last = 0;
       let match;
-      while ((match = regex.exec(str)) !== null) {
-        if (match.index > last) parts.push(str.slice(last, match.index));
+      while ((match = regex.exec(displayStr)) !== null) {
+        if (match.index > last) parts.push(displayStr.slice(last, match.index));
         if (match[1]) {
           parts.push(<span key={match.index} className="rounded-[5px] bg-primary/15 px-1 py-px font-medium text-[#b794f6]">{match[1]}</span>);
         } else if (match[2]) {
@@ -118,7 +129,7 @@ function renderMessage(text: string) {
         }
         last = match.index + match[0].length;
       }
-      if (last < str.length) parts.push(str.slice(last));
+      if (last < displayStr.length) parts.push(displayStr.slice(last));
       return parts;
     }
 
@@ -1808,22 +1819,24 @@ FORMATO:
                         <PdfCard name={msg.fileName || 'Documento'} meta="PDF" />
                       </div>
                     )}
-                    {/* Link preview cards */}
+                    {/* Link preview cards — se muestran solo si hay links con servicio conocido */}
                     {msg.message && (() => {
                       const urls = extractUrls(msg.message);
                       if (urls.length === 0) return null;
                       const cards = urls.map(url => {
                         const svc = detectLinkService(url);
                         if (!svc) return null;
+                        // Si el mensaje es solo la URL, no mostrar texto adicional (la card lo reemplaza)
                         return (
                           <a key={url} href={url} target="_blank" rel="noopener noreferrer"
                             className="mt-1.5 flex items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-[12px] hover:bg-white/[0.06] transition-colors no-underline"
                             style={{ borderLeft: `3px solid ${svc.color}40` }}>
-                            <span className="text-base shrink-0">{svc.icon}</span>
-                            <div className="min-w-0">
-                              <p className="text-[10px] font-medium" style={{ color: svc.color }}>{svc.label}</p>
-                              <p className="text-white/50 truncate max-w-[260px]">{url.replace(/^https?:\/\//, '')}</p>
+                            <span className="text-lg shrink-0">{svc.icon}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[11px] font-semibold" style={{ color: svc.color }}>{svc.label}</p>
+                              <p className="text-white/40 truncate text-[10px]">{url.replace(/^https?:\/\//, '').slice(0, 50)}{url.length > 60 ? '...' : ''}</p>
                             </div>
+                            <span className="text-[10px] text-white/20 shrink-0">→</span>
                           </a>
                         );
                       }).filter(Boolean);

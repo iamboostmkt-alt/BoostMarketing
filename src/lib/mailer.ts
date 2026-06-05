@@ -113,6 +113,43 @@ export function templateCambioEstado(title: string, oldStatus: string, newStatus
   return b ? emailLayout(content, b) : content;
 }
 
+// Template para el MEMBER cuando su tarea pasa a internal_review
+export function templateTareaEnRevision(taskTitle: string, memberName: string, pmName: string, b?: Branding) {
+  const color = '#a78bfa';
+  const content = `
+    <p style="color:#6b7280;font-size:15px;margin:0 0 16px;">Hola <strong>${memberName}</strong>,</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;font-weight:700;">🎉 ¡Excelente trabajo!</h2>
+    <p style="color:#6b7280;margin:0 0 4px;font-size:14px;">Tu tarea ha sido entregada y está esperando aprobación:</p>
+    <p style="color:#18181b;margin:0 0 20px;font-size:16px;font-weight:700;">${taskTitle}</p>
+    ${infoBox(`
+      <p style="margin:0 0 8px;color:#6b7280;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">Estado</p>
+      <p style="margin:0 0 8px;font-size:15px;">${statusBadge('En revisión', color)} <span style="color:#9ca3af;font-size:13px;margin-left:8px;">Esperando aprobación</span></p>
+      <p style="margin:8px 0 0;color:#6b7280;font-size:13px;">Tu PM <strong style="color:#18181b;">${pmName}</strong> revisará el trabajo y te avisará.</p>
+    `, color)}
+    <p style="color:#9ca3af;font-size:13px;margin:0 0 20px;">Recibirás una notificación cuando sea aprobado o si se necesitan correcciones.</p>
+    ${btn(`${APP_URL}/dashboard/tasks`, 'Ver tarea', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
+// Template para el PM cuando un member entrega una tarea
+export function templateTareaListaRevisionPM(taskTitle: string, memberName: string, pmName: string, b?: Branding) {
+  const color = '#f59e0b';
+  const content = `
+    <p style="color:#6b7280;font-size:15px;margin:0 0 16px;">Hola <strong>${pmName}</strong>,</p>
+    <h2 style="color:#18181b;margin:0 0 8px;font-size:20px;font-weight:700;">⏳ Tarea lista para revisión</h2>
+    <p style="color:#6b7280;margin:0 0 4px;font-size:14px;"><strong style="color:#18181b;">${memberName}</strong> completó la siguiente tarea:</p>
+    <p style="color:#18181b;margin:0 0 20px;font-size:16px;font-weight:700;">${taskTitle}</p>
+    ${infoBox(`
+      <p style="margin:0 0 8px;color:#6b7280;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">Acción requerida</p>
+      <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;">
+        ✅ <strong>Aprobar</strong> — si el trabajo cumple los estándares<br/>
+        🔄 <strong>Pedir correcciones</strong> — si necesita ajustes
+      </p>
+    `, color)}
+    ${btn(`${APP_URL}/dashboard/tasks?tab=review`, 'Revisar y aprobar', color)}`;
+  return b ? emailLayout(content, b) : content;
+}
+
 export function templateRecordatorio(title: string, dueDate: string, horasRestantes: number, b?: Branding) {
   const color = '#f59e0b';
   const content = `
