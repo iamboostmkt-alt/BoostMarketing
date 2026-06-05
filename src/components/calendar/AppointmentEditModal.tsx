@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Trash2, Video, CheckSquare, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Trash2, Video, CheckSquare, ChevronDown, CheckCircle2, CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -53,6 +54,10 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
   const [clients,         setClients]        = useState<{id:string;name:string;email:string;company:string}[]>([]);
   const [clientEmail,     setClientEmail]    = useState('');
   const [saving,          setSaving]         = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [hour,   setHour]   = useState('10');
+  const [minute, setMinute] = useState('00');
+  const [calOpen,setCalOpen]= useState(false);
   const [deleting,        setDeleting]       = useState(false);
 
   useEffect(() => {
@@ -188,8 +193,36 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
           </div>
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Fecha y hora *</Label>
-            <Input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} required
-              className="bg-white/[0.04] border-white/[0.08] text-white focus-visible:ring-brand [color-scheme:dark]" />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <button type="button" onClick={() => setCalOpen(v=>!v)}
+                  className="h-9 w-full flex items-center gap-2 rounded-md border border-white/[0.08] bg-white/[0.04] px-3 text-[13px] text-left outline-none hover:border-brand/40"
+                  style={{color: selectedDate ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)'}}>
+                  <CalendarIcon className="h-3.5 w-3.5 opacity-50 shrink-0"/>
+                  {selectedDate ? format(selectedDate,"d MMM yyyy",{locale:es}) : 'Seleccionar fecha'}
+                </button>
+                {calOpen && (
+                  <div className="absolute top-10 left-0 z-[9999] rounded-xl border border-white/[0.08] shadow-2xl overflow-hidden" style={{background:'#0f0f14'}}>
+                    <Calendar mode="single" locale={es} selected={selectedDate}
+                      onSelect={d=>{
+                        if(d){const pad=(n:number)=>String(n).padStart(2,'0');setDate(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${hour}:${minute}`);}
+                        setSelectedDate(d); setCalOpen(false);
+                      }} className="text-white"/>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-1 h-9">
+                <select value={hour} onChange={e=>{setHour(e.target.value);if(selectedDate){const d=new Date(selectedDate);d.setHours(parseInt(e.target.value),parseInt(minute),0,0);const pad=(n:number)=>String(n).padStart(2,'0');setDate(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);} }}
+                  style={{colorScheme:'dark'}} className="flex-1 rounded-md border border-white/[0.08] bg-[#0f0f14] px-1 text-[13px] text-white/70 outline-none">
+                  {Array.from({length:24},(_,i)=>String(i).padStart(2,'0')).map(h=><option key={h} value={h} style={{background:'#0f0f14'}}>{h}</option>)}
+                </select>
+                <span className="flex items-center text-white/30 text-xs">:</span>
+                <select value={minute} onChange={e=>{setMinute(e.target.value);if(selectedDate){const d=new Date(selectedDate);d.setHours(parseInt(hour),parseInt(e.target.value),0,0);const pad=(n:number)=>String(n).padStart(2,'0');setDate(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);} }}
+                  style={{colorScheme:'dark'}} className="flex-1 rounded-md border border-white/[0.08] bg-[#0f0f14] px-1 text-[13px] text-white/70 outline-none">
+                  {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m=><option key={m} value={m} style={{background:'#0f0f14'}}>{m}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Link Google Meet</Label>
