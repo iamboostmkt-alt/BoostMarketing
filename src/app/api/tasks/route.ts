@@ -425,7 +425,9 @@ export async function POST(req: NextRequest) {
   const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined;
   const branding = await getBranding();
   // Obtener asignados con nombre para personalizar email
+  // Incluir assignedUser (campo directo) Y assignedUsers (tabla TaskUser)
   const assignedWithNames = [
+    ...(task.assignedUser ? [{ email: task.assignedUser.email, name: task.assignedUser.name }] : []),
     ...(task.assignedUsers?.map((au: any) => ({ email: au.user?.email, name: au.user?.name })) ?? []),
   ].filter((u, i, arr) => u.email && arr.findIndex(x => x.email === u.email) === i);
   for (const u of assignedWithNames) {

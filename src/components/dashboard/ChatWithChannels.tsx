@@ -54,6 +54,41 @@ async function downloadFile(url: string, filename: string) {
   }
 }
 
+// Detecta si un texto es un URL y retorna info del servicio
+function detectLinkService(url: string): { icon: string; label: string; color: string } | null {
+  try {
+    const u = new URL(url);
+    const h = u.hostname.replace('www.','');
+    if (h.includes('youtube.com') || h.includes('youtu.be'))
+      return { icon: '▶️', label: 'YouTube', color: '#FF0000' };
+    if (h.includes('drive.google.com'))
+      return { icon: '📁', label: 'Google Drive', color: '#4285F4' };
+    if (h.includes('docs.google.com'))
+      return { icon: '📄', label: 'Google Docs', color: '#4285F4' };
+    if (h.includes('figma.com'))
+      return { icon: '🎨', label: 'Figma', color: '#A259FF' };
+    if (h.includes('notion.so') || h.includes('notion.com'))
+      return { icon: '📝', label: 'Notion', color: '#000000' };
+    if (h.includes('github.com'))
+      return { icon: '💻', label: 'GitHub', color: '#181717' };
+    if (h.includes('loom.com'))
+      return { icon: '🎬', label: 'Loom', color: '#625DF5' };
+    if (h.includes('zoom.us'))
+      return { icon: '📹', label: 'Zoom', color: '#2D8CFF' };
+    if (h.includes('meet.google.com'))
+      return { icon: '📹', label: 'Google Meet', color: '#00897B' };
+    if (h.includes('dropbox.com'))
+      return { icon: '📦', label: 'Dropbox', color: '#0061FF' };
+    return null;
+  } catch { return null; }
+}
+
+// Detecta URLs en un mensaje
+function extractUrls(text: string): string[] {
+  const urlRegex = /https?:\/\/[^\s<>"]+/g;
+  return text.match(urlRegex) || [];
+}
+
 function renderMessage(text: string) {
   // Procesar línea por línea para soportar listas y saltos
   const lines = text.split('\n');
@@ -322,7 +357,7 @@ function ChannelList({
                 <X className="h-3.5 w-3.5" strokeWidth={1.75} />
               </button>
             </div>
-            <div className="max-h-[200px] overflow-y-auto py-1">
+            <div className="max-h-[240px] overflow-y-auto py-1">
               {members.filter(m => m.id !== myId && (
                 !dmSearchQuery || (m.name || m.email).toLowerCase().includes(dmSearchQuery.toLowerCase())
               )).map(m => {
@@ -349,7 +384,7 @@ function ChannelList({
           </div>
         )}
         {openDMs && (
-          <ul className="flex flex-col gap-0.5 max-h-[240px] overflow-y-auto scrollbar-thin">
+          <ul className="flex flex-col gap-0.5 max-h-[320px] overflow-y-auto scrollbar-thin">
             {/* ── Weeklink bot — DM de avisos ── */}
             {myId && (() => {
               const wkRoom = weeklinkDmRoom(myId);
@@ -828,7 +863,7 @@ function ChatMain({
       ? (window as any).__NEXT_DATA__?.props?.pageProps?._supabaseConfigured
       : false;
     // Polling cada 8s solo en canales no-DM cuando RT puede fallar
-    const interval = setInterval(() => { fetchMessages(); }, 8000);
+    const interval = setInterval(() => { fetchMessages(); }, 3000); // 3s fallback RT
     return () => clearInterval(interval);
   }, [fetchMessages]);
   // Cerrar menú de más opciones al click fuera
@@ -1331,7 +1366,9 @@ FORMATO:
         )}
         <div className="flex h-[52px] items-center gap-3 px-5">
           <div className="flex items-center gap-2">
-            {dmUser ? (
+            {room.startsWith('weeklink_') ? (
+              <div className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }}>W</div>
+            ) : dmUser ? (
               <span className="text-[13px] font-medium text-white/40">@</span>
             ) : (
               <Hash className="h-4 w-4 text-white/40" strokeWidth={1.75} />
@@ -1771,6 +1808,28 @@ FORMATO:
                         <PdfCard name={msg.fileName || 'Documento'} meta="PDF" />
                       </div>
                     )}
+                    {/* Link preview cards */}
+                    {msg.message && (() => {
+                      const urls = extractUrls(msg.message);
+                      if (urls.length === 0) return null;
+                      const cards = urls.map(url => {
+                        const svc = detectLinkService(url);
+                        if (!svc) return null;
+                        return (
+                          <a key={url} href={url} target="_blank" rel="noopener noreferrer"
+                            className="mt-1.5 flex items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-[12px] hover:bg-white/[0.06] transition-colors no-underline"
+                            style={{ borderLeft: `3px solid ${svc.color}40` }}>
+                            <span className="text-base shrink-0">{svc.icon}</span>
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-medium" style={{ color: svc.color }}>{svc.label}</p>
+                              <p className="text-white/50 truncate max-w-[260px]">{url.replace(/^https?:\/\//, '')}</p>
+                            </div>
+                          </a>
+                        );
+                      }).filter(Boolean);
+                      return cards.length > 0 ? <div className="mt-1 space-y-1">{cards}</div> : null;
+                    })()}
+
                     {msg.fileUrl && (() => {
                       const ft = msg.fileType || '';
                       const fu = (msg.fileUrl || '').toLowerCase().split('?')[0];
@@ -3302,7 +3361,10 @@ export default function ChatWithChannels() {
 
   const activeRoom = rooms.find(r => r.id === activeId) || clients.find(c => c.id === activeId);
   const activeDmUser = activeId.includes('_DM_') ? members.find(m => activeId.includes(m.id) && m.id !== (session?.user as any)?.id) ?? null : null;
-  const activeTitle = activeDmUser ? (activeDmUser.name || activeDmUser.email) : ((activeRoom as any)?.name || activeId.toLowerCase());
+  const isWeeklinkDm = activeId.startsWith('weeklink_');
+  const activeTitle = isWeeklinkDm ? 'Weeklink'
+    : activeDmUser ? (activeDmUser.name || activeDmUser.email)
+    : ((activeRoom as any)?.name || activeId.toLowerCase());
 
   const channelList = (
     <ChannelList

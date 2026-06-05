@@ -33,7 +33,21 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error("[upload] Supabase error:", error.message);
-    return NextResponse.json({ error: "Error al subir la imagen. Inténtalo de nuevo." }, { status: 500 });
+    // Fallback: intentar con UploadThing via la API interna
+    try {
+      const { UTApi } = await import("uploadthing/server");
+      const utapi = new UTApi();
+      const blob = new Blob([buffer], { type: file.type });
+      const utFile = new File([blob], file.name, { type: file.type });
+      const res = await utapi.uploadFiles([utFile]);
+      const uploaded = res?.[0];
+      if (uploaded?.data?.ufsUrl || uploaded?.data?.url) {
+        return NextResponse.json({ url: uploaded.data.ufsUrl ?? uploaded.data.url }, { status: 201 });
+      }
+    } catch (utErr) {
+      console.error("[upload] UploadThing fallback error:", utErr);
+    }
+    return NextResponse.json({ error: "Error al subir la imagen. Verifica que Supabase Storage esté configurado." }, { status: 500 });
   }
 
   return NextResponse.json({ url: getPublicUrl(filename) }, { status: 201 });
