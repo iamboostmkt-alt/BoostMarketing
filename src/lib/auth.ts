@@ -124,6 +124,34 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
+    // Vincular login con Google al usuario existente del workspace (mismo email)
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google') {
+        try {
+          const existing = await db.user.findFirst({
+            where: { email: { equals: user.email!, mode: 'insensitive' } },
+          });
+          if (existing) {
+            // Actualizar imagen de perfil desde Google si no tiene una
+            if (!existing.image && (profile as any)?.picture) {
+              await db.user.update({
+                where: { id: existing.id },
+                data: { image: (profile as any).picture },
+              });
+            }
+            // Permitir login vinculando al usuario existente
+            return true;
+          }
+          // No existe usuario con ese email en el workspace → bloquear
+          // (solo pueden acceder usuarios previamente invitados)
+          return '/login?error=NoWorkspaceAccount';
+        } catch {
+          return false;
+        }
+      }
+      return true;
+    },
+
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.sub = user.id;
@@ -213,6 +241,7 @@ export const authOptions: NextAuthOptions = {
               customRoleId: true,
               role: true,
               color: true,
+              image: true,
               customRole: { select: { label: true, color: true, permissions: true } },
             },
           });
@@ -221,6 +250,8 @@ export const authOptions: NextAuthOptions = {
             token.workspaceName = dbUser.workspace?.name ?? null;
             token.role          = dbUser.role;
             token.color         = dbUser.color ?? undefined;
+            // Actualizar imagen del token con la que está en DB
+            if (dbUser.image) token.picture = dbUser.image;
             token.lifecycleStatus  = dbUser.lifecycleStatus ?? null;
             token.customRoleId     = dbUser.customRoleId ?? null;
             token.customRoleLabel  = dbUser.customRole?.label ?? null;

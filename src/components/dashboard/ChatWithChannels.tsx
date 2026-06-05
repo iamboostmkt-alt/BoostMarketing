@@ -784,7 +784,16 @@ function ChatMain({
       if (res.ok) {
         const d = await res.json();
         // No sobreescribir mensajes mientras la IA está escribiendo (evita parpadeo)
-        if (!isAiWritingRef.current) setMessages(d.messages || []);
+        if (!isAiWritingRef.current) {
+          // Enriquecer con image actual del member (para mensajes enviados antes de subir foto)
+          const enriched = (d.messages || []).map((msg: any) => {
+            if (!msg.user || msg.user.image) return msg;
+            const live = members.find(m => m.id === msg.userId);
+            if (live?.image) return { ...msg, user: { ...msg.user, image: live.image } };
+            return msg;
+          });
+          setMessages(enriched);
+        }
       }
     } catch {}
     setLoading(false);

@@ -84,15 +84,23 @@ export async function GET(req: NextRequest) {
     } else if (TEAM_ROLES.includes(role)) {
       infoWhere.assignedUsers = { some: { userId } };
     }
-    const infoClients = await db.client.findMany({
+    const rawInfoClients = await db.client.findMany({
       where: infoWhere,
       select: {
         id: true, name: true, company: true, status: true, email: true,
         links: true, createdAt: true,
-        assignedManager: { select: { id: true, name: true, email: true, color: true } },
+        assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
+        assignedUsers: {
+          include: { user: { select: { id: true, name: true, email: true, color: true, image: true, role: true } } }
+        },
       },
       orderBy: { name: 'asc' },
     });
+    // Aplanar assignedUsers igual que en el modo normal
+    const infoClients = rawInfoClients.map(c => ({
+      ...c,
+      assignedUsers: (c.assignedUsers ?? []).map((au: any) => au.user ?? au),
+    }));
     return NextResponse.json({ clients: infoClients });
   }
 
