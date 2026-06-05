@@ -2723,7 +2723,8 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
   const [roomTasks, setRoomTasks]   = useState<any[]>([]);
   const [roomFiles, setRoomFiles]   = useState<any[]>([]);
   const [clientInfo, setClientInfo] = useState<any>(null);
-  const [fileFilter, setFileFilter] = useState<'all' | 'image' | 'pdf' | 'other'>('all');
+  const [fileFilter,   setFileFilter]   = useState<'all' | 'image' | 'pdf' | 'other'>('all');
+  const [showAllFiles, setShowAllFiles] = useState(false);
 
   useEffect(() => {
     if (!room) return;
@@ -3105,6 +3106,105 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
               ) : (
                 <p className="text-[11px] text-white/20 px-4 py-2">Sin archivos compartidos</p>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ══ Modal Galería de Archivos ══ */}
+        {showAllFiles && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <div onClick={() => setShowAllFiles(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }} />
+            <div style={{ position: 'relative', zIndex: 10000, width: '100%', maxWidth: '580px', maxHeight: '80vh', background: '#0f0f14', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              {/* Header modal */}
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06] shrink-0">
+                <div>
+                  <p className="text-[14px] font-semibold text-white">Archivos compartidos</p>
+                  <p className="text-[11px] text-white/30">{roomFiles.length} {roomFiles.length === 1 ? 'archivo' : 'archivos'}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {(['all','image','pdf'] as const).map(f => (
+                    <button key={f} onClick={() => setFileFilter(f)}
+                      className={`text-[11px] px-2.5 py-1 rounded-md border transition-colors ${fileFilter === f ? 'border-violet-500/35 bg-violet-500/10 text-white/80' : 'border-white/[0.06] text-white/30 hover:text-white/60'}`}>
+                      {f === 'all' ? 'Todos' : f === 'image' ? 'Imágenes' : 'PDFs'}
+                    </button>
+                  ))}
+                  <button onClick={() => setShowAllFiles(false)} className="ml-1 h-7 w-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/[0.06]">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              {/* Contenido */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {filteredFiles.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-white/20">
+                    <span className="text-4xl mb-2">📂</span>
+                    <p className="text-[13px]">No hay archivos</p>
+                  </div>
+                ) : (() => {
+                  const imgs = filteredFiles.filter(m => {
+                    const ft = (m.fileType || '').toLowerCase();
+                    const fu = (m.fileUrl || '').toLowerCase().split('?')[0];
+                    return ft.startsWith('image') || /\.(png|jpg|jpeg|gif|webp|avif)$/.test(fu);
+                  });
+                  const docs = filteredFiles.filter(m => {
+                    const ft = (m.fileType || '').toLowerCase();
+                    const fu = (m.fileUrl || '').toLowerCase().split('?')[0];
+                    return !(ft.startsWith('image') || /\.(png|jpg|jpeg|gif|webp|avif)$/.test(fu));
+                  });
+                  return (
+                    <>
+                      {imgs.length > 0 && fileFilter !== 'pdf' && (
+                        <div>
+                          <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2 px-1">Imágenes ({imgs.length})</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            {imgs.map((msg, i) => (
+                              <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-white/[0.08] cursor-pointer bg-white/[0.03]"
+                                onClick={() => window.open(msg.fileUrl, '_blank')}>
+                                <img src={msg.fileUrl} alt={msg.fileName || ''} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-end justify-start p-1.5">
+                                  <button onClick={e => { e.stopPropagation(); downloadFile(msg.fileUrl!, msg.fileName || 'imagen'); }}
+                                    className="w-6 h-6 rounded-md bg-white/20 hover:bg-white/30 flex items-center justify-center">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {docs.length > 0 && fileFilter !== 'image' && (
+                        <div>
+                          <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2 px-1">Documentos ({docs.length})</p>
+                          <div className="space-y-1">
+                            {docs.map((msg, i) => {
+                              const isPdf = (msg.fileName || '').toLowerCase().endsWith('.pdf');
+                              return (
+                                <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-white/[0.06] hover:bg-white/[0.04] group">
+                                  <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0" style={{ background: isPdf ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)' }}>
+                                    {isPdf ? '📄' : '📎'}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[12px] font-medium text-white/70 truncate">{msg.fileName || 'Archivo'}</p>
+                                    <p className="text-[10px] text-white/30">{msg.user?.name?.split(' ')[0]} · {new Date(msg.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-white/[0.08] text-white/30 hover:text-white/70" title="Abrir">
+                                      <ChevronRight className="w-3.5 h-3.5" />
+                                    </a>
+                                    <button onClick={() => downloadFile(msg.fileUrl!, msg.fileName || 'archivo')} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-white/[0.08] text-white/30 hover:text-white/70" title="Descargar">
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           </div>
         )}

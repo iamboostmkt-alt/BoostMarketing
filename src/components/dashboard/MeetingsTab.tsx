@@ -71,7 +71,13 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     }
     setCalOpen(false);
     setNotes(meeting?.notes ?? '');
-    setMeetUrl(meeting?.meetUrl ?? '');
+    // Auto-generar link de Google Meet para reuniones nuevas (no edición)
+    if (!meeting) {
+      const id = Math.random().toString(36).slice(2, 6) + '-' + Math.random().toString(36).slice(2, 6) + '-' + Math.random().toString(36).slice(2, 6);
+      setMeetUrl(`https://meet.google.com/${id}`);
+    } else {
+      setMeetUrl(meeting?.meetUrl ?? '');
+    }
     setAssigned((meeting?.assignedUsers ?? []).map((au: any) => au.user?.id ?? au.userId));
     setClientEmail(initialClientEmail ?? (meeting as any)?.email ?? '');
     setClientId(clients.find(c => c.email === (initialClientEmail ?? (meeting as any)?.email ?? ''))?.id ?? '');
