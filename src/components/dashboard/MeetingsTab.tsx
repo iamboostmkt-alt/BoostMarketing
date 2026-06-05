@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Video, Plus, Pencil, Trash2, RefreshCw, X, Check, Loader2, Link2, ChevronDown } from 'lucide-react';
+import { Video, Plus, Pencil, Trash2, RefreshCw, X, Check, Loader2, Link2, CalendarIcon, Clock } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
 import type { Appointment } from '@/lib/types';
 
 export interface TeamUser { id: string; name: string | null; email: string; color: string; image: string | null; }
@@ -40,7 +43,10 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   const isEdit    = !!meeting;
 
   const [name,        setName]        = useState('');
-  const [date,        setDate]        = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [hour,        setHour]        = useState('10');
+  const [minute,      setMinute]      = useState('00');
+  const [calOpen,     setCalOpen]     = useState(false);
   const [notes,       setNotes]       = useState('');
   const [meetUrl,     setMeetUrl]     = useState('');
   const [assigned,    setAssigned]    = useState<string[]>([]);
@@ -53,13 +59,17 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     if (!open) return;
     setName(meeting?.name ?? '');
     if (meeting?.date) {
-      setDate(new Date(meeting.date).toISOString().slice(0, 16));
+      const d = new Date(meeting.date);
+      setSelectedDate(d);
+      setHour(String(d.getHours()).padStart(2, '0'));
+      setMinute(String(d.getMinutes()).padStart(2, '0'));
     } else if (initialDate) {
-      const pad = (n: number) => String(n).padStart(2, '0');
-      setDate(`${initialDate.getFullYear()}-${pad(initialDate.getMonth()+1)}-${pad(initialDate.getDate())}T10:00`);
+      setSelectedDate(initialDate);
+      setHour('10'); setMinute('00');
     } else {
-      setDate('');
+      setSelectedDate(undefined); setHour('10'); setMinute('00');
     }
+    setCalOpen(false);
     setNotes(meeting?.notes ?? '');
     setMeetUrl(meeting?.meetUrl ?? '');
     setAssigned((meeting?.assignedUsers ?? []).map((au: any) => au.user?.id ?? au.userId));
@@ -87,20 +97,23 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !date) { toast.error('Nombre y fecha requeridos.'); return; }
+    if (!name.trim() || !selectedDate) { toast.error('Nombre y fecha requeridos.'); return; }
+    const dateObj = new Date(selectedDate);
+    dateObj.setHours(parseInt(hour) || 10, parseInt(minute) || 0, 0, 0);
+    const date = dateObj.toISOString();
     setSaving(true);
     try {
+      // Siempre usar /api/meetings desde el dashboard (evita crear prospectos)
+      // clientId y clientEmail se pasan para notificaciones en el room del cliente
       const body = {
         name, date: new Date(date).toISOString(), notes, meetUrl,
         assignedUserIds: assigned, visibility,
-        ...(clientEmail ? { email: clientEmail } : {}),
         ...(clientId    ? { clientId }           : {}),
+        ...(clientEmail ? { clientEmail }        : {}),
       };
-      const url    = clientEmail ? '/api/appointments' : '/api/meetings';
-      const patchUrl = '/api/appointments';
       const res = isEdit
-        ? await fetch(patchUrl, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: meeting!.id, ...body }) })
-        : await fetch(url,      { method: 'POST',  headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        ? await fetch('/api/meetings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: meeting!.id, ...body }) })
+        : await fetch('/api/meetings', { method: 'POST',  headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       toast.success(isEdit ? 'Reunion actualizada.' : 'Reunion creada.');
@@ -162,25 +175,59 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                 className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 text-[13px] text-white/80 placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
             </div>
 
-            {/* Fecha y link en fila */}
+            {/* Fecha, hora y link en grid */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Fecha y hora *</label>
-                <input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} required
-                  style={{ colorScheme: 'dark' }}
-                  className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[13px] text-white/70 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Fecha *</label>
+                <div className="relative">
+                  <button type="button" onClick={() => setCalOpen(v => !v)}
+                    className="h-[36px] w-full flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[13px] text-left outline-none hover:border-purple-500/40 transition-colors"
+                    style={{ color: selectedDate ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.25)' }}>
+                    <CalendarIcon className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                    {selectedDate ? format(selectedDate, "d MMM yyyy", { locale: es }) : 'Seleccionar fecha'}
+                  </button>
+                  {calOpen && (
+                    <div className="absolute top-10 left-0 z-[9999] rounded-xl border border-white/[0.08] shadow-2xl overflow-hidden"
+                      style={{ background: '#0f0f14' }}>
+                      <Calendar mode="single" locale={es} selected={selectedDate}
+                        onSelect={d => { setSelectedDate(d); setCalOpen(false); }}
+                        className="text-white" />
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
-                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Meet / Zoom</label>
-                <div className="flex gap-1.5">
-                  <input value={meetUrl} onChange={e => setMeetUrl(e.target.value)}
-                    placeholder="https://meet.google.com/..."
-                    className="h-[36px] flex-1 min-w-0 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/15 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
-                  <button type="button" onClick={generateMeetLink} title="Generar link de Google Meet"
-                    className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 transition-colors">
-                    <Link2 className="h-3.5 w-3.5" />
-                  </button>
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Hora *</label>
+                <div className="flex gap-1.5 h-[36px]">
+                  <select value={hour} onChange={e => setHour(e.target.value)}
+                    style={{ colorScheme: 'dark' }}
+                    className="flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
+                    {Array.from({length:24},(_,i)=>String(i).padStart(2,'0')).map(h=>(
+                      <option key={h} value={h} style={{background:'#0f0f14'}}>{h}</option>
+                    ))}
+                  </select>
+                  <span className="flex items-center text-white/30 text-[13px]">:</span>
+                  <select value={minute} onChange={e => setMinute(e.target.value)}
+                    style={{ colorScheme: 'dark' }}
+                    className="flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
+                    {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m=>(
+                      <option key={m} value={m} style={{background:'#0f0f14'}}>{m}</option>
+                    ))}
+                  </select>
                 </div>
+              </div>
+            </div>
+            {/* Meet / Zoom */}
+            <div>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Meet / Zoom</label>
+              <div className="flex gap-1.5">
+                <input value={meetUrl} onChange={e => setMeetUrl(e.target.value)}
+                  placeholder="https://meet.google.com/..."
+                  className="h-[36px] flex-1 min-w-0 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/15 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
+                <button type="button" onClick={generateMeetLink} title="Generar link de Google Meet"
+                  className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 transition-colors">
+                  <Link2 className="h-3.5 w-3.5" />
+                </button>
               </div>
             </div>
 
