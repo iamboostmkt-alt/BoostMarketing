@@ -2,15 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Video, Plus, Pencil, Trash2, RefreshCw, Clock, CheckCircle2, XCircle, X } from 'lucide-react';
+import { Video, Plus, Pencil, Trash2, RefreshCw, X, Check, Loader2, Link2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Appointment } from '@/lib/types';
 
 export interface TeamUser { id: string; name: string | null; email: string; color: string; image: string | null; }
@@ -22,7 +20,7 @@ const STATUS: Record<string, { label: string; color: string }> = {
 };
 
 function ini(name: string | null, email: string) {
-  return (name || email).split(/[s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+  return (name || email).split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
 interface MeetDialogProps {
@@ -39,37 +37,52 @@ interface MeetDialogProps {
 
 export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved, clients = [], initialClientEmail, initialDate, userRole = '' }: MeetDialogProps) {
   const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(userRole);
-  const isEdit = !!meeting;
+  const isEdit    = !!meeting;
+
   const [name,        setName]        = useState('');
   const [date,        setDate]        = useState('');
   const [notes,       setNotes]       = useState('');
   const [meetUrl,     setMeetUrl]     = useState('');
   const [assigned,    setAssigned]    = useState<string[]>([]);
   const [clientEmail, setClientEmail] = useState('');
+  const [clientId,    setClientId]    = useState('');
   const [visibility,  setVisibility]  = useState<'internal' | 'team' | 'client_visible'>('team');
   const [saving,      setSaving]      = useState(false);
 
   useEffect(() => {
-    if (open) {
-      setName(meeting?.name ?? '');
-      if (meeting?.date) {
-        setDate(new Date(meeting.date).toISOString().slice(0, 16));
-      } else if (initialDate) {
-        const pad = (n: number) => String(n).padStart(2, '0');
-        setDate(`${initialDate.getFullYear()}-${pad(initialDate.getMonth()+1)}-${pad(initialDate.getDate())}T10:00`);
-      } else {
-        setDate('');
-      }
-      setNotes(meeting?.notes ?? '');
-      setMeetUrl(meeting?.meetUrl ?? '');
-      setAssigned((meeting?.assignedUsers ?? []).map((au: any) => au.user?.id ?? au.userId));
-      setClientEmail(initialClientEmail ?? (meeting as any)?.email ?? '');
-      setVisibility('team');
+    if (!open) return;
+    setName(meeting?.name ?? '');
+    if (meeting?.date) {
+      setDate(new Date(meeting.date).toISOString().slice(0, 16));
+    } else if (initialDate) {
+      const pad = (n: number) => String(n).padStart(2, '0');
+      setDate(`${initialDate.getFullYear()}-${pad(initialDate.getMonth()+1)}-${pad(initialDate.getDate())}T10:00`);
+    } else {
+      setDate('');
     }
+    setNotes(meeting?.notes ?? '');
+    setMeetUrl(meeting?.meetUrl ?? '');
+    setAssigned((meeting?.assignedUsers ?? []).map((au: any) => au.user?.id ?? au.userId));
+    setClientEmail(initialClientEmail ?? (meeting as any)?.email ?? '');
+    setClientId(clients.find(c => c.email === (initialClientEmail ?? (meeting as any)?.email ?? ''))?.id ?? '');
+    setVisibility('team');
   }, [open, meeting, initialClientEmail]);
+
+  // Esc para cerrar
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onOpenChange(false); }
+    if (open) document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onOpenChange]);
 
   function toggleUser(id: string) {
     setAssigned(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }
+
+  function handleClientChange(val: string) {
+    setClientId(val);
+    const found = clients.find(c => c.id === val);
+    setClientEmail(found?.email ?? '');
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -77,13 +90,17 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     if (!name.trim() || !date) { toast.error('Nombre y fecha requeridos.'); return; }
     setSaving(true);
     try {
-      const body = { name, date: new Date(date).toISOString(), notes, meetUrl, assignedUserIds: assigned, visibility, ...(clientEmail ? { email: clientEmail } : {}) };
-      // Reunión con cliente → /api/appointments; interna → /api/meetings
-      const url = clientEmail ? '/api/appointments' : '/api/meetings';
+      const body = {
+        name, date: new Date(date).toISOString(), notes, meetUrl,
+        assignedUserIds: assigned, visibility,
+        ...(clientEmail ? { email: clientEmail } : {}),
+        ...(clientId    ? { clientId }           : {}),
+      };
+      const url    = clientEmail ? '/api/appointments' : '/api/meetings';
       const patchUrl = '/api/appointments';
       const res = isEdit
         ? await fetch(patchUrl, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: meeting!.id, ...body }) })
-        : await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        : await fetch(url,      { method: 'POST',  headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       toast.success(isEdit ? 'Reunion actualizada.' : 'Reunion creada.');
@@ -94,104 +111,194 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     } finally { setSaving(false); }
   }
 
+  function generateMeetLink() {
+    const id = Math.random().toString(36).slice(2, 6) + '-' + Math.random().toString(36).slice(2, 6) + '-' + Math.random().toString(36).slice(2, 6);
+    setMeetUrl(`https://meet.google.com/${id}`);
+  }
+
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
-            <Video className="h-4 w-4 text-brand-light" />
-            {isEdit ? 'Editar Reunion' : 'Nueva Reunion'}
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSave} className="space-y-4 mt-2">
-          <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Titulo *</Label>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Reunion semanal" required
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
-          </div>
-          {clients.length > 0 && (
-            <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Cliente (opcional)</Label>
-              <select value={clientEmail} onChange={e => setClientEmail(e.target.value)}
-                className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
-                <option value="">Sin cliente</option>
-                {clients.map(c => (
-                  <option key={c.id} value={c.email}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
-                ))}
-              </select>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+      {/* Overlay */}
+      <div onClick={() => onOpenChange(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(3px)' }} />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 10 }}
+        transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+        onClick={e => e.stopPropagation()}
+        style={{ position: 'relative', zIndex: 9991, width: '100%', maxWidth: 520 }}
+      >
+        {/* Header flotante */}
+        <div className="flex items-center justify-between mb-3 px-1">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.04]">
+              <Video className="h-3.5 w-3.5 text-purple-400" strokeWidth={1.5} />
             </div>
-          )}
-          <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Fecha y hora *</Label>
-            <Input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} required
-              className="bg-white/[0.04] border-white/[0.08] text-white focus-visible:ring-brand" />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Enlace Meet / Zoom</Label>
-            <Input value={meetUrl} onChange={e => setMeetUrl(e.target.value)} placeholder="https://meet.google.com/..."
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
-          </div>
-          {/* Tipo de reunión — solo para managers visible cliente */}
-          <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Tipo</Label>
-            <div className="flex gap-2">
-              {[
-                { val: 'team' as const,           label: '👥 Equipo',          tip: 'Solo el equipo' },
-                { val: 'internal' as const,        label: '🔒 Interno',         tip: 'Canal interno' },
-                ...(isManager ? [{ val: 'client_visible' as const, label: '👁 Visible cliente', tip: 'El cliente lo ve' }] : []),
-              ].map(opt => (
-                <button key={opt.val} type="button" title={opt.tip}
-                  onClick={() => setVisibility(opt.val)}
-                  className={[
-                    'flex-1 py-1.5 rounded-lg text-[11px] font-medium border transition-colors',
-                    visibility === opt.val
-                      ? 'border-violet-500/50 bg-violet-500/15 text-violet-300'
-                      : 'border-white/[0.08] text-white/40 hover:text-white/70'
-                  ].join(' ')}>
-                  {opt.label}
-                </button>
-              ))}
+            <div>
+              <p className="text-[13px] font-medium text-white/85 leading-none">{isEdit ? 'Editar reunión' : 'Agendar reunión'}</p>
+              <p className="mt-0.5 text-[11px] text-white/30">Se notificará a los participantes por correo</p>
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Notas</Label>
-            <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Agenda, temas..."
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
-          </div>
-          {teamUsers.length > 0 && (
-            <div className="space-y-2">
-              <Label className="text-white/70 text-xs">Participantes</Label>
-              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                {teamUsers.map(u => {
-                  const sel = assigned.includes(u.id);
-                  const cls = sel
-                    ? 'border-brand bg-brand/20 text-brand-light'
-                    : 'border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white';
-                  return (
-                    <button key={u.id} type="button" onClick={() => toggleUser(u.id)}
-                      className={"flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border transition-colors " + cls}>
-                      <Avatar className="h-4 w-4">
-                        <AvatarImage src={u.image || undefined} />
-                        <AvatarFallback className="text-[8px]" style={{ backgroundColor: u.color + '33', color: u.color }}>{ini(u.name, u.email)}</AvatarFallback>
-                      </Avatar>
-                      {u.name || u.email.split('@')[0]}
-                      {sel && <X className="h-3 w-3" />}
-                    </button>
-                  );
-                })}
+          <button onClick={() => onOpenChange(false)} className="flex h-7 w-7 items-center justify-center rounded-lg text-white/25 transition-colors hover:bg-white/[0.05] hover:text-white/60">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Card principal */}
+        <div style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, position: 'relative', overflow: 'hidden' }} className="p-5">
+          {/* Glow decorativo */}
+          <div style={{ position: 'absolute', bottom: -30, right: -30, width: 250, height: 180, background: 'radial-gradient(ellipse at center, rgba(88,28,220,0.12) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+          <div style={{ position: 'absolute', top: -20, left: -20, width: 150, height: 120, background: 'radial-gradient(ellipse at center, rgba(88,28,220,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+
+          <form onSubmit={handleSave} className="relative z-10 space-y-4">
+            {/* Título */}
+            <div>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Título *</label>
+              <input value={name} onChange={e => setName(e.target.value)} required
+                placeholder="Ej: Revisión mensual GymnasTwin"
+                className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 text-[13px] text-white/80 placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
+            </div>
+
+            {/* Fecha y link en fila */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Fecha y hora *</label>
+                <input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} required
+                  className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[13px] text-white/70 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
+              </div>
+              <div>
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Meet / Zoom</label>
+                <div className="flex gap-1.5">
+                  <input value={meetUrl} onChange={e => setMeetUrl(e.target.value)}
+                    placeholder="https://meet.google.com/..."
+                    className="h-[36px] flex-1 min-w-0 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/15 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
+                  <button type="button" onClick={generateMeetLink} title="Generar link de Google Meet"
+                    className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 transition-colors">
+                    <Link2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
-          )}
-          <div className="flex gap-3 pt-1">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
-              className="flex-1 border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06]">Cancelar</Button>
-            <Button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand-dark text-white">
-              {saving ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+
+            {/* Cliente */}
+            {clients.length > 0 && (
+              <div>
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Cuenta cliente (opcional)</label>
+                <select value={clientId} onChange={e => handleClientChange(e.target.value)}
+                  className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
+                  <option value="">Sin cliente</option>
+                  {clients.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Tipo de reunión */}
+            <div>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Visibilidad</label>
+              <div className="flex gap-1.5">
+                {[
+                  { val: 'team' as const,     label: '👥 Equipo',      tip: 'Solo el equipo interno' },
+                  { val: 'internal' as const,  label: '🔒 Interno',     tip: 'Solo tú y ADMIN/PM' },
+                  ...(isManager ? [{ val: 'client_visible' as const, label: '👁 Visible cliente', tip: 'El cliente lo verá' }] : []),
+                ].map(opt => (
+                  <button key={opt.val} type="button" title={opt.tip}
+                    onClick={() => setVisibility(opt.val)}
+                    className="flex-1 py-1.5 rounded-lg text-[11px] font-medium border transition-colors"
+                    style={{
+                      background: visibility === opt.val ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.02)',
+                      borderColor: visibility === opt.val ? 'rgba(124,58,237,0.40)' : 'rgba(255,255,255,0.07)',
+                      color: visibility === opt.val ? '#c4b5fd' : 'rgba(255,255,255,0.40)',
+                    }}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Participantes */}
+            {teamUsers.length > 0 && (
+              <div>
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">
+                  Participantes {assigned.length > 0 && <span className="text-purple-400">{assigned.length} seleccionados</span>}
+                </label>
+                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
+                  {teamUsers.map(u => {
+                    const sel = assigned.includes(u.id);
+                    return (
+                      <button key={u.id} type="button" onClick={() => toggleUser(u.id)}
+                        className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium border transition-all"
+                        style={{
+                          background:   sel ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.03)',
+                          borderColor:  sel ? 'rgba(124,58,237,0.40)' : 'rgba(255,255,255,0.08)',
+                          color:        sel ? '#c4b5fd' : 'rgba(255,255,255,0.50)',
+                        }}>
+                        <Avatar className="h-4 w-4">
+                          <AvatarImage src={u.image || undefined} />
+                          <AvatarFallback className="text-[7px]" style={{ backgroundColor: u.color + '33', color: u.color }}>
+                            {ini(u.name, u.email)}
+                          </AvatarFallback>
+                        </Avatar>
+                        {u.name || u.email.split('@')[0]}
+                        {sel && <Check className="h-3 w-3" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Notas */}
+            <div>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Notas</label>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
+                placeholder="Agenda, temas a tratar..."
+                className="w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 py-2.5 text-[13px] text-white/70 placeholder-white/20 outline-none resize-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
+            </div>
+
+            {/* Opciones de videollamada */}
+            {!meetUrl && (
+              <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                <p className="text-[11px] text-white/30 mb-2">Generar link de videollamada:</p>
+                <div className="flex gap-2 flex-wrap">
+                  <button type="button" onClick={generateMeetLink}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
+                    <Video className="h-3 w-3" /> Google Meet
+                  </button>
+                  <button type="button" onClick={() => setMeetUrl('https://zoom.us/j/' + Math.floor(Math.random()*9000000000+1000000000))}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
+                    <Video className="h-3 w-3" /> Zoom
+                  </button>
+                  <button type="button" onClick={() => setMeetUrl('https://meet.jit.si/boost-' + Math.random().toString(36).slice(2,8))}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
+                    <Video className="h-3 w-3" /> Jitsi Meet
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Acciones */}
+            <div className="flex gap-2.5 pt-1">
+              <button type="button" onClick={() => onOpenChange(false)}
+                className="flex-1 h-[36px] rounded-lg border border-white/[0.08] text-[13px] text-white/50 hover:text-white hover:bg-white/[0.04] transition-colors">
+                Cancelar
+              </button>
+              <motion.button type="submit" disabled={saving}
+                whileHover={{ backgroundColor: '#6d28d9' }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.15 }}
+                className="flex-1 h-[36px] flex items-center justify-center gap-1.5 rounded-lg bg-[#7c3aed] text-[13px] font-medium text-white disabled:opacity-60">
+                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5" />{isEdit ? 'Guardar' : 'Agendar'}</>}
+              </motion.button>
+            </div>
+          </form>
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
