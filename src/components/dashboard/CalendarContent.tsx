@@ -37,6 +37,7 @@ import {
  
 import { dayLabel, sameLocalDay } from '@/components/calendar/calendar-utils';
 import AppointmentEditModal from '@/components/calendar/AppointmentEditModal';
+import { MeetingDialog } from '@/components/dashboard/MeetingsTab';
 import CalendarDayModal from '@/components/calendar/CalendarDayModal';
 
 function TaskAvatar({ u }: { u: { name: string | null; email: string; color: string; image?: string | null } | undefined }) {
@@ -74,6 +75,34 @@ function CompletedTasksSection({ tasks }: { tasks: any[] }) {
   );
 }
 
+// Wrapper que carga teamUsers/clients para el MeetingDialog
+function MeetingDialogWrapper({ open, onOpenChange, onSaved, initialDate }: {
+  open: boolean; onOpenChange: (v: boolean) => void; onSaved: () => void; initialDate?: Date | null;
+}) {
+  const { data: session } = useSession();
+  const myRole = (session?.user as any)?.role || '';
+  const [teamUsers, setTeamUsers] = useState<any[]>([]);
+  const [clients,   setClients]   = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    fetch('/api/team-members').then(r => r.json()).then(d => setTeamUsers(d.users ?? [])).catch(() => {});
+    fetch('/api/clients').then(r => r.json()).then(d => setClients(d.clients ?? [])).catch(() => {});
+  }, [open]);
+
+  return (
+    <MeetingDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      teamUsers={teamUsers}
+      clients={clients.map((c: any) => ({ id: c.id, name: c.name, email: c.email || '', company: c.company || '' }))}
+      userRole={myRole}
+      initialDate={initialDate ?? undefined}
+      onSaved={onSaved}
+    />
+  );
+}
+
 export default function CalendarContent() {
   const { data: session } = useSession();
   const role      = session?.user?.role ?? '';
@@ -100,6 +129,7 @@ export default function CalendarContent() {
   const [detailTask,         setDetailTask]         = useState<Task | null>(null);
   const [detailOpen,         setDetailOpen]         = useState(false);
   const [apptEditOpen,       setApptEditOpen]       = useState(false);
+  const [meetDialogOpen,     setMeetDialogOpen]     = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [apptInitialDate,    setApptInitialDate]    = useState<Date | null>(null);
   const [milestones,         setMilestones]         = useState<any[]>([]);
@@ -352,15 +382,13 @@ export default function CalendarContent() {
               )}
             </div>
           )}
-          {isManager && (
-            <Button
-              onClick={() => { setEditingAppointment(null); setApptEditOpen(true); }}
-              variant="outline"
-              className="border-green-500/30 text-green-400 hover:bg-green-500/10 hover:text-green-300 gap-2">
-              <Video className="w-4 h-4" />
-              Agendar Reunion
-            </Button>
-          )}
+          <Button
+            onClick={() => setMeetDialogOpen(true)}
+            variant="outline"
+            className="border-green-500/30 text-green-400 hover:bg-green-500/10 hover:text-green-300 gap-2">
+            <Video className="w-4 h-4" />
+            Agendar Reunión
+          </Button>
           <Button
             onClick={() => { setEditingTask(null); setTaskFormOpen(true); }}
             className="bg-brand hover:bg-brand-dark text-white gap-2">
@@ -582,6 +610,8 @@ export default function CalendarContent() {
         isManager={isManager}
         onSuccess={fetchData}
       />
+
+      <MeetingDialogWrapper open={meetDialogOpen} onOpenChange={setMeetDialogOpen} onSaved={() => { setMeetDialogOpen(false); fetchData(); }} initialDate={apptInitialDate} />
 
       <AppointmentEditModal
         open={apptEditOpen}

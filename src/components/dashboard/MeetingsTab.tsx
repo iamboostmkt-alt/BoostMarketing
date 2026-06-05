@@ -167,6 +167,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
               <div>
                 <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Fecha y hora *</label>
                 <input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} required
+                  style={{ colorScheme: 'dark' }}
                   className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[13px] text-white/70 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
               </div>
               <div>
@@ -188,10 +189,11 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
               <div>
                 <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Cuenta cliente (opcional)</label>
                 <select value={clientId} onChange={e => handleClientChange(e.target.value)}
-                  className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
-                  <option value="">Sin cliente</option>
+                  style={{ colorScheme: 'dark' }}
+                  className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-[#0f0f14] px-3.5 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
+                  <option value="" style={{ background: '#0f0f14', color: 'rgba(255,255,255,0.7)' }}>Sin cliente</option>
                   {clients.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
+                    <option key={c.id} value={c.id} style={{ background: '#0f0f14', color: 'rgba(255,255,255,0.7)' }}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
                   ))}
                 </select>
               </div>
