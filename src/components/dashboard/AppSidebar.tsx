@@ -33,7 +33,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { canAccessRoute, getRoleLabel } from "@/lib/roles";
+import { canAccessRoute, getRoleLabel } from "@/core/constants/roles";
 import { useSidebar } from "./SidebarContext";
 import { InviteModal } from "./InviteModal";
 

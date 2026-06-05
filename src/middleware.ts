@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { canAccessRoute } from '@/lib/roles';
+import { canAccessRoute } from '@/core/constants/roles';
 
 const isDev = process.env.NODE_ENV === 'development';
 

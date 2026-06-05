@@ -17,7 +17,7 @@ export async function GET() {
 
     const users = await db.user.findMany({
       where: {
-        role: { in: INTERNAL_ROLES as unknown as import('@prisma/client').Role[] },
+        role: { in: INTERNAL_ROLES as unknown as string[] },
         active: true,
       },
       select: {

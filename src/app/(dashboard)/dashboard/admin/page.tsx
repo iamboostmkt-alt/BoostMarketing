@@ -61,7 +61,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { getRoleLabel } from '@/lib/roles';
+import { getRoleLabel } from '@/core/constants/roles';
 import CMSContent from '@/components/dashboard/CMSContent';
 import CustomRoleDialog, { type CustomRole, ALL_PERMISSIONS } from '@/components/dashboard/CustomRoleDialog';
 import { statusColors, statusStyleMap, statusLabels, priorityColors, priorityLabels } from '@/lib/theme-maps';

@@ -11,7 +11,7 @@ import {
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getRoleLabel } from '@/lib/roles';
+import { getRoleLabel } from '@/core/constants/roles';
 import { InviteModal } from '@/components/dashboard/InviteModal';
 
 interface ActiveTask {
