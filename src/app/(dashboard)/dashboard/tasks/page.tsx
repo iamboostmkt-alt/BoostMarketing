@@ -305,8 +305,8 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange, i
 function TasksContent() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const role      = session?.user?.role ?? '';
-  const isManager = MANAGER_ROLES.includes(role);
+  const role      = (session?.user as any)?.role ?? '';
+  const isManager = MANAGER_ROLES.includes(role as string);
 
   const [activeTab, setActiveTab]           = useState<TabId>('mine');
   const [myTasks, setMyTasks]               = useState<Task[]>([]);

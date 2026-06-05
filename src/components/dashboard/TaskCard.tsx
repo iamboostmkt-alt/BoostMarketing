@@ -241,8 +241,8 @@ export default function TaskCard({
             </>
           )}
 
-          {/* Complete button */}
-          {task.status !== "completed" && task.status !== "internal_review" && onMarkComplete && (
+          {/* Complete button — oculto para PM/Admin: deben usar el modal para aprobar */}
+          {task.status !== "completed" && task.status !== "internal_review" && onMarkComplete && !isManager && (
             <AnimatePresence>
               {isHovered && (
                 <motion.button
@@ -319,6 +319,47 @@ export default function TaskCard({
             </div>
           )}
         </div>
+
+        {/* ── Archivos adjuntos — preview circulitos ── */}
+        {(() => {
+          const atts = (task as any).attachments ?? (task as any).taskAttachments ?? [];
+          const validAtts = atts.filter((a: any) => a.fileUrl && a.status !== 'deleted');
+          if (validAtts.length === 0) return null;
+          const imgs = validAtts.filter((a: any) => {
+            const ft = (a.fileType || '').toLowerCase();
+            const fn = (a.fileName || '').toLowerCase();
+            return ft.startsWith('image') || /\.(png|jpg|jpeg|gif|webp)($|\?)/.test(fn);
+          });
+          const nonImgs = validAtts.filter((a: any) => {
+            const ft = (a.fileType || '').toLowerCase();
+            const fn = (a.fileName || '').toLowerCase();
+            return !(ft.startsWith('image') || /\.(png|jpg|jpeg|gif|webp)($|\?)/.test(fn));
+          });
+          return (
+            <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] text-white/30 flex items-center gap-1">
+                📎 {validAtts.length} {validAtts.length === 1 ? 'archivo' : 'archivos'}
+              </span>
+              {imgs.slice(0, 4).map((a: any, i: number) => (
+                <div key={i} className="h-6 w-6 rounded-full overflow-hidden border border-white/[0.12] shrink-0"
+                  title={a.fileName}>
+                  <img src={a.fileUrl} alt={a.fileName} className="h-full w-full object-cover" />
+                </div>
+              ))}
+              {nonImgs.slice(0, 2).map((a: any, i: number) => (
+                <div key={i} className="h-6 w-6 rounded-full bg-white/[0.06] border border-white/[0.10] flex items-center justify-center shrink-0"
+                  title={a.fileName}>
+                  <span className="text-[8px] text-white/50">
+                    {(a.fileName || '').split('.').pop()?.slice(0,3).toUpperCase() || '📎'}
+                  </span>
+                </div>
+              ))}
+              {validAtts.length > 6 && (
+                <span className="text-[9px] text-white/30">+{validAtts.length - 6}</span>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── Subtasks ── */}
         <div className="mt-2.5 border-t border-white/[0.04] pt-2.5">

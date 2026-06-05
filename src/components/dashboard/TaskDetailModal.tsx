@@ -95,6 +95,20 @@ function DescriptionBlock({ description }: { description: string }) {
   );
 }
 
+async function downloadFile(url: string, filename: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  } catch { window.open(url, '_blank'); }
+}
+
 export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusChange, isManager = false, currentUserId }: TaskDetailModalProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
@@ -614,9 +628,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                     if (r.type !== 'file') return false;
                     const ft = (r.fileType || '').toLowerCase();
                     const url = (r.url || '').toLowerCase();
-                    // Detectar por fileType o por extensión de URL
-                    return ft.startsWith('image') ||
-                      /\.(png|jpg|jpeg|gif|webp|svg|avif|heic)($|\?)/.test(url);
+                    const title = (r.title || r.name || r.fileName || '').toLowerCase();
+                    const imgExt = /\.(png|jpg|jpeg|gif|webp|svg|avif|heic)($|\?)/;
+                    return ft.startsWith('image') || imgExt.test(url) || imgExt.test(title);
                   })
                   : [];
                 if (refImages.length === 0) return null;
@@ -643,10 +657,16 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                               <span className="text-2xl">📎</span>
                             </div>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-end pb-2 gap-1">
-                              <button onClick={e => { e.stopPropagation(); window.open(r.url, '_blank'); }}
-                                className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded-lg text-white text-[10px] hover:bg-white/30">
-                                <ExternalLink className="w-3 h-3" /> Abrir
-                              </button>
+                              <div className="flex gap-1.5">
+                                <button onClick={e => { e.stopPropagation(); setLightbox(r.url); }}
+                                  className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded-lg text-white text-[10px] hover:bg-white/30">
+                                  <ExternalLink className="w-3 h-3" /> Ver
+                                </button>
+                                <button onClick={e => { e.stopPropagation(); downloadFile(r.url, r.title || r.name || 'referencia'); }}
+                                  className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded-lg text-white text-[10px] hover:bg-white/30">
+                                  <Download className="w-3 h-3" /> Descargar
+                                </button>
+                              </div>
                             </div>
                           </div>
                           {r.title && (
