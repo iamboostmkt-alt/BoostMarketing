@@ -34,6 +34,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // ROL-04: UNASSIGNED solo puede acceder a /waiting-assignment
+  if (role === 'UNASSIGNED' && !pathname.startsWith('/dashboard/waiting-assignment')) {
+    return NextResponse.redirect(new URL('/dashboard/waiting-assignment', request.url));
+  }
+
   // Role-based route access check
   if (!canAccessRoute(pathname, role)) {
     if (isDev) {

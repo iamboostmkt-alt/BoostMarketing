@@ -424,9 +424,12 @@ export default function MeetingsTab() {
       .then(r => r.json())
       .then(d => setTeamUsers((d.users ?? []).filter((u: TeamUser & { role: string }) => u.role !== 'CLIENT' && u.role !== 'UNASSIGNED')))
       .catch(() => {});
-    fetch('/api/clients')
+    // BUG-16: sidebar=1 devuelve solo clientes asignados al PM/TEAM
+    fetch('/api/clients?sidebar=1')
       .then(r => r.json())
-      .then(d => setClients(d.clients ?? []))
+      .then(d => setClients((d.clients ?? []).map((cl: any) => ({
+        id: cl.id, name: cl.name, email: cl.email || '', company: '',
+      }))))
       .catch(() => {});
   }, [fetchMeetings]);
 

@@ -180,6 +180,7 @@ export async function GET(req: NextRequest) {
   }
 
   const parentId = req.nextUrl.searchParams.get("parentId");
+  const searchQ  = req.nextUrl.searchParams.get("search") || '';
   if (parentId) {
     const subtasks = await db.task.findMany({
       where: { parentTaskId: parentId, archivedAt: null },
@@ -298,6 +299,21 @@ export async function GET(req: NextRequest) {
     const page      = hasMore ? tasks.slice(0, limit) : tasks;
     const nextCursor = hasMore ? page[page.length - 1].id : null;
     return NextResponse.json({ tasks: flattenTasks(page), nextCursor, hasMore });
+  }
+
+  // Búsqueda global por texto
+  if (searchQ && searchQ.length >= 2) {
+    const searchTasks = await db.task.findMany({
+      where: {
+        workspaceId, deletedAt: null, archivedAt: null,
+        title: { contains: searchQ, mode: 'insensitive' },
+      },
+      take: 20,
+      include: { assignedUser: userInclude, assignedUsers: { include: { user: userInclude } }, client: clientInclude },
+      orderBy: { createdAt: 'desc' },
+    });
+    const flat = flattenTasks(searchTasks as any[]).filter((t: any) => AccessControl.canViewTask(user, t));
+    return NextResponse.json({ tasks: flat });
   }
 
   // Fallback — aplica filterClientId si viene en query
