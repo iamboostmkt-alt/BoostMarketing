@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 
 type AuditAction =
   | "TASK_CREATED"    | "TASK_UPDATED"    | "TASK_DELETED"
+  | "SUBTASK_CREATED" | "SUBTASK_UPDATED"
   | "CLIENT_CREATED"  | "CLIENT_UPDATED"  | "CLIENT_DELETED"
   | "USER_LOGIN"      | "USER_LOGOUT"
   | "ROLE_CHANGED"    | "USER_CREATED"    | "USER_UPDATED"

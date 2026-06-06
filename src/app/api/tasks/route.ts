@@ -452,7 +452,13 @@ export async function POST(req: NextRequest) {
     if (u.email) await sendMail(u.email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding, u.name || u.email?.split("@")[0] || undefined));
   }
 
-  await logAction({ userId, workspaceId, action: "TASK_CREATED", entity: "task", entityId: task.id, details: { title: task.title } });
+  await logAction({
+    userId, workspaceId,
+    action: parentTaskId ? "SUBTASK_CREATED" : "TASK_CREATED",
+    entity: "task",
+    entityId: task.id,
+    details: { title: task.title, ...(parentTaskId ? { parentTaskId } : {}) },
+  });
   // Broadcast para toasts en tiempo real (non-blocking)
   broadcastRealtime('task.created', { task: flattenTask(task as any) }).catch(() => {});
 
@@ -856,7 +862,13 @@ export async function PUT(req: NextRequest) {
     }
   }
 
-  await logAction({ userId, workspaceId, action: "TASK_UPDATED", entity: "task", entityId: task.id, details: { status: task.status, title: task.title } });
+  await logAction({
+    userId, workspaceId,
+    action: (task as any).parentTaskId ? "SUBTASK_UPDATED" : "TASK_UPDATED",
+    entity: "task",
+    entityId: task.id,
+    details: { status: task.status, title: task.title },
+  });
   // Broadcast para toasts en tiempo real (non-blocking)
   broadcastRealtime('task.updated', { task: flattenTask(task) }).catch(() => {});
   return NextResponse.json({ task: flattenTask(task) });

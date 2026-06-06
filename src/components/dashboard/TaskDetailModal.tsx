@@ -141,6 +141,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
   const [reviewingFile, setReviewingFile]   = useState<string | null>(null); // fileId activo
   const [reviewComment, setReviewComment]   = useState('');
   const [reviewLoading, setReviewLoading]   = useState(false);
+  const processingRef = React.useRef<Set<string>>(new Set());
 
   async function handleRemind() {
     if (!task) return;
@@ -185,6 +186,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
   async function handleFileReview(action: 'approved' | 'comments' | 'new_version', fileId: string, fileName: string, subtaskId?: string) {
     if (!task) return;
+    const key = `${action}-${fileId}`;
+    if (processingRef.current.has(key)) return;
+    processingRef.current.add(key);
     setReviewLoading(true);
     try {
       const clientId = (task as any).clientId;
@@ -330,6 +334,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       toast.error('Error al procesar revisión');
     } finally {
       setReviewLoading(false);
+      processingRef.current.delete(key);
     }
   }
 

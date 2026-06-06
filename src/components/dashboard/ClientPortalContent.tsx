@@ -178,12 +178,12 @@ export default function ClientPortalContent() {
   useEffect(() => { setLocalAppointments(rawAppointments); }, [rawAppointments]);
   const appointments = localAppointments;
 
-  // Estado local de deliverables para updates sin refetch
-  const [localDeliverables, setLocalDeliverables] = useState<any[]>([]);
-  useEffect(() => { setLocalDeliverables(deliverables); }, [deliverables]);
+  // Estado local de deliverables como Task[] para compatibilidad con componentes
+  const [localDeliverables, setLocalDeliverables] = useState<Task[]>([]);
+  useEffect(() => { setLocalDeliverables(deliverables as unknown as Task[]); }, [deliverables]);
 
-  // Las tareas siguen siendo Task[] para compatibilidad con componentes existentes
-  const tasks = localDeliverables as unknown as Task[];
+  // S-125 fix: usar directamente sin cast doble
+  const tasks: Task[] = localDeliverables;
 
   // Calendario cliente — usa hook con timezone fix y colores por tipo
   async function handleDeleteMultiple() {
