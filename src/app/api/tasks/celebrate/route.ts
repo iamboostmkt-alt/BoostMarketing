@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
   const { taskId, parentCompleted, assigneeIds, pmId } = await req.json();
   if (!taskId) return NextResponse.json({ ok: true });
 
+
+
   const task = await db.task.findFirst({
     where: { id: taskId, workspaceId },
     select: {

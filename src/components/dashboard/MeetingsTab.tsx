@@ -71,10 +71,11 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     }
     setCalOpen(false);
     setNotes(meeting?.notes ?? '');
-    // Auto-generar link de Google Meet para reuniones nuevas (no edición)
+    // Auto-generar link de reunión para nuevas (no edición)
+    // Usar Jitsi Meet — funciona sin cuenta ni OAuth
     if (!meeting) {
-      const id = Math.random().toString(36).slice(2, 6) + '-' + Math.random().toString(36).slice(2, 6) + '-' + Math.random().toString(36).slice(2, 6);
-      setMeetUrl(`https://meet.google.com/${id}`);
+      const room = 'Weeklink-' + Math.random().toString(36).slice(2, 10).toUpperCase();
+      setMeetUrl(`https://meet.jit.si/${room}`);
     } else {
       setMeetUrl(meeting?.meetUrl ?? '');
     }
@@ -130,9 +131,19 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     } finally { setSaving(false); }
   }
 
-  function generateMeetLink() {
-    const id = Math.random().toString(36).slice(2, 6) + '-' + Math.random().toString(36).slice(2, 6) + '-' + Math.random().toString(36).slice(2, 6);
-    setMeetUrl(`https://meet.google.com/${id}`);
+  function generateMeetLink(service: 'meet' | 'jitsi' | 'zoom' = 'meet') {
+    // Google Meet usa letras a-p, formato xxx-xxxx-xxx
+    const chars = 'abcdefghijklmnop';
+    const seg = (n: number) => Array.from({length: n}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    if (service === 'jitsi') {
+      const room = 'Weeklink-' + Math.random().toString(36).slice(2, 10).toUpperCase();
+      setMeetUrl(`https://meet.jit.si/${room}`);
+    } else if (service === 'zoom') {
+      const id = Math.floor(Math.random() * 9_000_000_000) + 1_000_000_000;
+      setMeetUrl(`https://zoom.us/j/${id}`);
+    } else {
+      setMeetUrl(`https://meet.google.com/${seg(3)}-${seg(4)}-${seg(3)}`);
+    }
   }
 
   if (!open) return null;
@@ -230,7 +241,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                 <input value={meetUrl} onChange={e => setMeetUrl(e.target.value)}
                   placeholder="https://meet.google.com/..."
                   className="h-[36px] flex-1 min-w-0 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/15 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
-                <button type="button" onClick={generateMeetLink} title="Generar link de Google Meet"
+                <button type="button" onClick={() => generateMeetLink('jitsi')} title="Generar link (Jitsi)"
                   className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 transition-colors">
                   <Link2 className="h-3.5 w-3.5" />
                 </button>
@@ -320,17 +331,17 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
               <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
                 <p className="text-[11px] text-white/30 mb-2">Generar link de videollamada:</p>
                 <div className="flex gap-2 flex-wrap">
-                  <button type="button" onClick={generateMeetLink}
+                  <button type="button" onClick={() => generateMeetLink('jitsi')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/40 transition-colors">
+                    <Video className="h-3 w-3" /> Jitsi ✓
+                  </button>
+                  <button type="button" onClick={() => generateMeetLink('meet')}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
                     <Video className="h-3 w-3" /> Google Meet
                   </button>
-                  <button type="button" onClick={() => setMeetUrl('https://zoom.us/j/' + Math.floor(Math.random()*9000000000+1000000000))}
+                  <button type="button" onClick={() => generateMeetLink('zoom')}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
                     <Video className="h-3 w-3" /> Zoom
-                  </button>
-                  <button type="button" onClick={() => setMeetUrl('https://meet.jit.si/boost-' + Math.random().toString(36).slice(2,8))}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
-                    <Video className="h-3 w-3" /> Jitsi Meet
                   </button>
                 </div>
               </div>

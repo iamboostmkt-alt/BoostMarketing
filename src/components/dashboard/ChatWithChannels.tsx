@@ -902,7 +902,13 @@ function ChatMain({
     return () => document.removeEventListener('mousedown', handler);
   }, [showEmoji]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  // Auto-scroll solo si el usuario está en el fondo (< 150px del final)
+  useEffect(() => {
+    const el = bottomRef.current?.parentElement?.parentElement;
+    if (!el) { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); return; }
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+    if (nearBottom) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Cargar sesión IA activa al cambiar de room
   useEffect(() => {
@@ -1701,6 +1707,12 @@ FORMATO:
                   {(!isMe || isSystemMsg) && (
                     isSame && !isSystemMsg ? (
                       <div className="w-7 shrink-0" />
+                    ) : isSystemMsg ? (
+                      // Bot Weeklink — siempre ícono W morado, nunca foto del PM
+                      <div className="mt-0.5 shrink-0 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                        style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', flexShrink: 0 }}>
+                        W
+                      </div>
                     ) : (
                       <Avatar initials={initials} color={color} size={28} className="mt-0.5 shrink-0" image={(msg.user as any)?.image} />
                     )
