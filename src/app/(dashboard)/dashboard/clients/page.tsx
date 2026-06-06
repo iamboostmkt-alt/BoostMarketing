@@ -687,6 +687,20 @@ export default function ClientsPage() {
         </div>
       )}
 
+      {/* Botón Cargar más */}
+      {clientsHasMore && (
+        <div className="flex justify-center pt-4">
+          <button onClick={loadMoreClients} disabled={loadingMore}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/50 hover:text-white hover:bg-white/[0.04] transition-colors disabled:opacity-50">
+            {loadingMore ? (
+              <><svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/></svg>Cargando...</>
+            ) : (
+              <>Cargar más cuentas</>
+            )}
+          </button>
+        </div>
+      )}
+
       {selected && (
         <ClientDetail client={selected} onClose={() => setSelected(null)}
           onEdit={handleEdit} onDelete={c => { setSelected(null); setDeleteTarget(c); }} isAdmin={isAdmin} />

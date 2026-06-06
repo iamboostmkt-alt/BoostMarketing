@@ -27,6 +27,9 @@ function normalizeStage(status: string): string {
 
 export default function CRMPage() {
   const [contacts,       setContacts]       = useState<Contact[]>([]);
+  const [contactsCursor, setContactsCursor] = useState<string | null>(null);
+  const [contactsHasMore,setContactsHasMore]= useState(false);
+  const [contactsLoading,setContactsLoading]= useState(false);
   const [loading,        setLoading]        = useState(true);
   const [search,         setSearch]         = useState('');
   const [activeSegment,  setActiveSegment]  = useState<SegmentTab>('all');
@@ -37,10 +40,12 @@ export default function CRMPage() {
 
   const fetchContacts = useCallback(async () => {
     try {
-      const res = await fetch('/api/contacts');
+      const res = await fetch('/api/contacts?limit=50');
       if (res.ok) {
         const data = await res.json();
         setContacts(data.contacts || data || []);
+        setContactsCursor(data.nextCursor || null);
+        setContactsHasMore(data.hasMore || false);
       }
     } catch {
       // silent
@@ -66,6 +71,20 @@ export default function CRMPage() {
   }, [contacts, activeSegment]);
 
   // Search filter on top of segment
+  async function loadMoreContacts() {
+    if (!contactsCursor || contactsLoading) return;
+    setContactsLoading(true);
+    try {
+      const res = await fetch('/api/contacts?cursor=' + contactsCursor + '&limit=50');
+      if (res.ok) {
+        const data = await res.json();
+        setContacts((prev: any[]) => [...prev, ...(data.contacts || [])]);
+        setContactsCursor(data.nextCursor || null);
+        setContactsHasMore(data.hasMore || false);
+      }
+    } finally { setContactsLoading(false); }
+  }
+
   const filteredContacts = useMemo(() => {
     if (!search.trim()) return segmentFiltered;
     const q = search.toLowerCase();
@@ -205,6 +224,16 @@ export default function CRMPage() {
               onAddClick={() => handleAddClick(stage.id)}
             />
           ))}
+        </div>
+      )}
+
+      {/* Cargar más contactos */}
+      {contactsHasMore && (
+        <div className="flex justify-center py-4">
+          <button onClick={loadMoreContacts} disabled={contactsLoading}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/50 hover:text-white hover:bg-white/[0.04] transition-colors disabled:opacity-50">
+            {contactsLoading ? 'Cargando...' : 'Cargar más contactos'}
+          </button>
         </div>
       )}
 

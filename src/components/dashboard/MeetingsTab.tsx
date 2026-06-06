@@ -376,7 +376,10 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
 export default function MeetingsTab() {
   const { data: session } = useSession();
   const myRole = (session?.user as any)?.role || '';
-  const [meetings,  setMeetings]  = useState<Appointment[]>([]);
+  const [meetings,     setMeetings]     = useState<Appointment[]>([]);
+  const [meetCursor,   setMeetCursor]   = useState<string | null>(null);
+  const [meetHasMore,  setMeetHasMore]  = useState(false);
+  const [meetLoadMore, setMeetLoadMore] = useState(false);
   const [loading,   setLoading]   = useState(true);
   const [filter,    setFilter]    = useState('all');
   const [dialog,    setDialog]    = useState(false);
@@ -388,14 +391,32 @@ export default function MeetingsTab() {
 
   const fetchMeetings = useCallback(async (status = 'all') => {
     setLoading(true);
+    setMeetCursor(null);
     try {
-      const q = status !== 'all' ? ('?status=' + status) : '';
-      const res = await fetch('/api/meetings' + q);
+      const params = new URLSearchParams({ limit: '50' });
+      if (status !== 'all') params.set('status', status);
+      const res = await fetch('/api/meetings?' + params);
       const data = await res.json();
       setMeetings(data.meetings ?? []);
+      setMeetCursor(data.nextCursor ?? null);
+      setMeetHasMore(data.hasMore ?? false);
     } catch { toast.error('Error al cargar reuniones.'); }
     finally { setLoading(false); }
   }, []);
+
+  async function loadMoreMeetings() {
+    if (!meetCursor || meetLoadMore) return;
+    setMeetLoadMore(true);
+    try {
+      const params = new URLSearchParams({ cursor: meetCursor, limit: '50' });
+      if (filter !== 'all') params.set('status', filter);
+      const res = await fetch('/api/meetings?' + params);
+      const data = await res.json();
+      setMeetings(prev => [...prev, ...(data.meetings ?? [])]);
+      setMeetCursor(data.nextCursor ?? null);
+      setMeetHasMore(data.hasMore ?? false);
+    } finally { setMeetLoadMore(false); }
+  }
 
   useEffect(() => {
     fetchMeetings();
@@ -557,6 +578,16 @@ export default function MeetingsTab() {
         </div>
       </div>
       {/* Modal Detalle de Reunión */}
+      {/* Cargar más reuniones */}
+      {meetHasMore && (
+        <div className="flex justify-center py-3">
+          <button onClick={loadMoreMeetings} disabled={meetLoadMore}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl border border-white/[0.08] text-[12px] text-white/40 hover:text-white hover:bg-white/[0.04] transition-colors disabled:opacity-50">
+            {meetLoadMore ? 'Cargando...' : `Cargar más reuniones`}
+          </button>
+        </div>
+      )}
+
       {viewMeeting && (() => {
         const st = STATUS[(viewMeeting as any).status] ?? STATUS.pending;
         const dateStr = (viewMeeting as any).date
