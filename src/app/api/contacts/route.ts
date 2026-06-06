@@ -21,11 +21,26 @@ export async function GET(req: NextRequest) {
     : { workspaceId, userId };
   if (status) where.status = status;
 
+  const limit  = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
+  const cursor  = searchParams.get('cursor') || undefined;
+  const search  = searchParams.get('search') || '';
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { email: { contains: search, mode: 'insensitive' } },
+      { company: { contains: search, mode: 'insensitive' } },
+    ];
+  }
   const contacts = await db.contact.findMany({
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
+    take: limit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
   });
-  return NextResponse.json({ contacts });
+  const hasMore    = contacts.length > limit;
+  const items      = hasMore ? contacts.slice(0, limit) : contacts;
+  const nextCursor = hasMore ? items[items.length - 1]?.id : null;
+  return NextResponse.json({ contacts: items, hasMore, nextCursor, total: items.length });
 }
 
 export async function POST(req: NextRequest) {

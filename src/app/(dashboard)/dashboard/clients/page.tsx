@@ -310,7 +310,7 @@ function ClientDetail({ client, onClose, onEdit, onDelete, isAdmin }: {
   );
 }
 
-function ClientCard({ client, onClick, onPortal, onResendInvite, onReportIssue, isAdmin }: {
+  function ClientCard({ client, onClick, onPortal, onResendInvite, onReportIssue, isAdmin }: {
   client: Client; onClick: () => void; onPortal: () => void;
   onResendInvite?: () => void; onReportIssue?: () => void; isAdmin?: boolean;
 }) {
@@ -508,6 +508,23 @@ export default function ClientsPage() {
   const label     = isAdmin ? 'Clientes' : 'Cuentas';
 
   const [clients,       setClients]       = useState<Client[]>([]);
+  const [clientsCursor, setClientsCursor] = useState<string | null>(null);
+  const [clientsHasMore,setClientsHasMore]= useState(false);
+  const [loadingMore,   setLoadingMore]   = useState(false);
+
+  async function loadMoreClients() {
+    if (!clientsCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch('/api/clients?cursor=' + clientsCursor + '&limit=50');
+      if (res.ok) {
+        const data = await res.json();
+        setClients((prev: any[]) => [...prev, ...(data.clients || [])]);
+        setClientsCursor(data.nextCursor || null);
+        setClientsHasMore(data.hasMore || false);
+      }
+    } finally { setLoadingMore(false); }
+  }
   const [loading,       setLoading]       = useState(true);
   const [search,        setSearch]        = useState('');
   const [activeTab,     setActiveTab]     = useState<TabKey>('all');
@@ -523,7 +540,12 @@ export default function ClientsPage() {
       const params = new URLSearchParams();
       if (search.trim()) params.set('search', search.trim());
       const res = await fetch('/api/clients?' + params.toString());
-      if (res.ok) { const data = await res.json(); setClients(data.clients || []); }
+      if (res.ok) {
+        const data = await res.json();
+        setClients(data.clients || []);
+        setClientsCursor(data.nextCursor || null);
+        setClientsHasMore(data.hasMore || false);
+      }
     } catch { toast.error('Error al cargar'); }
     finally { setLoading(false); }
   }, [search]);

@@ -181,11 +181,18 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const raw = await db.client.findMany({
+  const limit   = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
+  const cursor  = searchParams.get('cursor') || undefined;
+  const rawAll = await db.client.findMany({
     where,
     select: clientSelect,
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
+    take: limit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
   });
+  const hasMore = rawAll.length > limit;
+  const raw     = hasMore ? rawAll.slice(0, limit) : rawAll;
+  const nextCursor = hasMore ? raw[raw.length - 1]?.id : null;
 
   const clientIds = raw.map((c) => c.id);
   const taskCounts = await db.task.groupBy({
@@ -212,7 +219,7 @@ export async function GET(req: NextRequest) {
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { ...formatClient(c as unknown as Record<string, unknown>), activeTasks: total, completedTasks: completed, progress, meetings: meetingCountMap[c.id] ?? 0 };
   });
-  return NextResponse.json({ clients });
+  return NextResponse.json({ clients, hasMore, nextCursor });
 }
 
 export async function POST(req: NextRequest) {

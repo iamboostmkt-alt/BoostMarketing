@@ -22,8 +22,17 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status");
   const where: Record<string, unknown> = { workspaceId };
   if (status) where.status = status;
-  const meetings = await db.appointment.findMany({ where, orderBy: { date: "asc" }, include });
-  return NextResponse.json({ meetings });
+  const limit  = Math.min(parseInt(new URL(req.url).searchParams.get('limit') || '50'), 100);
+  const cursor = new URL(req.url).searchParams.get('cursor') || undefined;
+  const rawMeetings = await db.appointment.findMany({
+    where, orderBy: { date: 'asc' }, include,
+    take: limit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+  });
+  const hasMore    = rawMeetings.length > limit;
+  const meetings   = hasMore ? rawMeetings.slice(0, limit) : rawMeetings;
+  const nextCursor = hasMore ? meetings[meetings.length - 1]?.id : null;
+  return NextResponse.json({ meetings, hasMore, nextCursor });
 }
 
 export async function POST(req: NextRequest) {

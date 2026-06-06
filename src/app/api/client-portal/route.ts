@@ -166,7 +166,14 @@ export async function GET(req: NextRequest) {
     });
     const clientUserId = clientPortalUser?.id ?? null;
 
-    return NextResponse.json({ client, activities, tasks: shapedTasks, appointments, clientUserId });
+    // S-126: incluir milestones en la misma response — elimina request N+1
+    const milestones = await db.milestone.findMany({
+      where: { clientId: client.id, workspaceId },
+      select: { id: true, title: true, status: true, dueDate: true, description: true, order: true },
+      orderBy: { order: 'asc' },
+    }).catch(() => []);
+
+    return NextResponse.json({ client, activities, tasks: shapedTasks, appointments, clientUserId, milestones });
   } catch (error) {
     log.err('/api/client-portal GET', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });

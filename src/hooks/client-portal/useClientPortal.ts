@@ -69,17 +69,8 @@ export function useClientPortal({
       setDeliverables(rawDeliverables);
       setAppointments(data.appointments ?? []);
       setActivities(data.activities   ?? []);
-      // Fetch milestones separado
-      if (data.client) {
-        const clientId = (data.client as any).id;
-        const mRes = await fetch('/api/milestones?clientId=' + clientId);
-        console.log('[milestones] status:', mRes.status);
-        if (mRes.ok) {
-          const mData = await mRes.json();
-          console.log('[milestones] data:', mData);
-          setMilestones(mData.milestones ?? []);
-        }
-      }
+      // S-126 fix: milestones ya vienen en el mismo response — sin N+1
+      setMilestones((data as any).milestones ?? []);
     } catch {
       setError('Error de red. Intenta nuevamente.');
     } finally {
