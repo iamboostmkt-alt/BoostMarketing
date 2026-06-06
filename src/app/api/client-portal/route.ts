@@ -169,8 +169,8 @@ export async function GET(req: NextRequest) {
     // S-126: incluir milestones en la misma response — elimina request N+1
     const milestones = await db.milestone.findMany({
       where: { clientId: client.id, workspaceId },
-      select: { id: true, title: true, status: true, dueDate: true, description: true, order: true },
-      orderBy: { order: 'asc' },
+      select: { id: true, title: true, status: true, date: true, description: true, type: true, progress: true, visibleToClient: true },
+      orderBy: { date: 'asc' },
     }).catch(() => []);
 
     return NextResponse.json({ client, activities, tasks: shapedTasks, appointments, clientUserId, milestones });
