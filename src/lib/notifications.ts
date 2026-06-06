@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { broadcastRealtime } from "@/lib/realtime-server";
+import { weeklinkDmRoom } from "@/lib/chat-bot";
 
 export type NotificationType =
   | "task" | "activity" | "meeting" | "appointment"
@@ -67,6 +68,31 @@ export async function createNotification(params: CreateNotificationParams): Prom
 
     if (broadcast) {
       broadcastRealtime("notification.created", { userId }).catch(() => undefined);
+    }
+
+    // También enviar al chat Weeklink del usuario (DM personal con el bot)
+    // Solo para tipos importantes, no para todos los eventos de sistema
+    const WEEKLINK_TYPES: NotificationType[] = ['task', 'meeting', 'appointment', 'mention', 'message', 'invite'];
+    if (WEEKLINK_TYPES.includes(type)) {
+      const wkRoom = weeklinkDmRoom(userId);
+      // Verificar que no exista ya un mensaje idéntico en los últimos 30s
+      const existingWk = await db.chatMessage.findFirst({
+        where: { room: wkRoom, message, createdAt: { gte: new Date(Date.now() - 30_000) }, isSystem: true },
+        select: { id: true },
+      }).catch(() => null);
+      if (!existingWk) {
+        db.chatMessage.create({
+          data: {
+            userId,
+            workspaceId,
+            message,
+            room: wkRoom,
+            isSystem: true,
+            systemName: 'Weeklink',
+            isInternal: true,
+          },
+        }).catch(() => undefined);
+      }
     }
   } catch {
     // Non-critical — never throw

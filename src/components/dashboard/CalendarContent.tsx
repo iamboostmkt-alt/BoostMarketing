@@ -528,7 +528,11 @@ export default function CalendarContent() {
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 bg-green-500/20 text-green-300">
                           {apt.status === "confirmed" ? "Confirmada" : apt.status === "cancelled" ? "Cancelada" : "Pendiente"}
                         </span>
-                        <p className="text-xs font-medium text-white/80 truncate">{apt.name}</p>
+                        <button type="button"
+                          onClick={() => { setEditingAppointment(apt); setApptEditOpen(true); }}
+                          className="text-xs font-medium text-white/80 hover:text-green-300 transition-colors truncate text-left">
+                          {apt.name}
+                        </button>
                       </div>
                       {isManager && (
                         <div className="flex gap-1 shrink-0">

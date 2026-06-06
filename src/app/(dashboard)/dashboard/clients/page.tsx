@@ -1,3 +1,4 @@
+import { toasts } from '@/lib/toast-helpers';
 'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
@@ -642,7 +643,7 @@ export default function ClientsPage() {
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ clientId: client.id }),
                     });
-                    if (res.ok) toast.success('Invitación reenviada a ' + client.email);
+                    if (res.ok) toasts.inviteSent(client.email || '');
                     else { const d = await res.json(); toast.error(d.error || 'Error al reenviar'); }
                   } catch { toast.error('Error de conexión'); }
                 }}
