@@ -522,10 +522,17 @@ export async function PUT(req: NextRequest) {
   });
   if (!existing) return NextResponse.json({ error: "Tarea no encontrada" }, { status: 404 });
 
-  // ROL-03: verificar que PM solo edita tareas de sus clientes asignados
-  // ADMIN puede editar todas | PM solo las de sus clientes | TEAM_MEMBER solo las propias o asignadas
+  // ROL-03: control de acceso al editar tareas
   const role = result.ctx.role as string;
-  if (role === 'PROJECT_MANAGER' && existing.clientId) {
+
+  // Detectar si es solo cambio de status (drag, botón completar, aprobar) — permitido para asignados
+  const bodyKeys = Object.keys(body as object);
+  const isStatusOnlyChange = bodyKeys.length <= 3 &&
+    bodyKeys.every(k => ['status','deliverableStatus','isDeliverable','id'].includes(k));
+
+  // PM: puede editar cualquier tarea de su workspace (cambio status libre)
+  // Solo restringir edición completa de tareas con clientId ajeno
+  if (role === 'PROJECT_MANAGER' && existing.clientId && !isStatusOnlyChange) {
     const clientAccess = await db.client.findFirst({
       where: {
         id: existing.clientId,
@@ -541,11 +548,14 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Sin acceso a este cliente' }, { status: 403 });
     }
   }
-  // TEAM_MEMBER solo puede editar tareas que creó
-  if (['TEAM_MEMBER','DESIGNER','MARKETING'].includes(role)) {
-    const isCreator = existing.userId === userId;
-    if (!isCreator) {
-      return NextResponse.json({ error: 'Solo puedes editar tareas que creaste' }, { status: 403 });
+
+  // TEAM_MEMBER: puede cambiar status de tareas asignadas, pero editar solo las que creó
+  if (['TEAM_MEMBER','DESIGNER','MARKETING'].includes(role) && !isStatusOnlyChange) {
+    const isCreator  = existing.userId === userId;
+    const assignedIds = (existing.assignedUsers ?? []).map((au: any) => au.userId ?? au.user?.id);
+    const isAssigned  = assignedIds.includes(userId);
+    if (!isCreator && !isAssigned) {
+      return NextResponse.json({ error: 'No tienes permiso para editar esta tarea' }, { status: 403 });
     }
   }
 
