@@ -154,7 +154,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   if (!open) return null;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0' }} className="sm:items-center sm:p-4">
       {/* Overlay */}
       <div onClick={() => onOpenChange(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(3px)' }} />
 

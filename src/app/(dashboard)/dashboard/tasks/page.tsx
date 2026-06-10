@@ -638,7 +638,7 @@ function TasksContent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-3 sm:px-6 py-4 sm:py-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -675,19 +675,19 @@ function TasksContent() {
         </div>
       )}
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-white/[0.06] pb-0">
+      <div className="flex gap-0.5 sm:gap-2 border-b border-white/[0.06] pb-0 overflow-x-auto scrollbar-none">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap ${
                 active
                   ? 'border-brand text-white'
                   : 'border-transparent text-white/40 hover:text-white/70 hover:border-white/20'
               }`}>
               <Icon className="w-4 h-4" />
-              {tab.label}
+              <span className="hidden xs:inline sm:inline">{tab.label}</span>
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${active ? 'bg-brand/20 text-brand-light' : 'bg-white/[0.06] text-white/30'}`}>
                 {tab.count}
               </span>

@@ -122,7 +122,7 @@ export default function CRMPage() {
   const handleAddClick = (stageId?: string)      => { setEditingContact(null); setDefaultStatus(stageId || 'prospect'); setFormOpen(true); };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-3 sm:px-6 py-4 sm:py-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -195,7 +195,7 @@ export default function CRMPage() {
       {loading ? (
         <div className="flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
           {crmStages.map((stage) => (
-            <div key={stage.id} className="flex flex-col w-[300px] min-w-[300px] shrink-0">
+            <div key={stage.id} className="flex flex-col w-[85vw] sm:w-[300px] min-w-[260px] sm:min-w-[300px] shrink-0">
               <div className="mb-3 px-1 flex items-center gap-2">
                 <Skeleton className="w-2.5 h-2.5 rounded-full" />
                 <Skeleton className="h-4 w-24" />
