@@ -223,7 +223,7 @@ export function NotificationsDropdown() {
 
       {open && (
         <div className="absolute right-0 top-full mt-2 z-[9999] overflow-hidden rounded-2xl border border-white/[0.06] shadow-2xl"
-          style={{ width: 'min(380px, calc(100vw - 16px))', background: '#0F1117', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 20px 60px rgba(0,0,0,0.6)' }}>
+          style={{ width: 'min(380px, calc(100vw - 16px))', right: 'max(0px, -50vw + 200px)', background: '#0F1117', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 20px 60px rgba(0,0,0,0.6)' }}>
 
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4 pb-3">

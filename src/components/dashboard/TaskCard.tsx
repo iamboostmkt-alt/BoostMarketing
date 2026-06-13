@@ -108,10 +108,38 @@ export default function TaskCard({
   isManager = true,
   canEdit,
 }: TaskCardProps) {
-  const [isHovered, setIsHovered] = React.useState(false);
-  const [subtasksOpen, setSubtasksOpen] = React.useState(false);
-  const [subtasks, setSubtasks] = React.useState<Task[]>([]);
-  const [loadingSubtasks, setLoadingSubtasks] = React.useState(false);
+  const [isHovered,      setIsHovered]      = React.useState(false);
+  const [subtasksOpen,   setSubtasksOpen]   = React.useState(false);
+  const [subtasks,       setSubtasks]       = React.useState<Task[]>([]);
+  const [loadingSubtasks,setLoadingSubtasks]= React.useState(false);
+
+  // ── Swipe to complete ────────────────────────────────────────
+  const [swipeX,      setSwipeX]      = React.useState(0);
+  const [swiping,     setSwiping]     = React.useState(false);
+  const swipeStart    = React.useRef<number | null>(null);
+  const SWIPE_THRESHOLD = 80;
+
+  function handleTouchStart(e: React.TouchEvent) {
+    if (!onMarkComplete || isManager) return;
+    if (task.status === 'completed' || task.status === 'internal_review') return;
+    swipeStart.current = e.touches[0].clientX;
+    setSwiping(true);
+  }
+
+  function handleTouchMove(e: React.TouchEvent) {
+    if (!swiping || swipeStart.current === null) return;
+    const dx = e.touches[0].clientX - swipeStart.current;
+    if (dx > 0) setSwipeX(Math.min(dx, SWIPE_THRESHOLD + 20));
+  }
+
+  function handleTouchEnd() {
+    if (swipeX >= SWIPE_THRESHOLD && onMarkComplete) {
+      void onMarkComplete(task);
+    }
+    setSwipeX(0);
+    setSwiping(false);
+    swipeStart.current = null;
+  }
 
   const overdue = isOverdue(task.dueDate) && task.status !== "completed";
   const assignees = resolveAssignees(task);
@@ -144,21 +172,43 @@ export default function TaskCard({
     ? "Completada"
     : statusLabels[task.status] || task.status;
 
+  const canSwipe = !isManager && !!onMarkComplete &&
+    task.status !== 'completed' && task.status !== 'internal_review';
+
   return (
+    <div className="relative overflow-hidden rounded-xl">
+      {/* Fondo verde de swipe */}
+      {canSwipe && swipeX > 0 && (
+        <div className="absolute inset-0 flex items-center pl-4 rounded-xl"
+          style={{ background: `rgba(74,222,128,${Math.min(swipeX / SWIPE_THRESHOLD, 1) * 0.25})` }}>
+          <div className="flex items-center gap-1.5" style={{ opacity: Math.min(swipeX / SWIPE_THRESHOLD, 1) }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span className="text-[12px] font-semibold text-green-400">
+              {swipeX >= SWIPE_THRESHOLD ? '¡Suelta!' : 'Desliza →'}
+            </span>
+          </div>
+        </div>
+      )}
     <motion.div
       onClick={handleCardClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={canSwipe ? handleTouchStart : undefined}
+      onTouchMove={canSwipe ? handleTouchMove : undefined}
+      onTouchEnd={canSwipe ? handleTouchEnd : undefined}
       initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -1 }}
-      transition={{ duration: 0.15, ease: "easeOut" }}
+      animate={{ opacity: 1, y: 0, x: swipeX }}
+      whileHover={swiping ? {} : { y: -1 }}
+      transition={swiping ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }}
       className={cn(
-        "relative rounded-xl border-l-2 transition-all duration-150",
+        "relative rounded-xl border-l-2 transition-colors duration-150",
         "bg-[#0d0d0d] border border-[#1c1c1c]",
-        "hover:bg-[#111111] hover:border-[#262626]",
+        !swiping && "hover:bg-[#111111] hover:border-[#262626]",
         onView && "cursor-pointer",
-        priorityBorder[task.priority] || "border-l-white/10"
+        priorityBorder[task.priority] || "border-l-white/10",
+        swipeX >= SWIPE_THRESHOLD && "border-l-green-400"
       )}
     >
       <div className="p-3.5">
@@ -451,5 +501,6 @@ export default function TaskCard({
         </div>
       </div>
     </motion.div>
+    </div>
   );
 }

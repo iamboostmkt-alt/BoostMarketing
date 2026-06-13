@@ -546,6 +546,8 @@ function SettingsDropdown({ collapsed }: { collapsed: boolean }) {
 export default function AppSidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
+  // En móvil nunca colapsamos el sidebar — forzar expandido al abrir
+  const [savedCollapsed, setSavedCollapsed] = React.useState(false);
   const { data: session } = useSession();
 
   const userName        = session?.user?.name || "Usuario";
@@ -716,6 +718,14 @@ export default function AppSidebar() {
 
     </div>
   );
+
+  // Sync: cuando el móvil abre, restaurar sidebar expandido
+  React.useEffect(() => {
+    if (mobileOpen && collapsed) {
+      setSavedCollapsed(true);
+      setCollapsed(false);
+    }
+  }, [mobileOpen]);
 
   return (
     <>

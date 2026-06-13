@@ -3319,7 +3319,7 @@ function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; on
   }
 
   return (
-    <aside className="flex h-full w-[320px] shrink-0 flex-col border-l border-white/[0.05] bg-[#11131a]">
+    <aside className="hidden lg:flex h-full w-[320px] shrink-0 flex-col border-l border-white/[0.05] bg-[#11131a]">
       <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-white/[0.05] px-5">
         <div>
           <h2 className="text-[15px] font-semibold tracking-tight">Hilo</h2>
@@ -3402,7 +3402,7 @@ export default function ChatWithChannels() {
   const [activeId, setActiveId] = useState('TEAM');
   const [threadMsg, setThreadMsg] = useState<ChatMessage | null>(null);
   // Panel derecho fijo — elevado fuera del ChatMain
-  const [showRightPanel, setShowRightPanel] = useState(true); // siempre visible como columna fija
+  const [showRightPanel, setShowRightPanel] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true); // oculto en móvil
   const [rightTab, setRightTab]             = useState<'members'|'apps'>('members');
   const [accentColor] = useState('#8B5CF6');
   const [mobileOpen, setMobileOpen] = useState(false);
