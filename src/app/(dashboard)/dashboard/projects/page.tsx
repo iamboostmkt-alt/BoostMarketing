@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Plus, Calendar, Users, ChevronRight, LayoutGrid, List, Search, FolderOpen, Clock, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -40,6 +41,7 @@ function Avatar({ name, color, image, size = 28 }: { name: string; color: string
 }
 
 function ProjectCard({ project, onClick }: { project: Project; onClick: () => void }) {
+  const router = useRouter();
   const status = STATUS_CONFIG[project.status] ?? STATUS_CONFIG.active;
   const StatusIcon = status.icon;
   const progress = project.milestones.length > 0
@@ -50,7 +52,7 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
     <motion.div
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
-      onClick={onClick}
+      onClick={() => router.push('/dashboard/projects/' + project.id)}
       className="glass-card rounded-2xl p-5 cursor-pointer transition-all hover:ring-1"
       style={{ '--tw-ring-color': project.color + '40' } as any}>
       {/* Header */}
@@ -124,7 +126,13 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
             </div>
           )}
         </div>
-        <ChevronRight className="w-4 h-4 text-white/20" />
+        <div className="flex items-center gap-1">
+          <button onClick={e => { e.stopPropagation(); onClick(); }}
+            className="w-6 h-6 rounded-lg flex items-center justify-center text-white/20 hover:text-white/60 hover:bg-white/[0.06] transition-colors">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <ChevronRight className="w-4 h-4 text-white/20" />
+        </div>
       </div>
     </motion.div>
   );
