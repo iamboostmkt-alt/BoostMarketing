@@ -50,6 +50,7 @@ model Workspace {
   chatUnreads   ChatUnread[]
   channels      Channel[]
   aiSessions    AiSession[]
+  pushSubscriptions PushSubscription[]
   projects      Project[]
   invites       WorkspaceInvite[]
   taskTemplates      TaskTemplate[]
@@ -133,6 +134,7 @@ model User {
   chatUnreads           ChatUnread[]
   createdChannels       Channel[]             @relation("ChannelCreator")
   aiSessions            AiSession[]
+  pushSubscriptions      PushSubscription[]
   managedClients         Client[]                  @relation("ClientManager")
   createdProjects        Project[]                 @relation("ProjectCreator")
   channelMemberships     ChannelMember[]
@@ -846,4 +848,23 @@ model AiSession {
   @@index([userId, workspaceId])
   @@index([room, workspaceId, active])
   @@map("ai_sessions")
+}
+
+// Web Push subscriptions para PWA notifications
+model PushSubscription {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  workspaceId  String   @map("workspace_id")
+  endpoint     String   @unique
+  p256dh       String   // Public key
+  auth         String   // Auth secret
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId, workspaceId])
+  @@map("push_subscriptions")
 }

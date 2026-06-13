@@ -14,6 +14,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { BrandingProvider } from '@/context/BrandingContext';
 import { RealtimeProvider } from '@/providers/RealtimeProvider';
 import { ActivityToastListener } from '@/components/dashboard/ActivityToastListener';
+import PushNotificationManager from '@/components/pwa/PushNotificationManager';
 
 function ForbiddenBanner() {
   const searchParams = useSearchParams();
@@ -82,6 +83,7 @@ export default function DashboardLayout({
       <BrandingProvider>
       <RealtimeProvider>
         <ActivityToastListener />
+          <PushNotificationManager />
       <TooltipProvider delayDuration={0}>
         <SidebarProvider>
           <UnassignedGuard>

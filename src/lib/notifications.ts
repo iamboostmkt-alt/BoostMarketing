@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { broadcastRealtime } from "@/lib/realtime-server";
+import { sendPushToUser } from "@/lib/push-notifications";
 import { weeklinkDmRoom } from "@/lib/chat-bot";
 
 export type NotificationType =
@@ -68,6 +69,23 @@ export async function createNotification(params: CreateNotificationParams): Prom
 
     if (broadcast) {
       broadcastRealtime("notification.created", { userId }).catch(() => undefined);
+    }
+
+    // Enviar Web Push notification al dispositivo del usuario
+    const PUSH_TYPES: NotificationType[] = ['task', 'meeting', 'appointment', 'mention', 'message', 'invite'];
+    if (PUSH_TYPES.includes(type)) {
+      sendPushToUser(userId, {
+        title: type === 'task'        ? '📋 Nueva tarea'
+              : type === 'meeting'    ? '📅 Reunión'
+              : type === 'mention'    ? '@ Te mencionaron'
+              : type === 'message'    ? '💬 Nuevo mensaje'
+              : type === 'invite'     ? '✉️ Invitación'
+              : '🔔 Weeklink',
+        body:  message.length > 100 ? message.slice(0, 97) + '...' : message,
+        url:   link ?? '/dashboard',
+        tag:   type,
+        icon:  '/icons/icon-192.png',
+      }).catch(() => undefined);
     }
 
     // También enviar al chat Weeklink del usuario (DM personal con el bot)
