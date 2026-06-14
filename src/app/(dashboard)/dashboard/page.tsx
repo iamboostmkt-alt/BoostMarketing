@@ -946,7 +946,7 @@ export default function DashboardPage() {
   const draggableSections = sections.filter(s => s.id !== 'stats' && (s.visible || editMode));
 
   return (
-    <div className="flex flex-col max-w-full overflow-x-hidden">
+    <div className="flex flex-col max-w-full overflow-x-hidden px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
 
       {/* ══ ZONA 1: Header sticky dentro del scroll ══ */}
       <div className="sticky top-0 z-20 pb-4 pt-1 -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8"

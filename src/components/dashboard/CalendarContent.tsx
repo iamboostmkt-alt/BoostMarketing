@@ -347,13 +347,13 @@ export default function CalendarContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Calendario</p>
           <p className="text-white/40 text-sm">Haz clic en un día para ver su detalle</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap justify-end">
+        <div className="flex items-center gap-2 flex-wrap justify-end min-w-0">
           {/* Selector de cliente — solo en tabs clientes/entregas */}
           {!isClient && clientOptions.length > 0 && (calView === 'clients' || calView === 'deliveries') && (
             <div className="flex items-center gap-2">
@@ -400,7 +400,7 @@ export default function CalendarContent() {
 
       {/* Tabs de vista */}
       {calTabs.length > 1 && (
-        <div className="flex gap-1 border-b border-white/[0.06] pb-0">
+        <div className="flex gap-1 border-b border-white/[0.06] pb-0 overflow-x-auto scrollbar-none">
           {calTabs.map((tab) => (
             <button key={tab.id} onClick={() => setCalView(tab.id)}
               className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
