@@ -773,24 +773,26 @@ function ChatMain({
   useEffect(() => {
     const sb = getSupabaseBrowser();
     if (!sb || !myId) return;
-    const userName = (session?.user as any)?.name || (session?.user as any)?.email || 'Alguien';
-    const channelName = `typing:${room}`;
-    let active = true; // guard para evitar operar en canal ya desmontado
 
-    // Crear canal ANTES de subscribe — registrar callbacks primero
+    // Nombre único por instancia para evitar colisión de canales con el mismo room
+    const instanceId = Math.random().toString(36).slice(2, 8);
+    const channelName = `typing:${room}:${instanceId}`;
+    let active = true;
+
     const ch = sb.channel(channelName, { config: { presence: { key: myId } } });
 
     // Registrar presence ANTES de subscribe (requerido por Supabase)
     ch.on('presence', { event: 'sync' }, () => {
       if (!active) return;
-      const state = ch.presenceState<{ name: string; typing: boolean }>();
-      const typingNow = Object.entries(state)
-        .filter(([uid, arr]) => uid !== myId && (arr as any[])[0]?.typing)
-        .map(([, arr]) => (arr as any[])[0]?.name ?? 'Alguien');
-      setTypingUsers(typingNow);
+      try {
+        const state = ch.presenceState<{ name: string; typing: boolean }>();
+        const typingNow = Object.entries(state)
+          .filter(([uid, arr]) => uid !== myId && (arr as any[])[0]?.typing)
+          .map(([, arr]) => (arr as any[])[0]?.name ?? 'Alguien');
+        setTypingUsers(typingNow);
+      } catch { /* ignore */ }
     });
 
-    // subscribe() DESPUÉS de registrar todos los callbacks
     ch.subscribe((status) => {
       if (!active) return;
       if (status === 'SUBSCRIBED') {
@@ -801,8 +803,11 @@ function ChatMain({
     return () => {
       active = false;
       presenceChannelRef.current = null;
-      try { sb.removeChannel(ch); } catch { /* ignore cleanup errors */ }
       setTypingUsers([]);
+      // removeChannel es async internamente — no bloquear el cleanup
+      setTimeout(() => {
+        try { sb.removeChannel(ch); } catch { /* ignore */ }
+      }, 0);
     };
   }, [room, myId]);
 
