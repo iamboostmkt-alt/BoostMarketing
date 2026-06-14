@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader2, Building2, User, Mail, Lock, ArrowRight, Check, Sparkles } from 'lucide-react';
@@ -51,7 +52,9 @@ const INDUSTRIES = [
   { id: 'other',     label: 'Otro',              emoji: '🚀' },
 ];
 
-export default function RegisterPage() {
+function RegisterPageInner() {
+  const searchParams = useSearchParams();
+  const preselectedPlan = searchParams.get('plan') || '';
   const [step, setStep]             = useState<1 | 2>(1);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState('');
@@ -320,5 +323,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterPageInner />
+    </Suspense>
   );
 }
