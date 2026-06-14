@@ -439,7 +439,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                       <svg className="w-2.5 h-2.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     {statusDropOpen && (
-                      <div className="absolute top-full left-0 mt-1 z-50 bg-[#16161e] border border-white/[0.08] rounded-xl shadow-2xl p-1 min-w-[180px]">
+                      <div className="absolute top-full left-0 mt-1 z-50 bg-[#16161e] border border-white/[0.08] rounded-xl shadow-2xl p-1 min-w-[180px] max-h-[60vh] overflow-y-auto">
                         {isManager ? (
                           <>
                             <p className="px-3 pt-1.5 pb-0.5 text-[9px] font-semibold text-white/20 uppercase tracking-wider">Progreso</p>

@@ -113,7 +113,7 @@ function UserDropdown({
             transition={{ duration: 0.15 }}
             className={cn(
               "absolute z-50 mt-2 w-56 overflow-hidden rounded-xl border border-white/[0.08] bg-[#16161e] shadow-2xl",
-              collapsed ? "left-full ml-2 top-0" : "right-0 top-full"
+              collapsed ? "left-full ml-2 top-0" : "right-0 bottom-full mb-2"
             )}
           >
             {/* Header: Avatar + nombre + rol */}
@@ -241,7 +241,7 @@ function WorkspaceSwitcher({
     <div ref={ref} className="relative">
       {trigger}
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-white/[0.08] bg-[#0e0e14] shadow-2xl overflow-hidden">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-white/[0.08] bg-[#0e0e14] shadow-2xl overflow-hidden max-h-[70vh] overflow-y-auto">
           {/* Header */}
           <div className="px-3 py-2.5 border-b border-white/[0.06]">
             <p className="text-xs font-semibold text-white/80 truncate">{workspaceName}</p>
@@ -312,11 +312,13 @@ function NavItemButton({
   isActive,
   collapsed,
   badge,
+  onClick,
 }: {
   item: NavItem;
   isActive: boolean;
   collapsed: boolean;
   badge?: number;
+  onClick?: () => void;
 }) {
   const Icon = item.icon;
   const [isHovered, setIsHovered] = React.useState(false);
@@ -324,6 +326,7 @@ function NavItemButton({
   const content = (
     <Link
       href={item.href}
+      onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
@@ -745,12 +748,87 @@ export default function AppSidebar() {
         />
       )}
 
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar — siempre expandido, ignora collapsed */}
       <aside
-        className="fixed top-0 left-0 z-50 h-screen w-[240px] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out"
+        className="fixed top-0 left-0 z-50 h-screen w-[240px] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out flex flex-col"
         style={{ transform: mobileOpen ? "translateX(0)" : "translateX(-280px)", background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
       >
-        {sidebarContent}
+        {/* Botón cerrar en mobile */}
+        <div className="flex h-14 items-center justify-between px-3 shrink-0">
+          <span className="text-sm font-semibold text-white/90">Weeklink</span>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-white/60 border border-white/[0.08]"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" strokeWidth={1.5} />
+          </button>
+        </div>
+        {/* Workspace label */}
+        <div className="px-3 pt-1 pb-0.5 flex items-center gap-1.5">
+          <span className="text-[10px] uppercase tracking-widest text-white/20 font-medium">Workspace</span>
+          <span className="text-[10px] text-white/20">·</span>
+          <span className="text-[10px] text-white/35 font-medium truncate">{workspaceName}</span>
+        </div>
+        <div className="mx-2 mt-1">
+          <WorkspaceSwitcher
+            name={userName}
+            initial={initials}
+            color={userColor}
+            image={userImage}
+            collapsed={false}
+            role={role}
+            workspaceName={workspaceName}
+            onInvite={() => { setInviteOpen(true); setMobileOpen(false); }}
+          />
+        </div>
+        {/* Navigation mobile — siempre expanded */}
+        <nav className="flex-1 overflow-y-auto py-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+          <SectionLabel collapsed={false}>Menú Principal</SectionLabel>
+          <div className="space-y-0.5">
+            {filteredNavItems.map((item) => (
+              <NavItemButton
+                key={item.href}
+                item={item}
+                isActive={isActive(item.href)}
+                collapsed={false}
+                badge={item.href === '/dashboard/chat' ? chatUnread : undefined}
+                onClick={() => setMobileOpen(false)}
+              />
+            ))}
+          </div>
+          {(isAdmin || isManagerRole) && (
+            <ClientsSection collapsed={false} clients={clients} isAdmin={isAdmin} />
+          )}
+          {(isAdmin || isManagerRole) && (
+            <>
+              <SectionLabel collapsed={false}>Equipo</SectionLabel>
+              <div className="mt-2">
+                <div className="mt-1 space-y-0.5 pl-4">
+                  <Link
+                    href="/dashboard/team"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75"
+                  >
+                    <div className="h-2 w-2 rounded-full bg-sky-400/60" />
+                    <span className="truncate">Ver equipo</span>
+                  </Link>
+                  <button
+                    onClick={() => { setInviteOpen(true); setMobileOpen(false); }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] text-purple-400/70 transition-colors hover:text-purple-400"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Invitar miembro</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </nav>
+        {/* Bottom tools */}
+        <div className="border-t border-white/[0.06] pb-2 pt-2">
+          <div className="mb-1 px-3 text-[10px] font-medium uppercase tracking-widest text-white/20">Herramientas</div>
+          <SettingsDropdown collapsed={false} />
+        </div>
       </aside>
 
       {/* Invite Modal — disponible desde cualquier punto del sidebar */}

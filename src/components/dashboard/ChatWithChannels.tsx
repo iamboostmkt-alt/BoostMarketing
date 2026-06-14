@@ -2342,7 +2342,7 @@ FORMATO:
                 {showSlashMenu && (
                   <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowSlashMenu(false)} />
-                  <div className="absolute bottom-14 left-0 z-50 w-52 rounded-xl border border-white/[0.08] bg-[#1a1d2e] py-1 shadow-2xl">
+                  <div className="absolute bottom-14 left-0 z-50 w-52 rounded-xl border border-white/[0.08] bg-[#1a1d2e] py-1 shadow-2xl max-h-[40vh] overflow-y-auto">
                     <p className="px-3 py-1.5 text-[10px] text-white/30 uppercase tracking-wide">Comandos</p>
                     {[
                       { cmd: '/tarea', desc: 'Crear tarea rápida', icon: '📋' },
@@ -2428,7 +2428,7 @@ FORMATO:
       {/* Members Panel */}
       {/* Panel derecho deslizable — Miembros / Apps / Contexto */}
       {showMembersPanel && (
-        <div className="absolute right-0 top-[52px] bottom-0 z-40 w-72 border-l border-white/[0.05] bg-[#0D0F18] flex flex-col shadow-2xl"
+        <div className="fixed inset-y-0 right-0 z-40 w-[85vw] max-w-[300px] lg:absolute lg:right-0 lg:top-[52px] lg:bottom-0 lg:w-72 border-l border-white/[0.05] bg-[#0D0F18] flex flex-col shadow-2xl"
           style={{ animation: 'slideInRight 0.18s ease-out' }}>
           {/* Header del panel con tabs */}
           <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/[0.05] shrink-0">
@@ -3527,11 +3527,13 @@ export default function ChatWithChannels() {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="absolute inset-0 bg-black/70" onClick={() => setMobileOpen(false)} />
-          <div className="relative z-10">
-            <button className="absolute top-3 right-3 text-white/40 hover:text-white z-10" onClick={() => setMobileOpen(false)}>
+          <div className="relative z-10 h-full flex flex-col" style={{ width: '244px', maxWidth: '85vw' }}>
+            <button className="absolute top-3 right-[-36px] text-white/60 hover:text-white z-10 bg-black/60 rounded-full p-1.5" onClick={() => setMobileOpen(false)}>
               <X className="w-4 h-4" />
             </button>
-            {channelList}
+            <div className="h-full overflow-y-auto">
+              {channelList}
+            </div>
           </div>
         </div>
       )}
@@ -3539,11 +3541,19 @@ export default function ChatWithChannels() {
       {/* Main area + panel derecho como flex row */}
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Mobile header */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.05] shrink-0 md:hidden bg-card">
-          <button onClick={() => setMobileOpen(true)} className="text-white/50 hover:text-white">
-            <Menu className="w-5 h-5" />
+        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.05] shrink-0 md:hidden bg-card">
+          <button onClick={() => setMobileOpen(true)} className="h-8 w-8 flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06]">
+            <Menu className="w-4 h-4" />
           </button>
-          <p className="text-sm font-semibold text-white">#{activeTitle}</p>
+          <p className="text-sm font-semibold text-white flex-1 truncate">
+            {activeId.startsWith('weeklink_') ? 'Weeklink' : activeDmUser ? activeDmUser.name || activeDmUser.email : activeId.includes('_DM_') ? (members.find(m => activeId.includes(m.id) && m.id !== (session?.user as any)?.id)?.name || 'DM') : `#${activeTitle}`}
+          </p>
+          <button
+            onClick={() => setShowRightPanel(p => !p)}
+            className={`h-8 w-8 flex items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] ${showRightPanel ? 'text-white bg-white/[0.06]' : 'text-white/35'}`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          </button>
         </div>
 
         {isSupport ? (
