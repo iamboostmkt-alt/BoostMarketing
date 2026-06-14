@@ -33,6 +33,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   if (event.request.url.includes('/api/')) return; // APIs siempre en vivo
+  // Ignorar URLs no-http (chrome-extension, blob, data, etc.)
+  if (!event.request.url.startsWith('http')) return;
 
   event.respondWith(
     fetch(event.request)

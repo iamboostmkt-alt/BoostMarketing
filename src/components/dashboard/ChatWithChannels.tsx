@@ -775,28 +775,48 @@ function ChatMain({
     if (!sb || !myId) return;
     const userName = (session?.user as any)?.name || (session?.user as any)?.email || 'Alguien';
     const channelName = `typing:${room}`;
+    let active = true; // guard para evitar operar en canal ya desmontado
+
+    // Crear canal ANTES de subscribe — registrar callbacks primero
     const ch = sb.channel(channelName, { config: { presence: { key: myId } } });
-    presenceChannelRef.current = ch;
+
+    // Registrar presence ANTES de subscribe (requerido por Supabase)
     ch.on('presence', { event: 'sync' }, () => {
+      if (!active) return;
       const state = ch.presenceState<{ name: string; typing: boolean }>();
       const typingNow = Object.entries(state)
         .filter(([uid, arr]) => uid !== myId && (arr as any[])[0]?.typing)
         .map(([, arr]) => (arr as any[])[0]?.name ?? 'Alguien');
       setTypingUsers(typingNow);
     });
-    ch.subscribe();
-    return () => { sb.removeChannel(ch); presenceChannelRef.current = null; };
+
+    // subscribe() DESPUÉS de registrar todos los callbacks
+    ch.subscribe((status) => {
+      if (!active) return;
+      if (status === 'SUBSCRIBED') {
+        presenceChannelRef.current = ch;
+      }
+    });
+
+    return () => {
+      active = false;
+      presenceChannelRef.current = null;
+      try { sb.removeChannel(ch); } catch { /* ignore cleanup errors */ }
+      setTypingUsers([]);
+    };
   }, [room, myId]);
 
   const broadcastTyping = useCallback(() => {
     const ch = presenceChannelRef.current;
     if (!ch) return;
-    const userName = (session?.user as any)?.name || (session?.user as any)?.email || 'Alguien';
-    ch.track({ name: userName, typing: true });
-    if (typingTimer.current) clearTimeout(typingTimer.current);
-    typingTimer.current = setTimeout(() => {
-      ch.track({ name: userName, typing: false });
-    }, 3000);
+    try {
+      const userName = (session?.user as any)?.name || (session?.user as any)?.email || 'Alguien';
+      ch.track({ name: userName, typing: true });
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+      typingTimer.current = setTimeout(() => {
+        try { ch.track({ name: userName, typing: false }); } catch { /* ignore */ }
+      }, 3000);
+    } catch { /* canal aún no suscrito */ }
   }, [session]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const isAiWritingRef = useRef(false); // bloquea polls mientras IA escribe
@@ -837,7 +857,7 @@ function ChatMain({
   // Cargar clientes con email para MeetingDialog
   useEffect(() => {
     if (['CLIENT'].includes(role ?? '')) return;
-    fetch('/api/clients?sidebar=0').then(r => r.ok ? r.json() : null)
+    fetch('/api/clients?sidebar=1').then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.clients) setClientsWithEmail(
           d.clients.map((c: any) => ({ id: c.id, name: c.name, email: c.email || '', company: c.company || '' }))
