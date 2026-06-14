@@ -15,6 +15,11 @@ export async function GET() {
         name: true,
         slug: true,
         plan: true,
+      trialEndsAt: true,
+      isFoundingMember: true,
+      billingCycle: true,
+      aiTier: true,
+      extraClients: true,
         createdAt: true,
         _count: {
           select: {

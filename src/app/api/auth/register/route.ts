@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
           name: agencyName,
           slug,
           plan: "FREE",
+          trialEndsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 días de trial
         },
       });
 

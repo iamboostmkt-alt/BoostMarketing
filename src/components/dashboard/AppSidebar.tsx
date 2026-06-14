@@ -58,6 +58,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard/crm",           label: "Leads",      icon: Users,      roles: ["ADMIN", "PROJECT_MANAGER", "SALES_REP"] },
   { href: "/dashboard/analytics",     label: "Analytics",  icon: BarChart3,  roles: ["ADMIN"] },
   { href: "/dashboard/admin",         label: "Admin",      icon: Shield,     roles: ["ADMIN"] },
+  { href: "/dashboard/billing",       label: "Billing",    icon: Zap,        roles: ["ADMIN"] },
 ];
 
 // ─── User Dropdown ────────────────────────────────────────────────────────────
@@ -163,11 +164,11 @@ function UserDropdown({
                 <span className="flex-1 text-left">Apariencia</span>
                 <ChevronRight className="h-3.5 w-3.5 text-white/30" />
               </button>
-              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
-                <Zap className="h-4 w-4" strokeWidth={1.5} />
-                <span>Upgrade</span>
-                <span className="ml-auto text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">PRO</span>
-              </button>
+              <Link href="/dashboard/billing" onClick={() => setOpen(false)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
+                <Zap className="h-4 w-4 text-amber-400" strokeWidth={1.5} />
+                <span>Billing & Plan</span>
+                <span className="ml-auto text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">Upgrade</span>
+              </Link>
               <div className="my-1 h-px bg-white/[0.06]" />
               <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
                 <HelpCircle className="h-4 w-4" strokeWidth={1.5} />
@@ -252,9 +253,11 @@ function WorkspaceSwitcher({
           {isAdmin && (
             <div className="px-3 py-2 border-b border-white/[0.06]">
               <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Workspace</p>
-              <Link href="/dashboard/admin" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+              <Link href="/dashboard/billing" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
                 <span className="text-xs text-white/60 group-hover:text-white/80">Plan actual</span>
-                <span className="text-[10px] font-semibold text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full">FREE</span>
+                <span className="text-[10px] font-semibold text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full">
+                  {role === 'ADMIN' ? 'Ver plan →' : workspaceName.slice(0, 6)}
+                </span>
               </Link>
               <Link href="/dashboard/team" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
                 <span className="text-xs text-white/60 group-hover:text-white/80">Miembros</span>

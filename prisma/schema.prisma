@@ -30,12 +30,19 @@ enum UserLifecycleStatus {
 
 
 model Workspace {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  plan      String   @default("FREE") // FREE | PRO | AGENCY
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id               String    @id @default(cuid())
+  name             String
+  slug             String    @unique
+  plan             String    @default("FREE") // FREE | PRO | BUSINESS | ENTERPRISE
+  trialEndsAt      DateTime? @map("trial_ends_at")
+  isFoundingMember Boolean   @default(false) @map("is_founding_member")
+  stripeCustomerId String?   @map("stripe_customer_id")
+  stripeSubId      String?   @map("stripe_sub_id")
+  billingCycle     String    @default("monthly") @map("billing_cycle") // monthly | annual
+  extraClients     Int       @default(0) @map("extra_clients")
+  aiTier           String    @default("basic") @map("ai_tier") // basic | medium | premium
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   users         User[]
   clients       Client[]

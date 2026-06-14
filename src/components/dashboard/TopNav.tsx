@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { Menu, Search, User, LogOut, Settings, Palette, Zap, HelpCircle, Command } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -172,12 +173,15 @@ export default function TopNav() {
                     <span className="text-[12px]">Apariencia</span>
                   </DropdownMenuItem>
                   {session?.user?.role === 'ADMIN' && (
-                    <DropdownMenuItem
-                      className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
-                    >
-                      <Zap className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-amber-400" strokeWidth={1.5} />
-                      <span className="text-[12px] flex-1">Upgrade</span>
-                      <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">PRO</span>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/dashboard/billing"
+                        className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
+                      >
+                        <Zap className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-amber-400" strokeWidth={1.5} />
+                        <span className="text-[12px] flex-1">Billing & Plan</span>
+                        <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">Upgrade</span>
+                      </Link>
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuGroup>
