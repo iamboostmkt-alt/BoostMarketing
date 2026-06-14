@@ -58,7 +58,6 @@ const navItems: NavItem[] = [
   { href: "/dashboard/crm",           label: "Leads",      icon: Users,      roles: ["ADMIN", "PROJECT_MANAGER", "SALES_REP"] },
   { href: "/dashboard/analytics",     label: "Analytics",  icon: BarChart3,  roles: ["ADMIN"] },
   { href: "/dashboard/admin",         label: "Admin",      icon: Shield,     roles: ["ADMIN"] },
-  { href: "/dashboard/billing",       label: "Billing",    icon: Zap,        roles: ["ADMIN"] },
 ];
 
 // ─── User Dropdown ────────────────────────────────────────────────────────────
@@ -255,9 +254,7 @@ function WorkspaceSwitcher({
               <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Workspace</p>
               <Link href="/dashboard/billing" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
                 <span className="text-xs text-white/60 group-hover:text-white/80">Plan actual</span>
-                <span className="text-[10px] font-semibold text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full">
-                  {role === 'ADMIN' ? 'Ver plan →' : workspaceName.slice(0, 6)}
-                </span>
+                <span className="text-[10px] font-semibold text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full">Ver plan →</span>
               </Link>
               <Link href="/dashboard/team" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
                 <span className="text-xs text-white/60 group-hover:text-white/80">Miembros</span>

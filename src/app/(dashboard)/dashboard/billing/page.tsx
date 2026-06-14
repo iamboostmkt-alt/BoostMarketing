@@ -30,10 +30,10 @@ interface BillingState {
 }
 
 const PLANS = {
-  FREE:       { label: 'Clásico',   monthly: 0,    annual: 0,    clients: 3,   users: 5,   features: ['3 cuentas', '5 usuarios', 'Tareas y calendario', 'Chat interno', 'Portal cliente'] },
-  PRO:        { label: 'Pro',       monthly: 299,  annual: 2870, clients: 10,  users: 15,  features: ['10 cuentas', '15 usuarios', 'Todo de Clásico', 'IA Básica incluida', 'Proyectos y milestones', 'Reportes mensuales'] },
-  BUSINESS:   { label: 'Business',  monthly: 549,  annual: 5270, clients: 999, users: 999, features: ['Cuentas ilimitadas', 'Usuarios ilimitados', 'Todo de Pro', 'IA Premium', 'Analytics avanzados', 'Soporte prioritario', 'Precio Founding disponible'] },
-  ENTERPRISE: { label: 'Enterprise',monthly: 0,    annual: 0,    clients: 999, users: 999, features: ['Todo de Business', 'SLA personalizado', 'Onboarding dedicado', 'Integraciones custom', 'Facturación por empresa', 'Manager de cuenta'] },
+  FREE:       { label: 'Clásico',   monthly: 350,  annual: 3360,  clients: 5,   users: 999, features: ['Hasta 5 clientes incluidos', 'Usuarios ilimitados', 'Chat y canales', 'Gestión de tareas', 'Portal cliente básico', '10 GB almacenamiento'] },
+  PRO:        { label: 'Pro',       monthly: 450,  annual: 4320,  clients: 12,  users: 999, features: ['Hasta 12 clientes incluidos', 'Todo lo del Clásico', 'Branding del portal', 'Integraciones Drive, Figma', 'IA y resúmenes avanzados', '50 GB almacenamiento'] },
+  BUSINESS:   { label: 'Business',  monthly: 550,  annual: 5280,  clients: 999, users: 999, features: ['Clientes ilimitados', 'Todo lo del plan Pro', 'White Label', 'IA avanzada', 'Automatizaciones', '200 GB almacenamiento'] },
+  ENTERPRISE: { label: 'Enterprise',monthly: 1500, annual: 14400, clients: 999, users: 999, features: ['Todo lo del plan Business', 'SSO y dominio personalizado', 'Infraestructura dedicada', 'SLA y soporte prioritario', 'Integraciones a medida', 'Almacenamiento negociable'] },
 } as const;
 
 const AI_TIERS = {
@@ -102,10 +102,7 @@ export default function BillingPage() {
     : 0;
 
   const handleContinue = async () => {
-    if (selPlan === 'FREE') {
-      toast.info('El plan Clásico es gratis. Selecciona Pro, Business o Enterprise para continuar.');
-      return;
-    }
+    // Todos los planes requieren pago — el trial es el período gratuito, no el plan
     if (selPlan === 'ENTERPRISE') {
       toast.info('Contacta a ventas para Enterprise.');
       return;
@@ -183,15 +180,20 @@ export default function BillingPage() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-[14px] font-medium text-white/90">
-                  Tu prueba gratuita termina en <span className="text-purple-300 font-semibold">{daysLeft} día{daysLeft !== 1 ? 's' : ''}</span>
+                  {daysLeft <= 5
+                    ? <>Tu suscripción se activará en <span className="text-amber-300 font-semibold">{daysLeft} día{daysLeft !== 1 ? 's' : ''}</span></>
+                    : daysLeft <= 1
+                    ? <span className="text-red-300 font-semibold">Último día — tu método de pago se procesará mañana</span>
+                    : <>Tu prueba gratuita termina en <span className="text-purple-300 font-semibold">{daysLeft} día{daysLeft !== 1 ? 's' : ''}</span></>
+                  }
                 </p>
                 {isFounder && (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(139,92,246,0.2)', color: '#c4b5fd' }}>
-                    ✦ Founding Eligible
+                    🚀 Founding Lifetime
                   </span>
                 )}
               </div>
-              <p className="text-[12px] text-white/40 mt-0.5">Disfruta acceso ilimitado. Elige tu plan antes de que termine.</p>
+              <p className="text-[12px] text-white/40 mt-0.5">No se realizará ningún cargo hoy. Puedes cancelar en cualquier momento antes del cobro.</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -493,7 +495,7 @@ export default function BillingPage() {
             <div>
               <h3 className="text-[14px] font-semibold text-white/85">Resumen de suscripción</h3>
               <p className="text-[11px] text-white/30 mt-0.5">
-                {selPlan === 'FREE' ? 'Plan gratuito' : 'Listo para activar Weeklink'}
+                {selPlan === 'FREE' ? 'Plan Clásico — desde $350 MXN/mes' : 'Listo para activar Weeklink'}
               </p>
             </div>
 
@@ -560,7 +562,7 @@ export default function BillingPage() {
                 <p className="text-[13px] text-white/50">Total</p>
                 <div className="text-right">
                   <p className="text-[22px] font-semibold text-white/95">
-                    {total === 0 ? 'Gratis' : `$${total.toLocaleString('es-MX')}`}
+                    ${total.toLocaleString('es-MX')}
                   </p>
                   {total > 0 && (
                     <p className="text-[11px] text-white/30">
@@ -576,13 +578,13 @@ export default function BillingPage() {
               onClick={handleContinue}
               disabled={saving}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-[13px] font-semibold text-white transition-all disabled:opacity-60"
-              style={{ background: selPlan === 'FREE' ? 'rgba(255,255,255,0.08)' : '#8B5CF6' }}
+              style={{ background: '#8B5CF6' }}
             >
               {saving ? (
                 <RefreshCcw className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  {selPlan === 'FREE' ? 'Plan actual — Gratis' : 'Continuar al pago'}
+                  {selPlan === 'FREE' ? `Continuar — $${PLANS.FREE.monthly.toLocaleString('es-MX')} MXN/mes` : 'Continuar al pago'}
                   {selPlan !== 'FREE' && <ArrowRight className="w-4 h-4" />}
                 </>
               )}
