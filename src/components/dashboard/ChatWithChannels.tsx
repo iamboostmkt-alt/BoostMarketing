@@ -2224,7 +2224,7 @@ FORMATO:
         </div>
       )}
       {/* Composer */}
-      <div className="px-4 pb-4 pt-1">
+      <div className="px-4 pt-1" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom, 16px))" }}>
         <form onSubmit={handleSend}>
           <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] px-2 py-2 transition-colors focus-within:border-primary/40">
             <div className="flex items-center gap-1">

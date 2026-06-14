@@ -87,7 +87,7 @@ export default function DashboardLayout({
       <TooltipProvider delayDuration={0}>
         <SidebarProvider>
           <UnassignedGuard>
-          <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}>
+          <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)", minHeight: "100dvh" }}>
             {/* Sidebar */}
             <AppSidebar />
 

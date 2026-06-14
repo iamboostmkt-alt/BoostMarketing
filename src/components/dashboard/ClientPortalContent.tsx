@@ -518,7 +518,7 @@ export default function ClientPortalContent() {
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       {AdminSelectorBar}
 
       {/* Header */}

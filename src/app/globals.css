@@ -133,6 +133,9 @@
     background: linear-gradient(160deg, #080808 0%, #0c0a14 35%, #100d1c 65%, #080808 100%);
     background-attachment: fixed;
     min-height: 100vh;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
   }
   button, a, [role="button"] {
     @apply transition-colors duration-150;
@@ -268,6 +271,12 @@
 }
 
 /* Custom scrollbar */
+/* Scrolling nativo suave en iOS */
+.ios-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
