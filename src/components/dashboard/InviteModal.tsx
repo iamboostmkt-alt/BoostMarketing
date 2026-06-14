@@ -408,7 +408,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
             onClick={e => e.stopPropagation()}
-            style={{ position: "relative", zIndex: 9991, width: "100%", maxWidth: 680, padding: "0 16px" }}
+            style={{ position: "relative", zIndex: 9991, width: "100%", maxWidth: 680, padding: "0 12px", maxHeight: "calc(100dvh - 32px)", overflowY: "auto" }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3 px-1">

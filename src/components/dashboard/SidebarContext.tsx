@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 interface SidebarContextType {
   collapsed: boolean;
@@ -14,9 +14,25 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+  // Inicializar collapsed desde localStorage solo en desktop
+  const [collapsed, setCollapsedState] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+
+  // Leer preferencia guardada al montar (solo desktop)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.innerWidth < 768) return; // en móvil siempre expandido
+    const saved = localStorage.getItem('sidebar-collapsed');
+    if (saved === 'true') setCollapsedState(true);
+  }, []);
+
+  const setCollapsed = useCallback((val: boolean) => {
+    setCollapsedState(val);
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      localStorage.setItem('sidebar-collapsed', String(val));
+    }
+  }, []);
 
   return (
     <SidebarContext.Provider
