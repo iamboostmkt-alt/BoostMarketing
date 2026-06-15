@@ -3,7 +3,8 @@ import { stripe } from '@/lib/stripe';
 import { db } from '@/lib/db';
 import Stripe from 'stripe';
 
-export const config = { api: { bodyParser: false } };
+// Next.js 14 App Router lee el body como stream automáticamente
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
