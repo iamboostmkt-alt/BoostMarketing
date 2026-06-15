@@ -75,8 +75,8 @@ export async function POST(req: NextRequest) {
         },
         quantity: 1,
       }],
-      success_url: `${process.env.NEXTAUTH_URL}/dashboard/billing?success=1`,
-      cancel_url:  `${process.env.NEXTAUTH_URL}/dashboard/billing?canceled=1`,
+      success_url: `https://boostmarketingboost.com/dashboard/billing?success=1`,
+      cancel_url:  `https://boostmarketingboost.com/dashboard/billing?canceled=1`,
       subscription_data: {
         ...(trialEnd ? { trial_end: trialEnd } : {}),
         metadata: { workspaceId: ws.id, plan, billingCycle, aiTier, extraClients: String(extraClients) },

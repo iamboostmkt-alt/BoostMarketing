@@ -175,8 +175,7 @@ export default function TopNav() {
                   {session?.user?.role === 'ADMIN' && (
                     <DropdownMenuItem asChild>
                       <Link
-                        href="/dashboard/billing"
-                        target="_blank" rel="noopener noreferrer"
+                        href="/billing"
                         className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
                       >
                         <Zap className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-amber-400" strokeWidth={1.5} />
