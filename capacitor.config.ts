@@ -9,8 +9,8 @@ const config: CapacitorConfig = {
     cleartext: false,
     androidScheme: 'https',
   },
-  // Para builds locales/offline (cuando no hay server)
-  webDir: 'out',
+  // webDir apunta a public/ que siempre existe (en runtime usa server.url)
+  webDir: 'public',
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
