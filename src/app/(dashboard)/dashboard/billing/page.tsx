@@ -35,6 +35,14 @@ const AI_TIERS = {
   premium: { label: 'IA Premium',  monthly: 200, desc: 'Claude Sonnet + todos los modelos — máxima inteligencia', color: '#7C3AED', bg: '#F5F3FF', icon: Sparkles },
 } as const;
 
+// IA incluida según plan (sin costo adicional)
+const PLAN_INCLUDED_AI: Record<PlanKey, AiKey> = {
+  FREE:       'basic',
+  PRO:        'basic',
+  BUSINESS:   'medium',  // Business incluye IA Mediana
+  ENTERPRISE: 'premium', // Enterprise incluye IA Premium
+};
+
 const FAQ = [
   { q: '¿Qué pasa después del trial?', a: 'Al terminar los 15 días, Stripe procesará automáticamente el pago según el plan que seleccionaste. Si no elegiste un plan, el workspace pasará a plan Clásico con limitaciones.' },
   { q: '¿Qué incluye el precio Founding?', a: 'Los primeros 20 clientes obtienen el precio de Business bloqueado de por vida mientras mantengan activa su suscripción.' },
@@ -71,6 +79,14 @@ export default function BillingPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-seleccionar IA cuando cambia el plan
+  useEffect(() => {
+    const includedAi = PLAN_INCLUDED_AI[selPlan];
+    // Solo bajar la IA si el plan no la incluye — nunca forzar downgrade si ya eligió algo mejor
+    if (AI_TIERS[selAi].monthly > 0 && AI_TIERS[includedAi].monthly > AI_TIERS[selAi].monthly) return;
+    setSelAi(includedAi);
+  }, [selPlan]);
 
   const fetchBilling = useCallback(async () => {
     try {
@@ -177,12 +193,32 @@ export default function BillingPage() {
           </div>
         </div>
 
-        {/* Trial banner */}
-        {isTrial && (
-          <div
-            className="rounded-[20px] p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-            style={{ background: 'linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 100%)', border: '1px solid #DDD6FE' }}
-          >
+        {/* Banner de estado — trial o plan activo */}
+        {data?.plan && data.plan !== 'FREE' && !isTrial ? (
+          // Plan activo pagado
+          <div className="rounded-[20px] p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)', border: '1px solid #86EFAC' }}>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]" style={{ background: '#16A34A' }}>
+                <Check className="w-5 h-5 text-white" strokeWidth={2.5} />
+              </div>
+              <div>
+                <p className="text-[15px] font-semibold text-[#14532D]">
+                  🎉 Plan {PLANS[data.plan as PlanKey]?.label || data.plan} activo
+                </p>
+                <p className="text-[12px] text-[#16A34A] mt-0.5">
+                  Tu suscripción está activa. Facturación {data.billingCycle === 'annual' ? 'anual' : 'mensual'}.
+                </p>
+              </div>
+            </div>
+            <span className="text-[12px] font-semibold px-3 py-1.5 rounded-full" style={{ background: '#16A34A', color: 'white' }}>
+              Activo ✓
+            </span>
+          </div>
+        ) : isTrial ? (
+          // Trial activo
+          <div className="rounded-[20px] p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            style={{ background: 'linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 100%)', border: '1px solid #DDD6FE' }}>
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]" style={{ background: '#7C3AED' }}>
                 <Shield className="w-5 h-5 text-white" strokeWidth={1.75} />
@@ -206,7 +242,7 @@ export default function BillingPage() {
               </button>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Layout principal */}
         <div className="flex gap-6 items-start flex-col xl:flex-row">
@@ -400,8 +436,12 @@ export default function BillingPage() {
                           </div>
                         </div>
                         <p className="text-[14px] font-semibold text-[#111827] mb-1">{tier.label}</p>
-                        <p className="text-[11px] font-semibold mb-2" style={{ color: price === 0 ? '#16A34A' : tier.color }}>
-                          {price === 0 ? 'Incluido' : `+ ${fmt(price)} MXN / mes`}
+                        <p className="text-[11px] font-semibold mb-2" style={{ color: PLAN_INCLUDED_AI[selPlan] === key ? '#16A34A' : price === 0 ? '#16A34A' : tier.color }}>
+                          {PLAN_INCLUDED_AI[selPlan] === key
+                            ? '✓ Incluido en tu plan'
+                            : price === 0
+                            ? 'Incluido'
+                            : `+ ${fmt(price)} MXN / mes`}
                         </p>
                         <p className="text-[11px] text-[#6B7280] leading-relaxed">{tier.desc}</p>
                       </div>
@@ -494,7 +534,9 @@ export default function BillingPage() {
                   <span className="text-[#6B7280]">Modelo de IA</span>
                   <div className="text-right">
                     <span className="font-medium text-[#111827]">{AI_TIERS[selAi].label}</span>
-                    <span className="text-[#9CA3AF] ml-2">{aiPrice === 0 ? 'Incluido' : `+ ${fmt(aiPrice)}`}</span>
+                    <span className="text-[#9CA3AF] ml-2">
+                      {PLAN_INCLUDED_AI[selPlan] === selAi || aiPrice === 0 ? 'Incluido' : `+ ${fmt(aiPrice)}`}
+                    </span>
                   </div>
                 </div>
                 {selExtra > 0 && (
