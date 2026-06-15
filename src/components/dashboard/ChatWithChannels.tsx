@@ -1458,6 +1458,18 @@ FORMATO:
             )}
           </div>
           <div className="ml-auto flex items-center gap-1 relative">
+            {/* Botón Info / RightPanel */}
+            {onToggleRightPanel && (
+              <button
+                onClick={() => onToggleRightPanel()}
+                title="Info del canal"
+                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] text-white/40 hover:text-white"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+              </button>
+            )}
             <div className="relative group/tip">
               <button
                 onClick={() => setShowMembersModal(p => !p)}

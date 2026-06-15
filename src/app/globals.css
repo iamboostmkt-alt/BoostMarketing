@@ -136,6 +136,8 @@
     min-height: 100dvh;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
+    /* Safe area para iPhone notch/Dynamic Island */
+    padding-top: env(safe-area-inset-top, 0px);
     /* App nativa */
     -webkit-user-select: none;
     user-select: none;

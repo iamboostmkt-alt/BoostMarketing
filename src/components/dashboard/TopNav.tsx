@@ -55,7 +55,7 @@ export default function TopNav() {
   };
 
   return (
-    <header className="border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%)", paddingTop: "env(safe-area-inset-top, 0px)", minHeight: "48px" }}>
+    <header className="border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%)", paddingTop: "max(env(safe-area-inset-top, 0px), 12px)", minHeight: "calc(48px + max(env(safe-area-inset-top, 0px), 0px))" }}>
       <div className="flex items-center h-12 px-4 md:px-6 gap-3">
 
         <Button

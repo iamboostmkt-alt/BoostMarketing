@@ -750,7 +750,7 @@ export default function AppSidebar() {
 
       {/* Mobile sidebar — siempre expandido, ignora collapsed */}
       <aside
-        className="fixed top-0 left-0 z-50 h-[100dvh] w-[240px] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out flex flex-col"
+        className="fixed top-0 left-0 z-50 h-[100dvh] w-[240px] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out flex flex-col pt-[env(safe-area-inset-top,0px)]"
         style={{ transform: mobileOpen ? "translateX(0)" : "translateX(-280px)", background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
       >
         {/* Botón cerrar en mobile */}
