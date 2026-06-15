@@ -63,8 +63,9 @@ export async function POST(req: NextRequest) {
         if (!ws) break;
 
         // Actualizar plan desde metadata de la suscripción
-        const sub = invoice.subscription
-          ? await stripe.subscriptions.retrieve(invoice.subscription as string)
+        const invoiceAny = invoice as any;
+        const sub = invoiceAny.subscription
+          ? await stripe.subscriptions.retrieve(invoiceAny.subscription as string)
           : null;
 
         const plan       = sub?.metadata?.plan        || ws.plan;
