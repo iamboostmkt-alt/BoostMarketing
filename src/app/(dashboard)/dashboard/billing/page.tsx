@@ -56,6 +56,22 @@ export default function BillingPage() {
   const [selExtra, setSelExtra] = useState(0);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
 
+  // Detectar retorno exitoso o cancelado desde Stripe
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === '1') {
+      toast.success('✅ Pago completado. Tu suscripción está activa.');
+      window.history.replaceState({}, '', window.location.pathname);
+      fetchBilling();
+    }
+    if (params.get('canceled') === '1') {
+      toast.info('Pago cancelado. Puedes intentarlo cuando quieras.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const fetchBilling = useCallback(async () => {
     try {
       const r = await fetch('/api/billing');
@@ -76,16 +92,33 @@ export default function BillingPage() {
   const savings    = selCycle === 'annual' ? Math.round((PLANS[selPlan].monthly + AI_TIERS[selAi].monthly + selExtra * 100) * 12 * 0.2) : 0;
 
   const handleContinue = async () => {
-    if (selPlan === 'ENTERPRISE') { toast.info('Contacta a ventas para Enterprise.'); return; }
+    if (selPlan === 'ENTERPRISE') {
+      window.open('mailto:weeklinkapp@gmail.com?subject=Enterprise%20Plan%20Weeklink', '_blank');
+      return;
+    }
     setSaving(true);
     try {
-      const r = await fetch('/api/billing', {
+      // Guardar preferencias
+      await fetch('/api/billing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: selPlan, billingCycle: selCycle, extraClients: selExtra, aiTier: selAi }),
       });
-      if (r.ok) { toast.success('Preferencias guardadas. Stripe checkout próximamente.'); fetchBilling(); }
-      else toast.error('Error al guardar');
-    } finally { setSaving(false); }
+      // Iniciar Stripe Checkout
+      const r = await fetch('/api/stripe/checkout', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: selPlan, billingCycle: selCycle, extraClients: selExtra, aiTier: selAi }),
+      });
+      const d = await r.json();
+      if (d.url) {
+        window.location.href = d.url;
+      } else {
+        toast.error(d.error || 'Error al iniciar el pago');
+        setSaving(false);
+      }
+    } catch {
+      toast.error('Error de conexión');
+      setSaving(false);
+    }
   };
 
   if (loading) return (
