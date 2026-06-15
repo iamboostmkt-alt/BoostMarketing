@@ -136,6 +136,15 @@
     min-height: 100dvh;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
+    /* App nativa */
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  /* Permitir selección de texto en inputs y textareas */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
   }
   button, a, [role="button"] {
     @apply transition-colors duration-150;
@@ -271,6 +280,22 @@
 }
 
 /* Custom scrollbar */
+/* ── App nativa — mejoras de scroll y gestos ─────────────────────── */
+/* Pull-to-refresh bloqueado en zonas que no deben refrescar */
+.no-pull-refresh {
+  overscroll-behavior-y: contain;
+}
+/* Scroll momentum en iOS */
+.native-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+/* Cursor para elementos táctiles */
+button, [role="button"], a {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Scrolling nativo suave en iOS */
 .ios-scroll {
   -webkit-overflow-scrolling: touch;

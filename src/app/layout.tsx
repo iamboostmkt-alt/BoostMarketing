@@ -17,9 +17,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BoostMarketing - Agencia Creativa & CRM Platform",
+  title: "Weeklink — CRM para Agencias",
   description:
-    "Escala tu marca con contenido y automatización. Producción de contenido, estrategia digital, CRM y analytics en una sola plataforma.",
+    "CRM, tareas, chat y portal cliente para agencias de marketing modernas.",
 };
 
 async function getSettings() {
@@ -56,7 +56,10 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
         <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144.png" />
         <link rel="apple-touch-icon" sizes="128x128" href="/icons/icon-128.png" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+        {/* App nativa — deshabilitar bounce scroll en iOS */}
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <body className={`${inter.variable} ${mono.variable} antialiased bg-background text-foreground`}>
         {/* Inject branding into localStorage before React hydrates — eliminates logo flash */}
