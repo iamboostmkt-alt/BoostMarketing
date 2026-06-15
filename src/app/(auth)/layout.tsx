@@ -1,15 +1,10 @@
 import { BrandingProvider } from '@/context/BrandingContext';
 
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <BrandingProvider>
-      <div className="min-h-screen flex items-center justify-center bg-[#0b0b0f] hero-gradient">
-        {children}
-      </div>
+      {/* Sin wrapper que limite el layout — cada página define su propio fondo */}
+      {children}
     </BrandingProvider>
   );
 }
