@@ -455,7 +455,7 @@ export default function WeeklinkHome() {
             Empieza gratis. Crece sin límites.
           </h2>
           <p className="mb-8 text-[16px] text-violet-200">15 días de acceso completo. Sin tarjeta de crédito. Cancela cuando quieras.</p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/register"
               className="inline-flex h-12 items-center rounded-[14px] bg-white px-8 text-[15px] font-semibold text-violet-700 transition-all hover:bg-violet-50"
               style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}>
