@@ -30,16 +30,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Ese identificador ya está en uso. Prueba con otro nombre." }, { status: 409 });
     }
 
-    // Verificar email — respuesta genérica para evitar email enumeration
-    const existingEmail = await db.user.findUnique({ where: { email: email.toLowerCase() } });
-    if (existingEmail) {
-      // Mismo mensaje genérico — no revelar si el email existe
-      return NextResponse.json({ error: "No pudimos crear tu cuenta. Verifica los datos e intenta de nuevo." }, { status: 409 });
+    // Verificar si el email ya existe
+    const existingUser = await db.user.findUnique({ where: { email: email.toLowerCase() } });
+
+    const hashedPassword = existingUser
+      ? existingUser.password ?? ''  // usuario ya existe — no rehashear
+      : await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+    // Si el usuario ya existe, verificar contraseña antes de crear workspace adicional
+    if (existingUser) {
+      const validPass = existingUser.password
+        ? await bcrypt.compare(password, existingUser.password)
+        : false;
+      if (!validPass) {
+        // Mensaje genérico para evitar email enumeration
+        return NextResponse.json({ error: "No pudimos crear tu cuenta. Verifica los datos e intenta de nuevo." }, { status: 409 });
+      }
     }
 
-    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
-
-    // Crear workspace + admin en una transaccion
+    // Crear workspace + usuario (o vincular usuario existente)
     const result = await db.$transaction(async (tx) => {
       const workspace = await tx.workspace.create({
         data: {
@@ -50,18 +59,36 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      const user = await tx.user.create({
-        data: {
-          name,
-          email: email.toLowerCase(),
-          password: hashedPassword,
-          role: "ADMIN",
-          workspaceId: workspace.id,
-          active: true,
-          color: "#7c3aed",
-        },
-        select: { id: true, name: true, email: true, role: true },
-      });
+      let user;
+      if (existingUser) {
+        // Crear nueva entrada de usuario en el nuevo workspace
+        user = await tx.user.create({
+          data: {
+            name: existingUser.name ?? name,
+            email: email.toLowerCase(),
+            password: existingUser.password,
+            role: "ADMIN",
+            workspaceId: workspace.id,
+            active: true,
+            color: existingUser.color ?? "#7c3aed",
+            image: existingUser.image,
+          },
+          select: { id: true, name: true, email: true, role: true },
+        });
+      } else {
+        user = await tx.user.create({
+          data: {
+            name,
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            role: "ADMIN",
+            workspaceId: workspace.id,
+            active: true,
+            color: "#7c3aed",
+          },
+          select: { id: true, name: true, email: true, role: true },
+        });
+      }
 
       await tx.activityLog.create({
         data: {

@@ -106,6 +106,18 @@ export default function BillingPage() {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
         {/* Header */}
+        {/* Back button */}
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-1.5 text-[12px] mb-4 transition-colors"
+          style={{ color: '#9CA3AF' }}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Volver al dashboard
+        </button>
+
         <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-widest text-[#7C3AED] mb-1">Weeklink</p>
@@ -411,9 +423,11 @@ export default function BillingPage() {
             </div>
 
             <p className="text-[11px] text-[#9CA3AF] leading-relaxed pb-4">
-              Weeklink Founding Beta. Algunas funcionalidades pueden evolucionar.{' '}
-              <button className="underline hover:text-[#6B7280]">Términos</button>{' · '}
-              <button className="underline hover:text-[#6B7280]">Privacidad</button>
+              Weeklink Founding Beta. Algunas funcionalidades pueden evolucionar durante esta etapa.
+              No recomendamos almacenar información crítica sin respaldos externos.{' '}
+              <a href="/terminos" target="_blank" className="underline hover:text-[#6B7280]">Términos y Condiciones</a>
+              {' · '}
+              <a href="/privacidad" target="_blank" className="underline hover:text-[#6B7280]">Política de Privacidad</a>
             </p>
           </div>
 

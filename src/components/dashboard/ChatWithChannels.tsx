@@ -919,6 +919,23 @@ function ChatMain({
     };
   }, [showMoreMenu]);
 
+  // Cerrar menú del canal al click/touch fuera
+  useEffect(() => {
+    if (!showChannelMore) return;
+    const handler = (e: MouseEvent | TouchEvent) => {
+      const target = ('touches' in e ? e.touches[0]?.target : e.target) as Node;
+      if (target && !(target as Element).closest?.('[data-channel-more]')) {
+        setShowChannelMore(false);
+      }
+    };
+    document.addEventListener('mousedown', handler as EventListener);
+    document.addEventListener('touchstart', handler as EventListener, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handler as EventListener);
+      document.removeEventListener('touchstart', handler as EventListener);
+    };
+  }, [showChannelMore]);
+
   // Cerrar emoji de reacción al click/touch fuera
   useEffect(() => {
     if (!showEmoji) return;
@@ -2668,7 +2685,7 @@ FORMATO:
       {/* ── Modal independiente de Miembros ── */}
       {showMembersModal && (
         <div className="absolute inset-0 z-50 flex items-start justify-end pt-14 pr-3 pointer-events-none">
-          <div className="pointer-events-auto w-72 rounded-2xl border border-white/[0.07] bg-[#0F1117] shadow-2xl overflow-hidden"
+          <div data-channel-more className="pointer-events-auto w-72 rounded-2xl border border-white/[0.07] bg-[#0F1117] shadow-2xl overflow-hidden"
             style={{ animation: 'slideInRight 0.15s ease-out' }}>
             {/* Header del modal */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]">
@@ -3353,7 +3370,7 @@ function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; on
   }
 
   return (
-    <aside className="hidden lg:flex h-full w-[320px] shrink-0 flex-col border-l border-white/[0.05] bg-[#11131a]">
+    <aside className="flex h-full w-[320px] shrink-0 flex-col border-l border-white/[0.05] bg-[#11131a]">
       <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-white/[0.05] px-5">
         <div>
           <h2 className="text-[15px] font-semibold tracking-tight">Hilo</h2>
@@ -3619,16 +3636,25 @@ export default function ChatWithChannels() {
 
       {/* Panel derecho FIJO — fuera del ChatMain */}
       {showRightPanel && (
-        <RightPanel
-          tab={rightTab as any}
-          onSetTab={setRightTab as any}
-          onClose={() => setShowRightPanel(false)}
-          members={members}
-          room={activeId}
-          accentColor={accentColor}
-          clients={clients}
-          dmUser={activeDmUser}
-        />
+        <>
+          {/* Mobile backdrop */}
+          <div
+            className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+            onClick={() => setShowRightPanel(false)}
+          />
+          <div className="fixed inset-y-0 right-0 z-40 lg:relative lg:inset-auto lg:z-auto">
+            <RightPanel
+              tab={rightTab as any}
+              onSetTab={setRightTab as any}
+              onClose={() => setShowRightPanel(false)}
+              members={members}
+              room={activeId}
+              accentColor={accentColor}
+              clients={clients}
+              dmUser={activeDmUser}
+            />
+          </div>
+        </>
       )}
     </div>
   );
