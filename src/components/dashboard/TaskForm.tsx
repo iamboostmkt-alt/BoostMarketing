@@ -70,6 +70,10 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   const [dueOpen, setDueOpen]             = useState(false);
   const [assignedUserIds, setAssigneeIds] = useState<string[]>([]);
   const [clientId, setClientId]           = useState('');
+  const [milestoneId, setMilestoneId]     = useState('');
+  const [projectId, setProjectId]         = useState('');
+  const [milestones, setMilestones]       = useState<{ id: string; title: string; projectId: string }[]>([]);
+  const [projects, setProjects]           = useState<{ id: string; name: string }[]>([]);
   const [visibility, setVisibility]       = useState('internal');
   const [references, setReferences]       = useState<{title:string;url:string;type:string}[]>([]);
   const [refFiles, setRefFiles]           = useState<{name:string;url:string;fileType:string}[]>([]);
@@ -391,6 +395,32 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               </Select>
             </div>
           </div>
+          )}
+
+          {/* Proyecto y Milestone */}
+          {projects.length > 0 && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="text-white/70 text-sm">Proyecto</Label>
+                <select value={projectId} onChange={e => { setProjectId(e.target.value); setMilestoneId(''); }}
+                  style={{ fontSize: '16px' }}
+                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[13px] text-white/70 focus:outline-none">
+                  <option value="">Sin proyecto</option>
+                  {projects.map((p: {id: string; name: string}) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white/70 text-sm">Milestone</Label>
+                <select value={milestoneId} onChange={e => setMilestoneId(e.target.value)}
+                  style={{ fontSize: '16px' }} disabled={!projectId}
+                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[13px] text-white/70 focus:outline-none disabled:opacity-40">
+                  <option value="">Sin milestone</option>
+                  {milestones.filter((m: {id: string; title: string; projectId: string}) => m.projectId === projectId).map(m => (
+                    <option key={m.id} value={m.id}>{m.title}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           )}
 
           {isManager && !isSubtask && (

@@ -185,7 +185,7 @@ function ChannelList({
   const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(role);
 
   return (
-    <div className="flex h-full w-[244px] shrink-0 flex-col border-r border-white/[0.05] bg-card">
+    <div className="flex h-full shrink-0 flex-col border-r border-white/[0.05] bg-card" style={{ width: "clamp(180px, 22vw, 244px)" }}>
       <div className="flex-1 overflow-y-auto scrollbar-thin px-2 pb-4">
         {/* Internal channels */}
         <div className="flex items-center justify-between px-2 pb-1 pt-4">

@@ -308,7 +308,8 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
 
       {/* Week View */}
       {view === 'week' && (
-        <div className="space-y-2">
+        <div className="overflow-x-auto">
+        <div className="space-y-2 min-w-[560px]">
           <div className="grid grid-cols-7">
             {weekDays.map((day) => (
               <div key={day.toISOString()} className="text-center py-2 space-y-1">
@@ -403,6 +404,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
               );
             })}
           </div>
+        </div>
         </div>
       )}
 
