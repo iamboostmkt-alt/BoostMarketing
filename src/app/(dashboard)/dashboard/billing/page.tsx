@@ -101,11 +101,22 @@ export default function BillingPage() {
 
   useEffect(() => { fetchBilling(); }, [fetchBilling]);
 
-  const planPrice  = selCycle === 'annual' ? Math.round(PLANS[selPlan].monthly * 12 * 0.8) : PLANS[selPlan].monthly;
-  const aiPrice    = selCycle === 'annual' ? Math.round(AI_TIERS[selAi].monthly * 12 * 0.8) : AI_TIERS[selAi].monthly;
-  const addonPrice = selExtra * 100 * (selCycle === 'annual' ? 10 : 1);
-  const total      = planPrice + aiPrice + addonPrice;
-  const savings    = selCycle === 'annual' ? Math.round((PLANS[selPlan].monthly + AI_TIERS[selAi].monthly + selExtra * 100) * 12 * 0.2) : 0;
+  // Precio mensual (con descuento del 20% si es anual)
+  const planMonthly  = selCycle === 'annual' ? Math.round(PLANS[selPlan].monthly * 0.8) : PLANS[selPlan].monthly;
+  // IA: si está incluida en el plan, no cuesta extra
+  const includedAiTier = PLAN_INCLUDED_AI[selPlan];
+  const aiIncluded   = AI_TIERS[selAi].monthly <= AI_TIERS[includedAiTier].monthly;
+  const aiMonthly    = aiIncluded ? 0 : (selCycle === 'annual' ? Math.round(AI_TIERS[selAi].monthly * 0.8) : AI_TIERS[selAi].monthly);
+  const addonMonthly = selExtra * 100 * (selCycle === 'annual' ? 0.8 : 1);
+  // Para mostrar en UI (precio mensual)
+  const planPrice    = planMonthly;
+  const aiPrice      = aiMonthly;
+  const addonPrice   = addonMonthly;
+  const total        = planMonthly + aiMonthly + addonMonthly;
+  // Ahorro anual vs pago mensual
+  const savings      = selCycle === 'annual' ? Math.round((PLANS[selPlan].monthly + (aiIncluded ? 0 : AI_TIERS[selAi].monthly) + selExtra * 100) * 12 * 0.2) : 0;
+  // Total anual para mostrar
+  const totalAnual   = total * 12;
 
   const handleContinue = async () => {
     if (selPlan === 'ENTERPRISE') {
@@ -278,7 +289,7 @@ export default function BillingPage() {
                   const isSelected = selPlan === key;
                   const isCurrent  = data?.plan === key;
                   const isBest     = key === 'BUSINESS';
-                  const price      = selCycle === 'annual' ? Math.round(info.monthly * 12 * 0.8 / 12) : info.monthly;
+                  const price      = selCycle === 'annual' ? Math.round(info.monthly * 0.8) : info.monthly;
                   const isEnterprise = key === 'ENTERPRISE';
 
                   return (
@@ -304,9 +315,9 @@ export default function BillingPage() {
                               Founding
                             </span>
                           )}
-                          {isCurrent && !isBest && (
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ background: '#F9FAFB', color: '#9CA3AF', border: '1px solid rgba(17,24,39,0.08)' }}>
-                              Plan actual
+                          {isCurrent && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #86EFAC' }}>
+                              ✓ Tu plan actual
                             </span>
                           )}
                         </div>
@@ -332,7 +343,7 @@ export default function BillingPage() {
                             <span className="text-[11px] text-[#9CA3AF]">MXN / mes</span>
                           </div>
                           {selCycle === 'annual' && (
-                            <p className="text-[11px] text-[#9CA3AF] mt-0.5">{fmt(info.monthly * 12 * 0.8)} MXN / año</p>
+                            <p className="text-[11px] text-[#9CA3AF] mt-0.5">{fmt(Math.round(info.monthly * 0.8 * 12))} MXN / año · <span style={{color:'#16A34A'}}>Ahorra {fmt(Math.round(info.monthly * 12 * 0.2))}</span></p>
                           )}
                         </div>
                       )}
@@ -436,12 +447,10 @@ export default function BillingPage() {
                           </div>
                         </div>
                         <p className="text-[14px] font-semibold text-[#111827] mb-1">{tier.label}</p>
-                        <p className="text-[11px] font-semibold mb-2" style={{ color: PLAN_INCLUDED_AI[selPlan] === key ? '#16A34A' : price === 0 ? '#16A34A' : tier.color }}>
-                          {PLAN_INCLUDED_AI[selPlan] === key
+                        <p className="text-[11px] font-semibold mb-2" style={{ color: PLAN_INCLUDED_AI[selPlan] === key ? '#16A34A' : (AI_TIERS[key as AiKey].monthly <= AI_TIERS[PLAN_INCLUDED_AI[selPlan]].monthly) ? '#16A34A' : tier.color }}>
+                          {PLAN_INCLUDED_AI[selPlan] === key || AI_TIERS[key as AiKey].monthly <= AI_TIERS[PLAN_INCLUDED_AI[selPlan]].monthly
                             ? '✓ Incluido en tu plan'
-                            : price === 0
-                            ? 'Incluido'
-                            : `+ ${fmt(price)} MXN / mes`}
+                            : `+ ${fmt(selCycle === 'annual' ? Math.round(tier.monthly * 0.8) : tier.monthly)} MXN / mes`}
                         </p>
                         <p className="text-[11px] text-[#6B7280] leading-relaxed">{tier.desc}</p>
                       </div>
@@ -562,7 +571,7 @@ export default function BillingPage() {
                 <span className="text-[13px] text-[#6B7280]">Total</span>
                 <div className="text-right">
                   <p className="text-[24px] font-bold text-[#111827]">{fmt(total)} <span className="text-[12px] font-normal text-[#9CA3AF]">MXN / mes</span></p>
-                  {selCycle === 'annual' && <p className="text-[11px] text-[#9CA3AF]">{fmt(total * 12 * 0.8)} MXN / año · <span className="text-[#16A34A] font-medium">Ahorra {fmt(savings)}</span></p>}
+                  {selCycle === 'annual' && <p className="text-[11px] text-[#9CA3AF]">{fmt(totalAnual)} MXN / año · <span className="text-[#16A34A] font-medium">Ahorra {fmt(savings)}</span></p>}
                   <p className="text-[10px] text-[#9CA3AF] mt-0.5">IVA no incluido</p>
                 </div>
               </div>
