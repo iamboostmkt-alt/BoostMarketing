@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { broadcastRealtime } from '@/lib/realtime-server';
 import { sendMail, templateInvitacionEquipo } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 const Schema = z.object({
   token: z.string().min(1),
@@ -13,6 +14,10 @@ const Schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Rate limit: máx 5 intentos por minuto por IP (protege brute-force de tokens)
+  const rl = await rateLimit(req, { limit: 5, windowMs: 60_000, identifier: 'invite-accept' });
+  if (!rl.success) return rl.response;
+
   const body = await req.json();
   const parsed = Schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
