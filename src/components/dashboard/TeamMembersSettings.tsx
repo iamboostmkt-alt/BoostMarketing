@@ -306,7 +306,7 @@ export default function TeamMembersSettings() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[rgba(255,255,255,0.25)]" />
             <input
               type="text"
-              placeholder="Search members..."
+              placeholder="Buscar miembros..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-[38px] w-full rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#1a1a1f] pl-10 pr-4 text-sm text-[rgba(255,255,255,0.70)] placeholder-[rgba(255,255,255,0.25)] outline-none transition-all focus:border-[rgba(124,58,237,0.5)] focus:ring-2 focus:ring-[rgba(124,58,237,0.15)]"

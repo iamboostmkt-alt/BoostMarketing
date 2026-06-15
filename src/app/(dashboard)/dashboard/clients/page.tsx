@@ -443,7 +443,7 @@ function ClientDetail({ client, onClose, onEdit, onDelete, isAdmin }: {
             <AnimatePresence>
               {menuOpen && (
                 <>
-                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: -4 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}

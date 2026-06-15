@@ -222,7 +222,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                 <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Hora *</label>
                 <div className="flex gap-1.5 h-[36px]">
                   <select value={hour} onChange={e => setHour(e.target.value)}
-                    style={{ colorScheme: 'dark' }}
+                    style={{ fontSize: '16px', colorScheme: 'dark' }}
                     className="flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
                     {Array.from({length:24},(_,i)=>String(i).padStart(2,'0')).map(h=>(
                       <option key={h} value={h} style={{background:'#0f0f14'}}>{h}</option>
@@ -230,7 +230,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                   </select>
                   <span className="flex items-center text-white/30 text-[13px]">:</span>
                   <select value={minute} onChange={e => setMinute(e.target.value)}
-                    style={{ colorScheme: 'dark' }}
+                    style={{ fontSize: '16px', colorScheme: 'dark' }}
                     className="flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
                     {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m=>(
                       <option key={m} value={m} style={{background:'#0f0f14'}}>{m}</option>

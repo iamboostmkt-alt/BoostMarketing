@@ -95,7 +95,7 @@ export default function SupportTicket({ onClose }: SupportTicketProps) {
 
       <div className="space-y-1">
         <p className="text-[11px] text-white/40 uppercase tracking-wider">Describe el problema</p>
-        <textarea
+        <textarea style={{ fontSize: "16px" }}
           value={message}
           onChange={e => setMessage(e.target.value)}
           placeholder="Describe el problema con el mayor detalle posible..."
