@@ -1007,7 +1007,7 @@ export default function DashboardPage() {
                 whileTap={{ scale: 0.97 }}
               >
                 <Icon className="h-4 w-4" />
-                {action.label}
+                <span className="hidden sm:inline">{action.label}</span>
               </motion.button>
             );
           })}
@@ -1027,7 +1027,7 @@ export default function DashboardPage() {
             whileTap={{ scale: 0.97 }}
           >
             {editMode ? <CheckSquare className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-            {editMode ? 'Guardar' : 'Editar'}
+            <span className="hidden sm:inline">{editMode ? 'Guardar' : 'Editar'}</span>
           </motion.button>
         </div>
       </div>

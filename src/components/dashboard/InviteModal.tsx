@@ -13,11 +13,11 @@ import { X, UserPlus, ChevronDown, Check, Loader2, Search, MoreHorizontal } from
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ROLES = [
-  { value: "PROJECT_MANAGER", label: "Project Manager" },
-  { value: "TEAM_MEMBER",     label: "Team Member"     },
-  { value: "DESIGNER",        label: "Designer"        },
-  { value: "MARKETING",       label: "Marketing"       },
-  { value: "SALES_REP",       label: "Sales Rep"       },
+  { value: "PROJECT_MANAGER", label: "Project Manager"   },
+  { value: "TEAM_MEMBER",     label: "Miembro de equipo" },
+  { value: "DESIGNER",        label: "Diseñador"         },
+  { value: "MARKETING",       label: "Marketing"         },
+  { value: "SALES_REP",       label: "Ventas"            },
 ] as const;
 
 type RoleValue = typeof ROLES[number]["value"];
@@ -444,7 +444,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                 <p className="mt-0.5 text-[12px] text-white/35 relative z-10">Agrega nuevos miembros con su correo electrónico</p>
                 <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center relative z-10">
                   <input
-                    type="email" placeholder="Email address" value={email}
+                    type="email" placeholder="Correo electrónico" value={email}
                     onChange={e => setEmail(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && handleInvite()}
                     className="h-[36px] flex-1 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 text-[13px] text-white/70 placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10"
@@ -452,7 +452,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                   />
                   <RolePill value={role} onChange={setRole} size="lg" />
                   <motion.button type="button" onClick={handleInvite} disabled={loading || success} whileHover={{ backgroundColor: "#6d28d9" }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.15 }} className="flex h-[36px] items-center gap-1.5 rounded-lg bg-[#7c3aed] px-5 text-[13px] font-medium text-white disabled:opacity-60 whitespace-nowrap">
-                    {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : success ? <><Check className="h-3.5 w-3.5" />Enviado</> : "Invite"}
+                    {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : success ? <><Check className="h-3.5 w-3.5" />Enviado</> : "Invitar"}
                   </motion.button>
                 </div>
                 <AnimatePresence>
@@ -485,11 +485,11 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                   {clientError && <p className="text-[12px] text-red-400 mt-1">{clientError}</p>}
                 </div>
                 </>}
-              {/* Container 2: People with access */}
+              {/* Container 2: Personas con acceso */}
               <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative", minHeight: 420 }} className="p-5">
                 <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
                 <div className="flex items-center gap-2.5 mb-3 relative z-10">
-                  <h2 className="text-[14px] font-medium text-white/80">People with access</h2>
+                  <h2 className="text-[14px] font-medium text-white/80">Personas con acceso</h2>
                   <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-[11px] font-medium text-purple-300">
                     {members.length + pendingInvites.length} miembros
                   </span>

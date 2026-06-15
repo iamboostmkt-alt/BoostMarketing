@@ -902,29 +902,38 @@ function ChatMain({
     const interval = setInterval(() => { fetchMessages(); }, 3000); // 3s fallback RT
     return () => clearInterval(interval);
   }, [fetchMessages]);
-  // Cerrar menú de más opciones al click fuera
+  // Cerrar menú de más opciones al click fuera (mousedown + touchstart para móvil)
   useEffect(() => {
     if (!showMoreMenu) return;
-    const handler = (e: MouseEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+    const handler = (e: MouseEvent | TouchEvent) => {
+      const target = ('touches' in e ? e.touches[0]?.target : e.target) as Node;
+      if (moreMenuRef.current && target && !moreMenuRef.current.contains(target)) {
         setShowMoreMenu(null);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('mousedown', handler as EventListener);
+    document.addEventListener('touchstart', handler as EventListener, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handler as EventListener);
+      document.removeEventListener('touchstart', handler as EventListener);
+    };
   }, [showMoreMenu]);
 
-  // Cerrar emoji de reacción al click fuera
+  // Cerrar emoji de reacción al click/touch fuera
   useEffect(() => {
     if (!showEmoji) return;
-    const handler = (e: MouseEvent) => {
+    const handler = (e: MouseEvent | TouchEvent) => {
       const t = e.target as Element;
       if (!t.closest('[data-emoji-picker]') && !t.closest('[data-emoji-btn]')) {
         setShowEmoji(null);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('mousedown', handler as EventListener);
+    document.addEventListener('touchstart', handler as EventListener, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handler as EventListener);
+      document.removeEventListener('touchstart', handler as EventListener);
+    };
   }, [showEmoji]);
 
   // Auto-scroll solo si el usuario está en el fondo (< 150px del final)
@@ -2430,7 +2439,7 @@ FORMATO:
                   `Escribe en #${title}…`
                 }
                 disabled={room.startsWith('weeklink_') || (room === 'NOTIFICATIONS' && role !== 'ADMIN')}
-                className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white placeholder:text-white/25 focus:outline-none disabled:cursor-not-allowed" />
+                className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white placeholder:text-white/25 focus:outline-none disabled:cursor-not-allowed" style={{ fontSize: "16px" }} />
               <button type="button"
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/[0.1]">
                 <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.75} />
