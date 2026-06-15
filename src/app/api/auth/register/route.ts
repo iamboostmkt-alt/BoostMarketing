@@ -27,13 +27,14 @@ export async function POST(req: NextRequest) {
     // Verificar slug unico
     const existingSlug = await db.workspace.findUnique({ where: { slug } });
     if (existingSlug) {
-      return NextResponse.json({ error: "Ese slug ya esta en uso." }, { status: 409 });
+      return NextResponse.json({ error: "Ese identificador ya está en uso. Prueba con otro nombre." }, { status: 409 });
     }
 
-    // Verificar email unico
+    // Verificar email — respuesta genérica para evitar email enumeration
     const existingEmail = await db.user.findUnique({ where: { email: email.toLowerCase() } });
     if (existingEmail) {
-      return NextResponse.json({ error: "Ese email ya esta registrado." }, { status: 409 });
+      // Mismo mensaje genérico — no revelar si el email existe
+      return NextResponse.json({ error: "No pudimos crear tu cuenta. Verifica los datos e intenta de nuevo." }, { status: 409 });
     }
 
     const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);

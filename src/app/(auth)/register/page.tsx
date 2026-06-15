@@ -77,14 +77,28 @@ function RegisterPageInner() {
     setError('');
   }
 
-  // Validación slug en tiempo real
+  // Validación slug en tiempo real con auto-sugerencia
   const checkSlug = useCallback(async (slug: string) => {
     if (!slug || slug.length < 2) { setSlugStatus('idle'); return; }
     setSlugStatus('checking');
     try {
       const res = await fetch(`/api/auth/check-slug?slug=${encodeURIComponent(slug)}`);
       const data = await res.json();
-      setSlugStatus(data.available ? 'available' : 'taken');
+      if (data.available) {
+        setSlugStatus('available');
+      } else {
+        // Auto-suggest: agregar número al final para no bloquear al usuario
+        const suffix = Math.floor(Math.random() * 90 + 10);
+        const newSlug = `${slug}-${suffix}`;
+        const res2 = await fetch(`/api/auth/check-slug?slug=${encodeURIComponent(newSlug)}`);
+        const data2 = await res2.json();
+        if (data2.available) {
+          set('slug', newSlug);
+          setSlugStatus('available');
+        } else {
+          setSlugStatus('taken');
+        }
+      }
     } catch {
       setSlugStatus('idle');
     }
