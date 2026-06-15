@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { Lock } from 'lucide-react';
 import { Send, Sparkles, Plus, Trash2, MessageSquare, ChevronLeft } from 'lucide-react';
 
 type ModelTier = 'pro' | 'medium' | 'free' | 'turbo';
@@ -14,6 +15,14 @@ const MODEL_OPTIONS: { tier: ModelTier; label: string; badge: string; color: str
   { tier: 'turbo',  label: 'Llama 3.3 70B',    badge: 'TURBO', color: '#F59E0B' },
 ];
 
+// Modelos disponibles según el plan del workspace
+const TIER_BY_PLAN: Record<string, string[]> = {
+  FREE:       ['free', 'turbo'],
+  PRO:        ['free', 'turbo', 'medium'],
+  BUSINESS:   ['free', 'turbo', 'medium', 'pro'],
+  ENTERPRISE: ['free', 'turbo', 'medium', 'pro'],
+};
+
 const SUGGESTIONS = [
   'Propón una estrategia de contenido para Instagram esta semana',
   '¿Qué tareas están pendientes o atrasadas?',
@@ -25,6 +34,7 @@ const SUGGESTIONS = [
 
 export default function AIAssistantPage() {
   const { data: session } = useSession();
+  const [workspacePlan, setWorkspacePlan] = useState<string>('FREE');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,6 +46,15 @@ export default function AIAssistantPage() {
   const [loadingSessions, setLoadingSessions] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const availableTiers = TIER_BY_PLAN[workspacePlan] || ['free', 'turbo'];
+
+  // Fetch plan del workspace para control de acceso a modelos
+  useEffect(() => {
+    fetch('/api/billing')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.plan) setWorkspacePlan(d.plan); })
+      .catch(() => {});
+  }, []);
 
   const fetchSessions = useCallback(async () => {
     try {
@@ -187,18 +206,29 @@ export default function AIAssistantPage() {
           </div>
           {/* Model selector */}
           <div className="ml-auto flex items-center gap-1 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1">
-            {MODEL_OPTIONS.map(m => (
-              <button key={m.tier} onClick={() => setSelectedModel(m.tier)}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all ${
-                  selectedModel === m.tier ? 'bg-white/[0.08] text-white' : 'text-white/30 hover:text-white/60'
-                }`}>
-                <span className="text-[9px] font-bold px-1 py-px rounded"
-                  style={{ background: selectedModel === m.tier ? m.color + '25' : 'transparent', color: m.color }}>
-                  {m.badge}
-                </span>
-                <span className="hidden lg:inline">{m.label}</span>
-              </button>
-            ))}
+            {MODEL_OPTIONS.map(m => {
+              const isLocked = !availableTiers.includes(m.tier);
+              return (
+                <button key={m.tier}
+                  onClick={() => !isLocked && setSelectedModel(m.tier)}
+                  disabled={isLocked}
+                  title={isLocked ? `Requiere plan ${m.tier === 'pro' ? 'Business' : 'Pro'} o superior` : m.label}
+                  className={`relative flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all ${
+                    isLocked
+                      ? 'opacity-40 cursor-not-allowed'
+                      : selectedModel === m.tier
+                      ? 'bg-white/[0.08] text-white'
+                      : 'text-white/30 hover:text-white/60'
+                  }`}>
+                  <span className="text-[9px] font-bold px-1 py-px rounded"
+                    style={{ background: selectedModel === m.tier ? m.color + '25' : 'transparent', color: m.color }}>
+                    {m.badge}
+                  </span>
+                  <span className="hidden lg:inline">{m.label}</span>
+                  {isLocked && <Lock className="w-2.5 h-2.5 ml-0.5 text-white/30" />}
+                </button>
+              );
+            })}
           </div>
         </div>
 

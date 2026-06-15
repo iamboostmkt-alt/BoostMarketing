@@ -177,7 +177,7 @@ export default function BillingPage() {
             <button
               className="flex items-center gap-2 rounded-[12px] px-3.5 py-2 text-[12px] font-medium text-[#374151] border border-[rgba(17,24,39,0.10)] bg-white hover:bg-[#F9FAFB] transition-colors"
               style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-              onClick={() => toast.info('Historial de facturas — próximamente')}
+              onClick={() => window.open('https://billing.stripe.com/p/login/test_00g5o14k70Q6fDG000', '_blank')}
             >
               <ReceiptText className="w-3.5 h-3.5 text-[#9CA3AF]" strokeWidth={1.75} />
               Historial de facturas
@@ -185,7 +185,7 @@ export default function BillingPage() {
             <button
               className="flex items-center gap-2 rounded-[12px] px-3.5 py-2 text-[12px] font-medium text-[#374151] border border-[rgba(17,24,39,0.10)] bg-white hover:bg-[#F9FAFB] transition-colors"
               style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-              onClick={() => router.push('/dashboard/settings')}
+              onClick={() => window.location.href='mailto:weeklinkapp@gmail.com?subject=Ayuda%20Weeklink'}
             >
               <HelpCircle className="w-3.5 h-3.5 text-[#9CA3AF]" strokeWidth={1.75} />
               Ayuda
@@ -348,7 +348,7 @@ export default function BillingPage() {
                       </ul>
                       {isEnterprise ? (
                         <button
-                          onClick={e => { e.stopPropagation(); toast.info('Contactar ventas — próximamente'); }}
+                          onClick={e => { e.stopPropagation(); window.location.href='mailto:weeklinkapp@gmail.com?subject=Enterprise%20Plan%20Weeklink'; }}
                           className="w-full rounded-[12px] py-2 text-[12px] font-semibold border border-[rgba(17,24,39,0.12)] text-[#374151] hover:border-[#7C3AED] hover:text-[#7C3AED] transition-colors">
                           Contactar ventas
                         </button>

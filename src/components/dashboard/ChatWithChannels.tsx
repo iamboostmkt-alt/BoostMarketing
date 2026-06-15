@@ -2553,8 +2553,33 @@ FORMATO:
           {/* Tab: Apps */}
           {rightPanelTab === 'apps' && (
             <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 flex flex-col gap-3">
-              <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 px-1 mb-1">Accesos rápidos</p>
+              {/* ── Chat de IA rápido ── */}
+              <div className="rounded-[14px] overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(139,92,246,0.08) 100%)', border: '1px solid rgba(139,92,246,0.2)' }}>
+                <div className="flex items-center justify-between px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🤖</span>
+                    <div>
+                      <p className="text-[12px] font-semibold text-white/90">Boosti AI</p>
+                      <p className="text-[10px] text-white/40">Asistente de marketing</p>
+                    </div>
+                  </div>
+                  <a href="/dashboard/ai" className="text-[10px] font-medium text-violet-400 hover:text-violet-300 transition-colors">
+                    Abrir →
+                  </a>
+                </div>
+                <div className="px-3 pb-3">
+                  <p className="text-[11px] text-white/35 mb-2">También puedes usar <code className="text-violet-400 text-[10px]">@boosti</code> o <code className="text-violet-400 text-[10px]">/ai</code> en el chat</p>
+                  <a href="/dashboard/ai"
+                    className="flex items-center justify-center gap-2 w-full rounded-[10px] py-2 text-[12px] font-semibold text-white transition-all hover:opacity-90"
+                    style={{ background: '#7C3AED' }}>
+                    <span>✨</span> Ir al chat de IA
+                  </a>
+                </div>
+              </div>
+
+              <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 px-1 mb-1 mt-1">Accesos rápidos</p>
               {[
+                { href: '/dashboard/ai',       icon: '✨', label: 'Chat IA',   sub: 'Boosti + múltiples modelos',  action: null },
                 { href: '/dashboard/tasks',    icon: '✅', label: 'Tareas',    sub: 'Ver y gestionar tareas',    action: null },
                 { href: '',                    icon: '📅', label: 'Reuniones', sub: 'Agendar videollamada',       action: 'meeting' },
                 { href: '/dashboard/projects', icon: '📁', label: 'Proyectos', sub: 'Campañas y proyectos',       action: null },
