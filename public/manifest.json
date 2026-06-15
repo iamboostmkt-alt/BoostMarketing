@@ -1,23 +1,66 @@
 {
-  "name": "Weeklink — CRM & PM",
+  "name": "Weeklink — CRM para Agencias",
   "short_name": "Weeklink",
-  "description": "CRM y gestión de proyectos para agencias de marketing",
-  "start_url": "/dashboard",
+  "description": "CRM, tareas, chat y portal cliente para agencias de marketing modernas",
+  "start_url": "/dashboard?source=pwa",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "background_color": "#07070A",
-  "theme_color": "#8B5CF6",
-  "categories": ["business", "productivity"],
-  "lang": "es",
+  "theme_color": "#7C3AED",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "lang": "es-MX",
   "icons": [
-    { "src": "/icons/icon-72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-128.png",  "sizes": "128x128", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-144.png",  "sizes": "144x144", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-152.png",  "sizes": "152x152", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-192.png",  "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-384.png",  "sizes": "384x384", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ],
   "screenshots": [
     {
@@ -25,27 +68,76 @@
       "type": "image/png",
       "sizes": "390x844",
       "form_factor": "narrow",
-      "label": "Dashboard de Weeklink"
+      "label": "Dashboard — Vista general de tu agencia"
+    },
+    {
+      "src": "/screenshots/chat.png",
+      "type": "image/png",
+      "sizes": "390x844",
+      "form_factor": "narrow",
+      "label": "Chat — Comunicación tipo Slack con tu equipo"
+    },
+    {
+      "src": "/screenshots/tasks.png",
+      "type": "image/png",
+      "sizes": "390x844",
+      "form_factor": "narrow",
+      "label": "Tareas — Gestión kanban de proyectos"
     }
   ],
   "shortcuts": [
     {
-      "name": "Mis Tareas",
-      "short_name": "Tareas",
-      "url": "/dashboard/tasks",
-      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+      "name": "Nueva tarea",
+      "short_name": "Tarea",
+      "url": "/dashboard/tasks?new=1",
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
-      "name": "Chat",
+      "name": "Chat del equipo",
       "short_name": "Chat",
       "url": "/dashboard/chat",
-      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
-      "name": "Clientes",
+      "name": "Mis Cuentas",
       "short_name": "Cuentas",
       "url": "/dashboard/clients",
-      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Calendario",
+      "short_name": "Agenda",
+      "url": "/dashboard/calendar",
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
-  ]
+  ],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "scope": "/",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": []
 }
