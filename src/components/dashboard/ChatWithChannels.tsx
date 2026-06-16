@@ -2890,7 +2890,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
   const teamMembers = members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId);
 
   return (
-    <div className="hidden lg:flex flex-col border-l border-white/[0.05] bg-[#0B0D12] shrink-0"
+    <div className="flex flex-col border-l border-white/[0.05] bg-[#0B0D12] shrink-0 h-full overflow-hidden"
       style={{ width: 320, minHeight: 0 }}>
 
       {/* ── HEADER FIJO ── */}
@@ -3679,7 +3679,7 @@ export default function ChatWithChannels() {
             className="fixed inset-0 z-[59] bg-black/50 lg:hidden"
             onClick={() => setShowRightPanel(false)}
           />
-          <div className="fixed inset-y-0 right-0 z-[60] lg:relative lg:inset-auto lg:z-auto">
+          <div className="fixed inset-y-0 right-0 z-[60] lg:relative lg:inset-auto lg:z-auto" style={{ width: 320 }}>
             <RightPanel
               tab={rightTab as any}
               onSetTab={setRightTab as any}

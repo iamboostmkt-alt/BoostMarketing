@@ -394,7 +394,8 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     <>
       {open && (
         <div
-          style={{ position: "fixed", inset: 0, zIndex: 9990, display: "flex", alignItems: "center", justifyContent: "center" }}
+          style={{ position: "fixed", inset: 0, zIndex: 9990, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          className="sm:items-center"
         >
           {/* Overlay — cierra al click */}
           <div
@@ -408,7 +409,8 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
             onClick={e => e.stopPropagation()}
-            style={{ position: "relative", zIndex: 9991, width: "100%", maxWidth: 680, padding: "0 12px", maxHeight: "calc(100dvh - 32px)", overflowY: "auto" }}
+            style={{ position: "relative", zIndex: 9991, width: "100%", maxWidth: 680, padding: "0 8px", maxHeight: "calc(92dvh)", overflowY: "auto" }}
+            className="sm:px-3 sm:max-h-[calc(100dvh-32px)]"
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3 px-1">
@@ -428,7 +430,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
 
             <div className="space-y-3">
               {/* Container 1: Invite */}
-              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, position: "relative" }} className="p-5">
+              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: '0 0 14px 14px', position: "relative" }} className="p-5 rounded-t-2xl sm:rounded-2xl">
                 <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
                 {/* Tabs */}
                 <div className="flex gap-1 mb-4 p-1 rounded-lg bg-white/[0.03] w-fit">

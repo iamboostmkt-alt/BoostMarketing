@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SplashScreen } from "@/components/pwa/SplashScreen";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -62,6 +63,7 @@ export default async function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <body className={`${inter.variable} ${mono.variable} antialiased bg-background text-foreground`}>
+        <SplashScreen />
         {/* Inject branding into localStorage before React hydrates — eliminates logo flash */}
         {settings?.logoUrl && (
           <script

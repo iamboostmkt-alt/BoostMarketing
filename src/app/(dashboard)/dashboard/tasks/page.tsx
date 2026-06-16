@@ -185,7 +185,8 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                           >
                             <TaskCard task={task} onEdit={onEdit} onDelete={onDelete}
                               onView={onView} onMarkComplete={onMarkComplete}
-                              onMarkPending={onMarkPending} onAddSubtask={onAddSubtask} />
+                              onMarkPending={onMarkPending} onAddSubtask={onAddSubtask}
+                              onStatusChange={onStatusChange} isManager={isManager} />
                             {(task as any).client?.name && (
                               <div className="flex items-center gap-1 px-2 pb-1 -mt-1">
                                 <span className="w-1 h-1 rounded-full bg-brand/40 shrink-0" />

@@ -112,6 +112,16 @@ export default function TaskCard({
   const [subtasksOpen,   setSubtasksOpen]   = React.useState(false);
   const [subtasks,       setSubtasks]       = React.useState<Task[]>([]);
   const [loadingSubtasks,setLoadingSubtasks]= React.useState(false);
+  const [showStatusPicker, setShowStatusPicker] = React.useState(false);
+
+  // Status options para el picker mobile
+  const STATUS_OPTIONS = [
+    { value: 'pending',          label: 'Pendiente',        color: '#94a3b8' },
+    { value: 'in_progress',      label: 'En progreso',      color: '#38bdf8' },
+    { value: 'internal_review',  label: 'Revisión PM',      color: '#f59e0b' },
+    { value: 'changes_requested',label: 'Con correcciones', color: '#f97316' },
+    { value: 'completed',        label: 'Completada',       color: '#22c55e' },
+  ];
 
   // ── Swipe to complete ────────────────────────────────────────
   const [swipeX,      setSwipeX]      = React.useState(0);
@@ -327,14 +337,60 @@ export default function TaskCard({
             </AnimatePresence>
           )}
 
-          {/* Status badge */}
-          <span
-            className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2 py-0.5 font-medium"
+          {/* Status badge — tap en móvil abre picker */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onStatusChange) setShowStatusPicker(true);
+            }}
+            className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2 py-0.5 font-medium transition-opacity active:opacity-70"
             style={statusStyleMap[displayStatus] || { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}
           >
             <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
             {displayLabel}
-          </span>
+          </button>
+
+          {/* Mobile status picker — bottom sheet */}
+          {showStatusPicker && onStatusChange && (
+            <div
+              className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/60"
+              onClick={(e) => { e.stopPropagation(); setShowStatusPicker(false); }}
+            >
+              <div
+                className="w-full max-w-sm rounded-t-2xl bg-[#0F1117] border-t border-white/[0.08] pb-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Handle */}
+                <div className="flex justify-center pt-3 pb-2">
+                  <div className="w-10 h-1 rounded-full bg-white/20" />
+                </div>
+                <p className="text-[12px] font-medium text-white/40 text-center pb-3 truncate px-4">
+                  {task.title}
+                </p>
+                <div className="divide-y divide-white/[0.05]">
+                  {STATUS_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      className={`w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors active:bg-white/[0.05] ${task.status === opt.value ? 'bg-white/[0.04]' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowStatusPicker(false);
+                        if (task.status !== opt.value) void onStatusChange(task.id, opt.value);
+                      }}
+                    >
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: opt.color }} />
+                      <span className={`text-[14px] ${task.status === opt.value ? 'text-white font-medium' : 'text-white/70'}`}>
+                        {opt.label}
+                      </span>
+                      {task.status === opt.value && (
+                        <span className="ml-auto text-violet-400 text-[12px]">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Due date */}
           {task.dueDate && (
