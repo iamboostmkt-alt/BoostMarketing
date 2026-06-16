@@ -39,7 +39,7 @@ const AI_TIERS = {
 const PLAN_INCLUDED_AI: Record<PlanKey, AiKey> = {
   FREE:       'basic',
   PRO:        'basic',
-  BUSINESS:   'medium',  // Business incluye IA Mediana
+  BUSINESS:   'premium', // Business incluye IA Premium
   ENTERPRISE: 'premium', // Enterprise incluye IA Premium
 };
 
@@ -383,11 +383,11 @@ export default function BillingPage() {
                       <h3 className="text-[15px] font-bold text-[#111827] mb-1">{info.label}</h3>
                       {isEnterprise ? (
                         <div className="mb-4">
-                          <p className="text-[11px] text-[#9CA3AF] mb-1">Desde</p>
+                          <p className="text-[11px] text-[#9CA3AF] mb-1">Precio personalizado</p>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-[24px] font-bold text-[#111827]">{fmt(price)}</span>
-                            <span className="text-[11px] text-[#9CA3AF]">MXN / mes</span>
+                            <span className="text-[20px] font-bold text-[#111827]">Contáctanos</span>
                           </div>
+                          <p className="text-[10px] text-[#9CA3AF] mt-0.5">Sin costo hasta acordar</p>
                         </div>
                       ) : (
                         <div className="mb-4">

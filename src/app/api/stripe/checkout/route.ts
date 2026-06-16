@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     const planPrice   = PLAN_PRICES[plan]?.[billingCycle] ?? 35000;
     // IA incluida según plan — no cobrar extra si está incluida
     const INCLUDED_AI: Record<string, string> = {
-      FREE: 'basic', PRO: 'basic', BUSINESS: 'medium', ENTERPRISE: 'premium',
+      FREE: 'basic', PRO: 'basic', BUSINESS: 'premium', ENTERPRISE: 'premium',
     };
     const includedAi  = INCLUDED_AI[plan] || 'basic';
     const aiIncluded  = (AI_PRICES[aiTier] ?? 0) <= (AI_PRICES[includedAi] ?? 0);
