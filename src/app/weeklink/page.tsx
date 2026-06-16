@@ -377,11 +377,11 @@ export default function WeeklinkHome() {
                   {/* Precio */}
                   {isEnterprise ? (
                     <div className="my-5">
-                      <p className="text-[13px] text-[rgba(17,24,39,0.50)]">Desde</p>
+                      <p className="text-[12px] text-[rgba(17,24,39,0.40)] mb-1">Precio personalizado</p>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-[32px] font-bold text-[#111827]">${price.toLocaleString('es-MX')}</span>
-                        <span className="text-[13px] text-[rgba(17,24,39,0.40)]">MXN / mes</span>
+                        <span className="text-[26px] font-bold text-[#111827]">Contáctanos</span>
                       </div>
+                      <p className="text-[11px] text-[rgba(17,24,39,0.35)] mt-1">Sin costo hasta acordar</p>
                     </div>
                   ) : (
                     <div className="my-5">
@@ -409,11 +409,11 @@ export default function WeeklinkHome() {
 
                   {/* CTA */}
                   {isEnterprise ? (
-                    <button
-                      onClick={() => {}}
-                      className="w-full rounded-[14px] border border-[rgba(17,24,39,0.12)] py-3 text-[14px] font-semibold text-[#374151] transition-all hover:border-violet-300 hover:text-violet-700">
-                      Contactar ventas
-                    </button>
+                    <a
+                      href="mailto:weeklinkapp@gmail.com?subject=Enterprise%20Plan%20Weeklink"
+                      className="block w-full rounded-[14px] border border-[rgba(17,24,39,0.12)] py-3 text-[14px] font-semibold text-[#374151] text-center transition-all hover:border-violet-300 hover:text-violet-700">
+                      Contactar ventas →
+                    </a>
                   ) : (
                     <Link href={`/register?plan=${plan.key}`}
                       className="block w-full rounded-[14px] py-3 text-center text-[14px] font-semibold transition-all"
