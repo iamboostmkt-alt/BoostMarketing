@@ -48,7 +48,13 @@ export async function POST(req: NextRequest) {
     }
 
     const planPrice   = PLAN_PRICES[plan]?.[billingCycle] ?? 35000;
-    const aiPrice     = AI_PRICES[aiTier] ?? 0;
+    // IA incluida según plan — no cobrar extra si está incluida
+    const INCLUDED_AI: Record<string, string> = {
+      FREE: 'basic', PRO: 'basic', BUSINESS: 'medium', ENTERPRISE: 'premium',
+    };
+    const includedAi  = INCLUDED_AI[plan] || 'basic';
+    const aiIncluded  = (AI_PRICES[aiTier] ?? 0) <= (AI_PRICES[includedAi] ?? 0);
+    const aiPrice     = aiIncluded ? 0 : (AI_PRICES[aiTier] ?? 0);
     const addonPrice  = extraClients * 10000;
     const totalAmount = planPrice + aiPrice + addonPrice;
 
