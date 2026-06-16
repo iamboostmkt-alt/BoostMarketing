@@ -86,20 +86,8 @@ export function NotificationsDropdown() {
   useEffect(() => {
     if (open) {
       fetchNotifications();
-      // Auto-marcar como leídas después de 2s de tener el panel abierto
-      const timer = setTimeout(async () => {
-        if (unreadCount === 0) return;
-        await fetch('/api/notifications', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ all: true }),
-        }).catch(() => {});
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-        setUnreadCount(0);
-      }, 2000);
-      return () => clearTimeout(timer);
     }
-  }, [open, fetchNotifications, unreadCount]);
+  }, [open, fetchNotifications]);
 
   useEffect(() => {
     return bus.on(RT_EVENTS.NOTIFICATION_NEW, () => fetchNotifications());
@@ -212,18 +200,18 @@ export function NotificationsDropdown() {
       {/* Trigger */}
       <button type="button" onClick={() => setOpen(v => !v)}
         className="relative flex items-center justify-center w-9 h-9 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] transition-colors">
-        <Bell className="w-5 h-5" />
+        <Bell className={`w-5 h-5 transition-colors ${unreadCount > 0 && !open ? 'text-violet-400 animate-[bellshake_0.6s_ease-in-out]' : ''}`} />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-0.5 rounded-full text-[9px] font-bold text-white"
-            style={{ background: '#8B5CF6', boxShadow: '0 0 8px rgba(139,92,246,0.5)' }}>
+            style={{ background: '#8B5CF6', boxShadow: '0 0 8px rgba(139,92,246,0.5)', animation: open ? 'none' : undefined }}>
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-[9999] overflow-hidden rounded-2xl border border-white/[0.06] shadow-2xl"
-          style={{ width: 'min(380px, calc(100vw - 16px))', right: 0, maxHeight: 'calc(100dvh - 80px)', overflowY: 'auto', background: '#0F1117', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 20px 60px rgba(0,0,0,0.6)' }}>
+        <div className="absolute right-0 top-full mt-2 z-[9999] rounded-2xl border border-white/[0.06] shadow-2xl notif-panel-enter"
+          style={{ width: 'min(380px, calc(100vw - 8px))', right: 'max(0px, -50vw + 50%)', maxHeight: 'calc(100dvh - 80px)', overflowY: 'auto', background: '#0F1117', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 20px 60px rgba(0,0,0,0.6)' }}>
 
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4 pb-3">
@@ -263,7 +251,7 @@ export function NotificationsDropdown() {
           </div>
 
           {/* List */}
-          <ScrollArea className="max-h-80">
+          <ScrollArea className="max-h-[50vh] sm:max-h-80">
             {loading ? (
               <div className="space-y-1 p-2">
                 {[1,2,3].map(i => (

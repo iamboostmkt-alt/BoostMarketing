@@ -46,14 +46,7 @@ export default function NotificationsPage() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // Marcar todas como leídas al entrar
-  useEffect(() => {
-    fetch('/api/notifications', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ all: true }),
-    }).catch(() => {});
-  }, []);
+  // NO auto-marcar al entrar — el usuario debe hacer clic o usar el botón
 
   const markRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -62,6 +55,15 @@ export default function NotificationsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     }).catch(() => {});
+  };
+
+  const markAllRead = async () => {
+    await fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ all: true }),
+    }).catch(() => {});
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
   const deleteRead = async () => {
@@ -78,7 +80,8 @@ export default function NotificationsPage() {
     return true;
   });
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const [unreadCount, setUnreadCount] = useState(0);
+  useEffect(() => { setUnreadCount(notifications.filter(n => !n.read).length); }, [notifications]);
 
   const filters = [
     { id: 'all' as const,     label: 'Todas',      count: notifications.length },
@@ -102,13 +105,22 @@ export default function NotificationsPage() {
             <p className="text-[12px] text-white/40">{unreadCount} sin leer</p>
           )}
         </div>
-        {notifications.some(n => n.read) && (
-          <button onClick={deleteRead}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.06] text-[12px] text-white/40 hover:text-red-400 hover:border-red-500/20 transition-colors">
-            <Trash2 className="w-3.5 h-3.5" />
-            Limpiar leídas
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 && (
+            <button onClick={markAllRead}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.06] text-[12px] text-white/40 hover:text-violet-400 hover:border-violet-500/20 transition-colors">
+              <Check className="w-3.5 h-3.5" />
+              Marcar todo leído
+            </button>
+          )}
+          {notifications.some(n => n.read) && (
+            <button onClick={deleteRead}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.06] text-[12px] text-white/40 hover:text-red-400 hover:border-red-500/20 transition-colors">
+              <Trash2 className="w-3.5 h-3.5" />
+              Limpiar
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filtros */}

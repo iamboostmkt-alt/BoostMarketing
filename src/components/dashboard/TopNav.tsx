@@ -3,6 +3,16 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+
+// Destino de logout: app nativa Capacitor → /login, móvil browser → /login, desktop → /weeklink
+function getLogoutUrl(): string {
+  if (typeof window === 'undefined') return '/weeklink';
+  const isNative = (window as any).Capacitor?.isNativePlatform?.();
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isPwa = window.matchMedia('(display-mode: standalone)').matches;
+  return (isNative || isMobile || isPwa) ? '/login' : '/weeklink';
+}
+
 import { Menu, Search, User, LogOut, Settings, Palette, Zap, HelpCircle, Command } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -204,7 +214,7 @@ export default function TopNav() {
                 <DropdownMenuSeparator className="bg-white/[0.06] my-1" />
                 <DropdownMenuItem
                   className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-red-400/70 hover:text-red-400 focus:text-red-400 hover:bg-red-500/[0.08] focus:bg-red-500/[0.08] cursor-pointer transition-all"
-                  onClick={() => signOut({ callbackUrl: typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.() ? '/login' : '/weeklink' })}
+                  onClick={() => signOut({ callbackUrl: getLogoutUrl() })}
                 >
                   <LogOut className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
                   <span className="text-[12px]">Cerrar sesión</span>

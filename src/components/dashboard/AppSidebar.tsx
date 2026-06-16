@@ -4,6 +4,16 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+
+// Destino de logout: app nativa Capacitor → /login, móvil browser → /login, desktop → /weeklink
+function getLogoutUrl(): string {
+  if (typeof window === 'undefined') return '/weeklink';
+  const isNative = (window as any).Capacitor?.isNativePlatform?.();
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isPwa = window.matchMedia('(display-mode: standalone)').matches;
+  return (isNative || isMobile || isPwa) ? '/login' : '/weeklink';
+}
+
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -180,7 +190,7 @@ function UserDropdown({
               </button>
               <div className="my-1 h-px bg-white/[0.06]" />
               <button
-                onClick={() => signOut({ callbackUrl: typeof window !== "undefined" && (window as any).Capacitor?.isNativePlatform?.() ? "/login" : "/weeklink" })}
+                onClick={() => signOut({ callbackUrl: getLogoutUrl() })}
                 className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-red-500/10 hover:text-red-400"
               >
                 <LogOut className="h-4 w-4" strokeWidth={1.5} />
