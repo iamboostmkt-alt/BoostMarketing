@@ -123,14 +123,67 @@ export default function BillingPage() {
       window.open('mailto:weeklinkapp@gmail.com?subject=Enterprise%20Plan%20Weeklink', '_blank');
       return;
     }
+
+    // Si ya tiene suscripción activa → ir al Customer Portal de Stripe
+    // (ahí puede hacer upgrade, downgrade o cancelar)
+    const hasActiveSub = data?.hasStripe && data?.plan !== 'FREE';
+
+    // Si seleccionó el mismo plan que ya tiene → mostrar portal para gestionar
+    if (hasActiveSub && selPlan === data?.plan) {
+      setSaving(true);
+      try {
+        const r = await fetch('/api/stripe/portal', { method: 'POST' });
+        const d = await r.json();
+        if (d.url) {
+          window.location.href = d.url;
+        } else if (d.redirectToCheckout) {
+          // No tiene customer aún — ir a checkout normal
+          goToCheckout();
+        } else {
+          toast.error(d.error || 'Error al abrir el portal');
+          setSaving(false);
+        }
+      } catch {
+        toast.error('Error de conexión');
+        setSaving(false);
+      }
+      return;
+    }
+
+    // Upgrade/downgrade con suscripción activa → también usar portal
+    if (hasActiveSub) {
+      setSaving(true);
+      try {
+        const r = await fetch('/api/stripe/portal', { method: 'POST' });
+        const d = await r.json();
+        if (d.url) {
+          // Guardar preferencias antes de redirigir
+          await fetch('/api/billing', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: selPlan, billingCycle: selCycle, extraClients: selExtra, aiTier: selAi }),
+          });
+          window.location.href = d.url;
+        } else {
+          await goToCheckout();
+        }
+      } catch {
+        toast.error('Error de conexión');
+        setSaving(false);
+      }
+      return;
+    }
+
+    // Sin suscripción activa → checkout nuevo
+    await goToCheckout();
+  };
+
+  const goToCheckout = async () => {
     setSaving(true);
     try {
-      // Guardar preferencias
       await fetch('/api/billing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: selPlan, billingCycle: selCycle, extraClients: selExtra, aiTier: selAi }),
       });
-      // Iniciar Stripe Checkout
       const r = await fetch('/api/stripe/checkout', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: selPlan, billingCycle: selCycle, extraClients: selExtra, aiTier: selAi }),
@@ -588,6 +641,21 @@ export default function BillingPage() {
               {selCycle === 'annual' && (
                 <button onClick={() => setSelCycle('monthly')} className="w-full mt-2 text-[12px] text-[#9CA3AF] hover:text-[#6B7280] transition-colors py-1">
                   o Cambiar a facturación mensual
+                </button>
+              )}
+
+              {data?.hasStripe && data?.plan !== 'FREE' && (
+                <button
+                  onClick={async () => {
+                    setSaving(true);
+                    const r = await fetch('/api/stripe/portal', { method: 'POST' });
+                    const d = await r.json();
+                    if (d.url) window.location.href = d.url;
+                    else { toast.error('Error al abrir portal'); setSaving(false); }
+                  }}
+                  className="w-full mt-2 text-[12px] text-[#7C3AED] hover:text-[#6D28D9] transition-colors py-1 underline"
+                >
+                  Gestionar o cancelar suscripción →
                 </button>
               )}
 
