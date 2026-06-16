@@ -203,8 +203,8 @@ function ProjectModal({ open, onClose, onSaved, project }: {
   const COLORS = ['#8B5CF6','#3B82F6','#10B981','#F59E0B','#EF4444','#EC4899','#06B6D4','#84CC16'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="glass-card rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
+      <div className="glass-card rounded-t-2xl sm:rounded-2xl w-full max-w-lg max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b border-white/[0.06]">
           <h2 className="text-[16px] font-semibold text-white">{project ? 'Editar proyecto' : 'Nuevo proyecto'}</h2>
           <button onClick={onClose} className="text-white/40 hover:text-white/80 text-xl">×</button>

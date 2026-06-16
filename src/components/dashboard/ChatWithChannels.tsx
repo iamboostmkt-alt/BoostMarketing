@@ -2085,8 +2085,8 @@ FORMATO:
 
       {/* Create Task Modal */}
       {taskModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#0F1117] p-6 shadow-2xl mx-4">
+        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl border border-white/[0.08] bg-[#0F1117] p-6 shadow-2xl sm:mx-4 max-h-[85dvh] overflow-y-auto">
             <h3 className="text-[15px] font-semibold text-white mb-4">Crear tarea desde mensaje</h3>
             <div className="flex flex-col gap-3">
               <div>
@@ -3676,10 +3676,10 @@ export default function ChatWithChannels() {
         <>
           {/* Mobile backdrop */}
           <div
-            className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+            className="fixed inset-0 z-[59] bg-black/50 lg:hidden"
             onClick={() => setShowRightPanel(false)}
           />
-          <div className="fixed inset-y-0 right-0 z-40 lg:relative lg:inset-auto lg:z-auto">
+          <div className="fixed inset-y-0 right-0 z-[60] lg:relative lg:inset-auto lg:z-auto">
             <RightPanel
               tab={rightTab as any}
               onSetTab={setRightTab as any}

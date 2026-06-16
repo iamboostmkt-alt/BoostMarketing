@@ -130,22 +130,48 @@ export const authOptions: NextAuthOptions = {
         try {
           const existing = await db.user.findFirst({
             where: { email: { equals: user.email!, mode: 'insensitive' } },
+            include: { accounts: true },
           });
           if (existing) {
-            // Actualizar imagen de perfil desde Google si no tiene una
+            // Verificar si ya existe el Account de Google vinculado
+            const googleAccount = existing.accounts.find(
+              a => a.provider === 'google' && a.providerAccountId === account.providerAccountId
+            );
+            if (!googleAccount) {
+              // Crear el Account record para vincular Google con el usuario existente
+              await db.account.create({
+                data: {
+                  userId: existing.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token,
+                  refresh_token: account.refresh_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state,
+                },
+              });
+            }
+            // Actualizar imagen de perfil desde Google solo si no tiene una propia
             if (!existing.image && (profile as any)?.picture) {
               await db.user.update({
                 where: { id: existing.id },
                 data: { image: (profile as any).picture },
               });
             }
+            // Forzar que el user.id del callback sea el del usuario existente
+            user.id = existing.id;
             // Permitir login vinculando al usuario existente
             return true;
           }
           // No existe usuario con ese email en el workspace → bloquear
           // (solo pueden acceder usuarios previamente invitados)
           return '/login?error=NoWorkspaceAccount';
-        } catch {
+        } catch (e) {
+          console.error('[OAuth signIn error]', e);
           return false;
         }
       }

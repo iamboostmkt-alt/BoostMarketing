@@ -974,8 +974,8 @@ export default function ClientPortalContent() {
       )}
       {/* Modal crear milestone */}
       {milestoneOpen && isManager && client && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setMilestoneOpen(false)}>
-          <div className="bg-[#15151c] border border-white/[0.08] rounded-2xl p-6 w-full max-w-lg mx-4 space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60" onClick={() => setMilestoneOpen(false)}>
+          <div className="bg-[#15151c] border border-white/[0.08] rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-lg sm:mx-4 space-y-4 max-h-[88dvh] sm:max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="text-base font-semibold text-white">{editingMilestone ? "Editar milestone" : "Nuevo milestone"}</h3>
             <div className="space-y-1">
               <p className="text-xs text-white/40">Nombre *</p>
