@@ -241,7 +241,15 @@ export default function BillingPage() {
             <button
               className="flex items-center gap-2 rounded-[12px] px-3.5 py-2 text-[12px] font-medium text-[#374151] border border-[rgba(17,24,39,0.10)] bg-white hover:bg-[#F9FAFB] transition-colors"
               style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-              onClick={() => window.open('https://billing.stripe.com/p/login/test_00g5o14k70Q6fDG000', '_blank')}
+              onClick={async () => {
+                    try {
+                      const r = await fetch('/api/stripe/portal', { method: 'POST' });
+                      const d = await r.json();
+                      if (d.url) window.open(d.url, '_blank');
+                      else if (d.redirectToCheckout) toast.info('Primero completa tu suscripción para ver el historial');
+                      else toast.error(d.error || 'Error al abrir el portal');
+                    } catch { toast.error('Error de conexión'); }
+                  }}
             >
               <ReceiptText className="w-3.5 h-3.5 text-[#9CA3AF]" strokeWidth={1.75} />
               Historial de facturas
