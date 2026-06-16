@@ -204,7 +204,7 @@ export default function TopNav() {
                 <DropdownMenuSeparator className="bg-white/[0.06] my-1" />
                 <DropdownMenuItem
                   className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-red-400/70 hover:text-red-400 focus:text-red-400 hover:bg-red-500/[0.08] focus:bg-red-500/[0.08] cursor-pointer transition-all"
-                  onClick={() => signOut({ callbackUrl: '/weeklink' })}
+                  onClick={() => signOut({ callbackUrl: typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.() ? '/login' : '/weeklink' })}
                 >
                   <LogOut className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
                   <span className="text-[12px]">Cerrar sesión</span>
