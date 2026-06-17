@@ -82,6 +82,7 @@ export async function GET(req: NextRequest) {
     const tasks = await db.task.findMany({
       where: {
         clientId,
+        workspaceId: result2.ctx.workspaceId,
         archivedAt: { not: null },
       },
       include: {

@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
       }
     } else {
       client = await db.client.findFirst({
-        where: { email: { equals: userEmail, mode: 'insensitive' } },
+        where: { email: { equals: userEmail, mode: 'insensitive' }, workspaceId },
         include: {
           assignedManager: { select: { id: true, name: true, email: true, color: true, image: true } },
           assignedUsers: {
@@ -144,6 +144,7 @@ export async function GET(req: NextRequest) {
 
     const appointments = await db.appointment.findMany({
       where: {
+        workspaceId,
         OR: [
           { clientId: client.id },
           { email: { equals: client.email, mode: 'insensitive' } },

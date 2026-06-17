@@ -34,7 +34,7 @@ export async function POST(
     if (action === 'client') {
       // Verificar que no exista ya un cliente con ese email
       const existing = await db.client.findFirst({
-        where: { email: { equals: lead.email, mode: 'insensitive' } },
+        where: { email: { equals: lead.email, mode: 'insensitive' }, workspaceId },
       });
       if (existing) {
         return NextResponse.json({ error: 'Ya existe un cliente con ese email' }, { status: 409 });

@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
   const tasks = await db.task.findMany({
     where: {
       clientId,
+      workspaceId,
       deletedAt: null,
       OR: [
         { dueDate:   { gte: startDate, lte: endDate } },
@@ -50,6 +51,7 @@ export async function GET(req: NextRequest) {
 
   const appointments = await db.appointment.findMany({
     where: {
+      workspaceId,
       email: client.email,
       date: { gte: startDate, lte: endDate },
       isInternal: false,
