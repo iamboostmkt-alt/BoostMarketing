@@ -470,19 +470,79 @@ export default function WeeklinkHome() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[rgba(17,24,39,0.06)] bg-white py-10">
+      <footer className="border-t border-[rgba(17,24,39,0.06)] bg-white pt-12 pb-8">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          {/* Columnas */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
+            {/* Producto */}
+            <div>
+              <p className="text-[11px] font-semibold text-[rgba(17,24,39,0.35)] uppercase tracking-wider mb-3">Producto</p>
+              <div className="space-y-2">
+                {[
+                  { label: 'Funciones', href: '#features' },
+                  { label: 'Precios', href: '#pricing' },
+                  { label: 'Integraciones', href: '#' },
+                ].map(l => (
+                  <a key={l.label} href={l.href} className="block text-[13px] text-[rgba(17,24,39,0.55)] hover:text-[#111827] transition-colors">{l.label}</a>
+                ))}
+              </div>
+            </div>
+            {/* Recursos */}
+            <div>
+              <p className="text-[11px] font-semibold text-[rgba(17,24,39,0.35)] uppercase tracking-wider mb-3">Recursos</p>
+              <div className="space-y-2">
+                {[
+                  { label: 'Blog', href: '#' },
+                  { label: 'Ayuda', href: '#' },
+                  { label: 'Roadmap', href: '#' },
+                ].map(l => (
+                  <a key={l.label} href={l.href} className="block text-[13px] text-[rgba(17,24,39,0.55)] hover:text-[#111827] transition-colors">{l.label}</a>
+                ))}
+              </div>
+            </div>
+            {/* Legal */}
+            <div>
+              <p className="text-[11px] font-semibold text-[rgba(17,24,39,0.35)] uppercase tracking-wider mb-3">Legal</p>
+              <div className="space-y-2">
+                {[
+                  { label: 'Términos', href: '/terminos' },
+                  { label: 'Privacidad', href: '/privacidad' },
+                  { label: 'Cookies', href: '/legal/cookies' },
+                  { label: 'Uso aceptable', href: '/legal/uso-aceptable' },
+                ].map(l => (
+                  <a key={l.label} href={l.href} className="block text-[13px] text-[rgba(17,24,39,0.55)] hover:text-[#111827] transition-colors">{l.label}</a>
+                ))}
+              </div>
+            </div>
+            {/* Trust */}
+            <div>
+              <p className="text-[11px] font-semibold text-[rgba(17,24,39,0.35)] uppercase tracking-wider mb-3">Trust</p>
+              <div className="space-y-2">
+                {[
+                  { label: 'Seguridad', href: '/legal/seguridad' },
+                  { label: 'Política IA', href: '/legal/ia' },
+                  { label: 'Founding', href: '/legal/founding' },
+                  { label: 'Trust Center', href: '/trust' },
+                ].map(l => (
+                  <a key={l.label} href={l.href} className="block text-[13px] text-[rgba(17,24,39,0.55)] hover:text-[#111827] transition-colors">{l.label}</a>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* Bottom bar */}
+          <div className="flex items-center justify-between flex-wrap gap-3 pt-6 border-t border-[rgba(17,24,39,0.06)]">
             <div className="flex items-center gap-2.5">
-              <WeeklinkMark size={24} />
-              <span className="text-[15px] font-semibold text-[#111827]">Weeklink</span>
+              <WeeklinkMark size={20} />
+              <span className="text-[14px] font-semibold text-[#111827]">Weeklink</span>
+              <span className="text-[12px] text-[rgba(17,24,39,0.35)]">© 2026</span>
             </div>
-            <div className="flex gap-6">
-              {['Términos', 'Privacidad', 'Cookies', 'Contacto'].map(l => (
-                <span key={l} className="text-[13px] text-[rgba(17,24,39,0.45)] hover:text-[#111827] cursor-pointer transition-colors">{l}</span>
-              ))}
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5 text-[11px] text-[rgba(17,24,39,0.35)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                Todos los sistemas operativos
+              </span>
+              <p className="text-[12px] text-[rgba(17,24,39,0.35)]">Hecho con 💜 en México</p>
             </div>
-            <p className="text-[12px] text-[rgba(17,24,39,0.35)]">© 2026 Weeklink. Hecho con 💜 en México</p>
           </div>
         </div>
       </footer>

@@ -322,9 +322,9 @@ export default function LoginPage() {
           {/* Footer */}
           <p className="mt-8 text-center text-[12px] text-[#9CA3AF]">
             Al iniciar sesión aceptas nuestros{' '}
-            <Link href="/weeklink" className="text-[#7C3AED] hover:underline">Términos</Link>
-            {' '}y{' '}
-            <Link href="/weeklink" className="text-[#7C3AED] hover:underline">Privacidad</Link>
+            <Link href="/terminos" className="text-[#7C3AED] hover:underline">Términos</Link>
+            {' '}y reconoces haber leído el{' '}
+            <Link href="/privacidad" className="text-[#7C3AED] hover:underline">Aviso de Privacidad</Link>
           </p>
         </div>
       </div>

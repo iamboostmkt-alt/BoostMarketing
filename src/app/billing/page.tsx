@@ -565,12 +565,18 @@ export default function BillingPage() {
               </div>
             </div>
 
-            <p className="text-[11px] text-[#9CA3AF] leading-relaxed pb-4">
-              Weeklink Founding Beta. Algunas funcionalidades pueden evolucionar durante esta etapa.
-              No recomendamos almacenar información crítica sin respaldos externos.{' '}
-              <a href="/terminos" target="_blank" className="underline hover:text-[#6B7280]">Términos y Condiciones</a>
-              {' · '}
-              <a href="/privacidad" target="_blank" className="underline hover:text-[#6B7280]">Política de Privacidad</a>
+            <p className="text-[11px] text-[#9CA3AF] leading-relaxed pb-2">
+              Al suscribirte aceptas nuestros{' '}
+              <a href="/terminos" target="_blank" className="text-[#7C3AED] hover:underline">Términos</a>,{' '}
+              <a href="/privacidad" target="_blank" className="text-[#7C3AED] hover:underline">Política de Privacidad</a>{' '}
+              y las condiciones del{' '}
+              <a href="/legal/founding" target="_blank" className="text-[#7C3AED] hover:underline">Programa Founding</a>.
+              Los pagos son procesados de forma segura por{' '}
+              <a href="https://stripe.com/es-mx" target="_blank" className="text-[#7C3AED] hover:underline">Stripe</a>.
+            </p>
+            <p className="text-[10px] text-[#D1D5DB] leading-relaxed pb-4">
+              Weeklink Founding Beta. Algunas funcionalidades pueden evolucionar.
+              No recomendamos almacenar información crítica sin respaldos externos.
             </p>
           </div>
 

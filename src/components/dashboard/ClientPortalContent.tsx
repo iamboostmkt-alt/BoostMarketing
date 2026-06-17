@@ -1125,6 +1125,28 @@ export default function ClientPortalContent() {
           </div>
         </div>
       )}
+
+      {/* Footer legal del portal */}
+      <footer className="mt-12 pt-6 border-t border-white/[0.05] pb-8">
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+          {[
+            { label: 'Privacidad', href: '/privacidad' },
+            { label: 'Cookies', href: '/legal/cookies' },
+            { label: 'Términos', href: '/terminos' },
+          ].map(l => (
+            <a
+              key={l.href}
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-white/25 hover:text-white/50 transition-colors"
+            >
+              {l.label}
+            </a>
+          ))}
+        </div>
+        <p className="text-center text-[10px] text-white/15 mt-2">© 2026 Weeklink</p>
+      </footer>
     </div>
   );
 }

@@ -545,6 +545,37 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            {/* Legal */}
+            <div className="glass-card rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-lg">⚖️</span>
+                <h3 className="text-base font-semibold text-white">Legal y cumplimiento</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: '📄 Términos', href: '/terminos' },
+                  { label: '🔒 Privacidad', href: '/privacidad' },
+                  { label: '🍪 Cookies', href: '/legal/cookies' },
+                  { label: '🤖 Política IA', href: '/legal/ia' },
+                  { label: '⚖️ Uso aceptable', href: '/legal/uso-aceptable' },
+                  { label: '🗂️ Retención datos', href: '/legal/retencion-datos' },
+                  { label: '🚀 Founding', href: '/legal/founding' },
+                  { label: '🛡️ Trust Center', href: '/trust' },
+                ].map(l => (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] text-white/60 hover:text-white hover:bg-white/[0.05] transition-colors"
+                  >
+                    {l.label}
+                    <span className="ml-auto text-white/20 text-[10px]">↗</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+
             {/* Tutorial */}
             <div className="glass-card rounded-xl p-6">
               <div className="flex items-center gap-3 mb-3">

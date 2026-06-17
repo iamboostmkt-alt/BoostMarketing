@@ -394,7 +394,13 @@ function RegisterPageInner() {
           </div>
 
           {/* Footer */}
-          <div className="px-8 pb-6 text-center">
+          <div className="px-8 pb-6 text-center space-y-3">
+            <p className="text-[11px] leading-relaxed" style={{ color: '#9CA3AF' }}>
+              Al crear tu cuenta aceptas los{' '}
+              <a href="/terminos" target="_blank" className="underline hover:text-[#7C3AED]" style={{ color: '#7C3AED' }}>Términos y Condiciones</a>
+              {' '}y reconoces haber leído el{' '}
+              <a href="/privacidad" target="_blank" className="underline hover:text-[#7C3AED]" style={{ color: '#7C3AED' }}>Aviso de Privacidad</a>.
+            </p>
             <p className="text-[12px]" style={{ color: '#9CA3AF' }}>
               ¿Ya tienes cuenta?{' '}
               <Link href="/login" className="font-semibold hover:underline" style={{ color: '#7C3AED' }}>
