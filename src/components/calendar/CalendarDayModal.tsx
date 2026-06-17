@@ -19,7 +19,7 @@ function TaskAvatar({ u }: { u: { name: string | null; email: string; color: str
   return (
     <Avatar className="w-5 h-5">
       {u.image && <AvatarImage src={u.image} />}
-      <AvatarFallback style={{ background: u.color }} className="text-[8px] text-white font-bold">{initials}</AvatarFallback>
+      <AvatarFallback style={{ background: u.color }} className="text-[8px] text-[var(--wl-text-primary)] font-bold">{initials}</AvatarFallback>
     </Avatar>
   );
 }
@@ -48,17 +48,17 @@ function CompletedTasksSection({ tasks }: { tasks: Task[] }) {
   return (
     <div className="border border-[var(--wl-border)] rounded-lg overflow-hidden">
       <button type="button" onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-white/[0.02] hover:bg-[var(--wl-hover)] transition-colors">
-        <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/30 uppercase tracking-wider">
+        className="w-full flex items-center justify-between px-3 py-2 bg-[var(--wl-hover)] hover:bg-[var(--wl-hover)] transition-colors">
+        <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--wl-text-placeholder)] uppercase tracking-wider">
           <CheckSquare className="w-3 h-3 text-green-400/50" />
           Listas ({tasks.length})
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-white/20 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-[var(--wl-text-placeholder)] transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <div className="space-y-1.5 p-2">
           {tasks.map(t => (
-            <div key={t.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-white/[0.02]">
+            <div key={t.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-[var(--wl-hover)]">
               <CheckCircle2 className="w-3.5 h-3.5 text-green-400/60 shrink-0" />
               <span className="text-xs text-[var(--wl-text-muted)] line-through truncate">{t.title}</span>
             </div>
@@ -126,14 +126,14 @@ function DayModal({
  
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-lg w-full max-h-[85vh] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-lg w-full max-h-[85vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-[var(--wl-border)] shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-brand/15 flex items-center justify-center shrink-0">
               <CalendarDays className="w-4 h-4 text-brand-light" />
             </div>
             <div>
-              <DialogTitle className="text-base font-semibold text-white leading-tight">
+              <DialogTitle className="text-base font-semibold text-[var(--wl-text-primary)] leading-tight">
                 {isToday(day) ? 'Hoy · ' : ''}{label}
               </DialogTitle>
               <p className="text-xs text-[var(--wl-text-muted)] mt-0.5">
@@ -153,7 +153,7 @@ function DayModal({
               </div>
               {dayTasks.map((task) => (
                 <div key={task.id}
-                  className="w-full text-left bg-white/[0.03] border border-[var(--wl-border-subtle)] rounded-lg p-3.5 hover:border-white/[0.10] hover:bg-white/[0.05] transition-colors group">
+                  className="w-full text-left bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)] rounded-lg p-3.5 hover:border-[var(--wl-border)] hover:bg-[var(--wl-hover)] transition-colors group">
                   <div className="flex items-start gap-2.5">
                     <button type="button" className="flex-1 text-left"
                       onClick={() => { onEditTask(task); onClose(); }}>
@@ -161,19 +161,19 @@ function DayModal({
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 ${statusColors[task.status] || 'status-pending'}`}>
                           {statusLabels[task.status] || task.status}
                         </span>
-                        <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
+                        <p className="text-sm font-medium text-[var(--wl-text-primary)] leading-tight group-hover:text-[var(--wl-text-primary)] transition-colors">
                           {task.title}
                         </p>
                       </div>
                       {task.description && (
-                        <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
+                        <p className="text-xs text-[var(--wl-text-muted)] mt-2 line-clamp-2 pl-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-3 mt-2.5 pl-1 flex-wrap">
                         <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-[var(--wl-text-muted)]'}`}>
                           {priorityLabels[task.priority] || task.priority}
                         </span>
                         {task.dueDate && (
-                          <div className="flex items-center gap-1 text-[10px] text-white/25">
+                          <div className="flex items-center gap-1 text-[10px] text-[var(--wl-text-placeholder)]">
                             <Clock className="w-2.5 h-2.5 shrink-0" />
                             {format(new Date(task.dueDate), 'd MMM yyyy', { locale: es })}
                           </div>
@@ -188,7 +188,7 @@ function DayModal({
                           if (!confirm(`¿Eliminar "${task.title}"?`)) return;
                           await onDeleteTask(task.id);
                         }}
-                        className="shrink-0 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                        className="shrink-0 p-1.5 rounded-md text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
                         title="Eliminar tarea">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -218,7 +218,7 @@ function DayModal({
                       <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5 bg-green-500/20 text-green-300">
                         {apt.status === 'confirmed' ? 'Confirmada' : apt.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
                       </span>
-                      <p className="text-sm font-medium text-white/90 truncate">{apt.name}</p>
+                      <p className="text-sm font-medium text-[var(--wl-text-primary)] truncate">{apt.name}</p>
                     </div>
                     {isManager && (
                       <button type="button"
@@ -227,21 +227,21 @@ function DayModal({
                           await onDeleteAppointment(apt.id);
 
                         }}
-                        className="shrink-0 p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                        className="shrink-0 p-1 rounded text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
                         title="Eliminar">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
                   <div className="flex items-center gap-3 mt-2 pl-1 flex-wrap">
-                    <span className="text-[10px] text-white/25">{apt.email}</span>
-                    <div className="flex items-center gap-1 text-[10px] text-white/25">
+                    <span className="text-[10px] text-[var(--wl-text-placeholder)]">{apt.email}</span>
+                    <div className="flex items-center gap-1 text-[10px] text-[var(--wl-text-placeholder)]">
                       <Clock className="w-2.5 h-2.5" />
                       {format(new Date(apt.date), 'HH:mm', { locale: es })}
                     </div>
                   </div>
                   {(apt as any).notes && (
-                    <p className="text-xs text-white/35 mt-2">{(apt as any).notes}</p>
+                    <p className="text-xs text-[var(--wl-text-muted)] mt-2">{(apt as any).notes}</p>
                   )}
                   {isManager && (
                     <div className="mt-2.5">
@@ -267,21 +267,21 @@ function DayModal({
               {dayMilestones.map((m) => (
                 <div key={m.id} className="bg-yellow-500/[0.06] border border-yellow-500/20 rounded-lg p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-white/90">{m.title}</p>
+                    <p className="text-sm font-medium text-[var(--wl-text-primary)]">{m.title}</p>
                     <span className="text-[10px] bg-yellow-500/20 text-yellow-300 rounded-full px-2 py-0.5 shrink-0">
                       {m.status === 'completed' ? 'Completado' : m.status === 'in_progress' ? 'En progreso' : m.status === 'delayed' ? 'Retrasado' : 'Próximo'}
                     </span>
                   </div>
-                  {m.description && <p className="text-xs text-white/35 mt-1">{m.description}</p>}
+                  {m.description && <p className="text-xs text-[var(--wl-text-muted)] mt-1">{m.description}</p>}
                   {m.progress > 0 && (
                     <div className="mt-2">
-                      <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                      <div className="h-1 rounded-full bg-[var(--wl-hover)] overflow-hidden">
                         <div className="h-full rounded-full bg-yellow-400/60" style={{ width: `${m.progress}%` }} />
                       </div>
-                      <p className="text-[10px] text-white/30 mt-0.5">{m.progress}% completado</p>
+                      <p className="text-[10px] text-[var(--wl-text-placeholder)] mt-0.5">{m.progress}% completado</p>
                     </div>
                   )}
-                  {m.client && <p className="text-[10px] text-white/25 mt-1">{m.client.name}</p>}
+                  {m.client && <p className="text-[10px] text-[var(--wl-text-placeholder)] mt-1">{m.client.name}</p>}
                 </div>
               ))}
             </section>
@@ -289,12 +289,12 @@ function DayModal({
 
           {total === 0 && (
             <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white/20" />
+              <div className="w-12 h-12 rounded-full bg-[var(--wl-hover)] flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-[var(--wl-text-placeholder)]" />
               </div>
               <div>
                 <p className="text-sm font-medium text-[var(--wl-text-muted)]">Sin elementos este dia</p>
-                <p className="text-xs text-white/25 mt-0.5">No hay nada programado</p>
+                <p className="text-xs text-[var(--wl-text-placeholder)] mt-0.5">No hay nada programado</p>
               </div>
             </div>
           )}
@@ -308,13 +308,13 @@ function DayModal({
             Tarea
           </Button>
           <Button size="sm"
-            className="bg-white/[0.06] hover:bg-white/[0.10] text-white gap-1.5 text-xs h-8"
+            className="bg-[var(--wl-hover)] hover:bg-[var(--wl-border)] text-[var(--wl-text-primary)] gap-1.5 text-xs h-8"
             onClick={() => { onNewAppointment && onNewAppointment(); onClose(); }}>
             <Video className="w-3.5 h-3.5" />
             Reunion
           </Button>
           <Button size="sm" variant="ghost"
-            className="text-white/30 hover:text-white hover:bg-[var(--wl-hover)] text-xs h-8 ml-auto"
+            className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] text-xs h-8 ml-auto"
             onClick={onClose}>
             Cerrar
           </Button>

@@ -41,20 +41,20 @@ function UnassignedGuard({ children }: { children: React.ReactNode }) {
             ⏳
           </div>
           <div>
-            <h2 className="text-[20px] font-semibold text-white/90 mb-2">
+            <h2 className="text-[20px] font-semibold text-[var(--wl-text-primary)] mb-2">
               Tu cuenta está pendiente
             </h2>
-            <p className="text-[14px] text-white/50 leading-relaxed">
+            <p className="text-[14px] text-[var(--wl-text-muted)] leading-relaxed">
               El administrador de tu workspace te asignará un rol pronto.
               Una vez asignado podrás acceder al dashboard.
             </p>
           </div>
-          <div className="mt-2 rounded-xl border border-[var(--wl-border)] bg-white/[0.03] px-4 py-3 text-[13px] text-[var(--wl-text-muted)] text-center">
+          <div className="mt-2 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-hover)] px-4 py-3 text-[13px] text-[var(--wl-text-muted)] text-center">
             {session.user?.email}
           </div>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="mt-2 flex h-10 items-center rounded-[12px] border border-[var(--wl-border)] bg-white/[0.04] px-5 text-[13px] text-[var(--wl-text-secondary)] transition-colors hover:bg-white/[0.08] hover:text-[var(--wl-text-secondary)]">
+            className="mt-2 flex h-10 items-center rounded-[12px] border border-[var(--wl-border)] bg-[var(--wl-hover)] px-5 text-[13px] text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-border)] hover:text-[var(--wl-text-secondary)]">
             Cerrar sesión
           </button>
         </div>

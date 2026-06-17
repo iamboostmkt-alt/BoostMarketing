@@ -272,14 +272,14 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
                 </span>
                 <button
                   onClick={handleComplete}
-                  className="text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors p-0.5"
+                  className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors p-0.5"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              <p className="text-[14px] font-semibold text-white mb-1">{step.title}</p>
-              <p className="text-[12px] text-white/55 leading-relaxed mb-4">{step.description}</p>
+              <p className="text-[14px] font-semibold text-[var(--wl-text-primary)] mb-1">{step.title}</p>
+              <p className="text-[12px] text-[var(--wl-text-primary)]/55 leading-relaxed mb-4">{step.description}</p>
 
               {/* Dots + nav */}
               <div className="flex items-center justify-between">
@@ -300,7 +300,7 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
                   {stepIdx > 0 && (
                     <button
                       onClick={goPrev}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] text-white/50 hover:text-white transition-colors"
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] transition-colors"
                       style={{ background: 'rgba(255,255,255,0.05)' }}
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
@@ -308,7 +308,7 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
                   )}
                   <button
                     onClick={goNext}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium text-white transition-all active:scale-95"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[var(--wl-text-primary)] transition-all active:scale-95"
                     style={{ background: '#7C3AED' }}
                   >
                     {stepIdx === steps.length - 1 ? (
@@ -363,11 +363,11 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
                 <Sparkles className="w-4.5 h-4.5 text-violet-400" />
               </div>
               <div>
-                <p className="text-[15px] font-semibold text-white">¡Ya estás listo!</p>
+                <p className="text-[15px] font-semibold text-[var(--wl-text-primary)]">¡Ya estás listo!</p>
                 <p className="text-[11px] text-[var(--wl-text-muted)]">Completa estos pasos para empezar</p>
               </div>
             </div>
-            <button onClick={handleComplete} className="text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors mt-0.5">
+            <button onClick={handleComplete} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors mt-0.5">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -380,7 +380,7 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
                 {completedCount}/{items.length}
               </span>
             </div>
-            <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+            <div className="h-1.5 rounded-full bg-[var(--wl-hover)] overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{
@@ -406,18 +406,18 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
                     window.location.href = item.path;
                   }
                 }}
-                className="w-full flex items-center gap-3.5 px-5 py-3.5 text-left transition-colors active:bg-white/[0.03] hover:bg-white/[0.02]"
+                className="w-full flex items-center gap-3.5 px-5 py-3.5 text-left transition-colors active:bg-[var(--wl-hover)] hover:bg-[var(--wl-hover)]"
               >
                 <span className="text-xl shrink-0">{item.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] font-medium transition-colors ${done ? 'text-white/30 line-through' : 'text-white/85'}`}>
+                  <p className={`text-[13px] font-medium transition-colors ${done ? 'text-[var(--wl-text-placeholder)] line-through' : 'text-[var(--wl-text-primary)]'}`}>
                     {item.label}
                   </p>
-                  <p className="text-[11px] text-white/30 truncate">{item.description}</p>
+                  <p className="text-[11px] text-[var(--wl-text-placeholder)] truncate">{item.description}</p>
                 </div>
                 {done
                   ? <CheckCircle2 className="w-4.5 h-4.5 text-violet-400 shrink-0" />
-                  : <Circle className="w-4.5 h-4.5 text-white/15 shrink-0" />
+                  : <Circle className="w-4.5 h-4.5 text-[var(--wl-text-placeholder)] shrink-0" />
                 }
               </button>
             );
@@ -428,12 +428,12 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
         <div className="px-5 py-4 border-t border-[var(--wl-border-subtle)]">
           <button
             onClick={handleComplete}
-            className="w-full py-3 rounded-xl text-[13px] font-medium text-white transition-all active:scale-[0.98]"
+            className="w-full py-3 rounded-xl text-[13px] font-medium text-[var(--wl-text-primary)] transition-all active:scale-[0.98]"
             style={{ background: '#7C3AED' }}
           >
             {completedCount === items.length ? '🎉 ¡Todo listo! Empezar' : 'Explorar por mi cuenta'}
           </button>
-          <p className="text-center text-[10px] text-white/25 mt-2">
+          <p className="text-center text-[10px] text-[var(--wl-text-placeholder)] mt-2">
             Puedes ver este tutorial de nuevo en Configuración
           </p>
         </div>

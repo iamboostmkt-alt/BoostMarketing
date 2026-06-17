@@ -140,18 +140,18 @@ export default function TaskFeedbackButtons({
         </div>
       ) : (
         <div className="space-y-2">
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-[var(--wl-text-muted)]">
             {pendingType === 'changes_requested' ? '¿Qué cambios necesitas?' : '¿Por qué rechazas esta entrega?'}
-            <span className="text-white/30 ml-1">(opcional)</span>
+            <span className="text-[var(--wl-text-placeholder)] ml-1">(opcional)</span>
           </p>
           <textarea
             value={message}
             onChange={e => setMessage(e.target.value)}
             rows={2}
             placeholder="Escribe tu comentario..."
-            className="w-full rounded-lg bg-white/[0.04] border border-[var(--wl-border)] text-white text-xs
+            className="w-full rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] text-[var(--wl-text-primary)] text-xs
               px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none
-              placeholder:text-white/25"
+              placeholder:text-[var(--wl-text-placeholder)]"
           />
           <div className="flex gap-2">
             <button
@@ -176,7 +176,7 @@ export default function TaskFeedbackButtons({
             <button
               type="button"
               onClick={handleCancel}
-              className="px-3 py-1.5 rounded-lg text-xs text-[var(--wl-text-muted)] hover:text-white
+              className="px-3 py-1.5 rounded-lg text-xs text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)]
                 hover:bg-[var(--wl-hover)] transition-colors"
             >
               Cancelar

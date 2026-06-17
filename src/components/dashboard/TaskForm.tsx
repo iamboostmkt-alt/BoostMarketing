@@ -300,7 +300,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
 
   const dateBtn = (label: string, date: Date | undefined, onClick: () => void) => (
     <Button variant="outline" type="button" disabled={loading} onClick={onClick}
-      className={cn('w-full justify-start text-left font-normal bg-white/[0.04] border-[var(--wl-border)] hover:bg-white/[0.08] hover:text-white text-sm', !date && 'text-white/30')}>
+      className={cn('w-full justify-start text-left font-normal bg-[var(--wl-hover)] border-[var(--wl-border)] hover:bg-[var(--wl-border)] hover:text-[var(--wl-text-primary)] text-sm', !date && 'text-[var(--wl-text-placeholder)]')}>
       <CalendarIcon className="mr-2 h-4 w-4 text-[var(--wl-text-muted)] shrink-0" />
       {date ? format(date, "dd 'de' MMM yyyy", { locale: es }) : label}
     </Button>
@@ -309,25 +309,25 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   return (
     <>
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="bg-[var(--wl-surface)] border-l border-[var(--wl-border)] text-white w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0">
+      <SheetContent side="right" className="bg-[var(--wl-surface)] border-l border-[var(--wl-border)] text-[var(--wl-text-primary)] w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0">
         <div className="px-5 pt-5 pb-4 border-b border-[var(--wl-border)] shrink-0">
-          <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">
+          <p className="text-xs font-medium text-[var(--wl-text-placeholder)] uppercase tracking-widest mb-1">
             {isEditing ? 'Editar Tarea' : isSubtask ? 'Nueva Subtarea' : isManager ? 'Nueva Tarea' : 'Solicitar Entrega'}
           </p>
           {isSubtask && isManager && parentTaskTitle && (
             <p className="text-[11px] text-[var(--wl-text-muted)] mt-0.5 flex items-center gap-1">
-              <span className="text-white/20">↳</span> Subtarea de: <span className="text-purple-400/70 font-medium truncate">{parentTaskTitle}</span>
+              <span className="text-[var(--wl-text-placeholder)]">↳</span> Subtarea de: <span className="text-purple-400/70 font-medium truncate">{parentTaskTitle}</span>
             </p>
           )}
           {isManager && !isEditing && (
             <div className="space-y-1.5 pt-2 pb-3 border-b border-[var(--wl-border)]">
               <div className="flex items-center justify-between">
-                <Label className="text-white/50 text-xs flex items-center gap-1.5">
+                <Label className="text-[var(--wl-text-muted)] text-xs flex items-center gap-1.5">
                   <Sparkles className="w-3 h-3" />
-                  Usar template <span className="text-white/30">(opcional)</span>
+                  Usar template <span className="text-[var(--wl-text-placeholder)]">(opcional)</span>
                 </Label>
                 <button type="button" onClick={() => setTemplateManagerOpen(true)}
-                  className="text-[11px] text-white/30 hover:text-brand-light transition-colors">
+                  className="text-[11px] text-[var(--wl-text-placeholder)] hover:text-brand-light transition-colors">
                   Gestionar →
                 </button>
               </div>
@@ -335,15 +335,15 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 if (v === 'none') { setSelectedTemplateId(''); return; }
                 applyTemplate(v);
               }}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm h-9 focus:ring-brand">
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm h-9 focus:ring-brand">
                   <SelectValue placeholder="Selecciona un template..." />
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
-                  <SelectItem value="none" className="text-[var(--wl-text-muted)] focus:bg-white/[0.06]">Sin template</SelectItem>
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+                  <SelectItem value="none" className="text-[var(--wl-text-muted)] focus:bg-[var(--wl-hover)]">Sin template</SelectItem>
                   {templates.map((tpl) => (
-                    <SelectItem key={tpl.id} value={tpl.id} className="focus:bg-white/[0.06]">
+                    <SelectItem key={tpl.id} value={tpl.id} className="focus:bg-[var(--wl-hover)]">
                       <span className="text-[var(--wl-text-secondary)]">{tpl.title}</span>
-                      <span className="text-[10px] text-white/30 ml-2 capitalize">{tpl.category}</span>
+                      <span className="text-[10px] text-[var(--wl-text-placeholder)] ml-2 capitalize">{tpl.category}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -360,14 +360,14 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             <Label htmlFor="task-title" className="text-[var(--wl-text-secondary)] text-sm">Titulo <span className="text-red-400">*</span></Label>
             <Input id="task-title" value={title} onChange={(e) => setTitle(e.target.value)}
               placeholder="Ej: Disenar landing page"
-              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:ring-brand" required />
+              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand" required />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="task-desc" className="text-[var(--wl-text-secondary)] text-sm">Descripcion</Label>
             <Textarea id="task-desc" value={description} onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe la tarea..." rows={3}
-              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:ring-brand resize-none" />
+              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand resize-none" />
           </div>
 
           {isManager && (
@@ -375,10 +375,10 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             <div className="space-y-2">
               <Label className="text-[var(--wl-text-secondary)] text-sm">Estado</Label>
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] w-full"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)]">
                   {taskStatuses.map((s) => (
-                    <SelectItem key={s.id} value={s.id} className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">{s.label}</SelectItem>
+                    <SelectItem key={s.id} value={s.id} className="text-[var(--wl-text-secondary)] focus:text-[var(--wl-text-primary)] focus:bg-[var(--wl-hover)]">{s.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -386,10 +386,10 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             <div className="space-y-2">
               <Label className="text-[var(--wl-text-secondary)] text-sm">Prioridad</Label>
               <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] w-full"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)]">
                   {Object.entries(priorityLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key} className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">{label}</SelectItem>
+                    <SelectItem key={key} value={key} className="text-[var(--wl-text-secondary)] focus:text-[var(--wl-text-primary)] focus:bg-[var(--wl-hover)]">{label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -404,7 +404,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 <Label className="text-[var(--wl-text-secondary)] text-sm">Proyecto</Label>
                 <select value={projectId} onChange={e => { setProjectId(e.target.value); setMilestoneId(''); }}
                   style={{ fontSize: '16px' }}
-                  className="w-full rounded-xl border border-[var(--wl-border)] bg-white/[0.04] px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] focus:outline-none">
+                  className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] focus:outline-none">
                   <option value="">Sin proyecto</option>
                   {projects.map((p: {id: string; name: string}) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
@@ -413,7 +413,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 <Label className="text-[var(--wl-text-secondary)] text-sm">Milestone</Label>
                 <select value={milestoneId} onChange={e => setMilestoneId(e.target.value)}
                   style={{ fontSize: '16px' }} disabled={!projectId}
-                  className="w-full rounded-xl border border-[var(--wl-border)] bg-white/[0.04] px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] focus:outline-none disabled:opacity-40">
+                  className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] focus:outline-none disabled:opacity-40">
                   <option value="">Sin milestone</option>
                   {milestones.filter((m: {id: string; title: string; projectId: string}) => m.projectId === projectId).map(m => (
                     <option key={m.id} value={m.id}>{m.title}</option>
@@ -430,28 +430,28 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 setVisibility(v);
                 if (v === 'internal') setClientId('');
               }}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] w-full"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)]">
-                  <SelectItem value="internal" className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">Interno</SelectItem>
-                  <SelectItem value="client_visible" className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">Visible al cliente</SelectItem>
-                  <SelectItem value="management" className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">Solo gerencia</SelectItem>
-                  <SelectItem value="team_only" className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">Solo equipo</SelectItem>
+                  <SelectItem value="internal" className="text-[var(--wl-text-secondary)] focus:text-[var(--wl-text-primary)] focus:bg-[var(--wl-hover)]">Interno</SelectItem>
+                  <SelectItem value="client_visible" className="text-[var(--wl-text-secondary)] focus:text-[var(--wl-text-primary)] focus:bg-[var(--wl-hover)]">Visible al cliente</SelectItem>
+                  <SelectItem value="management" className="text-[var(--wl-text-secondary)] focus:text-[var(--wl-text-primary)] focus:bg-[var(--wl-hover)]">Solo gerencia</SelectItem>
+                  <SelectItem value="team_only" className="text-[var(--wl-text-secondary)] focus:text-[var(--wl-text-primary)] focus:bg-[var(--wl-hover)]">Solo equipo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label className="text-[var(--wl-text-secondary)] text-sm">Fecha inicio <span className="text-white/30 text-[10px]">(opcional)</span></Label>
+            <Label className="text-[var(--wl-text-secondary)] text-sm">Fecha inicio <span className="text-[var(--wl-text-placeholder)] text-[10px]">(opcional)</span></Label>
             {dateBtn('Seleccionar fecha de inicio', startDate, toggleStart)}
             {startOpen && (
               <div className="rounded-lg border border-[var(--wl-border)] bg-[#0e0e14] shadow-2xl p-1">
                 <div className="flex justify-end px-2 pt-1">
-                  <button type="button" onClick={() => setStartOpen(false)} className="text-white/30 hover:text-[var(--wl-text-secondary)] p-1 rounded transition-colors">
+                  <button type="button" onClick={() => setStartOpen(false)} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] p-1 rounded transition-colors">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d); setStartOpen(false); }} className="text-white" />
+                <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d); setStartOpen(false); }} className="text-[var(--wl-text-primary)]" />
               </div>
             )}
           </div>
@@ -462,12 +462,12 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             {dueOpen && (
               <div className="rounded-lg border border-[var(--wl-border)] bg-[#0e0e14] shadow-2xl p-1">
                 <div className="flex justify-end px-2 pt-1">
-                  <button type="button" onClick={() => setDueOpen(false)} className="text-white/30 hover:text-[var(--wl-text-secondary)] p-1 rounded transition-colors">
+                  <button type="button" onClick={() => setDueOpen(false)} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] p-1 rounded transition-colors">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
                 <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueOpen(false); }}
-                  disabled={(d) => (startDate ? d < startDate : false)} className="text-white" />
+                  disabled={(d) => (startDate ? d < startDate : false)} className="text-[var(--wl-text-primary)]" />
               </div>
             )}
           </div>
@@ -475,11 +475,11 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           {!isSubtask && (
             <div className="space-y-2 pt-1">
               <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-white/[0.08]" />
-                <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/30">
+                <div className="h-px flex-1 bg-[var(--wl-border)]" />
+                <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--wl-text-placeholder)]">
                   Subtareas
                 </span>
-                <div className="h-px flex-1 bg-white/[0.08]" />
+                <div className="h-px flex-1 bg-[var(--wl-border)]" />
               </div>
 
               {/* Lista de subtareas pendientes */}
@@ -488,14 +488,14 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                   {pendingSubtasks.map((sub, idx) => (
                     <li key={sub.id} className="rounded-lg border border-[var(--wl-border)] overflow-hidden">
                       {/* Fila colapsable */}
-                      <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] cursor-pointer hover:bg-white/[0.05] transition-colors"
+                      <div className="flex items-center gap-2 px-3 py-2 bg-[var(--wl-hover)] cursor-pointer hover:bg-[var(--wl-hover)] transition-colors"
                         onClick={() => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, expanded: !s.expanded } : s))}>
-                        <span className="text-white/20 text-xs select-none">↳</span>
+                        <span className="text-[var(--wl-text-placeholder)] text-xs select-none">↳</span>
                         <span className="flex-1 text-sm text-[var(--wl-text-secondary)] truncate">{sub.title}</span>
-                        <span className="text-[10px] text-white/30 shrink-0">{sub.expanded ? '▲' : '▼'}</span>
+                        <span className="text-[10px] text-[var(--wl-text-placeholder)] shrink-0">{sub.expanded ? '▲' : '▼'}</span>
                         <button type="button"
                           onClick={(e) => { e.stopPropagation(); setPendingSubtasks(prev => prev.filter((_, i) => i !== idx)); }}
-                          className="text-white/25 hover:text-red-400/80 transition-colors text-xs leading-none ml-1 shrink-0">✕</button>
+                          className="text-[var(--wl-text-placeholder)] hover:text-red-400/80 transition-colors text-xs leading-none ml-1 shrink-0">✕</button>
                       </div>
 
                       {/* Campos expandibles */}
@@ -504,25 +504,25 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
 
                           {/* Nombre */}
                           <div>
-                            <label className="text-[10px] text-white/30 mb-1 block">Nombre</label>
+                            <label className="text-[10px] text-[var(--wl-text-placeholder)] mb-1 block">Nombre</label>
                             <input
                               type="text"
                               value={sub.title}
                               onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, title: e.target.value } : s))}
                               placeholder="Nombre de la subtarea"
-                              className="w-full rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-3 py-1.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all"
+                              className="w-full rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] px-3 py-1.5 text-sm text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:outline-none focus:border-violet-500/40 transition-all"
                             />
                           </div>
 
                           {/* Detalles */}
                           <div>
-                            <label className="text-[10px] text-white/30 mb-1 block">Detalles</label>
+                            <label className="text-[10px] text-[var(--wl-text-placeholder)] mb-1 block">Detalles</label>
                             <textarea
                               value={sub.description || ''}
                               onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, description: e.target.value } : s))}
                               placeholder="Descripción opcional..."
                               rows={2}
-                              className="w-full rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-3 py-1.5 text-xs text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all resize-none"
+                              className="w-full rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] px-3 py-1.5 text-xs text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:outline-none focus:border-violet-500/40 transition-all resize-none"
                             />
                           </div>
 
@@ -530,7 +530,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                           <div className="grid grid-cols-2 gap-2">
                             <select value={sub.status}
                               onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, status: e.target.value } : s))}
-                              className="rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40">
+                              className="rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-[var(--wl-text-primary)] focus:outline-none focus:border-violet-500/40">
                               <option value="pending">Pendiente</option>
                               <option value="in_progress">En progreso</option>
                               <option value="internal_review">En revisión</option>
@@ -538,7 +538,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                             </select>
                             <select value={sub.priority}
                               onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, priority: e.target.value } : s))}
-                              className="rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40">
+                              className="rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-[var(--wl-text-primary)] focus:outline-none focus:border-violet-500/40">
                               <option value="low">Baja</option>
                               <option value="medium">Media</option>
                               <option value="high">Alta</option>
@@ -548,22 +548,22 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                           {/* Fechas */}
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="text-[10px] text-white/30 mb-1 block">Inicio</label>
+                              <label className="text-[10px] text-[var(--wl-text-placeholder)] mb-1 block">Inicio</label>
                               <input type="date" value={sub.startDate || ''}
                                 onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, startDate: e.target.value } : s))}
-                                className="w-full rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
+                                className="w-full rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-[var(--wl-text-primary)] focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
                             </div>
                             <div>
-                              <label className="text-[10px] text-white/30 mb-1 block">Límite</label>
+                              <label className="text-[10px] text-[var(--wl-text-placeholder)] mb-1 block">Límite</label>
                               <input type="date" value={sub.dueDate || ''}
                                 onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, dueDate: e.target.value } : s))}
-                                className="w-full rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
+                                className="w-full rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-[var(--wl-text-primary)] focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
                             </div>
                           </div>
                           {/* Asignar a */}
                           {users.length > 0 && (
                             <div>
-                              <label className="text-[10px] text-white/30 mb-1 block">Asignar a</label>
+                              <label className="text-[10px] text-[var(--wl-text-placeholder)] mb-1 block">Asignar a</label>
                               <div className="flex flex-wrap gap-1">
                                 {users.map(u => {
                                   const checked = sub.assignedUserIds.includes(u.id);
@@ -575,7 +575,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                                           ? s.assignedUserIds.filter(id => id !== u.id)
                                           : [...s.assignedUserIds, u.id]
                                       } : s))}
-                                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${checked ? 'bg-brand/25 text-white border border-brand/40' : 'bg-white/[0.04] text-white/50 border border-[var(--wl-border)] hover:text-white'}`}>
+                                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${checked ? 'bg-brand/25 text-white border border-brand/40' : 'bg-[var(--wl-hover)] text-[var(--wl-text-muted)] border border-[var(--wl-border)] hover:text-[var(--wl-text-primary)]'}`}>
                                       <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: u.color || '#7c3aed' }} />
                                       {u.name || u.email}
                                     </button>
@@ -616,7 +616,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                       }
                     }}
                     placeholder="Agregar subtarea..."
-                    className="flex-1 rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all"
+                    className="flex-1 rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] px-3 py-2 text-sm text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all"
                   />
                   <button
                     type="button"
@@ -642,25 +642,25 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               <Label className="text-[var(--wl-text-secondary)] text-sm flex items-center justify-between">
                 <span>Asignar a {assignedUserIds.length > 0 && <span className="text-brand-light text-xs">({assignedUserIds.length})</span>}</span>
                 {assignedUserIds.length > 0 && (
-                  <button type="button" onClick={() => setAssigneeIds([])} className="text-[11px] text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors">Limpiar</button>
+                  <button type="button" onClick={() => setAssigneeIds([])} className="text-[11px] text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors">Limpiar</button>
                 )}
               </Label>
-              <div className="bg-white/[0.04] border border-[var(--wl-border)] rounded-lg p-1 max-h-44 overflow-y-auto">
+              <div className="bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-lg p-1 max-h-44 overflow-y-auto">
                 {users.map((u) => {
                   const checked = assignedUserIds.includes(u.id);
                   return (
                     <button key={u.id} type="button" onClick={() => toggleAssignee(u.id)}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md transition-colors text-left text-sm ${checked ? 'bg-brand/25 text-white' : 'text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white'}`}>
-                      <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${checked ? 'border-brand bg-brand' : 'border-white/20 bg-white/[0.04]'}`}>
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md transition-colors text-left text-sm ${checked ? 'bg-brand/25 text-white' : 'text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]'}`}>
+                      <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${checked ? 'border-brand bg-brand' : 'border-white/20 bg-[var(--wl-hover)]'}`}>
                         {checked && (
-                          <svg viewBox="0 0 12 12" className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+                          <svg viewBox="0 0 12 12" className="w-3 h-3 text-[var(--wl-text-primary)]" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M2 6l3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         )}
                       </span>
                       <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: u.color || '#7c3aed' }} />
                       <span className="truncate flex-1">{u.name || u.email}</span>
-                      <span className="text-[10px] text-white/30">{u.role.toLowerCase()}</span>
+                      <span className="text-[10px] text-[var(--wl-text-placeholder)]">{u.role.toLowerCase()}</span>
                     </button>
                   );
                 })}
@@ -672,11 +672,11 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             <div className="space-y-2">
               <Label className="text-[var(--wl-text-secondary)] text-sm">Cuenta de cliente</Label>
               <Select value={clientId || 'none'} onValueChange={(v) => setClientId(v === 'none' ? '' : v)}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue placeholder="Sin cuenta asignada" /></SelectTrigger>
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] w-full"><SelectValue placeholder="Sin cuenta asignada" /></SelectTrigger>
                 <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)] max-h-48">
-                  <SelectItem value="none" className="text-white/50 focus:text-white focus:bg-white/[0.06]">Sin cuenta asignada</SelectItem>
+                  <SelectItem value="none" className="text-[var(--wl-text-muted)] focus:text-[var(--wl-text-primary)] focus:bg-[var(--wl-hover)]">Sin cuenta asignada</SelectItem>
                   {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">
+                    <SelectItem key={c.id} value={c.id} className="text-[var(--wl-text-secondary)] focus:text-[var(--wl-text-primary)] focus:bg-[var(--wl-hover)]">
                       {c.name}{c.company ? ` - ${c.company}` : ''}
                     </SelectItem>
                   ))}
@@ -690,19 +690,19 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             {refFiles.length > 0 && (
               <div className="space-y-1 mb-2">
                 {refFiles.map((f, i) => (
-                  <div key={i} className="flex items-center justify-between bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-3 py-2">
+                  <div key={i} className="flex items-center justify-between bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-md px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
                       {f.fileType.startsWith('image') ? <ImageIcon className="w-3.5 h-3.5 text-violet-400 shrink-0" /> : <FileText className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
                       <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:underline truncate">{f.name}</a>
                     </div>
-                    <button type="button" onClick={() => setRefFiles(refFiles.filter((_,j)=>j!==i))} className="text-white/30 hover:text-red-400 ml-2 text-xs">x</button>
+                    <button type="button" onClick={() => setRefFiles(refFiles.filter((_,j)=>j!==i))} className="text-[var(--wl-text-placeholder)] hover:text-red-400 ml-2 text-xs">x</button>
                   </div>
                 ))}
               </div>
             )}
-            <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md bg-white/[0.04] border border-dashed border-white/[0.12] hover:border-violet-500/40 hover:bg-[var(--wl-hover)] transition-colors">
-              {uploadingRef ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white/50" /> : <Paperclip className="w-3.5 h-3.5 text-white/50" />}
-              <span className="text-sm text-white/50">{uploadingRef ? 'Subiendo...' : 'Subir archivo de referencia'}</span>
+            <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md bg-[var(--wl-hover)] border border-dashed border-white/[0.12] hover:border-violet-500/40 hover:bg-[var(--wl-hover)] transition-colors">
+              {uploadingRef ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--wl-text-muted)]" /> : <Paperclip className="w-3.5 h-3.5 text-[var(--wl-text-muted)]" />}
+              <span className="text-sm text-[var(--wl-text-muted)]">{uploadingRef ? 'Subiendo...' : 'Subir archivo de referencia'}</span>
               <input type="file" multiple accept="image/*,.pdf,.doc,.docx,.zip,.mp4,.mov,.png,.jpg" className="hidden"
                 disabled={uploadingRef}
                 onChange={async (e) => {
@@ -715,19 +715,19 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             {references.length > 0 && (
               <div className="space-y-1 mb-2">
                 {references.map((r, i) => (
-                  <div key={i} className="flex items-center justify-between bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-3 py-2">
+                  <div key={i} className="flex items-center justify-between bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-md px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-xs text-[var(--wl-text-muted)] uppercase">{r.type}</span>
                       <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:underline truncate">{r.title || r.url}</a>
                     </div>
-                    <button type="button" onClick={() => setReferences(references.filter((_,j)=>j!==i))} className="text-white/30 hover:text-red-400 ml-2 text-xs">x</button>
+                    <button type="button" onClick={() => setReferences(references.filter((_,j)=>j!==i))} className="text-[var(--wl-text-placeholder)] hover:text-red-400 ml-2 text-xs">x</button>
                   </div>
                 ))}
               </div>
             )}
             <div className="flex gap-2">
-              <input value={refTitle} onChange={e=>setRefTitle(e.target.value)} placeholder="Titulo" className="flex-1 bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30" />
-              <select value={refType} onChange={e=>setRefType(e.target.value)} className="bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-2 py-2 text-sm text-white">
+              <input value={refTitle} onChange={e=>setRefTitle(e.target.value)} placeholder="Titulo" className="flex-1 bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-md px-3 py-2 text-sm text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)]" />
+              <select value={refType} onChange={e=>setRefType(e.target.value)} className="bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-md px-2 py-2 text-sm text-[var(--wl-text-primary)]">
                 <option value="generic">Link</option>
                 <option value="drive">Drive</option>
                 <option value="figma">Figma</option>
@@ -737,8 +737,8 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               </select>
             </div>
             <div className="flex gap-2">
-              <input value={refUrl} onChange={e=>setRefUrl(e.target.value)} placeholder="URL" className="flex-1 bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30" />
-              <button type="button" onClick={()=>{ if(!refUrl.trim()) return; setReferences([...references,{title:refTitle.trim()||refUrl.trim(),url:refUrl.trim(),type:refType}]); setRefTitle(''); setRefUrl(''); setRefType('generic'); }} className="px-3 py-2 bg-white/[0.08] hover:bg-white/[0.12] text-white text-sm rounded-md">+ Agregar</button>
+              <input value={refUrl} onChange={e=>setRefUrl(e.target.value)} placeholder="URL" className="flex-1 bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-md px-3 py-2 text-sm text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)]" />
+              <button type="button" onClick={()=>{ if(!refUrl.trim()) return; setReferences([...references,{title:refTitle.trim()||refUrl.trim(),url:refUrl.trim(),type:refType}]); setRefTitle(''); setRefUrl(''); setRefType('generic'); }} className="px-3 py-2 bg-[var(--wl-border)] hover:bg-white/[0.12] text-[var(--wl-text-primary)] text-sm rounded-md">+ Agregar</button>
             </div>
           </div>}
 

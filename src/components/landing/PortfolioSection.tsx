@@ -64,7 +64,7 @@ export default function PortfolioSection({ items }: PortfolioSectionProps) {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <ImageOff className="h-10 w-10 text-white/10" />
+                      <ImageOff className="h-10 w-10 text-[var(--wl-text-primary)]/10" />
                     </div>
                   )}
                 </div>

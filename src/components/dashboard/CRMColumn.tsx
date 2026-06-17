@@ -37,8 +37,8 @@ export default function CRMColumn({
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <span className={`w-2.5 h-2.5 rounded-full ${stage.color}`} />
-            <h3 className="text-sm font-semibold text-white/90">{stage.label}</h3>
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white/[0.06] text-[10px] font-medium text-white/50">
+            <h3 className="text-sm font-semibold text-[var(--wl-text-primary)]">{stage.label}</h3>
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--wl-hover)] text-[10px] font-medium text-[var(--wl-text-muted)]">
               {contacts.length}
             </span>
           </div>
@@ -46,13 +46,13 @@ export default function CRMColumn({
             variant="ghost"
             size="icon"
             onClick={onAddClick}
-            className="h-7 w-7 text-white/30 hover:text-white hover:bg-[var(--wl-hover)]"
+            className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
           >
             <Plus className="w-4 h-4" />
           </Button>
         </div>
         {totalValue > 0 && (
-          <p className="text-[11px] text-white/30 pl-[18px]">
+          <p className="text-[11px] text-[var(--wl-text-placeholder)] pl-[18px]">
             Total: {formatCurrency(totalValue)}
           </p>
         )}
@@ -62,8 +62,8 @@ export default function CRMColumn({
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-2.5 max-h-[calc(100vh-220px)]">
         {contacts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 px-4 text-center border border-dashed border-[var(--wl-border)] rounded-xl">
-            <Inbox className="w-8 h-8 text-white/10 mb-2" />
-            <p className="text-xs text-white/25">
+            <Inbox className="w-8 h-8 text-[var(--wl-text-placeholder)] mb-2" />
+            <p className="text-xs text-[var(--wl-text-placeholder)]">
               No hay contactos en esta etapa
             </p>
           </div>

@@ -67,8 +67,8 @@ function ResetPasswordForm() {
     return (
       <div className="text-center py-4">
         <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-white mb-2">Contraseña actualizada</h2>
-        <p className="text-sm text-white/50 mb-6">
+        <h2 className="text-xl font-bold text-[var(--wl-text-primary)] mb-2">Contraseña actualizada</h2>
+        <p className="text-sm text-[var(--wl-text-muted)] mb-6">
           Tu contraseña ha sido restablecida. Redirigiendo al inicio de sesión…
         </p>
         <Link href="/login" className="text-brand-light hover:text-brand text-sm font-medium transition-colors">
@@ -82,8 +82,8 @@ function ResetPasswordForm() {
     return (
       <div className="text-center py-4">
         <XCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-white mb-2">Enlace inválido</h2>
-        <p className="text-sm text-white/50 mb-6">
+        <h2 className="text-xl font-bold text-[var(--wl-text-primary)] mb-2">Enlace inválido</h2>
+        <p className="text-sm text-[var(--wl-text-muted)] mb-6">
           Este enlace no es válido o ha expirado.
         </p>
         <Link href="/forgot-password" className="text-brand-light hover:text-brand text-sm font-medium transition-colors">
@@ -95,7 +95,7 @@ function ResetPasswordForm() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-white mb-1">Nueva contraseña</h1>
+      <h1 className="text-2xl font-bold text-[var(--wl-text-primary)] mb-1">Nueva contraseña</h1>
       <p className="text-sm text-[var(--wl-text-muted)] mb-6">
         Elige una contraseña segura para tu cuenta.
       </p>
@@ -117,7 +117,7 @@ function ResetPasswordForm() {
             Nueva contraseña
           </Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--wl-text-placeholder)]" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -127,12 +127,12 @@ function ResetPasswordForm() {
               required
               disabled={loading}
               autoComplete="new-password"
-              className="pl-10 pr-10 bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
+              className="pl-10 pr-10 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:border-brand focus:ring-brand/20"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -144,7 +144,7 @@ function ResetPasswordForm() {
             Confirmar contraseña
           </Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--wl-text-placeholder)]" />
             <Input
               id="confirm"
               type={showPassword ? 'text' : 'password'}
@@ -154,7 +154,7 @@ function ResetPasswordForm() {
               required
               disabled={loading}
               autoComplete="new-password"
-              className="pl-10 bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
+              className="pl-10 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:border-brand focus:ring-brand/20"
             />
           </div>
         </div>

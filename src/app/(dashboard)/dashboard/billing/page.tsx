@@ -272,7 +272,7 @@ export default function BillingPage() {
             style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)', border: '1px solid #86EFAC' }}>
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]" style={{ background: '#16A34A' }}>
-                <Check className="w-5 h-5 text-white" strokeWidth={2.5} />
+                <Check className="w-5 h-5 text-[var(--wl-text-primary)]" strokeWidth={2.5} />
               </div>
               <div>
                 <p className="text-[15px] font-semibold text-[#14532D]">
@@ -293,7 +293,7 @@ export default function BillingPage() {
             style={{ background: 'linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 100%)', border: '1px solid #DDD6FE' }}>
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]" style={{ background: '#7C3AED' }}>
-                <Shield className="w-5 h-5 text-white" strokeWidth={1.75} />
+                <Shield className="w-5 h-5 text-[var(--wl-text-primary)]" strokeWidth={1.75} />
               </div>
               <div>
                 <p className="text-[15px] font-semibold text-[#4C1D95]">
@@ -384,7 +384,7 @@ export default function BillingPage() {
                         </div>
                         {isSelected && (
                           <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full" style={{ background: '#7C3AED' }}>
-                            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                            <Check className="w-3.5 h-3.5 text-[var(--wl-text-primary)]" strokeWidth={3} />
                           </div>
                         )}
                       </div>
@@ -546,7 +546,7 @@ export default function BillingPage() {
             <div className="rounded-[24px] p-6" style={{ background: 'linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)', border: '1px solid #DDD6FE' }}>
               <div className="flex items-start gap-4">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]" style={{ background: '#7C3AED' }}>
-                  <Star className="w-5 h-5 text-white" strokeWidth={1.75} />
+                  <Star className="w-5 h-5 text-[var(--wl-text-primary)]" strokeWidth={1.75} />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-[15px] font-semibold text-[#4C1D95] mb-1">Founding Lifetime</h3>
@@ -583,7 +583,7 @@ export default function BillingPage() {
               {/* Plan seleccionado */}
               <div className="rounded-[16px] p-4 mb-4 flex items-start gap-3" style={{ background: '#F5F3FF', border: '1px solid #DDD6FE' }}>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]" style={{ background: '#7C3AED' }}>
-                  <Zap className="w-5 h-5 text-white" strokeWidth={1.75} />
+                  <Zap className="w-5 h-5 text-[var(--wl-text-primary)]" strokeWidth={1.75} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
@@ -641,7 +641,7 @@ export default function BillingPage() {
               <button
                 onClick={handleContinue}
                 disabled={saving}
-                className="w-full flex items-center justify-center gap-2 rounded-[14px] py-3.5 text-[14px] font-bold text-white transition-all disabled:opacity-60"
+                className="w-full flex items-center justify-center gap-2 rounded-[14px] py-3.5 text-[14px] font-bold text-[var(--wl-text-primary)] transition-all disabled:opacity-60"
                 style={{ background: '#7C3AED', boxShadow: '0 8px 24px rgba(124,58,237,0.25)' }}>
                 {saving ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <>Continuar al pago <ArrowRight className="w-4 h-4" /></>}
               </button>

@@ -20,7 +20,7 @@ export function Composer({ placeholder, compact }: { placeholder: string; compac
             <button
               key={i}
               aria-label={t.label}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/65 transition-colors hover:bg-[var(--wl-hover)] hover:text-white/90"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--wl-text-primary)]/65 transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]/90"
             >
               <t.icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </button>
@@ -28,7 +28,7 @@ export function Composer({ placeholder, compact }: { placeholder: string; compac
           <input
             type="text"
             placeholder={placeholder}
-            className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-white/90 placeholder:text-[var(--wl-text-muted)] focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent px-2 text-[13.5px] text-[var(--wl-text-primary)]/90 placeholder:text-[var(--wl-text-muted)] focus:outline-none"
           />
           {!compact && (
             <>
@@ -40,7 +40,7 @@ export function Composer({ placeholder, compact }: { placeholder: string; compac
               </button>
               <button
                 aria-label="Nota de voz"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-white/65 transition-colors hover:bg-[var(--wl-hover)] hover:text-white/90"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--wl-text-primary)]/65 transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]/90"
               >
                 <Mic className="h-[18px] w-[18px]" strokeWidth={1.75} />
               </button>
@@ -49,7 +49,7 @@ export function Composer({ placeholder, compact }: { placeholder: string; compac
           <button
             aria-label="Enviar"
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white transition-all hover:bg-[#7c4ddb] hover:shadow-[0_0_16px_-2px_rgba(139,92,246,0.7)]',
+              'flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-[var(--wl-text-primary)] transition-all hover:bg-[#7c4ddb] hover:shadow-[0_0_16px_-2px_rgba(139,92,246,0.7)]',
             )}
           >
             <SendHorizontal className="h-[18px] w-[18px]" strokeWidth={1.75} />

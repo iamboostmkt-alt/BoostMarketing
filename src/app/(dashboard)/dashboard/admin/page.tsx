@@ -224,9 +224,9 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-md">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
+          <DialogTitle className="flex items-center gap-2 text-[var(--wl-text-primary)]">
             {isEdit ? <Pencil className="h-4 w-4 text-brand-light" /> : <UserPlus className="h-4 w-4 text-brand-light" />}
             {isEdit ? 'Editar Usuario' : 'Crear Usuario'}
           </DialogTitle>
@@ -251,7 +251,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
                       type="button"
                       onClick={() => setImage(null)}
                       className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-colors">
-                      <X className="h-3 w-3 text-white" />
+                      <X className="h-3 w-3 text-[var(--wl-text-primary)]" />
                     </button>
                   )}
                 </div>
@@ -269,11 +269,11 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
                     size="sm"
                     disabled={uploading}
                     onClick={() => fileRef.current?.click()}
-                    className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)] gap-2 text-xs">
+                    className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] gap-2 text-xs">
                     <Upload className="h-3.5 w-3.5" />
                     {uploading ? 'Subiendo…' : image ? 'Cambiar foto' : 'Subir foto'}
                   </Button>
-                  <p className="text-[10px] text-white/25 mt-1">JPG, PNG o WebP · Máx 5 MB</p>
+                  <p className="text-[10px] text-[var(--wl-text-placeholder)] mt-1">JPG, PNG o WebP · Máx 5 MB</p>
                 </div>
               </div>
             </div>
@@ -282,30 +282,30 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
           <div className="space-y-1.5">
             <Label className="text-[var(--wl-text-secondary)] text-xs">Nombre</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre completo"
-              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-[var(--wl-text-secondary)] text-xs">Email *</Label>
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="usuario@email.com" required
-              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand" />
           </div>
           {!isEdit && (
             <div className="space-y-1.5">
               <Label className="text-[var(--wl-text-secondary)] text-xs">Contraseña *</Label>
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mín. 6 caracteres" required minLength={6}
-                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand" />
             </div>
           )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-[var(--wl-text-secondary)] text-xs">Rol</Label>
               <Select value={role} onValueChange={setRole}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm focus:ring-brand">
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm focus:ring-brand">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
                   {ROLES.map((r) => (
-                    <SelectItem key={r} value={r} className="focus:bg-white/[0.06]">{getRoleLabel(r)}</SelectItem>
+                    <SelectItem key={r} value={r} className="focus:bg-[var(--wl-hover)]">{getRoleLabel(r)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -330,15 +330,15 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
             <div className="space-y-1.5">
               <Label className="text-[var(--wl-text-secondary)] text-xs">Rol Personalizado</Label>
               <Select value={customRoleId} onValueChange={setCustomRoleId}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm focus:ring-brand">
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm focus:ring-brand">
                   <SelectValue placeholder="Sin rol personalizado" />
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
-                  <SelectItem value="none" className="focus:bg-white/[0.06]">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+                  <SelectItem value="none" className="focus:bg-[var(--wl-hover)]">
                     Sin rol personalizado
                   </SelectItem>
                   {miniRoles.map((cr) => (
-                    <SelectItem key={cr.id} value={cr.id} className="focus:bg-white/[0.06]">
+                    <SelectItem key={cr.id} value={cr.id} className="focus:bg-[var(--wl-hover)]">
                       <span className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: cr.color }} />
                         {cr.label}
@@ -352,7 +352,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
 
           <div className="flex gap-3 pt-1">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
-              className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]">
+              className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]">
               Cancelar
             </Button>
             <Button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand-dark text-white">
@@ -405,46 +405,46 @@ function AuditLogsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-white/30 uppercase tracking-widest mb-1">Audit Logs</p>
-          <p className="text-sm text-white/50">{total} registros totales</p>
+          <p className="text-xs text-[var(--wl-text-placeholder)] uppercase tracking-widest mb-1">Audit Logs</p>
+          <p className="text-sm text-[var(--wl-text-muted)]">{total} registros totales</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => fetchLogs(page)}
-          className="text-[var(--wl-text-muted)] hover:text-white gap-2">
+          className="text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] gap-2">
           <RefreshCw className="w-3.5 h-3.5" /> Actualizar
         </Button>
       </div>
       <div className="rounded-xl border border-[var(--wl-border)] overflow-hidden">
-        <div className="grid grid-cols-4 px-4 py-2 bg-white/[0.03] border-b border-[var(--wl-border)]">
-          <span className="text-[11px] text-white/30 uppercase tracking-wider">Acción</span>
-          <span className="text-[11px] text-white/30 uppercase tracking-wider">Usuario</span>
-          <span className="text-[11px] text-white/30 uppercase tracking-wider">Entidad</span>
-          <span className="text-[11px] text-white/30 uppercase tracking-wider">Fecha</span>
+        <div className="grid grid-cols-4 px-4 py-2 bg-[var(--wl-hover)] border-b border-[var(--wl-border)]">
+          <span className="text-[11px] text-[var(--wl-text-placeholder)] uppercase tracking-wider">Acción</span>
+          <span className="text-[11px] text-[var(--wl-text-placeholder)] uppercase tracking-wider">Usuario</span>
+          <span className="text-[11px] text-[var(--wl-text-placeholder)] uppercase tracking-wider">Entidad</span>
+          <span className="text-[11px] text-[var(--wl-text-placeholder)] uppercase tracking-wider">Fecha</span>
         </div>
         <ScrollArea className="max-h-[500px]">
           {loading ? (
             <div className="space-y-2 p-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-8 bg-white/[0.04] rounded animate-pulse" />
+                <div key={i} className="h-8 bg-[var(--wl-hover)] rounded animate-pulse" />
               ))}
             </div>
           ) : logs.length === 0 ? (
             <div className="flex items-center justify-center py-12">
-              <p className="text-sm text-white/30">Sin registros aún</p>
+              <p className="text-sm text-[var(--wl-text-placeholder)]">Sin registros aún</p>
             </div>
           ) : (
             <div className="divide-y divide-white/[0.04]">
               {logs.map((log) => (
-                <div key={log.id} className="grid grid-cols-4 px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
+                <div key={log.id} className="grid grid-cols-4 px-4 py-2.5 hover:bg-[var(--wl-hover)] transition-colors">
                   <span className={`text-xs font-mono font-medium ${actionColors[log.action] ?? 'text-[var(--wl-text-secondary)]'}`}>
                     {log.action}
                   </span>
-                  <span className="text-xs text-white/50 truncate">
+                  <span className="text-xs text-[var(--wl-text-muted)] truncate">
                     {log.user?.name ?? log.user?.email ?? 'Sistema'}
                   </span>
                   <span className="text-xs text-[var(--wl-text-muted)] truncate">
-                    {log.entity} · <span className="text-white/25">{log.entityId.slice(0, 8)}...</span>
+                    {log.entity} · <span className="text-[var(--wl-text-placeholder)]">{log.entityId.slice(0, 8)}...</span>
                   </span>
-                  <span className="text-xs text-white/30">
+                  <span className="text-xs text-[var(--wl-text-placeholder)]">
                     {format(new Date(log.createdAt), "dd MMM HH:mm", { locale: es })}
                   </span>
                 </div>
@@ -456,12 +456,12 @@ function AuditLogsTab() {
       {pages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button variant="ghost" size="sm" disabled={page <= 1}
-            onClick={() => fetchLogs(page - 1)} className="text-[var(--wl-text-muted)] hover:text-white">
+            onClick={() => fetchLogs(page - 1)} className="text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)]">
             Anterior
           </Button>
-          <span className="text-xs text-white/30">{page} / {pages}</span>
+          <span className="text-xs text-[var(--wl-text-placeholder)]">{page} / {pages}</span>
           <Button variant="ghost" size="sm" disabled={page >= pages}
-            onClick={() => fetchLogs(page + 1)} className="text-[var(--wl-text-muted)] hover:text-white">
+            onClick={() => fetchLogs(page + 1)} className="text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)]">
             Siguiente
           </Button>
         </div>
@@ -720,10 +720,10 @@ export default function AdminDashboardPage() {
           <Shield className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-[var(--wl-text-primary)]">
             {isAdmin ? 'Panel Administrador' : 'Panel Project Manager'}
           </h1>
-          <p className="text-sm text-white/45">
+          <p className="text-sm text-[var(--wl-text-muted)]">
             Sesión: <span className="text-[var(--wl-text-secondary)] font-medium">{session?.user?.email}</span>
           </p>
         </div>
@@ -737,7 +737,7 @@ export default function AdminDashboardPage() {
               <p className="text-xs text-[var(--wl-text-muted)] mb-1">
                 {userListView === 'prospects' ? 'Prospectos (videollamada)' : 'Total usuarios'}
               </p>
-              <p className="text-2xl font-bold text-white">{loadingUsers ? '—' : users.length}</p>
+              <p className="text-2xl font-bold text-[var(--wl-text-primary)]">{loadingUsers ? '—' : users.length}</p>
             </div>
             <div className="glass-card rounded-xl p-4">
               <p className="text-xs text-[var(--wl-text-muted)] mb-1">Citas pendientes</p>
@@ -747,7 +747,7 @@ export default function AdminDashboardPage() {
         )}
         <div className="glass-card rounded-xl p-4">
           <p className="text-xs text-[var(--wl-text-muted)] mb-1">Tareas</p>
-          <p className="text-2xl font-bold text-white">{loadingTasks ? '—' : tasks.length}</p>
+          <p className="text-2xl font-bold text-[var(--wl-text-primary)]">{loadingTasks ? '—' : tasks.length}</p>
         </div>
         <div className="glass-card rounded-xl p-4">
           <p className="text-xs text-[var(--wl-text-muted)] mb-1">Abiertas</p>
@@ -757,13 +757,13 @@ export default function AdminDashboardPage() {
 
       {/* Tabs */}
       <Tabs defaultValue={isAdmin ? 'users' : 'tasks'}>
-        <TabsList className="bg-white/[0.04] border border-[var(--wl-border)] flex-wrap h-auto gap-1 p-1">
+        <TabsList className="bg-[var(--wl-hover)] border border-[var(--wl-border)] flex-wrap h-auto gap-1 p-1">
           {isAdmin && (
             <>
-              <TabsTrigger value="users" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+              <TabsTrigger value="users" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-2">
                 <Users className="h-4 w-4" />Usuarios
               </TabsTrigger>
-              <TabsTrigger value="appointments" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+              <TabsTrigger value="appointments" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-2">
                 <Calendar className="h-4 w-4" />Citas
                 {pendingAppts > 0 && (
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black">
@@ -773,10 +773,10 @@ export default function AdminDashboardPage() {
               </TabsTrigger>
             </>
           )}
-              <TabsTrigger value="meetings" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+              <TabsTrigger value="meetings" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-2">
                 <Calendar className="h-4 w-4" />Reuniones
               </TabsTrigger>
-          <TabsTrigger value="tasks" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+          <TabsTrigger value="tasks" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-2">
             <CheckSquare className="h-4 w-4" />Tareas
             {openTasks > 0 && (
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand/80 text-[10px] font-bold text-white">
@@ -786,14 +786,14 @@ export default function AdminDashboardPage() {
           </TabsTrigger>
           {isAdmin && (
             <>
-              <TabsTrigger value="roles" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+              <TabsTrigger value="roles" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-2">
                 <Tags className="h-4 w-4" />Roles
               </TabsTrigger>
-              <TabsTrigger value="logs" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+              <TabsTrigger value="logs" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-2">
                 <Shield className="w-4 h-4" /> Audit Logs
               </TabsTrigger>
               {isCmsEnabled && (
-                <TabsTrigger value="cms" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+                <TabsTrigger value="cms" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-2">
                   <LayoutTemplate className="h-4 w-4" />Contenido
                 </TabsTrigger>
               )}
@@ -807,16 +807,16 @@ export default function AdminDashboardPage() {
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
               <div className="flex gap-2 flex-1">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--wl-text-placeholder)]" />
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Buscar por nombre o email…"
-                    className="pl-9 bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25"
+                    className="pl-9 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)]"
                   />
                 </div>
                 <Button variant="outline" size="icon" onClick={() => void fetchUsers(search, userListView)}
-                  className="border-[var(--wl-border)] text-white/50 hover:text-white hover:bg-[var(--wl-hover)] shrink-0">
+                  className="border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] shrink-0">
                   <RefreshCw className="h-4 w-4" />
                 </Button>
                 <Button onClick={() => { setEditingUser(null); setUserDialog(true); }}
@@ -826,13 +826,13 @@ export default function AdminDashboardPage() {
                 </Button>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-white/35 hidden sm:inline">Vista</span>
-                <div className="flex rounded-lg border border-[var(--wl-border)] p-0.5 bg-white/[0.02]">
+                <span className="text-xs text-[var(--wl-text-muted)] hidden sm:inline">Vista</span>
+                <div className="flex rounded-lg border border-[var(--wl-border)] p-0.5 bg-[var(--wl-hover)]">
                   <button
                     type="button"
                     onClick={() => setUserListView('all')}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      userListView === 'all' ? 'bg-brand text-white' : 'text-white/50 hover:text-[var(--wl-text-secondary)]'
+                      userListView === 'all' ? 'bg-brand text-white' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'
                     }`}
                   >
                     Todos
@@ -841,7 +841,7 @@ export default function AdminDashboardPage() {
                     type="button"
                     onClick={() => setUserListView('prospects')}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      userListView === 'prospects' ? 'bg-amber-600 text-white' : 'text-white/50 hover:text-[var(--wl-text-secondary)]'
+                      userListView === 'prospects' ? 'bg-amber-600 text-[var(--wl-text-primary)]' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'
                     }`}
                   >
                     Prospectos
@@ -873,7 +873,7 @@ export default function AdminDashboardPage() {
                 <div className="flex flex-wrap gap-2">
                   {activeRoleFilter && (
                     <button onClick={() => setActiveRoleFilter(null)}
-                      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-xs text-white/50 hover:text-[var(--wl-text-secondary)]">
+                      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[var(--wl-hover)] px-2.5 py-0.5 text-xs text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]">
                       ✕ Quitar filtro
                     </button>
                   )}
@@ -913,13 +913,13 @@ export default function AdminDashboardPage() {
                       : users.length === 0
                       ? (
                           <tr>
-                            <td colSpan={5} className="px-4 py-12 text-center text-sm text-white/30">
+                            <td colSpan={5} className="px-4 py-12 text-center text-sm text-[var(--wl-text-placeholder)]">
                               No se encontraron usuarios
                             </td>
                           </tr>
                         )
                       : users.filter(u => activeRoleFilter ? u.role === activeRoleFilter : true).map((user) => (
-                          <tr key={user.id} className={`hover:bg-white/[0.02] transition-colors ${!user.active ? 'opacity-50' : ''}`}>
+                          <tr key={user.id} className={`hover:bg-[var(--wl-hover)] transition-colors ${!user.active ? 'opacity-50' : ''}`}>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-3">
                                 <div className="relative shrink-0">
@@ -935,7 +935,7 @@ export default function AdminDashboardPage() {
                                   )}
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="font-medium text-white truncate">{user.name || '—'}</p>
+                                  <p className="font-medium text-[var(--wl-text-primary)] truncate">{user.name || '—'}</p>
                                   <p className="text-xs text-[var(--wl-text-muted)] truncate">{user.email}</p>
                                 </div>
                               </div>
@@ -964,13 +964,13 @@ export default function AdminDashboardPage() {
                                 <span
                                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
                                     lifecycleBadgeMap[user.lifecycleStatus]?.className
-                                    ?? 'bg-white/[0.06] text-white/50 border border-[var(--wl-border)]'
+                                    ?? 'bg-[var(--wl-hover)] text-[var(--wl-text-muted)] border border-[var(--wl-border)]'
                                   }`}
                                 >
                                   {lifecycleBadgeMap[user.lifecycleStatus]?.label ?? user.lifecycleStatus}
                                 </span>
                               ) : (
-                                <span className="text-xs text-white/25">—</span>
+                                <span className="text-xs text-[var(--wl-text-placeholder)]">—</span>
                               )}
                             </td>
                             <td className="px-4 py-3 hidden md:table-cell">
@@ -991,7 +991,7 @@ export default function AdminDashboardPage() {
                                   </Button>
                                 )}
                                 <Button variant="ghost" size="icon"
-                                  className="h-7 w-7 text-white/30 hover:text-white hover:bg-[var(--wl-hover)]"
+                                  className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
                                   title={user.active ? 'Desactivar' : 'Activar'}
                                   disabled={togglingUser === user.id}
                                   onClick={() => handleToggleActive(user)}>
@@ -1000,12 +1000,12 @@ export default function AdminDashboardPage() {
                                     : <ToggleLeft  className="h-4 w-4 text-red-400" />}
                                 </Button>
                                 <Button variant="ghost" size="icon"
-                                  className="h-7 w-7 text-white/30 hover:text-white hover:bg-[var(--wl-hover)]"
+                                  className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
                                   onClick={() => { setEditingUser(user); setUserDialog(true); }}>
                                   <Pencil className="h-3.5 w-3.5" />
                                 </Button>
                                 <Button variant="ghost" size="icon"
-                                  className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10"
+                                  className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-400/10"
                                   onClick={() => setDeleteUser(user)}>
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
@@ -1028,13 +1028,13 @@ export default function AdminDashboardPage() {
                 <button key={f}
                   onClick={() => { setApptFilter(f); fetchAppointments(f); }}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    apptFilter === f ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]'
+                    apptFilter === f ? 'bg-brand text-white' : 'bg-[var(--wl-hover)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-border)]'
                   }`}>
                   {f === 'all' ? 'Todas' : apptStatusMap[f]?.label ?? f}
                 </button>
               ))}
               <Button variant="outline" size="icon" onClick={() => fetchAppointments(apptFilter)}
-                className="ml-auto border-[var(--wl-border)] text-white/50 hover:text-white hover:bg-[var(--wl-hover)] h-7 w-7">
+                className="ml-auto border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] h-7 w-7">
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
             </div>
@@ -1064,7 +1064,7 @@ export default function AdminDashboardPage() {
                       : appointments.length === 0
                       ? (
                           <tr>
-                            <td colSpan={4} className="px-4 py-12 text-center text-sm text-white/30">
+                            <td colSpan={4} className="px-4 py-12 text-center text-sm text-[var(--wl-text-placeholder)]">
                               No hay citas {apptFilter !== 'all' ? `con estado "${apptStatusMap[apptFilter]?.label}"` : ''}
                             </td>
                           </tr>
@@ -1072,11 +1072,11 @@ export default function AdminDashboardPage() {
                       : appointments.map((appt) => {
                           const st = apptStatusMap[appt.status] ?? apptStatusMap.pending;
                           return (
-                            <tr key={appt.id} className="hover:bg-white/[0.02] transition-colors">
+                            <tr key={appt.id} className="hover:bg-[var(--wl-hover)] transition-colors">
                               <td className="px-4 py-3">
-                                <p className="font-medium text-white">{appt.name}</p>
+                                <p className="font-medium text-[var(--wl-text-primary)]">{appt.name}</p>
                                 <p className="text-xs text-[var(--wl-text-muted)]">{appt.email}</p>
-                                {appt.phone && <p className="text-xs text-white/30">{appt.phone}</p>}
+                                {appt.phone && <p className="text-xs text-[var(--wl-text-placeholder)]">{appt.phone}</p>}
                               </td>
                               <td className="px-4 py-3 hidden sm:table-cell">
                                 <span className="text-xs text-[var(--wl-text-secondary)]">
@@ -1088,16 +1088,16 @@ export default function AdminDashboardPage() {
                               </td>
                               <td className="px-4 py-3">
                                 <Select value={appt.status} onValueChange={(val) => handleApptStatus(appt.id, val)} disabled={updatingAppt === appt.id}>
-                                  <SelectTrigger className="w-36 h-8 bg-white/[0.04] border-[var(--wl-border)] text-white text-xs focus:ring-brand">
+                                  <SelectTrigger className="w-36 h-8 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-xs focus:ring-brand">
                                     <div className="flex items-center gap-1.5">
                                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${st.color}`}>
                                         {st.icon}{st.label}
                                       </span>
                                     </div>
                                   </SelectTrigger>
-                                  <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+                                  <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
                                     {Object.entries(apptStatusMap).map(([key, val]) => (
-                                      <SelectItem key={key} value={key} className="text-sm focus:bg-white/[0.06]">
+                                      <SelectItem key={key} value={key} className="text-sm focus:bg-[var(--wl-hover)]">
                                         <div className="flex items-center gap-1.5">{val.icon}{val.label}</div>
                                       </SelectItem>
                                     ))}
@@ -1106,7 +1106,7 @@ export default function AdminDashboardPage() {
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex items-center justify-end gap-1">
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10"
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-400/10"
                                     disabled={deletingAppt === appt.id}
                                     onClick={() => handleApptDelete(appt.id)}>
                                     <Trash2 className="h-3.5 w-3.5" />
@@ -1138,17 +1138,17 @@ export default function AdminDashboardPage() {
                 type="button"
                 onClick={() => { setTaskFilter(f); fetchTasks(f); }}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  taskFilter === f ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]'
+                  taskFilter === f ? 'bg-brand text-white' : 'bg-[var(--wl-hover)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-border)]'
                 }`}>
                 {f === 'all' ? 'Todas' : (statusLabels[f] ?? f)}
               </button>
             ))}
             <div className="ml-auto flex items-center gap-2">
               <Button variant="outline" size="icon" onClick={() => fetchTasks(taskFilter)}
-                className="border-[var(--wl-border)] text-white/50 hover:text-white hover:bg-[var(--wl-hover)] h-7 w-7">
+                className="border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] h-7 w-7">
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setTemplateModalOpen(true)} className="border-[var(--wl-border)] text-white/50 hover:text-white hover:bg-[var(--wl-hover)] h-7 text-xs px-3 gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => setTemplateModalOpen(true)} className="border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] h-7 text-xs px-3 gap-1.5">
                   <Plus className="h-3.5 w-3.5" />Templates
                 </Button>
               <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white gap-1.5 h-7 text-xs px-3">
@@ -1183,24 +1183,24 @@ export default function AdminDashboardPage() {
                     : tasks.length === 0
                     ? (
                         <tr>
-                          <td colSpan={4} className="px-4 py-12 text-center text-sm text-white/30">
+                          <td colSpan={4} className="px-4 py-12 text-center text-sm text-[var(--wl-text-placeholder)]">
                             No hay tareas {taskFilter !== 'all' ? `con estado "${statusLabels[taskFilter] ?? taskFilter}"` : ''}
                           </td>
                         </tr>
                       )
                     : tasks.map((tk) => (
-                        <tr key={tk.id} className="hover:bg-white/[0.02] transition-colors">
+                        <tr key={tk.id} className="hover:bg-[var(--wl-hover)] transition-colors">
                           <td className="px-4 py-3">
-                            <p className="font-medium text-white truncate max-w-[200px]">{tk.title}</p>
+                            <p className="font-medium text-[var(--wl-text-primary)] truncate max-w-[200px]">{tk.title}</p>
                             {tk.description && (
-                              <p className="text-xs text-white/35 truncate max-w-[200px]">{tk.description}</p>
+                              <p className="text-xs text-[var(--wl-text-muted)] truncate max-w-[200px]">{tk.description}</p>
                             )}
                             <span className={`mt-1 inline-flex text-[10px] font-medium ${priorityColors[tk.priority] || 'text-[var(--wl-text-muted)]'}`}>
                               {priorityLabels[tk.priority] || tk.priority}
                             </span>
                           </td>
                           <td className="px-4 py-3 hidden sm:table-cell">
-                            <span className="text-xs text-white/50">
+                            <span className="text-xs text-[var(--wl-text-muted)]">
                               {tk.dueDate ? fmtDate(tk.dueDate) : '—'}
                             </span>
                           </td>
@@ -1219,7 +1219,7 @@ export default function AdminDashboardPage() {
                                 </p>
                               </div>
                             ) : (
-                              <span className="text-xs text-white/25">Sin asignar</span>
+                              <span className="text-xs text-[var(--wl-text-placeholder)]">Sin asignar</span>
                             )}
                           </td>
                           <td className="px-4 py-3">
@@ -1228,14 +1228,14 @@ export default function AdminDashboardPage() {
                               onValueChange={(val) => handleTaskStatusChange(tk.id, val)}
                               disabled={updatingTask === tk.id}
                             >
-                              <SelectTrigger className="w-40 h-8 bg-white/[0.04] border-[var(--wl-border)] text-white text-xs focus:ring-brand">
+                              <SelectTrigger className="w-40 h-8 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-xs focus:ring-brand">
                                 <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[tk.status] ?? { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}>
                                   {statusLabels[tk.status] || tk.status}
                                 </span>
                               </SelectTrigger>
-                              <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+                              <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
                                 {(['pending', 'in_progress', 'completed'] as const).map((s) => (
-                                  <SelectItem key={s} value={s} className="text-sm focus:bg-white/[0.06]">
+                                  <SelectItem key={s} value={s} className="text-sm focus:bg-[var(--wl-hover)]">
                                     {statusLabels[s]}
                                   </SelectItem>
                                 ))}
@@ -1248,7 +1248,7 @@ export default function AdminDashboardPage() {
               </table>
             </div>
           </div>
-          <p className="text-xs text-white/35">
+          <p className="text-xs text-[var(--wl-text-muted)]">
             Gestión detallada (multi-asignación, cliente, eliminar): ir a{' '}
             <Link href="/dashboard/tasks" className="text-brand-light hover:underline">Tareas</Link>.
           </p>
@@ -1258,7 +1258,7 @@ export default function AdminDashboardPage() {
         {isAdmin && (
           <TabsContent value="roles" className="mt-4 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <p className="text-sm text-white/50">
+              <p className="text-sm text-[var(--wl-text-muted)]">
                 Crea roles personalizados para tu equipo con permisos específicos por módulo.
               </p>
               <Button
@@ -1275,10 +1275,10 @@ export default function AdminDashboardPage() {
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="glass-card rounded-xl p-4 space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-white/[0.06] animate-pulse" />
+                      <div className="h-8 w-8 rounded-lg bg-[var(--wl-hover)] animate-pulse" />
                       <div className="space-y-1.5 flex-1">
-                        <div className="h-4 w-24 rounded bg-white/[0.06] animate-pulse" />
-                        <div className="h-3 w-16 rounded bg-white/[0.06] animate-pulse" />
+                        <div className="h-4 w-24 rounded bg-[var(--wl-hover)] animate-pulse" />
+                        <div className="h-3 w-16 rounded bg-[var(--wl-hover)] animate-pulse" />
                       </div>
                     </div>
                   </div>
@@ -1291,7 +1291,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <div>
                   <p className="text-[var(--wl-text-secondary)] font-medium">Sin roles personalizados</p>
-                  <p className="text-white/30 text-sm mt-1">Crea roles como Fotógrafo, Editor Video, Community Manager…</p>
+                  <p className="text-[var(--wl-text-placeholder)] text-sm mt-1">Crea roles como Fotógrafo, Editor Video, Community Manager…</p>
                 </div>
                 <Button
                   onClick={() => { setEditingRole(null); setRoleDialog(true); }}
@@ -1319,9 +1319,9 @@ export default function AdminDashboardPage() {
                               className="inline-block w-2 h-2 rounded-full shrink-0"
                               style={{ backgroundColor: cr.color }}
                             />
-                            <p className="font-semibold text-white text-sm truncate">{cr.label}</p>
+                            <p className="font-semibold text-[var(--wl-text-primary)] text-sm truncate">{cr.label}</p>
                           </div>
-                          <p className="text-xs text-white/35 font-mono mt-0.5">{cr.name}</p>
+                          <p className="text-xs text-[var(--wl-text-muted)] font-mono mt-0.5">{cr.name}</p>
                         </div>
                       </div>
 
@@ -1332,7 +1332,7 @@ export default function AdminDashboardPage() {
                       {/* Permission chips */}
                       <div className="flex flex-wrap gap-1 mb-4">
                         {activePerms.length === 0 ? (
-                          <span className="text-[10px] text-white/25 flex items-center gap-1">
+                          <span className="text-[10px] text-[var(--wl-text-placeholder)] flex items-center gap-1">
                             <Lock className="h-3 w-3" />Sin permisos asignados
                           </span>
                         ) : (
@@ -1347,21 +1347,21 @@ export default function AdminDashboardPage() {
                           ))
                         )}
                         {activePerms.length > 4 && (
-                          <span className="text-[10px] text-white/30">+{activePerms.length - 4} más</span>
+                          <span className="text-[10px] text-[var(--wl-text-placeholder)]">+{activePerms.length - 4} más</span>
                         )}
                       </div>
 
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                           variant="ghost" size="icon"
-                          className="h-7 w-7 text-white/30 hover:text-white hover:bg-[var(--wl-hover)]"
+                          className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
                           onClick={() => { setEditingRole(cr); setRoleDialog(true); }}
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
                         <Button
                           variant="ghost" size="icon"
-                          className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10"
+                          className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-400/10"
                           onClick={() => setDeleteRole(cr)}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -1400,21 +1400,21 @@ export default function AdminDashboardPage() {
 
       {/* Delete user confirm */}
       <AlertDialog open={!!deleteUser} onOpenChange={(o) => !o && setDeleteUser(null)}>
-        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-red-400" />
               </div>
-              <AlertDialogTitle className="text-white">Eliminar Usuario</AlertDialogTitle>
+              <AlertDialogTitle className="text-[var(--wl-text-primary)]">Eliminar Usuario</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-white/50">
+            <AlertDialogDescription className="text-[var(--wl-text-muted)]">
               ¿Eliminar a <strong className="text-[var(--wl-text-secondary)]">{deleteUser?.name || deleteUser?.email}</strong>?
               Todos sus datos serán eliminados. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]">
+            <AlertDialogCancel className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} disabled={deletingUser}
@@ -1435,20 +1435,20 @@ export default function AdminDashboardPage() {
 
       {/* Delete custom role confirm */}
       <AlertDialog open={!!deleteRole} onOpenChange={(o) => !o && setDeleteRole(null)}>
-        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-red-400" />
               </div>
-              <AlertDialogTitle className="text-white">Eliminar Rol</AlertDialogTitle>
+              <AlertDialogTitle className="text-[var(--wl-text-primary)]">Eliminar Rol</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-white/50">
+            <AlertDialogDescription className="text-[var(--wl-text-muted)]">
               ¿Eliminar el rol &ldquo;{deleteRole?.label}&rdquo;? Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]">
+            <AlertDialogCancel className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteRole} disabled={deletingRole}

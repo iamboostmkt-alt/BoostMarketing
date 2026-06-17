@@ -99,7 +99,7 @@ function ReactionBar({
             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition-colors
               ${iMine
                 ? 'bg-brand/30 border border-brand/50 text-white'
-                : 'bg-white/[0.05] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:bg-white/[0.08]'
+                : 'bg-[var(--wl-hover)] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:bg-[var(--wl-border)]'
               }`}
           >
             {emoji}
@@ -133,7 +133,7 @@ function MentionDropdown({
   return (
     <div
       ref={listRef}
-      className="absolute bottom-full left-0 right-0 mb-1 bg-[#1c1c26] border border-white/[0.10] rounded-xl shadow-2xl z-50 overflow-hidden max-h-48 overflow-y-auto"
+      className="absolute bottom-full left-0 right-0 mb-1 bg-[#1c1c26] border border-[var(--wl-border)] rounded-xl shadow-2xl z-50 overflow-hidden max-h-48 overflow-y-auto"
     >
       {items.map((user, i) => {
         const label = user.name || user.email;
@@ -146,7 +146,7 @@ function MentionDropdown({
             className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
               i === selectedIndex
                 ? 'bg-brand/25 text-white'
-                : 'text-[var(--wl-text-secondary)] hover:bg-white/[0.05] hover:text-white'
+                : 'text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]'
             }`}
           >
             {isSpecial ? (
@@ -167,11 +167,11 @@ function MentionDropdown({
             <div className="flex-1 min-w-0">
               <span className="text-sm font-medium block truncate">@{label}</span>
               {!isSpecial && (
-                <span className="text-[10px] text-white/30">{user.role.toLowerCase()}</span>
+                <span className="text-[10px] text-[var(--wl-text-placeholder)]">{user.role.toLowerCase()}</span>
               )}
             </div>
             {isSpecial && (
-              <span className="text-[10px] text-white/30 shrink-0">
+              <span className="text-[10px] text-[var(--wl-text-placeholder)] shrink-0">
                 {user.id === '__all__' ? 'todos' : 'equipo'}
               </span>
             )}
@@ -472,7 +472,7 @@ export default function ChatContent({
           <MessageSquare className="w-5 h-5 text-brand-light" />
         </div>
         <div>
-          <h1 className="text-lg font-semibold text-white">{title}</h1>
+          <h1 className="text-lg font-semibold text-[var(--wl-text-primary)]">{title}</h1>
           <p className="text-xs text-[var(--wl-text-muted)]">{subtitle}</p>
         </div>
       </div>
@@ -481,8 +481,8 @@ export default function ChatContent({
       <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar min-h-0 px-2 py-4" style={{ background: 'var(--wl-bg)' }}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-12">
-            <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center">
-              <MessageSquare className="w-8 h-8 text-white/20" />
+            <div className="w-16 h-16 rounded-2xl bg-[var(--wl-hover)] flex items-center justify-center">
+              <MessageSquare className="w-8 h-8 text-[var(--wl-text-placeholder)]" />
             </div>
             <p className="text-[var(--wl-text-muted)] text-sm">
               No hay mensajes aún.<br />¡Sé el primero en escribir!
@@ -515,15 +515,15 @@ export default function ChatContent({
                 <div className="absolute right-3 -top-3.5 opacity-0 group-hover:opacity-100 transition-all duration-150 z-10 flex items-center gap-0.5 rounded-lg border border-[var(--wl-border)] px-1 py-0.5"
                   style={{ background: 'var(--wl-elevated)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
                   <button type="button" onClick={() => { const el = document.getElementById(`epicker-${msg.id}`); el?.click(); }}
-                    className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)] transition-colors" title="Reaccionar">
+                    className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors" title="Reaccionar">
                     <Smile className="w-3.5 h-3.5" />
                   </button>
                   <button type="button" onClick={() => onOpenThread?.(msg)}
-                    className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)] transition-colors" title="Ver hilo">
+                    className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors" title="Ver hilo">
                     <MessageSquare className="w-3.5 h-3.5" />
                   </button>
                   <button type="button" onClick={() => setTaskMsg(msg.message)}
-                    className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)] transition-colors" title="Crear tarea">
+                    className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors" title="Crear tarea">
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                   {(isMe || isAdmin) && (
@@ -534,7 +534,7 @@ export default function ChatContent({
                   )}
                 </div>
                 {!isSame ? (
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5 overflow-hidden ring-1 ring-white/[0.06]"
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-[var(--wl-text-primary)] shrink-0 mt-0.5 overflow-hidden ring-1 ring-white/[0.06]"
                     style={{ backgroundColor: msg.user.color || '#7c3aed' }}>
                     {msg.user.image
                       ? <img src={msg.user.image} alt="" className="w-full h-full object-cover" />
@@ -542,7 +542,7 @@ export default function ChatContent({
                   </div>
                 ) : (
                   <div className="w-8 shrink-0 flex items-center justify-center">
-                    <span className="text-[10px] text-white/15 opacity-0 group-hover:opacity-100 transition-opacity leading-none">
+                    <span className="text-[10px] text-[var(--wl-text-placeholder)] opacity-0 group-hover:opacity-100 transition-opacity leading-none">
                       {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -550,11 +550,11 @@ export default function ChatContent({
                 <div className="flex-1 min-w-0">
                   {!isSame && (
                     <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-[13px] font-semibold text-white/95 tracking-[-0.01em]">
+                      <span className="text-[13px] font-semibold text-[var(--wl-text-primary)]/95 tracking-[-0.01em]">
                         {msg.user.name || msg.user.email}
                         {isMe && <span className="ml-1.5 text-[10px] font-normal" style={{ color: accentColor }}>tú</span>}
                       </span>
-                      <span className="text-[11px] text-white/25">
+                      <span className="text-[11px] text-[var(--wl-text-placeholder)]">
                         {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -565,7 +565,7 @@ export default function ChatContent({
                 </div>
                 {/* Emoji picker inline */}
                 <div className="relative hidden" id={`epicker-${msg.id}`}>
-                  <button type="button" className="p-1 rounded text-white/20">
+                  <button type="button" className="p-1 rounded text-[var(--wl-text-placeholder)]">
                     <Smile className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -587,7 +587,7 @@ export default function ChatContent({
 
       {/* Indicador está escribiendo */}
       {typingUsers.length > 0 && (
-        <div className="flex items-center gap-2 px-4 py-1 text-[11px] text-white/35 italic shrink-0">
+        <div className="flex items-center gap-2 px-4 py-1 text-[11px] text-[var(--wl-text-muted)] italic shrink-0">
           <div className="flex gap-0.5 items-end">
             {[0,1,2].map(i => (
               <span key={i} className="w-1 h-1 rounded-full bg-white/30 animate-bounce"
@@ -607,9 +607,9 @@ export default function ChatContent({
             <span className="text-xs font-medium text-violet-300 flex items-center gap-1.5">
               <CheckSquare className="w-3.5 h-3.5" />Crear tarea
             </span>
-            <button onClick={() => setTaskMsg(null)} className="text-white/30 hover:text-[var(--wl-text-secondary)] text-xs">✕</button>
+            <button onClick={() => setTaskMsg(null)} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] text-xs">✕</button>
           </div>
-          <p className="text-[11px] text-white/50 mb-2 line-clamp-2">"{taskMsg}"</p>
+          <p className="text-[11px] text-[var(--wl-text-muted)] mb-2 line-clamp-2">"{taskMsg}"</p>
           <div className="flex gap-2">
             <button onClick={async () => {
               try {
@@ -621,10 +621,10 @@ export default function ChatContent({
                 if (res.ok) { toast.success('Tarea creada ✓'); setTaskMsg(null); }
                 else toast.error('Error al crear tarea');
               } catch { toast.error('Error'); }
-            }} className="flex-1 py-1.5 rounded-lg text-white text-[11px] font-medium" style={{ background: '#7c3aed' }}>
+            }} className="flex-1 py-1.5 rounded-lg text-[var(--wl-text-primary)] text-[11px] font-medium" style={{ background: '#7c3aed' }}>
               Crear tarea
             </button>
-            <button onClick={() => setTaskMsg(null)} className="px-3 py-1.5 rounded-lg text-[var(--wl-text-muted)] text-[11px] border border-[var(--wl-border)] hover:text-white">
+            <button onClick={() => setTaskMsg(null)} className="px-3 py-1.5 rounded-lg text-[var(--wl-text-muted)] text-[11px] border border-[var(--wl-border)] hover:text-[var(--wl-text-primary)]">
               Cancelar
             </button>
           </div>
@@ -643,13 +643,13 @@ export default function ChatContent({
             />
           )}
 
-          <div className="flex items-center gap-2 bg-white/[0.04] border border-[var(--wl-border)] rounded-xl px-4 py-2 focus-within:border-brand/50 transition-colors">
+          <div className="flex items-center gap-2 bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-xl px-4 py-2 focus-within:border-brand/50 transition-colors">
             {/* Emoji insert button */}
             <div className="relative" ref={emojiRef}>
               <button
                 type="button"
                 onClick={() => setEmojiOpen((o) => !o)}
-                className="text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors p-0.5"
+                className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors p-0.5"
                 title="Insertar emoji"
               >
                 <Smile className="w-4 h-4" />
@@ -666,7 +666,7 @@ export default function ChatContent({
               maxLength={2000}
               disabled={sending}
               autoComplete="off"
-              className="flex-1 bg-transparent text-white placeholder:text-white/25 text-sm outline-none disabled:opacity-50"
+              className="flex-1 bg-transparent text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] text-sm outline-none disabled:opacity-50"
             />
             <button
               type="submit"
@@ -677,7 +677,7 @@ export default function ChatContent({
             </button>
           </div>
         </div>
-            <p className="hidden md:flex text-[11px] text-white/20 mt-1.5 ml-1 items-center gap-3">
+            <p className="hidden md:flex text-[11px] text-[var(--wl-text-placeholder)] mt-1.5 ml-1 items-center gap-3">
           <span>Enter para enviar</span>
           <span className="flex items-center gap-1">
             <Users className="w-2.5 h-2.5" />

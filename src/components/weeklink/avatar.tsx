@@ -46,7 +46,7 @@ export function Avatar({ initials, color, size = 32, status, className, ring, im
       ) : (
         <span
           className={cn(
-            'flex h-full w-full items-center justify-center rounded-full font-medium text-white select-none',
+            'flex h-full w-full items-center justify-center rounded-full font-medium text-[var(--wl-text-primary)] select-none',
             ring && 'ring-2 ring-background',
           )}
           style={{

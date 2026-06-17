@@ -90,9 +90,9 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-md w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
+          <DialogTitle className="flex items-center gap-2 text-[var(--wl-text-primary)]">
             <Video className="h-5 w-5 text-brand-light" />
             Agendar Videollamada
           </DialogTitle>
@@ -104,8 +104,8 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
               <CheckCircle2 className="h-8 w-8 text-green-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Videollamada Agendada</h3>
-              <p className="mt-1 text-sm text-white/50">
+              <h3 className="text-lg font-semibold text-[var(--wl-text-primary)]">Videollamada Agendada</h3>
+              <p className="mt-1 text-sm text-[var(--wl-text-primary)]/50">
                 Nos pondremos en contacto con{' '}
                 <span className="text-[var(--wl-text-secondary)] font-medium">{email}</span>.
                 {date && (
@@ -129,7 +129,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Nombre completo"
-                  className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand"
+                  className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-primary)]/25 focus-visible:ring-brand"
                 />
               </div>
               <div className="space-y-1.5">
@@ -139,7 +139,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand"
+                  className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-primary)]/25 focus-visible:ring-brand"
                 />
               </div>
             </div>
@@ -152,7 +152,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+52 55 1234 5678"
-                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand"
+                className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-primary)]/25 focus-visible:ring-brand"
               />
             </div>
 
@@ -164,17 +164,17 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   type="button"
                   variant="outline"
                   onClick={() => setCalOpen((o) => !o)}
-                  className="w-full justify-between bg-white/[0.04] border-[var(--wl-border)] text-left font-normal hover:bg-[var(--wl-hover)] hover:text-white"
+                  className="w-full justify-between bg-white/[0.04] border-[var(--wl-border)] text-left font-normal hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]"
                 >
                   <span className="flex items-center gap-2">
                     <CalendarIcon className="h-4 w-4 text-[var(--wl-text-muted)]" />
                     {date ? (
-                      <span className="text-white">{format(date, 'd MMM yyyy', { locale: es })}</span>
+                      <span className="text-[var(--wl-text-primary)]">{format(date, 'd MMM yyyy', { locale: es })}</span>
                     ) : (
-                      <span className="text-white/30">Seleccionar…</span>
+                      <span className="text-[var(--wl-text-primary)]/30">Seleccionar…</span>
                     )}
                   </span>
-                  <ChevronDown className={`h-4 w-4 text-white/30 transition-transform duration-200 ${calOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 text-[var(--wl-text-primary)]/30 transition-transform duration-200 ${calOpen ? 'rotate-180' : ''}`} />
                 </Button>
               </div>
 
@@ -184,7 +184,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="bg-white/[0.04] border-[var(--wl-border)] text-white focus-visible:ring-brand [color-scheme:dark]"
+                  className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-primary)] focus-visible:ring-brand [color-scheme:dark]"
                 />
               </div>
             </div>
@@ -198,7 +198,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                   onSelect={(d) => { setDate(d); setCalOpen(false); }}
                   disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
                   locale={es}
-                  className="text-white"
+                  className="text-[var(--wl-text-primary)]"
                 />
               </div>
             )}
@@ -211,7 +211,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="¿Sobre qué quieres hablar?"
                 rows={3}
-                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 resize-none focus-visible:ring-brand"
+                className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-primary)]/25 resize-none focus-visible:ring-brand"
               />
             </div>
 
@@ -227,7 +227,7 @@ export default function AppointmentModal({ open, onOpenChange }: AppointmentModa
                 type="button"
                 variant="outline"
                 onClick={() => handleClose(false)}
-                className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]"
+                className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
               >
                 Cancelar
               </Button>

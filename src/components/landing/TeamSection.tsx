@@ -60,7 +60,7 @@ function MemberCard({
           <div className="absolute inset-0 bg-[#0b0b0f]/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6">
             <div className="relative">
               <Quote className="w-5 h-5 text-brand-light/40 absolute -top-2 -left-2" />
-              <p className="text-sm text-white/85 italic leading-relaxed text-center">
+              <p className="text-sm text-[var(--wl-text-primary)]/85 italic leading-relaxed text-center">
                 &ldquo;{member.quote}&rdquo;
               </p>
             </div>
@@ -70,7 +70,7 @@ function MemberCard({
 
       {/* Info bar */}
       <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-        <p className="text-base sm:text-lg font-bold text-white leading-tight">
+        <p className="text-base sm:text-lg font-bold text-[var(--wl-text-primary)] leading-tight">
           {member.name}
         </p>
         <p className="text-[11px] sm:text-xs font-medium text-brand-light mt-0.5">

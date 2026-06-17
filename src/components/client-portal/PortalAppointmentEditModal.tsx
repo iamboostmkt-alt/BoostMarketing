@@ -103,12 +103,12 @@ export default function PortalAppointmentEditModal({ open, onOpenChange, appoint
         {/* Header */}
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--wl-border)] bg-white/[0.04]">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)]">
               <Video className="h-3.5 w-3.5 text-green-400" strokeWidth={1.5} />
             </div>
-            <p className="text-[13px] font-medium text-white/85">Editar videollamada</p>
+            <p className="text-[13px] font-medium text-[var(--wl-text-primary)]">Editar videollamada</p>
           </div>
-          <button onClick={() => onOpenChange(false)} className="flex h-7 w-7 items-center justify-center rounded-lg text-white/25 hover:bg-white/[0.05] hover:text-[var(--wl-text-secondary)] transition-colors">
+          <button onClick={() => onOpenChange(false)} className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--wl-text-placeholder)] hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)] transition-colors">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -122,7 +122,7 @@ export default function PortalAppointmentEditModal({ open, onOpenChange, appoint
             <div>
               <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Título *</label>
               <input value={name} onChange={e => setName(e.target.value)} required
-                className="h-[36px] w-full rounded-lg border border-[var(--wl-border)] bg-white/[0.03] px-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none focus:border-green-500/40 focus:ring-1 focus:ring-green-500/10" />
+                className="h-[36px] w-full rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none focus:border-green-500/40 focus:ring-1 focus:ring-green-500/10" />
             </div>
 
             {/* Fecha y hora */}
@@ -131,7 +131,7 @@ export default function PortalAppointmentEditModal({ open, onOpenChange, appoint
                 <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Fecha *</label>
                 <div className="relative">
                   <button type="button" onClick={() => setCalOpen(v => !v)}
-                    className="h-[36px] w-full flex items-center gap-2 rounded-lg border border-[var(--wl-border)] bg-white/[0.03] px-3 text-[13px] text-left outline-none hover:border-green-500/40 transition-colors"
+                    className="h-[36px] w-full flex items-center gap-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3 text-[13px] text-left outline-none hover:border-green-500/40 transition-colors"
                     style={{ color: selectedDate ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.25)' }}>
                     <CalendarIcon className="h-3.5 w-3.5 shrink-0 opacity-50" />
                     {selectedDate ? format(selectedDate, "d MMM yyyy", { locale: es }) : 'Seleccionar'}
@@ -140,7 +140,7 @@ export default function PortalAppointmentEditModal({ open, onOpenChange, appoint
                     <div className="absolute top-10 left-0 z-[9999] rounded-xl border border-[var(--wl-border)] shadow-2xl overflow-hidden" style={{ background: '#0f0f14' }}>
                       <Calendar mode="single" locale={es} selected={selectedDate}
                         onSelect={d => { setSelectedDate(d); setCalOpen(false); }}
-                        className="text-white" />
+                        className="text-[var(--wl-text-primary)]" />
                     </div>
                   )}
                 </div>
@@ -154,7 +154,7 @@ export default function PortalAppointmentEditModal({ open, onOpenChange, appoint
                       <option key={h} value={h} style={{background:'#0f0f14'}}>{h}</option>
                     ))}
                   </select>
-                  <span className="flex items-center text-white/30 text-[13px]">:</span>
+                  <span className="flex items-center text-[var(--wl-text-placeholder)] text-[13px]">:</span>
                   <select value={minute} onChange={e => setMinute(e.target.value)} style={{ colorScheme: 'dark' }}
                     className="flex-1 rounded-lg border border-[var(--wl-border)] bg-[#0f0f14] px-2 text-[13px] text-[var(--wl-text-secondary)] outline-none focus:border-green-500/40">
                     {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m=>(
@@ -170,7 +170,7 @@ export default function PortalAppointmentEditModal({ open, onOpenChange, appoint
               <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Link videollamada</label>
               <div className="flex gap-1.5">
                 <input value={meetUrl} onChange={e => setMeetUrl(e.target.value)} placeholder="https://meet.google.com/..."
-                  className="h-[36px] flex-1 rounded-lg border border-[var(--wl-border)] bg-white/[0.03] px-3 text-[12px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none focus:border-green-500/40" />
+                  className="h-[36px] flex-1 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3 text-[12px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none focus:border-green-500/40" />
                 {meetUrl && (
                   <a href={meetUrl} target="_blank" rel="noopener noreferrer"
                     className="h-[36px] w-[36px] flex items-center justify-center rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors">
@@ -199,7 +199,7 @@ export default function PortalAppointmentEditModal({ open, onOpenChange, appoint
                   {assignees.slice(0, 8).map((au: any) => {
                     const u = au.user ?? au;
                     return (
-                      <div key={u.id} className="flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] border border-[var(--wl-border)] bg-white/[0.03] text-[var(--wl-text-secondary)]">
+                      <div key={u.id} className="flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] border border-[var(--wl-border)] bg-[var(--wl-hover)] text-[var(--wl-text-secondary)]">
                         <Avatar className="h-4 w-4">
                           <AvatarImage src={u.image ?? undefined} />
                           <AvatarFallback className="text-[7px]" style={{ background: (u.color || '#7c3aed') + '33', color: u.color || '#7c3aed' }}>
@@ -218,7 +218,7 @@ export default function PortalAppointmentEditModal({ open, onOpenChange, appoint
             <div>
               <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Notas</label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Agenda, temas a tratar..."
-                className="w-full rounded-lg border border-[var(--wl-border)] bg-white/[0.03] px-3.5 py-2.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none resize-none focus:border-green-500/40" />
+                className="w-full rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3.5 py-2.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none resize-none focus:border-green-500/40" />
             </div>
 
             {/* Acciones */}
@@ -228,12 +228,12 @@ export default function PortalAppointmentEditModal({ open, onOpenChange, appoint
                 {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
               </button>
               <button type="button" onClick={() => onOpenChange(false)}
-                className="flex-1 h-[36px] rounded-lg border border-[var(--wl-border)] text-[13px] text-white/50 hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
+                className="flex-1 h-[36px] rounded-lg border border-[var(--wl-border)] text-[13px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors">
                 Cancelar
               </button>
               <motion.button type="submit" disabled={saving}
                 whileHover={{ backgroundColor: '#16a34a' }} whileTap={{ scale: 0.98 }}
-                className="flex-1 h-[36px] flex items-center justify-center gap-1.5 rounded-lg bg-green-600 text-[13px] font-medium text-white disabled:opacity-60">
+                className="flex-1 h-[36px] flex items-center justify-center gap-1.5 rounded-lg bg-green-600 text-[13px] font-medium text-[var(--wl-text-primary)] disabled:opacity-60">
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5" />Guardar</>}
               </motion.button>
             </div>

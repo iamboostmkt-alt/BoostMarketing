@@ -64,14 +64,14 @@ export default function InvitePage() {
   if (!loading && invite && isLoggedInAsNonClient && isClient) {
     return (
       <div className="min-h-screen bg-[var(--wl-bg)] flex items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-2xl border border-[var(--wl-border)] bg-white/[0.03] p-8 text-center">
+        <div className="w-full max-w-md rounded-2xl border border-[var(--wl-border)] bg-[var(--wl-hover)] p-8 text-center">
           <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4 text-2xl">⚠️</div>
-          <h2 className="text-[18px] font-semibold text-white mb-2">Este link es para un cliente</h2>
-          <p className="text-[13px] text-white/50 mb-6 leading-relaxed">
+          <h2 className="text-[18px] font-semibold text-[var(--wl-text-primary)] mb-2">Este link es para un cliente</h2>
+          <p className="text-[13px] text-[var(--wl-text-muted)] mb-6 leading-relaxed">
             Este link de activación es para <strong className="text-[var(--wl-text-secondary)]">{invite.email}</strong>.
             Tú estás logueado como <strong className="text-[var(--wl-text-secondary)]">{(currentSession?.user as any)?.name || (currentSession?.user as any)?.email}</strong>.
           </p>
-          <p className="text-[12px] text-white/30 mb-6">
+          <p className="text-[12px] text-[var(--wl-text-placeholder)] mb-6">
             Para activar el portal del cliente, este link debe abrirse en una sesión de incógnito o cuando el cliente no haya iniciado sesión.
           </p>
           <button onClick={() => router.push('/dashboard')}
@@ -95,8 +95,8 @@ export default function InvitePage() {
         <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
           <X className="h-6 w-6 text-red-400" />
         </div>
-        <h1 className="text-xl font-semibold text-white">Invitación no válida</h1>
-        <p className="text-white/50 text-sm">{error}</p>
+        <h1 className="text-xl font-semibold text-[var(--wl-text-primary)]">Invitación no válida</h1>
+        <p className="text-[var(--wl-text-muted)] text-sm">{error}</p>
         <a href="/login" className="inline-block text-primary text-sm hover:underline">Ir al login</a>
       </div>
     </div>
@@ -108,8 +108,8 @@ export default function InvitePage() {
         <div className="mx-auto w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
           <Check className="h-6 w-6 text-green-400" />
         </div>
-        <h1 className="text-xl font-semibold text-white">¡Cuenta creada!</h1>
-        <p className="text-white/50 text-sm">Redirigiendo...</p>
+        <h1 className="text-xl font-semibold text-[var(--wl-text-primary)]">¡Cuenta creada!</h1>
+        <p className="text-[var(--wl-text-muted)] text-sm">Redirigiendo...</p>
       </div>
     </div>
   );
@@ -124,49 +124,49 @@ export default function InvitePage() {
           <div className="flex justify-center"><LogoBrand /></div>
           {isClient ? (
             <>
-              <h1 className="text-2xl font-bold text-white mt-4">Activa tu portal</h1>
-              <p className="text-white/50 text-sm">
-                <strong className="text-white">{invite.workspace.name}</strong> te ha dado acceso a tu portal de cliente.
+              <h1 className="text-2xl font-bold text-[var(--wl-text-primary)] mt-4">Activa tu portal</h1>
+              <p className="text-[var(--wl-text-muted)] text-sm">
+                <strong className="text-[var(--wl-text-primary)]">{invite.workspace.name}</strong> te ha dado acceso a tu portal de cliente.
                 Elige una contraseña para entrar.
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-white mt-4">Crea tu cuenta</h1>
-              <p className="text-white/50 text-sm">
-                Fuiste invitado a <strong className="text-white">{invite.workspace.name}</strong>
+              <h1 className="text-2xl font-bold text-[var(--wl-text-primary)] mt-4">Crea tu cuenta</h1>
+              <p className="text-[var(--wl-text-muted)] text-sm">
+                Fuiste invitado a <strong className="text-[var(--wl-text-primary)]">{invite.workspace.name}</strong>
                 {' '}como <strong className="text-primary">{ROLE_LABELS[invite.role] ?? invite.role}</strong>
               </p>
             </>
           )}
-          <p className="text-white/30 text-xs">{invite.email}</p>
+          <p className="text-[var(--wl-text-placeholder)] text-xs">{invite.email}</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs text-white/50">Tu nombre</label>
+            <label className="text-xs text-[var(--wl-text-muted)]">Tu nombre</label>
             <input value={name} onChange={e => setName(e.target.value)} required
               placeholder={invite.clientName || 'Tu nombre completo'}
-              className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-surface)] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50" />
+              className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-surface)] px-4 py-3 text-sm text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:outline-none focus:border-primary/50" />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-white/50">Nueva contraseña</label>
+            <label className="text-xs text-[var(--wl-text-muted)]">Nueva contraseña</label>
             <div className="relative">
               <input value={password} onChange={e => setPassword(e.target.value)} required
                 type={showPass ? 'text' : 'password'} minLength={8}
                 placeholder="Mínimo 8 caracteres"
-                className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-surface)] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50 pr-10" />
+                className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-surface)] px-4 py-3 text-sm text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:outline-none focus:border-primary/50 pr-10" />
               <button type="button" onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-[var(--wl-text-secondary)]">
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)]">
                 {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-white/50">Confirmar contraseña</label>
+            <label className="text-xs text-[var(--wl-text-muted)]">Confirmar contraseña</label>
             <input value={confirm} onChange={e => setConfirm(e.target.value)} required
               type="password" minLength={8}
               placeholder="Repite tu contraseña"
-              className={`w-full rounded-xl border bg-[var(--wl-surface)] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50 ${
+              className={`w-full rounded-xl border bg-[var(--wl-surface)] px-4 py-3 text-sm text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:outline-none focus:border-primary/50 ${
                 confirm && !passwordsMatch ? 'border-red-500/50' : 'border-[var(--wl-border)]'
               }`} />
             {confirm && !passwordsMatch && (
@@ -176,7 +176,7 @@ export default function InvitePage() {
           {error && <p className="text-red-400 text-xs">{error}</p>}
           <button type="submit"
             disabled={submitting || !name.trim() || password.length < 8 || !passwordsMatch}
-            className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-40 transition-opacity">
+            className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-[var(--wl-text-primary)] disabled:opacity-40 transition-opacity">
             {submitting ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : isClient ? 'Activar mi portal' : 'Crear cuenta y entrar'}
           </button>
         </form>

@@ -500,3 +500,47 @@ button, [role="button"], a {
 .wl-text      { color: var(--wl-text-primary); }
 .wl-text-sec  { color: var(--wl-text-secondary); }
 .wl-text-mute { color: var(--wl-text-muted); }
+
+/* ── Light mode overrides específicos ───────────────────── */
+:root {
+  /* Sidebar en light: blanco puro con sombra derecha */
+  --wl-sidebar-shadow: 1px 0 0 var(--wl-border-subtle);
+  /* TopNav en light */
+  --wl-topnav-bg: rgba(255,255,255,0.95);
+  --wl-topnav-border: rgba(17,24,39,0.06);
+}
+.dark {
+  --wl-sidebar-shadow: none;
+  --wl-topnav-bg: rgba(10,10,14,0.85);
+  --wl-topnav-border: rgba(255,255,255,0.04);
+}
+
+/* ── Dashboard layout light ─────────────────────────────── */
+:root .glass-card,
+:root .glass-card-blur {
+  box-shadow: 0 1px 3px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.04);
+}
+
+/* ── Scrollbar light mode ───────────────────────────────── */
+:root ::-webkit-scrollbar-thumb { background: rgba(17,24,39,0.15); }
+.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
+
+/* ── Input fields ───────────────────────────────────────── */
+:root input, :root textarea, :root select {
+  background-color: var(--wl-input-bg) !important;
+  color: var(--wl-text-primary) !important;
+  border-color: var(--wl-border) !important;
+}
+:root input::placeholder, :root textarea::placeholder {
+  color: var(--wl-text-placeholder) !important;
+}
+
+/* ── Transición suave entre temas ──────────────────────── */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.1s ease;
+}
+/* Excluir animaciones de movimiento de la transición */
+.animate-pulse, .animate-spin, .animate-bounce,
+[class*="animate-"], [style*="animation"] {
+  transition: none !important;
+}

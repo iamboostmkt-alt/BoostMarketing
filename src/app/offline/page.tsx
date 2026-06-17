@@ -47,7 +47,7 @@ export default function OfflinePage() {
         </div>
 
         <div>
-          <h1 className="text-[20px] font-bold text-white mb-2">Sin conexión</h1>
+          <h1 className="text-[20px] font-bold text-[var(--wl-text-primary)] mb-2">Sin conexión</h1>
           <p className="text-[14px] text-[var(--wl-text-muted)] leading-relaxed">
             Weeklink necesita internet para funcionar. Verifica tu conexión y vuelve a intentarlo.
           </p>
@@ -56,7 +56,7 @@ export default function OfflinePage() {
         <button
           onClick={retry}
           disabled={retrying}
-          className="flex items-center gap-2 rounded-[14px] px-6 py-3 text-[14px] font-semibold text-white transition-all disabled:opacity-60"
+          className="flex items-center gap-2 rounded-[14px] px-6 py-3 text-[14px] font-semibold text-[var(--wl-text-primary)] transition-all disabled:opacity-60"
           style={{ background: '#7C3AED', boxShadow: '0 8px 24px rgba(124,58,237,0.25)' }}
         >
           {retrying ? (
@@ -69,7 +69,7 @@ export default function OfflinePage() {
           )}
         </button>
 
-        <p className="text-[11px] text-white/20">
+        <p className="text-[11px] text-[var(--wl-text-placeholder)]">
           Intentando reconectar automáticamente...
         </p>
       </div>

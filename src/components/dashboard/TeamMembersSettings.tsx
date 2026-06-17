@@ -497,7 +497,7 @@ function MemberRow({ member, index, onRoleChange, onRemove, onResend, isMenuOpen
                 {member.invited ? (
                   <button
                     onClick={() => onResend(member.email)}
-                    className="flex w-full items-center px-3 py-2 text-left text-[12px] text-[rgba(255,255,255,0.70)] transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-white"
+                    className="flex w-full items-center px-3 py-2 text-left text-[12px] text-[rgba(255,255,255,0.70)] transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-[var(--wl-text-primary)]"
                   >
                     Resend invite
                   </button>

@@ -8,12 +8,12 @@ export default function ProspectPendingPage() {
           <span className="text-4xl">📅</span>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">Tu cita esta confirmada</h1>
-          <p className="text-white/50 mt-3 leading-relaxed">
+          <h1 className="text-2xl font-bold text-[var(--wl-text-primary)]">Tu cita esta confirmada</h1>
+          <p className="text-[var(--wl-text-muted)] mt-3 leading-relaxed">
             Gracias por agendar una videollamada con nosotros. Pronto nos pondremos en contacto contigo.
           </p>
         </div>
-        <div className="bg-white/[0.04] border border-[var(--wl-border)] rounded-xl p-5 text-left space-y-2">
+        <div className="bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-xl p-5 text-left space-y-2">
           <p className="text-sm text-[var(--wl-text-secondary)] font-medium">Que sigue:</p>
           <ul className="space-y-1.5 text-sm text-[var(--wl-text-muted)]">
             <li>1. Revisa tu email con los detalles de la cita</li>
@@ -21,7 +21,7 @@ export default function ProspectPendingPage() {
             <li>3. Una vez aprobada tu cuenta podras acceder al portal</li>
           </ul>
         </div>
-        <Link href="/" className="inline-block text-sm text-white/30 hover:text-white transition-colors">
+        <Link href="/" className="inline-block text-sm text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] transition-colors">
           Volver al inicio
         </Link>
       </div>

@@ -72,7 +72,7 @@ export default function Footer({
                   <Image src={logoUrl!} alt={agencyName} width={32} height={32} className="h-8 w-8 rounded-lg object-contain" />
                 ) : (
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand">
-                    <Zap className="h-4 w-4 text-white" />
+                    <Zap className="h-4 w-4 text-[var(--wl-text-primary)]" />
                   </div>
                 )}
                 <span className="text-lg font-bold text-foreground">{agencyName}</span>
@@ -171,7 +171,7 @@ export default function Footer({
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chatear por WhatsApp"
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-[var(--wl-text-primary)] shadow-lg transition-transform hover:scale-110 hover:shadow-xl"
         >
           <MessageCircle className="h-6 w-6" />
         </a>

@@ -8,8 +8,8 @@ export default function VerifyRequestPage() {
         <div className="mx-auto w-12 h-12 rounded-full bg-brand/20 flex items-center justify-center mb-4">
           <Mail className="w-6 h-6 text-brand-light" />
         </div>
-        <h1 className="text-xl font-bold text-white mb-2">Revisa tu correo</h1>
-        <p className="text-sm text-white/50 mb-6">
+        <h1 className="text-xl font-bold text-[var(--wl-text-primary)] mb-2">Revisa tu correo</h1>
+        <p className="text-sm text-[var(--wl-text-muted)] mb-6">
           Te enviamos un enlace mágico para iniciar sesión. En desarrollo, el enlace
           aparece en la terminal del servidor.
         </p>

@@ -56,20 +56,20 @@ export function PortalTaskCard({ task, onFeedback, onDelete }: PortalTaskCardPro
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <CheckSquare className="h-4 w-4 text-amber-400 shrink-0" />
-            <p className="text-sm font-medium text-white truncate">{task.title}</p>
+            <p className="text-sm font-medium text-[var(--wl-text-primary)] truncate">{task.title}</p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
               {cfg.label}
             </span>
-            <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-[var(--wl-text-placeholder)] transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
           </div>
         </div>
         {!expanded && task.description && (
           <p className="text-xs text-[var(--wl-text-muted)] line-clamp-1 pl-6">{task.description}</p>
         )}
         {!expanded && task.dueDate && (
-          <p className="text-[11px] text-white/30 pl-6">Vence: {fmtDate(task.dueDate)}</p>
+          <p className="text-[11px] text-[var(--wl-text-placeholder)] pl-6">Vence: {fmtDate(task.dueDate)}</p>
         )}
       </div>
 
@@ -80,15 +80,15 @@ export function PortalTaskCard({ task, onFeedback, onDelete }: PortalTaskCardPro
           )}
           <div className="grid grid-cols-2 gap-2">
             {task.dueDate && (
-              <div className="bg-white/[0.03] rounded-lg p-2.5">
-                <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Vence</p>
+              <div className="bg-[var(--wl-hover)] rounded-lg p-2.5">
+                <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-0.5">Vence</p>
                 <p className="text-xs text-[var(--wl-text-secondary)] font-medium">{fmtDate(task.dueDate)}</p>
               </div>
             )}
             {task.priority && (
-              <div className="bg-white/[0.03] rounded-lg p-2.5">
-                <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Prioridad</p>
-                <p className={`text-xs font-medium flex items-center gap-1 ${priorityColor[task.priority] || 'text-white/50'}`}>
+              <div className="bg-[var(--wl-hover)] rounded-lg p-2.5">
+                <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-0.5">Prioridad</p>
+                <p className={`text-xs font-medium flex items-center gap-1 ${priorityColor[task.priority] || 'text-[var(--wl-text-muted)]'}`}>
                   <Flag className="w-3 h-3" />
                   {priorityLabel[task.priority] || task.priority}
                 </p>
@@ -97,7 +97,7 @@ export function PortalTaskCard({ task, onFeedback, onDelete }: PortalTaskCardPro
           </div>
           <DeliverableHistory taskId={task.id} />
           {onDelete && (
-            <div className="pt-2 border-t border-white/[0.04]" onClick={e => e.stopPropagation()}>
+            <div className="pt-2 border-t border-[var(--wl-border-subtle)]" onClick={e => e.stopPropagation()}>
               <button type="button"
                 onClick={() => { if (confirm('¿Eliminar "' + task.title + '"?')) onDelete(task.id); }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 transition-colors">

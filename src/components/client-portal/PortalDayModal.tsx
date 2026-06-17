@@ -64,14 +64,14 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
 
   return (
     <Dialog open={!!day} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-lg max-h-[80vh] overflow-y-auto">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white capitalize">{label}</DialogTitle>
+          <DialogTitle className="text-[var(--wl-text-primary)] capitalize">{label}</DialogTitle>
         </DialogHeader>
 
         {!hasItems ? (
           <div className="py-12 flex flex-col items-center gap-3 text-center">
-            <Calendar className="w-10 h-10 text-white/15" />
+            <Calendar className="w-10 h-10 text-[var(--wl-text-placeholder)]" />
             <p className="text-[var(--wl-text-muted)] text-sm">No hay elementos este día.</p>
           </div>
         ) : (
@@ -82,9 +82,9 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
                 {dayTasks.map((task) => {
                   const cfg = taskStatusConfig[(task as any).deliverableStatus ?? task.status] ?? taskStatusConfig.pending;
                   return (
-                    <div key={task.id} className="rounded-lg border border-[var(--wl-border)] bg-white/[0.02] p-3 space-y-2">
+                    <div key={task.id} className="rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] p-3 space-y-2">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium text-white">{task.title}</p>
+                        <p className="text-sm font-medium text-[var(--wl-text-primary)]">{task.title}</p>
                         <span className={`flex-shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
                           {cfg.label}
                         </span>
@@ -92,7 +92,7 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
                       {task.description && (
                         <p className="text-xs text-[var(--wl-text-muted)] line-clamp-2">{task.description}</p>
                       )}
-                      <div className="flex items-center gap-3 text-[11px] text-white/35 flex-wrap">
+                      <div className="flex items-center gap-3 text-[11px] text-[var(--wl-text-muted)] flex-wrap">
                         {task.dueDate && <span>Vence: {fmtDate(task.dueDate)}</span>}
                         {task.priority && (
                           <span className={`font-medium ${
@@ -111,9 +111,9 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
                         )}
                       </div>
                       {isManager && (
-                        <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
+                        <div className="flex gap-2 pt-1 border-t border-[var(--wl-border-subtle)]">
                           <button type="button" onClick={() => { onEditTask?.(task); onClose(); }}
-                            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white transition-colors">
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-[var(--wl-hover)] hover:bg-[var(--wl-border)] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] transition-colors">
                             <Pencil className="w-3 h-3" /> Editar
                           </button>
                           <button type="button" onClick={() => { if (confirm('¿Eliminar "' + task.title + '"?')) { onDeleteTask?.(task.id); } }}
@@ -143,12 +143,12 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
                   <div key={apt.id} className="rounded-lg border border-green-500/20 bg-green-500/[0.04] p-3 space-y-2">
                     <div className="flex items-center gap-2">
                       <Video className="w-3.5 h-3.5 text-green-400 shrink-0" />
-                      <p className="text-sm font-medium text-white">{apt.name}</p>
+                      <p className="text-sm font-medium text-[var(--wl-text-primary)]">{apt.name}</p>
                       <span className="ml-auto text-[10px] bg-green-500/20 text-green-300 rounded-full px-2 py-0.5">
                         {apt.status === 'confirmed' ? 'Confirmada' : apt.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-[11px] text-white/35 pl-5">
+                    <div className="flex items-center gap-3 text-[11px] text-[var(--wl-text-muted)] pl-5">
                       <span>{format(new Date(apt.date), 'HH:mm', { locale: es })}</span>
                       {apt.notes && <span className="truncate">{apt.notes}</span>}
                     </div>
@@ -159,9 +159,9 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
                       </a>
                     )}
                     {isManager && (
-                      <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
+                      <div className="flex gap-2 pt-1 border-t border-[var(--wl-border-subtle)]">
                         <button type="button" onClick={() => { onEditAppt?.(apt); onClose(); }}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white transition-colors">
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-[var(--wl-hover)] hover:bg-[var(--wl-border)] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] transition-colors">
                           <Pencil className="w-3 h-3" /> Editar
                         </button>
                         <button type="button" onClick={() => { if (confirm('¿Eliminar "' + apt.name + '"?')) { onDeleteAppt?.(apt.id); onClose(); } }}

@@ -27,11 +27,11 @@ export function ActivityToastListener() {
               ✅
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-white/90">Tarea completada</p>
-              <p className="text-[12px] text-white/50 truncate">{t.title}</p>
+              <p className="text-[13px] font-semibold text-[var(--wl-text-primary)]">Tarea completada</p>
+              <p className="text-[12px] text-[var(--wl-text-muted)] truncate">{t.title}</p>
             </div>
             <button onClick={() => toast.dismiss(toastId)}
-              className="text-white/20 hover:text-white/50 transition-colors text-lg leading-none">×</button>
+              className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors text-lg leading-none">×</button>
           </div>
         ), { duration: 4000 });
       }
@@ -44,11 +44,11 @@ export function ActivityToastListener() {
               💬
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-white/90">Cambios solicitados</p>
-              <p className="text-[12px] text-white/50 truncate">{t.title}</p>
+              <p className="text-[13px] font-semibold text-[var(--wl-text-primary)]">Cambios solicitados</p>
+              <p className="text-[12px] text-[var(--wl-text-muted)] truncate">{t.title}</p>
             </div>
             <button onClick={() => toast.dismiss(toastId)}
-              className="text-white/20 hover:text-white/50 transition-colors text-lg leading-none">×</button>
+              className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors text-lg leading-none">×</button>
           </div>
         ), { duration: 4000 });
       }
@@ -67,11 +67,11 @@ export function ActivityToastListener() {
             📌
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white/90">Nueva tarea asignada</p>
-            <p className="text-[12px] text-white/50 truncate">{t.title}</p>
+            <p className="text-[13px] font-semibold text-[var(--wl-text-primary)]">Nueva tarea asignada</p>
+            <p className="text-[12px] text-[var(--wl-text-muted)] truncate">{t.title}</p>
           </div>
           <button onClick={() => toast.dismiss(toastId)}
-            className="text-white/20 hover:text-white/50 transition-colors text-lg leading-none">×</button>
+            className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors text-lg leading-none">×</button>
         </div>
       ), { duration: 5000 });
     }));
@@ -93,13 +93,13 @@ export function ActivityToastListener() {
             {(msg.user?.name || '?')[0].toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white/90">
+            <p className="text-[13px] font-semibold text-[var(--wl-text-primary)]">
               {msg.user?.name || 'Alguien'} te mencionó
             </p>
-            <p className="text-[12px] text-white/50 truncate">{msg.message}</p>
+            <p className="text-[12px] text-[var(--wl-text-muted)] truncate">{msg.message}</p>
           </div>
           <button onClick={() => toast.dismiss(toastId)}
-            className="text-white/20 hover:text-white/50 transition-colors text-lg leading-none">×</button>
+            className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors text-lg leading-none">×</button>
         </div>
       ), { duration: 5000 });
     }));
@@ -126,11 +126,11 @@ export function ActivityToastListener() {
             {emoji}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white/90 truncate">{n.message}</p>
+            <p className="text-[13px] font-semibold text-[var(--wl-text-primary)] truncate">{n.message}</p>
             <p className="text-[11px] text-[var(--wl-text-muted)] mt-0.5">Ahora</p>
           </div>
           <button onClick={() => toast.dismiss(toastId)}
-            className="text-white/20 hover:text-white/50 transition-colors text-lg leading-none">×</button>
+            className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors text-lg leading-none">×</button>
         </div>
       ), { duration: 5000, position: 'bottom-right' });
     }));
@@ -145,11 +145,11 @@ export function ActivityToastListener() {
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0"
             style={{ background: 'rgba(249,115,22,0.12)' }}>📎</div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white/90">Archivo subido</p>
-            <p className="text-[12px] text-white/50 truncate">{f.fileName || f.name}</p>
+            <p className="text-[13px] font-semibold text-[var(--wl-text-primary)]">Archivo subido</p>
+            <p className="text-[12px] text-[var(--wl-text-muted)] truncate">{f.fileName || f.name}</p>
           </div>
           <button onClick={() => toast.dismiss(toastId)}
-            className="text-white/20 hover:text-white/50 transition-colors text-lg leading-none">×</button>
+            className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors text-lg leading-none">×</button>
         </div>
       ), { duration: 4000, position: 'bottom-right' });
     }));
@@ -164,11 +164,11 @@ export function ActivityToastListener() {
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0"
             style={{ background: 'rgba(56,189,248,0.12)' }}>📅</div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white/90">Reunión agendada</p>
-            <p className="text-[12px] text-white/50 truncate">{m.title || 'Nueva reunión'}</p>
+            <p className="text-[13px] font-semibold text-[var(--wl-text-primary)]">Reunión agendada</p>
+            <p className="text-[12px] text-[var(--wl-text-muted)] truncate">{m.title || 'Nueva reunión'}</p>
           </div>
           <button onClick={() => toast.dismiss(toastId)}
-            className="text-white/20 hover:text-white/50 transition-colors text-lg leading-none">×</button>
+            className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors text-lg leading-none">×</button>
         </div>
       ), { duration: 5000, position: 'bottom-right' });
     }));

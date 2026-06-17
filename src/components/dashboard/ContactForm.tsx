@@ -153,9 +153,9 @@ export default function ContactForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white sm:max-w-md">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-white">
+          <DialogTitle className="text-[var(--wl-text-primary)]">
             {isEditing ? 'Editar Contacto' : 'Nuevo Contacto'}
           </DialogTitle>
           <DialogDescription className="text-[var(--wl-text-muted)]">
@@ -177,7 +177,7 @@ export default function ContactForm({
               onChange={(e) => setName(e.target.value)}
               placeholder="Nombre del contacto"
               required
-              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:border-brand focus-visible:ring-brand/30"
             />
           </div>
 
@@ -193,7 +193,7 @@ export default function ContactForm({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email@ejemplo.com"
               required
-              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:border-brand focus-visible:ring-brand/30"
             />
           </div>
 
@@ -208,7 +208,7 @@ export default function ContactForm({
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="Nombre empresa"
-                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+                className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:border-brand focus-visible:ring-brand/30"
               />
             </div>
             <div className="space-y-1.5">
@@ -220,7 +220,7 @@ export default function ContactForm({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+52 555 1234"
-                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+                className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:border-brand focus-visible:ring-brand/30"
               />
             </div>
           </div>
@@ -230,7 +230,7 @@ export default function ContactForm({
             <div className="space-y-1.5">
               <Label className="text-[var(--wl-text-secondary)] text-xs">Estado</Label>
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full h-9">
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] w-full h-9">
                   <SelectValue placeholder="Seleccionar" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)]">
@@ -238,7 +238,7 @@ export default function ContactForm({
                     <SelectItem
                       key={stage.id}
                       value={stage.id}
-                      className="text-[var(--wl-text-secondary)] focus:bg-white/[0.06] focus:text-white"
+                      className="text-[var(--wl-text-secondary)] focus:bg-[var(--wl-hover)] focus:text-[var(--wl-text-primary)]"
                     >
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${stage.color}`} />
@@ -261,7 +261,7 @@ export default function ContactForm({
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder="10,000"
-                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+                className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:border-brand focus-visible:ring-brand/30"
               />
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function ContactForm({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Notas adicionales..."
               rows={3}
-              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30 resize-none"
+              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:border-brand focus-visible:ring-brand/30 resize-none"
             />
           </div>
 
@@ -302,7 +302,7 @@ export default function ContactForm({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-white/50 hover:text-white hover:bg-[var(--wl-hover)]"
+              className="text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
               disabled={loading}
             >
               Cancelar

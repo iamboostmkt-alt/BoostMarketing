@@ -198,27 +198,27 @@ export default function SettingsPage() {
     <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl md:text-3xl font-bold text-white">Configuración</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-[var(--wl-text-primary)]">Configuración</h2>
         <p className="text-[var(--wl-text-muted)] mt-1">Administra tu perfil y preferencias</p>
       </div>
 
       {/* Tabs */}
       <div>
         <Tabs defaultValue={["profile","preferences","empresa"].includes(urlTab ?? "") ? urlTab! : "profile"} className="space-y-6">
-          <TabsList className="bg-white/[0.04] border border-[var(--wl-border)]">
+          <TabsList className="bg-[var(--wl-hover)] border border-[var(--wl-border)]">
             <TabsTrigger
               value="profile"
-              className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50"
+              className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)]"
             >
               Perfil
             </TabsTrigger>
             <TabsTrigger
               value="preferences"
-              className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50"
+              className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)]"
             >
               Preferencias
             </TabsTrigger>
-            <TabsTrigger value="empresa" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50">Empresa</TabsTrigger>
+            <TabsTrigger value="empresa" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)]">Empresa</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
@@ -254,7 +254,7 @@ export default function SettingsPage() {
                         {uploading ? (
                           <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                         ) : (
-                          <Camera className="w-5 h-5 text-white" />
+                          <Camera className="w-5 h-5 text-[var(--wl-text-primary)]" />
                         )}
                       </button>
                       <input
@@ -269,7 +269,7 @@ export default function SettingsPage() {
                   <div className="flex gap-3">
                     <button type="button" onClick={() => fileRef.current?.click()}
                       disabled={uploading || loading}
-                      className="text-sm text-brand-light hover:text-white transition-colors disabled:opacity-50">
+                      className="text-sm text-brand-light hover:text-[var(--wl-text-primary)] transition-colors disabled:opacity-50">
                       {uploading ? 'Subiendo...' : 'Cambiar foto'}
                     </button>
                     {imageUrl && (
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Tu nombre"
-                        className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand"
+                        className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand"
                       />
                     )}
                   </div>
@@ -330,10 +330,10 @@ export default function SettingsPage() {
                         id="settings-email"
                         value={userEmail}
                         readOnly
-                        className="bg-white/[0.02] border-[var(--wl-border)] text-[var(--wl-text-muted)] cursor-not-allowed"
+                        className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-muted)] cursor-not-allowed"
                       />
                     )}
-                    <p className="text-xs text-white/25">El email no se puede cambiar</p>
+                    <p className="text-xs text-[var(--wl-text-placeholder)]">El email no se puede cambiar</p>
                   </div>
 
                   {/* Role (read-only) */}
@@ -342,11 +342,11 @@ export default function SettingsPage() {
                     {loading ? (
                       <Skeleton className="h-10 w-full" />
                     ) : (
-                      <div className="flex items-center h-10 px-3 rounded-md bg-white/[0.02] border border-[var(--wl-border)]">
+                      <div className="flex items-center h-10 px-3 rounded-md bg-[var(--wl-hover)] border border-[var(--wl-border)]">
                         <span className="text-sm text-[var(--wl-text-muted)] capitalize">{userRole}</span>
                       </div>
                     )}
-                    <p className="text-xs text-white/25">El rol es asignado por el administrador</p>
+                    <p className="text-xs text-[var(--wl-text-placeholder)]">El rol es asignado por el administrador</p>
                   </div>
 
                   {/* Color Picker */}
@@ -382,7 +382,7 @@ export default function SettingsPage() {
                           >
                             {selectedColor === color.value && (
                               <svg
-                                className="w-5 h-5 text-white"
+                                className="w-5 h-5 text-[var(--wl-text-primary)]"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -428,20 +428,20 @@ export default function SettingsPage() {
             <div className="glass-card rounded-xl p-6">
               <div className="flex items-center gap-3 mb-5">
                 <svg className="w-5 h-5 text-brand-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                <h3 className="text-base font-semibold text-white">Cambiar contraseña</h3>
+                <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">Cambiar contraseña</h3>
               </div>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-[var(--wl-text-secondary)]">Contraseña actual</Label>
-                  <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="••••••••" className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                  <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="••••••••" className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[var(--wl-text-secondary)]">Nueva contraseña</Label>
-                  <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                  <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[var(--wl-text-secondary)]">Confirmar nueva contraseña</Label>
-                  <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repite la nueva contraseña" className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                  <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repite la nueva contraseña" className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand" />
                 </div>
                 <div className="pt-2">
                   <Button onClick={handleChangePassword} disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword} className="bg-brand hover:bg-brand-dark text-white gap-2">
@@ -458,12 +458,12 @@ export default function SettingsPage() {
             <div className="glass-card rounded-xl p-6">
               <div className="flex items-center gap-3 mb-5">
                 <Moon className="w-5 h-5 text-brand-light" />
-                <h3 className="text-base font-semibold text-white">Tema</h3>
+                <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">Tema</h3>
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[var(--wl-text-secondary)]">Modo oscuro</p>
-                  <p className="text-xs text-white/30 mt-0.5">El tema oscuro está activado por defecto</p>
+                  <p className="text-xs text-[var(--wl-text-placeholder)] mt-0.5">El tema oscuro está activado por defecto</p>
                 </div>
                 <Switch checked={true} disabled className="data-[state=checked]:bg-brand" />
               </div>
@@ -473,7 +473,7 @@ export default function SettingsPage() {
             <div className="glass-card rounded-xl p-6">
               <div className="flex items-center gap-3 mb-5">
                 <Bell className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-base font-semibold text-white">Notificaciones</h3>
+                <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">Notificaciones</h3>
               </div>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -487,7 +487,7 @@ export default function SettingsPage() {
                     <Label htmlFor="notif-email" className="text-sm text-[var(--wl-text-secondary)] cursor-pointer">
                       Notificaciones por email
                     </Label>
-                    <p className="text-xs text-white/30 mt-0.5">
+                    <p className="text-xs text-[var(--wl-text-placeholder)] mt-0.5">
                       Recibe alertas de nuevas actividades por correo electrónico
                     </p>
                   </div>
@@ -503,7 +503,7 @@ export default function SettingsPage() {
                     <Label htmlFor="notif-push" className="text-sm text-[var(--wl-text-secondary)] cursor-pointer">
                       Notificaciones push
                     </Label>
-                    <p className="text-xs text-white/30 mt-0.5">
+                    <p className="text-xs text-[var(--wl-text-placeholder)] mt-0.5">
                       Notificaciones en tiempo real en tu navegador
                     </p>
                   </div>
@@ -519,7 +519,7 @@ export default function SettingsPage() {
                     <Label htmlFor="notif-weekly" className="text-sm text-[var(--wl-text-secondary)] cursor-pointer">
                       Reporte semanal
                     </Label>
-                    <p className="text-xs text-white/30 mt-0.5">
+                    <p className="text-xs text-[var(--wl-text-placeholder)] mt-0.5">
                       Resumen semanal de tu actividad y métricas
                     </p>
                   </div>
@@ -531,14 +531,14 @@ export default function SettingsPage() {
             <div className="glass-card rounded-xl p-6">
               <div className="flex items-center gap-3 mb-5">
                 <Globe className="w-5 h-5 text-amber-400" />
-                <h3 className="text-base font-semibold text-white">Idioma</h3>
+                <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">Idioma</h3>
               </div>
               <div className="max-w-xs">
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full focus-visible:ring-brand">
+                  <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] w-full focus-visible:ring-brand">
                     <SelectValue placeholder="Seleccionar idioma" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+                  <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
                     <SelectItem value="es">Español</SelectItem>
                     <SelectItem value="en">English</SelectItem>
                   </SelectContent>
@@ -551,7 +551,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-lg">🎨</span>
                 <div>
-                  <h3 className="text-base font-semibold text-white">Apariencia</h3>
+                  <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">Apariencia</h3>
                   <p className="text-[12px] text-[var(--wl-text-muted)] mt-0.5">Cambia entre modo oscuro y modo claro</p>
                 </div>
               </div>
@@ -562,7 +562,7 @@ export default function SettingsPage() {
             <div className="glass-card rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-lg">⚖️</span>
-                <h3 className="text-base font-semibold text-white">Legal y cumplimiento</h3>
+                <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">Legal y cumplimiento</h3>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {[
@@ -580,10 +580,10 @@ export default function SettingsPage() {
                     href={l.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] text-[var(--wl-text-secondary)] hover:text-white hover:bg-white/[0.05] transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors"
                   >
                     {l.label}
-                    <span className="ml-auto text-white/20 text-[10px]">↗</span>
+                    <span className="ml-auto text-[var(--wl-text-placeholder)] text-[10px]">↗</span>
                   </a>
                 ))}
               </div>
@@ -593,14 +593,14 @@ export default function SettingsPage() {
             <div className="glass-card rounded-xl p-6">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-lg">🎓</span>
-                <h3 className="text-base font-semibold text-white">Tutorial de bienvenida</h3>
+                <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">Tutorial de bienvenida</h3>
               </div>
               <p className="text-sm text-[var(--wl-text-muted)] mb-4">
                 Vuelve a ver el tutorial interactivo y el checklist de primeros pasos.
               </p>
               <button
                 onClick={resetTutorial}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all active:scale-95"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[var(--wl-text-primary)] transition-all active:scale-95"
                 style={{ background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)' }}
               >
                 ✨ Repetir tutorial
@@ -619,30 +619,30 @@ export default function SettingsPage() {
 
           <TabsContent value="empresa" className="space-y-6">
             <div className="glass-card rounded-xl p-6 space-y-6">
-              <div className="flex items-center gap-3"><Building2 className="w-5 h-5 text-brand-light" /><h3 className="text-base font-semibold text-white">Branding de la empresa</h3></div>
+              <div className="flex items-center gap-3"><Building2 className="w-5 h-5 text-brand-light" /><h3 className="text-base font-semibold text-[var(--wl-text-primary)]">Branding de la empresa</h3></div>
               <p className="text-[var(--wl-text-muted)] text-sm">El logo se usara en todos los emails del sistema</p>
               <div className="space-y-3">
                 <label className="text-[var(--wl-text-secondary)] text-sm font-medium">Logo</label>
-                {logoPreview && (<div className="flex items-center justify-center bg-white/[0.06] border border-[var(--wl-border)] rounded-lg p-4 w-48 h-24"><img src={logoPreview} alt="Logo" className="max-h-16 max-w-full object-contain" /></div>)}
+                {logoPreview && (<div className="flex items-center justify-center bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-lg p-4 w-48 h-24"><img src={logoPreview} alt="Logo" className="max-h-16 max-w-full object-contain" /></div>)}
                 <label className="cursor-pointer inline-block">
                   <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) startLogoUpload([f]); }} disabled={uploading} />
-                  <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-[var(--wl-border)] rounded-lg text-white text-sm transition-colors w-fit">{uploading ? <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />&nbsp;Subiendo...</> : <><Upload className="w-4 h-4" />&nbsp;Subir logo</>}</div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-[var(--wl-border)] hover:bg-white/[0.12] border border-[var(--wl-border)] rounded-lg text-[var(--wl-text-primary)] text-sm transition-colors w-fit">{uploading ? <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />&nbsp;Subiendo...</> : <><Upload className="w-4 h-4" />&nbsp;Subir logo</>}</div>
                 </label>
               </div>
               <div className="space-y-2">
                 <label className="text-[var(--wl-text-secondary)] text-sm font-medium">Nombre del workspace</label>
-                <p className="text-xs text-white/30">Se muestra en el sidebar como identificador de tu agencia</p>
-                <Input value={workspaceName} onChange={e => setWorkspaceName(e.target.value)} className="bg-white/[0.04] border-[var(--wl-border)] text-white max-w-sm" placeholder="BoostMarketing" />
+                <p className="text-xs text-[var(--wl-text-placeholder)]">Se muestra en el sidebar como identificador de tu agencia</p>
+                <Input value={workspaceName} onChange={e => setWorkspaceName(e.target.value)} className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-sm" placeholder="BoostMarketing" />
               </div>
               <div className="space-y-2">
                 <label className="text-[var(--wl-text-secondary)] text-sm font-medium">Nombre de la empresa (emails)</label>
-                <Input value={brandName} onChange={e => setBrandName(e.target.value)} className="bg-white/[0.04] border-[var(--wl-border)] text-white max-w-sm" placeholder="BoostMarketing" />
+                <Input value={brandName} onChange={e => setBrandName(e.target.value)} className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-sm" placeholder="BoostMarketing" />
               </div>
               <div className="space-y-2">
                 <label className="text-[var(--wl-text-secondary)] text-sm font-medium">Color principal</label>
                 <div className="flex items-center gap-3">
                   <input type="color" value={brandColor} onChange={e => setBrandColor(e.target.value)} className="w-10 h-10 rounded cursor-pointer border border-[var(--wl-border)] bg-transparent" />
-                  <Input value={brandColor} onChange={e => setBrandColor(e.target.value)} className="bg-white/[0.04] border-[var(--wl-border)] text-white w-32" />
+                  <Input value={brandColor} onChange={e => setBrandColor(e.target.value)} className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] w-32" />
                   <div className="w-8 h-8 rounded-full border border-white/20" style={{ background: brandColor }} />
                 </div>
               </div>

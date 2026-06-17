@@ -52,10 +52,10 @@ export function SplashScreen() {
       </div>
 
       {/* Nombre */}
-      <p className="text-[22px] font-semibold text-white tracking-tight">
+      <p className="text-[22px] font-semibold text-[var(--wl-text-primary)] tracking-tight">
         Weeklink
       </p>
-      <p className="text-[13px] text-white/35 mt-1">
+      <p className="text-[13px] text-[var(--wl-text-muted)] mt-1">
         Organiza tareas, clientes y proyectos
       </p>
 

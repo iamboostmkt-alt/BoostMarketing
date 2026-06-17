@@ -144,11 +144,11 @@ export default function ActivityCommentThread({
       {/* Section label */}
       <div className="flex items-center gap-2 px-1 pb-2 border-b border-[var(--wl-border)]">
         <MessageSquare className="w-3.5 h-3.5 text-brand-light shrink-0" />
-        <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-[var(--wl-text-muted)] uppercase tracking-wider">
           Comentarios
         </span>
         {!loading && comments.length > 0 && (
-          <span className="ml-auto text-[10px] text-white/25">{comments.length}</span>
+          <span className="ml-auto text-[10px] text-[var(--wl-text-placeholder)]">{comments.length}</span>
         )}
       </div>
 
@@ -160,8 +160,8 @@ export default function ActivityCommentThread({
           </div>
         ) : comments.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
-            <MessageSquare className="w-8 h-8 text-white/10" />
-            <p className="text-xs text-white/25">
+            <MessageSquare className="w-8 h-8 text-[var(--wl-text-placeholder)]" />
+            <p className="text-xs text-[var(--wl-text-placeholder)]">
               Sin comentarios. ¡Sé el primero en escribir!
             </p>
           </div>
@@ -187,15 +187,15 @@ export default function ActivityCommentThread({
                 {/* Bubble */}
                 <div className={`flex flex-col gap-1 max-w-[75%] ${isOwn ? 'items-end' : 'items-start'}`}>
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] text-white/35 ${isOwn ? 'order-last' : ''}`}>
+                    <span className={`text-[10px] text-[var(--wl-text-muted)] ${isOwn ? 'order-last' : ''}`}>
                       {c.user.name || c.user.email}
                     </span>
-                    <span className="text-[9px] text-white/20">{relativeTime(c.createdAt)}</span>
+                    <span className="text-[9px] text-[var(--wl-text-placeholder)]">{relativeTime(c.createdAt)}</span>
                   </div>
                   <div className={`relative rounded-xl px-3 py-2 text-sm leading-relaxed ${
                     isOwn
                       ? 'bg-brand/25 text-white rounded-tr-sm'
-                      : 'bg-white/[0.06] text-[var(--wl-text-secondary)] rounded-tl-sm'
+                      : 'bg-[var(--wl-hover)] text-[var(--wl-text-secondary)] rounded-tl-sm'
                   }`}>
                     <p className="whitespace-pre-wrap break-words">{c.message}</p>
 
@@ -207,8 +207,8 @@ export default function ActivityCommentThread({
                         className={`absolute -top-2 ${isOwn ? '-left-2' : '-right-2'} w-5 h-5 rounded-full bg-red-500/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 disabled:opacity-50`}
                       >
                         {deletingId === c.id
-                          ? <Loader2 className="w-2.5 h-2.5 text-white animate-spin" />
-                          : <Trash2  className="w-2.5 h-2.5 text-white" />
+                          ? <Loader2 className="w-2.5 h-2.5 text-[var(--wl-text-primary)] animate-spin" />
+                          : <Trash2  className="w-2.5 h-2.5 text-[var(--wl-text-primary)]" />
                         }
                       </button>
                     )}
@@ -232,7 +232,7 @@ export default function ActivityCommentThread({
           maxLength={MAX_LEN}
           rows={2}
           disabled={sending}
-          className="flex-1 resize-none rounded-lg bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm placeholder:text-white/20 px-3 py-2 focus:outline-none focus:border-brand/50 focus:bg-white/[0.06] transition-colors disabled:opacity-50"
+          className="flex-1 resize-none rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm placeholder:text-[var(--wl-text-placeholder)] px-3 py-2 focus:outline-none focus:border-brand/50 focus:bg-[var(--wl-hover)] transition-colors disabled:opacity-50"
         />
         <Button
           size="icon"
@@ -247,7 +247,7 @@ export default function ActivityCommentThread({
         </Button>
       </div>
       {message.length > MAX_LEN * 0.85 && (
-        <p className={`text-[10px] mt-1 text-right ${message.length >= MAX_LEN ? 'text-red-400' : 'text-white/25'}`}>
+        <p className={`text-[10px] mt-1 text-right ${message.length >= MAX_LEN ? 'text-red-400' : 'text-[var(--wl-text-placeholder)]'}`}>
           {message.length}/{MAX_LEN}
         </p>
       )}

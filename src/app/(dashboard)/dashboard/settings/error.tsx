@@ -20,8 +20,8 @@ export default function Error({
         <AlertTriangle className="w-8 h-8 text-red-400" />
       </div>
       <div>
-        <h2 className="text-xl font-semibold text-white mb-2">Algo salió mal</h2>
-        <p className="text-white/50 text-sm max-w-md">
+        <h2 className="text-xl font-semibold text-[var(--wl-text-primary)] mb-2">Algo salió mal</h2>
+        <p className="text-[var(--wl-text-muted)] text-sm max-w-md">
           Ocurrió un error inesperado. Puedes intentar recargar.
         </p>
       </div>

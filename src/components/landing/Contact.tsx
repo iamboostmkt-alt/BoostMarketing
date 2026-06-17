@@ -88,7 +88,7 @@ export default function Contact() {
                 size="lg"
                 variant="outline"
                 onClick={() => setApptOpen(true)}
-                className="border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                className="border-white/15 bg-white/[0.04] text-[var(--wl-text-primary)] hover:bg-white/[0.08]"
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 Agendar Llamada

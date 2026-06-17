@@ -102,10 +102,10 @@ export default function LoginPage() {
       >
         <div className="flex items-center gap-3">
           <WeeklinkMark size={36} />
-          <span className="text-[20px] font-bold text-white tracking-tight">Weeklink</span>
+          <span className="text-[20px] font-bold text-[var(--wl-text-primary)] tracking-tight">Weeklink</span>
         </div>
         <div>
-          <h2 className="text-[32px] font-bold text-white leading-tight mb-4">
+          <h2 className="text-[32px] font-bold text-[var(--wl-text-primary)] leading-tight mb-4">
             La plataforma para agencias que entrega resultados
           </h2>
           <div className="space-y-3">
@@ -117,7 +117,7 @@ export default function LoginPage() {
             ].map(f => (
               <div key={f} className="flex items-center gap-3">
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20">
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <svg className="w-3 h-3 text-[var(--wl-text-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
@@ -276,7 +276,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 rounded-[14px] text-[14px] font-semibold text-white transition-all disabled:opacity-60 mt-2"
+                className="w-full h-12 rounded-[14px] text-[14px] font-semibold text-[var(--wl-text-primary)] transition-all disabled:opacity-60 mt-2"
                 style={{ background: '#7C3AED', boxShadow: '0 8px 24px rgba(124,58,237,0.25)' }}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Iniciar sesión →'}
@@ -311,7 +311,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={magicLoading}
-                className="w-full h-12 rounded-[14px] text-[14px] font-semibold text-white transition-all disabled:opacity-60"
+                className="w-full h-12 rounded-[14px] text-[14px] font-semibold text-[var(--wl-text-primary)] transition-all disabled:opacity-60"
                 style={{ background: '#7C3AED', boxShadow: '0 8px 24px rgba(124,58,237,0.25)' }}
               >
                 {magicLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Enviar enlace mágico ✨'}

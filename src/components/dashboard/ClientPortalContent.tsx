@@ -308,15 +308,15 @@ export default function ClientPortalContent() {
       <Eye className="w-4 h-4 text-amber-400 shrink-0" />
       <span className="text-sm text-amber-300 font-medium shrink-0">Vista previa:</span>
       <Select value={previewClientId || 'none'} onValueChange={(v) => setPreviewClientId(v === 'none' ? '' : v)}>
-        <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm h-8 flex-1 max-w-xs focus:ring-amber-500">
+        <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm h-8 flex-1 max-w-xs focus:ring-amber-500">
           <SelectValue placeholder="Selecciona un cliente..." />
         </SelectTrigger>
-        <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
-          <SelectItem value="none" className="text-[var(--wl-text-muted)] focus:bg-white/[0.06]">
+        <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+          <SelectItem value="none" className="text-[var(--wl-text-muted)] focus:bg-[var(--wl-hover)]">
             — Selecciona un cliente —
           </SelectItem>
           {clients.map((c) => (
-            <SelectItem key={c.id} value={c.id} className="focus:bg-white/[0.06]">
+            <SelectItem key={c.id} value={c.id} className="focus:bg-[var(--wl-hover)]">
               {c.name}{c.company ? ` — ${c.company}` : ''}
             </SelectItem>
           ))}
@@ -339,14 +339,14 @@ export default function ClientPortalContent() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-white/90">Gestión de Cuentas</h1>
+            <h1 className="text-xl font-semibold text-[var(--wl-text-primary)]">Gestión de Cuentas</h1>
             <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-xs font-medium text-purple-300">{clients.length}</span>
           </div>
         </div>
         {/* Search */}
         <div className="relative max-w-xs">
-          <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input type="text" placeholder="Buscar cliente..." className="h-9 w-full rounded-lg border border-[var(--wl-border)] bg-white/[0.03] pl-9 pr-4 text-[13px] text-[var(--wl-text-secondary)] placeholder:text-white/30 focus:border-purple-500/40 focus:outline-none focus:ring-1 focus:ring-purple-500/20" />
+          <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--wl-text-placeholder)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <input type="text" placeholder="Buscar cliente..." className="h-9 w-full rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] pl-9 pr-4 text-[13px] text-[var(--wl-text-secondary)] placeholder:text-[var(--wl-text-placeholder)] focus:border-purple-500/40 focus:outline-none focus:ring-1 focus:ring-purple-500/20" />
         </div>
         {/* Grid */}
         {clients.length === 0 ? (
@@ -393,7 +393,7 @@ export default function ClientPortalContent() {
                           </div>
                         ))}
                         {assignedUsers.length > 4 && (
-                          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#0a0a0f] bg-white/[0.08] text-[8px] text-white/50">+{assignedUsers.length - 4}</div>
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#0a0a0f] bg-[var(--wl-border)] text-[8px] text-[var(--wl-text-muted)]">+{assignedUsers.length - 4}</div>
                         )}
                       </div>
                     )}
@@ -401,22 +401,22 @@ export default function ClientPortalContent() {
                   <div className="relative z-10 flex flex-1 flex-col px-3 pt-1.5 pb-3">
                     <div className="mb-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 className="text-[13px] font-bold text-white/90 truncate">{c.name}</h3>
+                        <h3 className="text-[13px] font-bold text-[var(--wl-text-primary)] truncate">{c.name}</h3>
                         <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium border"
                           style={{ background: st.bg, color: st.text, borderColor: st.border }}>{st.label}</span>
                       </div>
-                      {c.company && <p className="text-[11px] text-white/35 truncate">{c.company}</p>}
-                      <p className="text-[10px] text-white/20 truncate mt-0.5">{c.email}</p>
+                      {c.company && <p className="text-[11px] text-[var(--wl-text-muted)] truncate">{c.company}</p>}
+                      <p className="text-[10px] text-[var(--wl-text-placeholder)] truncate mt-0.5">{c.email}</p>
                     </div>
-                    <div className="mb-2 grid grid-cols-3 gap-1.5 rounded-lg bg-white/[0.03] p-2">
+                    <div className="mb-2 grid grid-cols-3 gap-1.5 rounded-lg bg-[var(--wl-hover)] p-2">
                       {[
                         { val: activeTasks, label: 'tareas' },
                         { val: (c as any).meetings ?? 0, label: 'reuniones' },
                         { val: 0, label: 'vencidas' },
                       ].map((s, si) => (
                         <div key={si} className="text-center">
-                          <div className="text-[15px] font-semibold text-white/85">{s.val}</div>
-                          <div className="text-[9px] text-white/30">{s.label}</div>
+                          <div className="text-[15px] font-semibold text-[var(--wl-text-primary)]">{s.val}</div>
+                          <div className="text-[9px] text-[var(--wl-text-placeholder)]">{s.label}</div>
                         </div>
                       ))}
                     </div>
@@ -425,7 +425,7 @@ export default function ClientPortalContent() {
                         <span className="text-[9px] text-[var(--wl-text-muted)]">Progreso</span>
                         <span className="text-[9px] font-medium text-[var(--wl-text-secondary)]">{progress}%</span>
                       </div>
-                      <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.08]">
+                      <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--wl-border)]">
                         <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progress}%`, backgroundColor: progressColor }} />
                       </div>
                     </div>
@@ -469,7 +469,7 @@ export default function ClientPortalContent() {
             <AlertCircle className="w-7 h-7 text-brand-light/60" />
           </div>
           <div>
-            <p className="text-white font-semibold">Cuenta no configurada</p>
+            <p className="text-[var(--wl-text-primary)] font-semibold">Cuenta no configurada</p>
             <p className="text-[var(--wl-text-muted)] text-sm mt-1 max-w-sm">
               {isManager
                 ? 'Este cliente no tiene un registro en el sistema.'
@@ -487,7 +487,7 @@ export default function ClientPortalContent() {
         {AdminSelectorBar}
         <div className="flex flex-col items-center justify-center py-32 gap-4 text-center">
           <AlertCircle className="w-10 h-10 text-red-400/60" />
-          <p className="text-white/50">{error}</p>
+          <p className="text-[var(--wl-text-muted)]">{error}</p>
         </div>
       </div>
     );
@@ -529,8 +529,8 @@ export default function ClientPortalContent() {
               <Building2 className="w-5 h-5 text-brand-light" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-0.5">Portal</p>
-              <h1 className="text-lg font-medium text-white truncate">{client.name}</h1>
+              <p className="text-xs font-medium text-[var(--wl-text-placeholder)] uppercase tracking-widest mb-0.5">Portal</p>
+              <h1 className="text-lg font-medium text-[var(--wl-text-primary)] truncate">{client.name}</h1>
               {client.company && <p className="text-xs text-[var(--wl-text-muted)] truncate">{client.company}</p>}
             </div>
           </div>
@@ -540,7 +540,7 @@ export default function ClientPortalContent() {
               <ReportButton clientId={client.id} clientName={client.name} clientEmail={client.email} />
             )}
             {assignedManager && (
-              <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl px-4 py-2.5">
+              <div className="flex items-center gap-3 bg-[var(--wl-hover)] rounded-xl px-4 py-2.5">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={assignedManager.image || undefined} />
                   <AvatarFallback className="text-[10px] font-medium"
@@ -549,7 +549,7 @@ export default function ClientPortalContent() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="mr-2">
-                  <p className="text-[10px] text-white/30 font-medium uppercase tracking-wider">Tu PM</p>
+                  <p className="text-[10px] text-[var(--wl-text-placeholder)] font-medium uppercase tracking-wider">Tu PM</p>
                   <p className="text-sm text-[var(--wl-text-secondary)] font-medium">{assignedManager.name || assignedManager.email}</p>
                 </div>
                 <a
@@ -568,22 +568,22 @@ export default function ClientPortalContent() {
         {totalItems > 0 && <ProgressBar total={totalItems} completed={completedItems} />}
 
         <div className="grid grid-cols-2 gap-3 pt-1">
-          <div className="bg-white/[0.03] rounded-xl p-3">
-            <p className="text-[10px] font-medium text-white/30 uppercase tracking-wide mb-1">Entregas</p>
-            <p className="text-2xl font-semibold text-white leading-none">{tasks.length}</p>
+          <div className="bg-[var(--wl-hover)] rounded-xl p-3">
+            <p className="text-[10px] font-medium text-[var(--wl-text-placeholder)] uppercase tracking-wide mb-1">Entregas</p>
+            <p className="text-2xl font-semibold text-[var(--wl-text-primary)] leading-none">{tasks.length}</p>
           </div>
-          <div className="bg-white/[0.03] rounded-xl p-3">
-            <p className="text-[10px] font-medium text-white/30 uppercase tracking-wide mb-1">Completadas</p>
+          <div className="bg-[var(--wl-hover)] rounded-xl p-3">
+            <p className="text-[10px] font-medium text-[var(--wl-text-placeholder)] uppercase tracking-wide mb-1">Completadas</p>
             <p className="text-2xl font-semibold text-green-400 leading-none">{completedItems}</p>
           </div>
         </div>
 
         {(assignedManager || teamMembers.length > 0) && (
-          <div className="pt-1 border-t border-white/[0.04] space-y-3">
-            <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider">Personal Asignado</p>
+          <div className="pt-1 border-t border-[var(--wl-border-subtle)] space-y-3">
+            <p className="text-[11px] font-semibold text-[var(--wl-text-placeholder)] uppercase tracking-wider">Personal Asignado</p>
             <div className="flex flex-wrap gap-3">
               {assignedManager && (
-                <div className="flex items-center gap-2.5 bg-white/[0.03] rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2.5 bg-[var(--wl-hover)] rounded-xl px-3 py-2">
                   <Avatar className="h-7 w-7">
                     <AvatarImage src={assignedManager.image || undefined} />
                     <AvatarFallback className="text-[10px] font-medium"
@@ -592,13 +592,13 @@ export default function ClientPortalContent() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">PM</p>
+                    <p className="text-[9px] text-[var(--wl-text-placeholder)] uppercase tracking-wider font-semibold">PM</p>
                     <p className="text-xs text-[var(--wl-text-secondary)] font-medium leading-tight">{assignedManager.name || assignedManager.email}</p>
                   </div>
                 </div>
               )}
               {teamMembers.map((member) => (
-                <div key={member.id} className="flex items-center gap-2.5 bg-white/[0.03] rounded-xl px-3 py-2">
+                <div key={member.id} className="flex items-center gap-2.5 bg-[var(--wl-hover)] rounded-xl px-3 py-2">
                   <Avatar className="h-7 w-7">
                     <AvatarImage src={member.image || undefined} />
                     <AvatarFallback className="text-[10px] font-medium"
@@ -607,7 +607,7 @@ export default function ClientPortalContent() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-[9px] text-white/30 uppercase tracking-wider font-semibold">Equipo</p>
+                    <p className="text-[9px] text-[var(--wl-text-placeholder)] uppercase tracking-wider font-semibold">Equipo</p>
                     <p className="text-xs text-[var(--wl-text-secondary)] font-medium leading-tight">{member.name || member.email}</p>
                   </div>
                 </div>
@@ -620,7 +620,7 @@ export default function ClientPortalContent() {
       {/* Calendario */}
       <div className="glass-card rounded-2xl p-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-medium text-white/30 uppercase tracking-widest">Calendario</p>
+          <p className="text-xs font-medium text-[var(--wl-text-placeholder)] uppercase tracking-widest">Calendario</p>
           {isManager && (
             <button type="button" onClick={() => setMeetingOpen(true)}
               className="flex items-center gap-1 text-[11px] text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-md px-2 py-1 transition-colors">
@@ -647,7 +647,7 @@ export default function ClientPortalContent() {
             return dmRoom ? (
               <ChatContent room={dmRoom} title="Chat con tu Project Manager" subtitle="Mensajes directos con tu PM" />
             ) : (
-              <div className="flex items-center justify-center py-8 text-white/30 text-sm">
+              <div className="flex items-center justify-center py-8 text-[var(--wl-text-placeholder)] text-sm">
                 Sin Project Manager asignado
               </div>
             );
@@ -657,17 +657,17 @@ export default function ClientPortalContent() {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-5 rounded-full bg-brand" />
-              <h3 className="text-sm font-semibold text-white">Entregas</h3>
+              <h3 className="text-sm font-semibold text-[var(--wl-text-primary)]">Entregas</h3>
             </div>
             <div className="flex items-center gap-1.5">
               <button type="button" onClick={() => setPortalTaskOpen(true)}
-                className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
+                className="flex items-center gap-1 text-[11px] text-brand-light hover:text-[var(--wl-text-primary)] bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
                 <Plus className="w-3 h-3" />
                 {isManager ? 'Nueva entrega' : 'Solicitar tarea'}
               </button>
               {isManager && displayedTasks.length >= 5 && (
                 <button type="button" onClick={() => { setSelectMode(v => !v); setSelectedTaskIds(new Set()); setSelectedApptIds(new Set()); }}
-                  className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${selectMode ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-white/[0.04] border-[var(--wl-border)] text-white/50 hover:text-white'}`}>
+                  className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${selectMode ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-white'}`}>
                   {selectMode ? 'Cancelar' : 'Seleccionar'}
                 </button>
               )}
@@ -688,7 +688,7 @@ export default function ClientPortalContent() {
               )}
               {(['all', 'tasks'] as const).map((tab) => (
                 <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${activeTab === tab ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white'}`}>
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${activeTab === tab ? 'bg-brand text-white' : 'bg-[var(--wl-hover)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)]'}`}>
                   {tab === 'all' ? 'Todas' : 'Abiertas'}
                 </button>
               ))}
@@ -696,8 +696,8 @@ export default function ClientPortalContent() {
           </div>
           {displayedTasks.length === 0 ? (
             <div className="py-10 flex flex-col items-center gap-2 text-center">
-              <CheckSquare className="w-8 h-8 text-white/15" />
-              <p className="text-white/35 text-sm">No hay entregas.</p>
+              <CheckSquare className="w-8 h-8 text-[var(--wl-text-placeholder)]" />
+              <p className="text-[var(--wl-text-muted)] text-sm">No hay entregas.</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
@@ -707,7 +707,7 @@ export default function ClientPortalContent() {
                   {isManager && (
                     <button type="button"
                       onClick={() => { setEditingTask(task as any); setPortalTaskOpen(true); }}
-                      className="absolute top-3 right-3 p-1.5 rounded-md text-white/20 hover:text-white hover:bg-white/[0.08] transition-colors opacity-0 group-hover/taskwrap:opacity-100 z-10">
+                      className="absolute top-3 right-3 p-1.5 rounded-md text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-border)] transition-colors opacity-0 group-hover/taskwrap:opacity-100 z-10">
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -718,30 +718,30 @@ export default function ClientPortalContent() {
 
           {/* Ver archivadas */}
           {isManager && (
-            <div className="pt-2 border-t border-white/[0.04]">
+            <div className="pt-2 border-t border-[var(--wl-border-subtle)]">
               <button type="button"
                 onClick={() => showArchived ? setShowArchived(false) : handleLoadArchived()}
-                className="text-[11px] text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors">
+                className="text-[11px] text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors">
                 {loadingArchived ? 'Cargando...' : showArchived ? 'Ocultar archivadas' : `Ver entregas archivadas`}
               </button>
               {showArchived && archivedTasks.length > 0 && (
                 <div className="mt-2 space-y-2">
-                  <p className="text-[10px] text-white/25 uppercase tracking-wider">Archivadas ({archivedTasks.length})</p>
+                  <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider">Archivadas ({archivedTasks.length})</p>
                   {archivedTasks.map((task: any) => (
-                    <div key={task.id} className="rounded-lg border border-white/[0.04] bg-white/[0.01] p-3 opacity-50">
+                    <div key={task.id} className="rounded-lg border border-[var(--wl-border-subtle)] bg-white/[0.01] p-3 opacity-50">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs text-white/50 line-through">{task.title}</p>
+                        <p className="text-xs text-[var(--wl-text-muted)] line-through">{task.title}</p>
                         <button type="button"
                           onClick={async () => {
                             await fetch('/api/tasks/archive?taskId=' + task.id, { method: 'DELETE' });
                             handleLoadArchived();
                             refetch();
                           }}
-                          className="text-[10px] text-white/25 hover:text-[var(--wl-text-secondary)] transition-colors shrink-0">
+                          className="text-[10px] text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors shrink-0">
                           Restaurar
                         </button>
                       </div>
-                      <p className="text-[10px] text-white/25 mt-1">
+                      <p className="text-[10px] text-[var(--wl-text-placeholder)] mt-1">
                         Archivada: {task.archivedAt ? new Date(task.archivedAt).toLocaleDateString('es-MX') : '—'}
                       </p>
                     </div>
@@ -749,7 +749,7 @@ export default function ClientPortalContent() {
                 </div>
               )}
               {showArchived && archivedTasks.length === 0 && (
-                <p className="text-xs text-white/25 mt-2">No hay entregas archivadas.</p>
+                <p className="text-xs text-[var(--wl-text-placeholder)] mt-2">No hay entregas archivadas.</p>
               )}
             </div>
           )}
@@ -770,11 +770,11 @@ export default function ClientPortalContent() {
           )}
 
           {/* Reuniones */}
-          <div className="pt-3 border-t border-white/[0.04] space-y-3 bg-green-500/[0.02] rounded-xl p-3 -mx-1">
+          <div className="pt-3 border-t border-[var(--wl-border-subtle)] space-y-3 bg-green-500/[0.02] rounded-xl p-3 -mx-1">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-5 rounded-full bg-green-500" />
-                <h3 className="text-sm font-semibold text-white">Reuniones</h3>
+                <h3 className="text-sm font-semibold text-[var(--wl-text-primary)]">Reuniones</h3>
                 {appointments.length > 0 && (
                   <span className="text-[10px] bg-green-500/15 text-green-300 border border-green-500/20 rounded-full px-2 py-0.5">{appointments.length}</span>
                 )}
@@ -788,14 +788,14 @@ export default function ClientPortalContent() {
                   </button>
                   {appointments.length >= 5 && (
                     <button type="button" onClick={() => { setSelectMode(v => !v); setSelectedTaskIds(new Set()); setSelectedApptIds(new Set()); }}
-                      className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${selectMode ? 'bg-green-500/20 border-green-500/40 text-green-300' : 'bg-white/[0.04] border-[var(--wl-border)] text-white/50 hover:text-white'}`}>
+                      className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${selectMode ? 'bg-green-500/20 border-green-500/40 text-green-300' : 'bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)]'}`}>
                       {selectMode ? 'Cancelar' : 'Seleccionar'}
                     </button>
                   )}
                 </div>
               ) : (
                 <button type="button" onClick={() => setRequestOpen(true)}
-                  className="flex items-center gap-1 text-[11px] text-brand-light hover:text-white bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
+                  className="flex items-center gap-1 text-[11px] text-brand-light hover:text-[var(--wl-text-primary)] bg-brand/10 hover:bg-brand/20 border border-brand/20 rounded-md px-2 py-1 transition-colors">
                   <Plus className="w-3 h-3" />
                   Solicitar reunión
                 </button>
@@ -803,8 +803,8 @@ export default function ClientPortalContent() {
             </div>
             {appointments.length === 0 ? (
               <div className="py-8 flex flex-col items-center gap-2 text-center">
-                <Video className="w-7 h-7 text-white/15" />
-                <p className="text-white/35 text-sm">No hay reuniones programadas.</p>
+                <Video className="w-7 h-7 text-[var(--wl-text-placeholder)]" />
+                <p className="text-[var(--wl-text-muted)] text-sm">No hay reuniones programadas.</p>
               </div>
             ) : (
               <div className="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
@@ -833,7 +833,7 @@ export default function ClientPortalContent() {
           <div className="glass-card rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-5 rounded-full bg-brand" />
-              <h3 className="text-sm font-semibold text-white">Actualizaciones recientes</h3>
+              <h3 className="text-sm font-semibold text-[var(--wl-text-primary)]">Actualizaciones recientes</h3>
             </div>
             <div className="space-y-3">
               {activities.slice(0, 3).map((a) => <PortalActivityCard key={a.id} activity={a as unknown as Activity} />)}
@@ -871,9 +871,9 @@ export default function ClientPortalContent() {
       />
 
       <Dialog open={requestOpen} onOpenChange={setRequestOpen}>
-        <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-sm">
+        <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-white text-base">
+            <DialogTitle className="flex items-center gap-2 text-[var(--wl-text-primary)] text-base">
               <Video className="h-4 w-4 text-green-400" />
               Solicitar reunión
             </DialogTitle>
@@ -911,17 +911,17 @@ export default function ClientPortalContent() {
             <div className="space-y-1.5">
               <Label className="text-[var(--wl-text-secondary)] text-xs">Fecha y hora propuesta *</Label>
               <Input type="datetime-local" value={requestDate} onChange={e => setRequestDate(e.target.value)} required
-                className="bg-white/[0.04] border-[var(--wl-border)] text-white focus-visible:ring-brand [color-scheme:dark]" />
+                className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] focus-visible:ring-brand [color-scheme:dark]" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-[var(--wl-text-secondary)] text-xs">Motivo / notas</Label>
               <textarea value={requestNotes} onChange={e => setRequestNotes(e.target.value)} rows={3}
                 placeholder="¿De qué quieres hablar?"
-                className="w-full rounded-md bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none placeholder:text-white/25" />
+                className="w-full rounded-md bg-[var(--wl-hover)] border border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none placeholder:text-[var(--wl-text-placeholder)]" />
             </div>
             <div className="flex gap-2 pt-1">
               <Button type="button" variant="outline" onClick={() => setRequestOpen(false)}
-                className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white">Cancelar</Button>
+                className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]">Cancelar</Button>
               <Button type="submit" disabled={requestSaving || !requestDate}
                 className="flex-1 bg-brand hover:bg-brand-dark text-white">
                 {requestSaving ? 'Enviando...' : 'Enviar solicitud'}
@@ -944,7 +944,7 @@ export default function ClientPortalContent() {
             {deletingMultiple ? 'Eliminando...' : 'Eliminar'}
           </button>
           <button type="button" onClick={() => { setSelectMode(false); setSelectedTaskIds(new Set()); setSelectedApptIds(new Set()); }}
-            className="text-sm text-[var(--wl-text-muted)] hover:text-white transition-colors">
+            className="text-sm text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] transition-colors">
             Cancelar
           </button>
           </div>
@@ -976,18 +976,18 @@ export default function ClientPortalContent() {
       {milestoneOpen && isManager && client && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60" onClick={() => setMilestoneOpen(false)}>
           <div className="bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-lg sm:mx-4 space-y-4 max-h-[88dvh] sm:max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-white">{editingMilestone ? "Editar milestone" : "Nuevo milestone"}</h3>
+            <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">{editingMilestone ? "Editar milestone" : "Nuevo milestone"}</h3>
             <div className="space-y-1">
               <p className="text-xs text-[var(--wl-text-muted)]">Nombre *</p>
               <input type="text" placeholder="Ej: Entrega de diseños finales" value={milestoneForm.title}
                 onChange={e => setMilestoneForm(f => ({...f, title: e.target.value}))}
-                className="w-full bg-white/[0.04] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50" />
+                className="w-full bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-[var(--wl-text-primary)] placeholder-white/30 outline-none focus:border-brand/50" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <p className="text-xs text-[var(--wl-text-muted)]">Tipo</p>
                 <select value={milestoneForm.type} onChange={e => setMilestoneForm(f => ({...f, type: e.target.value}))}
-                  className="w-full bg-[#1a1a24] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
+                  className="w-full bg-[#1a1a24] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-[var(--wl-text-primary)] outline-none focus:border-brand/50">
                   <option value="other">General</option>
                   <option value="inicio_proyecto">Inicio proyecto</option>
                   <option value="grabacion">Grabación</option>
@@ -1002,7 +1002,7 @@ export default function ClientPortalContent() {
               <div className="space-y-1">
                 <p className="text-xs text-[var(--wl-text-muted)]">Estado</p>
                 <select value={milestoneForm.status} onChange={e => setMilestoneForm(f => ({...f, status: e.target.value}))}
-                  className="w-full bg-[#1a1a24] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
+                  className="w-full bg-[#1a1a24] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-[var(--wl-text-primary)] outline-none focus:border-brand/50">
                   <option value="upcoming">Próximo</option>
                   <option value="in_progress">En progreso</option>
                   <option value="review">En revisión</option>
@@ -1015,12 +1015,12 @@ export default function ClientPortalContent() {
               <div className="space-y-1">
                 <p className="text-xs text-[var(--wl-text-muted)]">Fecha objetivo *</p>
                 <input type="date" value={milestoneForm.date} onChange={e => setMilestoneForm(f => ({...f, date: e.target.value}))}
-                  className="w-full bg-white/[0.04] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50 [color-scheme:dark]" />
+                  className="w-full bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-[var(--wl-text-primary)] outline-none focus:border-brand/50 [color-scheme:dark]" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-[var(--wl-text-muted)]">Responsable (PM)</p>
                 <select value={milestoneForm.responsibleId} onChange={e => setMilestoneForm(f => ({...f, responsibleId: e.target.value}))}
-                  className="w-full bg-[#1a1a24] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
+                  className="w-full bg-[#1a1a24] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-[var(--wl-text-primary)] outline-none focus:border-brand/50">
                   <option value="">Sin asignar</option>
                   {meetingTeam.filter((u: any) => u.role === 'PROJECT_MANAGER').map((u: any) => (
                     <option key={u.id} value={u.id}>{u.name || u.email}</option>
@@ -1038,13 +1038,13 @@ export default function ClientPortalContent() {
               <p className="text-xs text-[var(--wl-text-muted)]">Descripción</p>
               <textarea rows={2} placeholder="Descripción corta del milestone" value={milestoneForm.description}
                 onChange={e => setMilestoneForm(f => ({...f, description: e.target.value}))}
-                className="w-full bg-white/[0.04] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50 resize-none" />
+                className="w-full bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-[var(--wl-text-primary)] placeholder-white/30 outline-none focus:border-brand/50 resize-none" />
             </div>
             <div className="space-y-1">
               <p className="text-xs text-[var(--wl-text-muted)]">Comentarios / feedback</p>
               <textarea rows={2} placeholder="Notas importantes para el cliente" value={milestoneForm.comments}
                 onChange={e => setMilestoneForm(f => ({...f, comments: e.target.value}))}
-                className="w-full bg-white/[0.04] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-brand/50 resize-none" />
+                className="w-full bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-lg px-3 py-2 text-sm text-[var(--wl-text-primary)] placeholder-white/30 outline-none focus:border-brand/50 resize-none" />
             </div>
             <div className="flex items-center gap-3">
               <input type="checkbox" id="visibleToClient" checked={milestoneForm.visibleToClient}
@@ -1057,7 +1057,7 @@ export default function ClientPortalContent() {
             {tasks.length > 0 && (
               <div className="space-y-1">
                 <p className="text-xs text-[var(--wl-text-muted)]">Tareas vinculadas</p>
-                <div className="bg-white/[0.02] border border-[var(--wl-border)] rounded-lg p-2 max-h-36 overflow-y-auto space-y-1">
+                <div className="bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-lg p-2 max-h-36 overflow-y-auto space-y-1">
                   {tasks.map((task: any) => {
                     const checked = milestoneTaskIds.includes(task.id);
                     return (
@@ -1065,26 +1065,26 @@ export default function ClientPortalContent() {
                         onClick={() => setMilestoneTaskIds(prev =>
                           checked ? prev.filter(id => id !== task.id) : [...prev, task.id]
                         )}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-xs transition-colors ${checked ? 'bg-brand/20 text-white' : 'text-white/50 hover:bg-[var(--wl-hover)] hover:text-white'}`}>
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-xs transition-colors ${checked ? 'bg-brand/20 text-white' : 'text-[var(--wl-text-muted)] hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]'}`}>
                         <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${checked ? 'border-brand bg-brand' : 'border-white/20'}`}>
-                          {checked && <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 6l3 3 5-6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                          {checked && <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 text-[var(--wl-text-primary)]" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 6l3 3 5-6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                         </span>
                         <span className="truncate flex-1">{task.title}</span>
                         {task.milestoneId && task.milestoneId !== editingMilestone?.id && (
-                          <span className="text-[9px] text-white/25 shrink-0">vinculada</span>
+                          <span className="text-[9px] text-[var(--wl-text-placeholder)] shrink-0">vinculada</span>
                         )}
                       </button>
                     );
                   })}
                 </div>
                 {milestoneTaskIds.length > 0 && (
-                  <p className="text-[10px] text-white/30">{milestoneTaskIds.length} tarea{milestoneTaskIds.length !== 1 ? 's' : ''} seleccionada{milestoneTaskIds.length !== 1 ? 's' : ''}</p>
+                  <p className="text-[10px] text-[var(--wl-text-placeholder)]">{milestoneTaskIds.length} tarea{milestoneTaskIds.length !== 1 ? 's' : ''} seleccionada{milestoneTaskIds.length !== 1 ? 's' : ''}</p>
                 )}
               </div>
             )}
             <div className="flex gap-2 justify-end pt-2">
               <button type="button" onClick={() => setMilestoneOpen(false)}
-                className="px-4 py-2 text-sm text-[var(--wl-text-muted)] hover:text-white transition-colors">Cancelar</button>
+                className="px-4 py-2 text-sm text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] transition-colors">Cancelar</button>
               <button type="button"
                 onClick={async () => {
                   if (!milestoneForm.title || !milestoneForm.date) return;
@@ -1139,13 +1139,13 @@ export default function ClientPortalContent() {
               href={l.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] text-white/25 hover:text-white/50 transition-colors"
+              className="text-[11px] text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors"
             >
               {l.label}
             </a>
           ))}
         </div>
-        <p className="text-center text-[10px] text-white/15 mt-2">© 2026 Weeklink</p>
+        <p className="text-center text-[10px] text-[var(--wl-text-placeholder)] mt-2">© 2026 Weeklink</p>
       </footer>
     </div>
   );

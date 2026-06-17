@@ -46,7 +46,7 @@ function TaskAvatar({ u }: { u: { name: string | null; email: string; color: str
   return (
     <Avatar className="w-5 h-5">
       {u.image && <AvatarImage src={u.image} />}
-      <AvatarFallback style={{ background: u.color }} className="text-[8px] text-white font-bold">{initials}</AvatarFallback>
+      <AvatarFallback style={{ background: u.color }} className="text-[8px] text-[var(--wl-text-primary)] font-bold">{initials}</AvatarFallback>
     </Avatar>
   );
 }
@@ -66,7 +66,7 @@ function CompletedTasksSection({ tasks }: { tasks: any[] }) {
           {tasks.map((task: any) => (
             <div key={task.id} className="flex items-center gap-2 py-1">
               <CheckCircle2 className="w-3 h-3 text-green-400/50 shrink-0" />
-              <span className="text-[11px] text-white/30 line-through truncate">{task.title}</span>
+              <span className="text-[11px] text-[var(--wl-text-placeholder)] line-through truncate">{task.title}</span>
             </div>
           ))}
         </div>
@@ -286,57 +286,57 @@ export default function CalendarContent() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1.5">
-            <Skeleton className="h-3 w-20 rounded bg-white/[0.04]" />
-            <Skeleton className="h-4 w-36 rounded bg-white/[0.06]" />
+            <Skeleton className="h-3 w-20 rounded bg-[var(--wl-hover)]" />
+            <Skeleton className="h-4 w-36 rounded bg-[var(--wl-hover)]" />
           </div>
           <div className="flex gap-2">
-            <Skeleton className="h-8 w-28 rounded-lg bg-white/[0.04]" />
-            <Skeleton className="h-8 w-24 rounded-lg bg-white/[0.06]" />
+            <Skeleton className="h-8 w-28 rounded-lg bg-[var(--wl-hover)]" />
+            <Skeleton className="h-8 w-24 rounded-lg bg-[var(--wl-hover)]" />
           </div>
         </div>
         <div className="flex gap-2 border-b border-[var(--wl-border)]">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-24 rounded-t-lg bg-white/[0.04]" />
+            <Skeleton key={i} className="h-9 w-24 rounded-t-lg bg-[var(--wl-hover)]" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-xl p-4 md:p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <Skeleton className="h-5 w-32 rounded bg-white/[0.06]" />
+              <Skeleton className="h-5 w-32 rounded bg-[var(--wl-hover)]" />
               <div className="flex gap-1">
-                <Skeleton className="h-7 w-7 rounded-lg bg-white/[0.04]" />
-                <Skeleton className="h-7 w-10 rounded-lg bg-white/[0.04]" />
-                <Skeleton className="h-7 w-7 rounded-lg bg-white/[0.04]" />
+                <Skeleton className="h-7 w-7 rounded-lg bg-[var(--wl-hover)]" />
+                <Skeleton className="h-7 w-10 rounded-lg bg-[var(--wl-hover)]" />
+                <Skeleton className="h-7 w-7 rounded-lg bg-[var(--wl-hover)]" />
               </div>
             </div>
             <div className="grid grid-cols-7">
               {Array.from({ length: 7 }).map((_, i) => (
-                <Skeleton key={i} className="h-4 rounded bg-white/[0.03]" />
+                <Skeleton key={i} className="h-4 rounded bg-[var(--wl-hover)]" />
               ))}
             </div>
             <div className="grid grid-cols-7">
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} className="min-h-[72px] border-b border-r border-white/[0.03] p-1 space-y-1">
-                  <Skeleton className="h-3 w-4 rounded bg-white/[0.04]" />
-                  {i % 4 === 0 && <Skeleton className="h-2 w-full rounded bg-white/[0.03]" />}
-                  {i % 7 === 0 && <Skeleton className="h-2 w-3/4 rounded bg-white/[0.03]" />}
+                <div key={i} className="min-h-[72px] border-b border-r border-[var(--wl-border-subtle)] p-1 space-y-1">
+                  <Skeleton className="h-3 w-4 rounded bg-[var(--wl-hover)]" />
+                  {i % 4 === 0 && <Skeleton className="h-2 w-full rounded bg-[var(--wl-hover)]" />}
+                  {i % 7 === 0 && <Skeleton className="h-2 w-3/4 rounded bg-[var(--wl-hover)]" />}
                 </div>
               ))}
             </div>
           </div>
           <div className="bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-xl overflow-hidden">
             <div className="p-4 border-b border-[var(--wl-border)] space-y-1.5">
-              <Skeleton className="h-4 w-24 rounded bg-white/[0.06]" />
-              <Skeleton className="h-3 w-16 rounded bg-white/[0.04]" />
+              <Skeleton className="h-4 w-24 rounded bg-[var(--wl-hover)]" />
+              <Skeleton className="h-3 w-16 rounded bg-[var(--wl-hover)]" />
             </div>
             <div className="p-4 space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="space-y-1.5 p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                <div key={i} className="space-y-1.5 p-3 rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)]">
                   <div className="flex gap-2">
-                    <Skeleton className="h-4 w-16 rounded-full bg-white/[0.06]" />
-                    <Skeleton className="h-3 flex-1 rounded bg-white/[0.04]" />
+                    <Skeleton className="h-4 w-16 rounded-full bg-[var(--wl-hover)]" />
+                    <Skeleton className="h-3 flex-1 rounded bg-[var(--wl-hover)]" />
                   </div>
-                  <Skeleton className="h-2.5 w-2/3 rounded bg-white/[0.03]" />
+                  <Skeleton className="h-2.5 w-2/3 rounded bg-[var(--wl-hover)]" />
                 </div>
               ))}
             </div>
@@ -350,7 +350,7 @@ export default function CalendarContent() {
     <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Calendario</p>
+          <p className="text-xs font-medium text-[var(--wl-text-placeholder)] uppercase tracking-widest mb-1">Calendario</p>
           <p className="text-[var(--wl-text-muted)] text-sm">Haz clic en un día para ver su detalle</p>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap justify-end min-w-0 shrink-0">
@@ -358,17 +358,17 @@ export default function CalendarContent() {
           {!isClient && clientOptions.length > 0 && (calView === 'clients' || calView === 'deliveries') && (
             <div className="flex items-center gap-2">
               <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm h-9 w-auto min-w-[160px] max-w-[220px] focus:ring-brand">
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm h-9 w-auto min-w-[160px] max-w-[220px] focus:ring-brand">
                   <SelectValue placeholder="Todos los clientes" />
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
                   {(isAdmin || isPM) && (
-                    <SelectItem value="all" className="focus:bg-white/[0.06]">
+                    <SelectItem value="all" className="focus:bg-[var(--wl-hover)]">
                       {isAdmin ? 'Todos los clientes' : 'Todos mis clientes'}
                     </SelectItem>
                   )}
                   {clientOptions.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="focus:bg-white/[0.06]">
+                    <SelectItem key={c.id} value={c.id} className="focus:bg-[var(--wl-hover)]">
                       {c.name}{c.company ? ` — ${c.company}` : ''}
                     </SelectItem>
                   ))}
@@ -405,7 +405,7 @@ export default function CalendarContent() {
             <button key={tab.id} onClick={() => setCalView(tab.id)}
               className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
                 calView === tab.id
-                  ? 'border-brand text-white'
+                  ? 'border-brand text-[var(--wl-text-primary)]'
                   : 'border-transparent text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] hover:border-white/20'
               }`}>
               {tab.label}
@@ -431,11 +431,11 @@ export default function CalendarContent() {
             <div className="flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-brand-light" />
               <div>
-                <p className="text-sm font-semibold text-white leading-tight">
+                <p className="text-sm font-semibold text-[var(--wl-text-primary)] leading-tight">
                   {isToday(selectedDay) ? 'Hoy' : capitalizedLabel}
                 </p>
                 {isToday(selectedDay) && (
-                  <p className="text-[11px] text-white/35">{capitalizedLabel}</p>
+                  <p className="text-[11px] text-[var(--wl-text-muted)]">{capitalizedLabel}</p>
                 )}
               </div>
             </div>
@@ -471,25 +471,25 @@ export default function CalendarContent() {
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5" style={statusStyleMap[task.status] || { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}>
                           {statusLabels[task.status] || task.status}
                         </span>
-                        <p className="text-sm font-medium text-white/90 leading-tight group-hover:text-white transition-colors">
+                        <p className="text-sm font-medium text-[var(--wl-text-primary)] leading-tight group-hover:text-[var(--wl-text-primary)] transition-colors">
                           {task.title}
                         </p>
                       </div>
                       {task.description && (
-                        <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
+                        <p className="text-xs text-[var(--wl-text-muted)] mt-2 line-clamp-2 pl-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-3 mt-2.5 pl-1 flex-wrap">
                         <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-[var(--wl-text-muted)]'}`}>
                           {priorityLabels[task.priority] || task.priority}
                         </span>
                         {task.dueDate && (
-                          <div className="flex items-center gap-1 text-[10px] text-white/25">
+                          <div className="flex items-center gap-1 text-[10px] text-[var(--wl-text-placeholder)]">
                             <Clock className="w-2.5 h-2.5" />
                             {format(new Date(task.dueDate), 'HH:mm')}
                           </div>
                         )}
                         {(task as any).client?.name && (
-                          <span className="text-[10px] text-white/30 bg-white/[0.04] px-1.5 py-0.5 rounded-full">
+                          <span className="text-[10px] text-[var(--wl-text-placeholder)] bg-[var(--wl-hover)] px-1.5 py-0.5 rounded-full">
                             {(task as any).client.name}
                           </span>
                         )}
@@ -502,7 +502,7 @@ export default function CalendarContent() {
                           if (!confirm(`Eliminar "${task.title}"?`)) return;
                           await handleDeleteTask(task.id);
                         }}
-                        className="absolute top-2 right-2 p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100">
+                        className="absolute top-2 right-2 p-1.5 rounded-md text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -538,7 +538,7 @@ export default function CalendarContent() {
                         <div className="flex gap-1 shrink-0">
                           <button type="button"
                             onClick={() => { setEditingAppointment(apt); setApptEditOpen(true); }}
-                            className="p-1 rounded text-white/20 hover:text-green-400 hover:bg-green-500/10 transition-colors">
+                            className="p-1 rounded text-[var(--wl-text-placeholder)] hover:text-green-400 hover:bg-green-500/10 transition-colors">
                             <Pencil className="w-3 h-3" />
                           </button>
                           <button type="button"
@@ -546,15 +546,15 @@ export default function CalendarContent() {
                               if (!confirm("Eliminar esta videollamada?")) return;
                               await handleDeleteAppointment(apt.id);
                             }}
-                            className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                            className="p-1 rounded text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-500/10 transition-colors">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="text-[10px] text-white/30">{apt.email}</span>
-                      <div className="flex items-center gap-1 text-[10px] text-white/25">
+                      <span className="text-[10px] text-[var(--wl-text-placeholder)]">{apt.email}</span>
+                      <div className="flex items-center gap-1 text-[10px] text-[var(--wl-text-placeholder)]">
                         <Clock className="w-2.5 h-2.5" />
                         {format(new Date(apt.date), "HH:mm")}
                       </div>
@@ -566,18 +566,18 @@ export default function CalendarContent() {
 
             {total === 0 && (
               <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-white/20" />
+                <div className="w-12 h-12 rounded-full bg-[var(--wl-hover)] flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-[var(--wl-text-placeholder)]" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-[var(--wl-text-muted)]">Sin elementos este dia</p>
-                  <p className="text-xs text-white/25 mt-0.5">
+                  <p className="text-xs text-[var(--wl-text-placeholder)] mt-0.5">
                     {isToday(selectedDay) ? 'Todo en orden por hoy' : 'No hay nada programado'}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm"
-                    className="text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)] text-xs gap-1"
+                    className="text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] text-xs gap-1"
                     onClick={() => { setEditingTask(null); setTaskFormOpen(true); }}>
                     <Plus className="w-3.5 h-3.5" />
                     Tarea

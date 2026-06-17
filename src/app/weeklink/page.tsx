@@ -50,7 +50,7 @@ function MockChat() {
       <div className="flex-1 overflow-hidden px-4 py-3 space-y-3">
         {msgs.map((m, i) => (
           <div key={i} className="flex gap-2.5">
-            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ background: m.color }}>
+            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-[var(--wl-text-primary)]" style={{ background: m.color }}>
               {m.user.split(' ').map(n => n[0]).join('')}
             </div>
             <div className="flex-1">
@@ -84,7 +84,7 @@ function MockThread() {
       <div className="flex-1 px-3 py-3 space-y-2.5">
         {[{ init: 'SG', color: '#7C3AED', name: 'Sofia G.', msg: 'Aquí el concepto...' }, { init: 'MR', color: '#2563EB', name: 'Marcos R.', msg: 'Revisemos el CTA' }, { init: 'AT', color: '#059669', name: 'Alex T.', msg: '2 variaciones —' }, { init: 'SG', color: '#7C3AED', name: 'Sofia G.', msg: 'Versión final OK' }].map((t, i) => (
           <div key={i} className="flex items-start gap-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white" style={{ background: t.color }}>{t.init}</div>
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-[var(--wl-text-primary)]" style={{ background: t.color }}>{t.init}</div>
             <div>
               <p className="text-[10px] font-semibold text-[#374151]">{t.name}</p>
               <p className="text-[11px] text-[#6B7280]">{t.msg}</p>
@@ -455,7 +455,7 @@ export default function WeeklinkHome() {
         <div className="overflow-hidden rounded-[28px] bg-[#7C3AED] px-12 py-16 text-center"
           style={{ boxShadow: '0 20px 60px rgba(124,58,237,0.25)' }}>
           <p className="mb-2 text-[12px] font-semibold uppercase tracking-widest text-violet-300">Únete hoy</p>
-          <h2 className="mb-4 text-[40px] font-bold tracking-tight text-white">
+          <h2 className="mb-4 text-[40px] font-bold tracking-tight text-[var(--wl-text-primary)]">
             Empieza gratis. Crece sin límites.
           </h2>
           <p className="mb-8 text-[16px] text-violet-200">15 días de acceso completo. Sin tarjeta de crédito. Cancela cuando quieras.</p>
@@ -466,7 +466,7 @@ export default function WeeklinkHome() {
               Crear mi workspace gratis →
             </Link>
             <button onClick={() => scrollTo('precios')}
-              className="inline-flex h-12 items-center rounded-[14px] border border-white/30 px-8 text-[15px] font-medium text-white transition-all hover:bg-white/10">
+              className="inline-flex h-12 items-center rounded-[14px] border border-white/30 px-8 text-[15px] font-medium text-[var(--wl-text-primary)] transition-all hover:bg-white/10">
               Ver planes
             </button>
           </div>

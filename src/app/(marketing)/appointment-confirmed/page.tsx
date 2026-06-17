@@ -10,7 +10,7 @@ export default function AppointmentConfirmedPage() {
           </svg>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2">Cita recibida</h1>
+          <h1 className="text-2xl font-bold text-[var(--wl-text-primary)] mb-2">Cita recibida</h1>
           <p className="text-[var(--wl-text-secondary)] text-sm leading-relaxed">
             Gracias por agendar tu videollamada. Nuestro equipo te contactara pronto para confirmar los detalles.
           </p>

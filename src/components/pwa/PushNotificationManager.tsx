@@ -112,15 +112,15 @@ export default function PushNotificationManager() {
             <Bell className="w-5 h-5 text-violet-400" strokeWidth={1.75} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white mb-0.5">
+            <p className="text-[13px] font-semibold text-[var(--wl-text-primary)] mb-0.5">
               Activa las notificaciones
             </p>
-            <p className="text-[11px] text-white/45 leading-relaxed">
+            <p className="text-[11px] text-[var(--wl-text-muted)] leading-relaxed">
               Recibe alertas de tareas, mensajes y reuniones en tiempo real.
             </p>
             <div className="flex gap-2 mt-3">
               <button onClick={subscribe} disabled={loading}
-                className="flex-1 rounded-[10px] py-2 text-[12px] font-semibold text-white transition-all disabled:opacity-60"
+                className="flex-1 rounded-[10px] py-2 text-[12px] font-semibold text-[var(--wl-text-primary)] transition-all disabled:opacity-60"
                 style={{ background: '#7C3AED' }}>
                 {loading ? 'Activando...' : 'Activar'}
               </button>
@@ -131,7 +131,7 @@ export default function PushNotificationManager() {
             </div>
           </div>
           <button onClick={() => setShowBanner(false)}
-            className="text-white/20 hover:text-white/50 transition-colors shrink-0 mt-0.5">
+            className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors shrink-0 mt-0.5">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>

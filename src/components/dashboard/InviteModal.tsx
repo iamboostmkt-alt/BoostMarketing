@@ -183,7 +183,7 @@ function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
         </Avatar>
         <div>
           <p className="text-[13px] font-medium text-[var(--wl-text-secondary)]">{member.name}</p>
-          <p className="text-[11px] text-white/25">{member.email}</p>
+          <p className="text-[11px] text-[var(--wl-text-placeholder)]">{member.email}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -192,7 +192,7 @@ function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
         </span>
         {isAdmin && (
           <div ref={menuRef} style={{ position: "relative" }}>
-            <button ref={btnRef} onClick={handleMenu} className="flex h-7 w-7 items-center justify-center rounded-md text-white/20 transition-colors hover:bg-white/[0.05] hover:text-white/50">
+            <button ref={btnRef} onClick={handleMenu} className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--wl-text-placeholder)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-muted)]">
               <MoreHorizontal className="h-3.5 w-3.5" />
             </button>
             <AnimatePresence>
@@ -204,8 +204,8 @@ function MemberRow({ member, isAdmin }: { member: Member; isAdmin?: boolean }) {
                   transition={{ duration: 0.12 }}
                   style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 9999, width: 160, background: 'var(--wl-elevated)', border: "1px solid rgba(255,255,255,0.10)", borderRadius: 10, padding: "4px 0", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
                 >
-                  <button onClick={() => setMenuOpen(false)} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-[var(--wl-text-secondary)] transition-colors hover:bg-white/[0.05] hover:text-white">Cambiar rol</button>
-                  <div className="my-1 h-px bg-white/[0.06]" />
+                  <button onClick={() => setMenuOpen(false)} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]">Cambiar rol</button>
+                  <div className="my-1 h-px bg-[var(--wl-hover)]" />
                   <button onClick={() => setMenuOpen(false)} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-red-400 transition-colors hover:bg-red-500/[0.08]">Eliminar miembro</button>
                 </motion.div>
               )}
@@ -244,10 +244,10 @@ function InvitedRow({ invite, onRemove }: { invite: PendingInvite; onRemove: (em
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-[13px] font-medium text-white/55">{invite.name}</p>
+            <p className="text-[13px] font-medium text-[var(--wl-text-primary)]/55">{invite.name}</p>
             <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400">Invitado</span>
           </div>
-          <p className="text-[11px] text-white/25">{invite.email}</p>
+          <p className="text-[11px] text-[var(--wl-text-placeholder)]">{invite.email}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ function InvitedRow({ invite, onRemove }: { invite: PendingInvite; onRemove: (em
           <ChevronDown style={{ width: 10, height: 10, color: "rgba(255,255,255,0.20)" }} />
         </div>
         <div ref={menuRef} style={{ position: "relative" }}>
-          <button ref={btnRef} onClick={handleMenu} className="flex h-7 w-7 items-center justify-center rounded-md text-white/20 transition-colors hover:bg-white/[0.05] hover:text-white/50">
+          <button ref={btnRef} onClick={handleMenu} className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--wl-text-placeholder)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-muted)]">
             <MoreHorizontal className="h-3.5 w-3.5" />
           </button>
           <AnimatePresence>
@@ -269,8 +269,8 @@ function InvitedRow({ invite, onRemove }: { invite: PendingInvite; onRemove: (em
                 transition={{ duration: 0.12 }}
                 style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 9999, width: 160, background: 'var(--wl-elevated)', border: "1px solid rgba(255,255,255,0.10)", borderRadius: 10, padding: "4px 0", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
               >
-                <button onClick={() => setMenuOpen(false)} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-[var(--wl-text-secondary)] transition-colors hover:bg-white/[0.05] hover:text-white">Reenviar invitación</button>
-                <div className="my-1 h-px bg-white/[0.06]" />
+                <button onClick={() => setMenuOpen(false)} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]">Reenviar invitación</button>
+                <div className="my-1 h-px bg-[var(--wl-hover)]" />
                 <button onClick={() => { onRemove(invite.email); setMenuOpen(false); }} className="flex w-full items-center px-3 py-2 text-left text-[12px] text-red-400 transition-colors hover:bg-red-500/[0.08]">Cancelar invitación</button>
               </motion.div>
             )}
@@ -415,15 +415,15 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
             {/* Header */}
             <div className="flex items-center justify-between mb-3 px-1">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--wl-border)] bg-white/[0.04]">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)]">
                   <UserPlus className="h-3.5 w-3.5 text-purple-400" strokeWidth={1.5} />
                 </div>
                 <div>
-                  <p className="text-[13px] font-medium text-white/85 leading-none">Invitar miembro</p>
-                  <p className="mt-0.5 text-[11px] text-white/30">Se enviará un correo con credenciales</p>
+                  <p className="text-[13px] font-medium text-[var(--wl-text-primary)] leading-none">Invitar miembro</p>
+                  <p className="mt-0.5 text-[11px] text-[var(--wl-text-placeholder)]">Se enviará un correo con credenciales</p>
                 </div>
               </div>
-              <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-lg text-white/25 transition-colors hover:bg-white/[0.05] hover:text-[var(--wl-text-secondary)]">
+              <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--wl-text-placeholder)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -433,23 +433,23 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
               <div style={{ background: 'var(--wl-bg)', border: "1px solid rgba(255,255,255,0.06)", borderRadius: '0 0 14px 14px', position: "relative", maxHeight: "calc(88dvh)", overflowY: "auto", WebkitOverflowScrolling: "touch" }} className="p-5 rounded-t-2xl sm:rounded-2xl sm:max-h-[calc(90dvh)]">
                 <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
                 {/* Tabs */}
-                <div className="flex gap-1 mb-4 p-1 rounded-lg bg-white/[0.03] w-fit">
+                <div className="flex gap-1 mb-4 p-1 rounded-lg bg-[var(--wl-hover)] w-fit">
                   {(['team','client'] as const).map(t => (
                     <button key={t} type="button" onClick={() => setTab(t)}
-                      className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${tab === t ? 'bg-primary text-white' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}>
+                      className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${tab === t ? 'bg-primary text-[var(--wl-text-primary)]' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}>
                       {t === 'team' ? '👥 Equipo' : '🏢 Cliente'}
                     </button>
                   ))}
                 </div>
                 {tab === 'team' && <>
-                <h2 className="text-[14px] font-medium text-white/85 relative z-10">Invitar miembros</h2>
-                <p className="mt-0.5 text-[12px] text-white/35 relative z-10">Agrega nuevos miembros con su correo electrónico</p>
+                <h2 className="text-[14px] font-medium text-[var(--wl-text-primary)] relative z-10">Invitar miembros</h2>
+                <p className="mt-0.5 text-[12px] text-[var(--wl-text-muted)] relative z-10">Agrega nuevos miembros con su correo electrónico</p>
                 <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center relative z-10">
                   <input
                     type="email" placeholder="Correo electrónico" value={email}
                     onChange={e => setEmail(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && handleInvite()}
-                    className="h-[36px] flex-1 rounded-lg border border-[var(--wl-border)] bg-white/[0.03] px-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10"
+                    className="h-[36px] flex-1 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10"
                     disabled={loading}
                   />
                   <RolePill value={role} onChange={setRole} size="lg" />
@@ -467,17 +467,17 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                 </>}
               </div>
                 {tab === 'client' && <>
-                <h2 className="text-[14px] font-medium text-white/85 relative z-10">Invitar cliente</h2>
-                <p className="mt-0.5 text-[12px] text-white/35 relative z-10">El cliente recibirá un link para acceder a su portal</p>
+                <h2 className="text-[14px] font-medium text-[var(--wl-text-primary)] relative z-10">Invitar cliente</h2>
+                <p className="mt-0.5 text-[12px] text-[var(--wl-text-muted)] relative z-10">El cliente recibirá un link para acceder a su portal</p>
                 <div className="mt-4 flex flex-col gap-2.5 relative z-10">
                   <input type="text" placeholder="Nombre del cliente" value={clientName}
                     onChange={e => setClientName(e.target.value)}
-                    className="h-[36px] rounded-lg border border-[var(--wl-border)] bg-white/[0.03] px-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none focus:border-purple-500/40" />
+                    className="h-[36px] rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none focus:border-purple-500/40" />
                   <div className="flex gap-2">
                     <input type="email" placeholder="Email del cliente" value={clientEmail}
                       onChange={e => setClientEmail(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleInviteClient()}
-                      className="h-[36px] flex-1 rounded-lg border border-[var(--wl-border)] bg-white/[0.03] px-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none focus:border-purple-500/40" />
+                      className="h-[36px] flex-1 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none focus:border-purple-500/40" />
                     <motion.button type="button" onClick={handleInviteClient} disabled={clientLoading || clientSuccess}
                       whileHover={{ backgroundColor: "#6d28d9" }} whileTap={{ scale: 0.98 }} transition={{ duration: 0.15 }}
                       className="flex h-[36px] items-center gap-1.5 rounded-lg bg-[#7c3aed] px-5 text-[13px] font-medium text-white disabled:opacity-60 whitespace-nowrap">
@@ -497,15 +497,15 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                   </span>
                 </div>
                 <div className="relative mb-2.5 z-10">
-                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/20" />
+                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--wl-text-placeholder)]" />
                   <input type="text" placeholder="Buscar miembros..." value={search} onChange={e => setSearch(e.target.value)}
-                    className="h-[34px] w-full rounded-lg border border-[var(--wl-border)] bg-white/[0.03] pl-9 pr-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10"
+                    className="h-[34px] w-full rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] pl-9 pr-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10"
                   />
                 </div>
-                <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
+                <div className="h-px bg-[var(--wl-hover)] mb-1 relative z-10" />
                 <div className="max-h-80 overflow-y-auto overflow-x-hidden relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {loadingMembers ? (
-                    <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
+                    <div className="py-6 text-center text-[12px] text-[var(--wl-text-placeholder)]">Cargando...</div>
                   ) : (
                     <div className="space-y-0.5">
                       <AnimatePresence mode="popLayout">
@@ -516,25 +516,25 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                         ))}
                       </AnimatePresence>
                       {filteredMembers.length === 0 && search && (
-                        <div className="py-4 text-center text-[12px] text-white/25">No se encontraron miembros</div>
+                        <div className="py-4 text-center text-[12px] text-[var(--wl-text-placeholder)]">No se encontraron miembros</div>
                       )}
                     </div>
                   )}
                 </div>
                 <div className="mt-3 relative z-10">
-                  <div className="mb-1.5 px-1.5 text-[11px] font-medium text-white/35 uppercase tracking-widest">Invitaciones pendientes</div>
+                  <div className="mb-1.5 px-1.5 text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest">Invitaciones pendientes</div>
                   <div className="space-y-0.5">
                     <AnimatePresence mode="popLayout">
                       {filteredInvited.length === 0 ? (
                         <motion.div key="empty-invited" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-between rounded-lg px-1.5 py-2 opacity-40">
                           <div className="flex items-center gap-2.5">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-medium text-white/30" style={{ border: "1.5px dashed rgba(255,255,255,0.12)", background: "transparent" }}>RR</div>
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-medium text-[var(--wl-text-placeholder)]" style={{ border: "1.5px dashed rgba(255,255,255,0.12)", background: "transparent" }}>RR</div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <p className="text-[13px] font-medium text-white/30">Ronald Richards</p>
+                                <p className="text-[13px] font-medium text-[var(--wl-text-placeholder)]">Ronald Richards</p>
                                 <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-400/60">Invitado</span>
                               </div>
-                              <p className="text-[11px] text-white/15">ronald@email.com</p>
+                              <p className="text-[11px] text-[var(--wl-text-placeholder)]">ronald@email.com</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border whitespace-nowrap" style={{ color: "rgba(255,255,255,0.20)", background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)", fontSize: 11 }}>

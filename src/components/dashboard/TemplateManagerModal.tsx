@@ -70,7 +70,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   branding: 'bg-amber-500/15 text-amber-300 border-amber-500/20',
   design:    'bg-pink-500/15 text-pink-300 border-pink-500/20',
   content:  'bg-teal-500/15 text-teal-300 border-teal-500/20',
-  general:  'bg-white/[0.06] text-white/50 border-white/[0.10]',
+  general:  'bg-[var(--wl-hover)] text-[var(--wl-text-muted)] border-[var(--wl-border)]',
 };
 
 // ── Form vacío ────────────────────────────────────────────────────────────────
@@ -138,7 +138,7 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
         <Label className="text-[var(--wl-text-secondary)] text-xs">Título *</Label>
         <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
           placeholder="ej. Reel de producto"
-          className="bg-white/[0.04] border-[var(--wl-border)] text-white focus-visible:ring-brand" />
+          className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] focus-visible:ring-brand" />
       </div>
 
       {/* Descripción */}
@@ -146,7 +146,7 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
         <Label className="text-[var(--wl-text-secondary)] text-xs">Descripción</Label>
         <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           rows={2} placeholder="Descripción del template..."
-          className="w-full rounded-md bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none placeholder:text-white/25" />
+          className="w-full rounded-md bg-[var(--wl-hover)] border border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none placeholder:text-[var(--wl-text-placeholder)]" />
       </div>
 
       {/* Categoría + Prioridad */}
@@ -154,14 +154,14 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
         <div className="space-y-1.5">
           <Label className="text-[var(--wl-text-secondary)] text-xs">Categoría</Label>
           <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-            className="w-full rounded-md bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+            className="w-full rounded-md bg-[var(--wl-hover)] border border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
             {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
         </div>
         <div className="space-y-1.5">
           <Label className="text-[var(--wl-text-secondary)] text-xs">Prioridad</Label>
           <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-            className="w-full rounded-md bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+            className="w-full rounded-md bg-[var(--wl-hover)] border border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
             {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
           </select>
         </div>
@@ -172,7 +172,7 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
         <div className="space-y-1.5">
           <Label className="text-[var(--wl-text-secondary)] text-xs">Visibilidad</Label>
           <select value={form.visibility} onChange={e => setForm(f => ({ ...f, visibility: e.target.value }))}
-            className="w-full rounded-md bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+            className="w-full rounded-md bg-[var(--wl-hover)] border border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
             {VISIBILITIES.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
           </select>
         </div>
@@ -180,7 +180,7 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
           <Label className="text-[var(--wl-text-secondary)] text-xs">Días estimados</Label>
           <Input type="number" min={0} value={form.estimatedDays}
             onChange={e => setForm(f => ({ ...f, estimatedDays: parseInt(e.target.value) || 0 }))}
-            className="bg-white/[0.04] border-[var(--wl-border)] text-white focus-visible:ring-brand" />
+            className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] focus-visible:ring-brand" />
         </div>
       </div>
 
@@ -188,10 +188,10 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
       <div className="space-y-2">
         <Label className="text-[var(--wl-text-secondary)] text-xs">Subtareas del template</Label>
         {form.subtasks.map((sub, i) => (
-          <div key={i} className="flex items-center gap-2 bg-white/[0.03] rounded-lg px-3 py-2">
+          <div key={i} className="flex items-center gap-2 bg-[var(--wl-hover)] rounded-lg px-3 py-2">
             <span className="text-xs text-[var(--wl-text-secondary)] flex-1">{sub.title}</span>
             <button type="button" onClick={() => removeSubtask(i)}
-              className="text-white/20 hover:text-red-400 transition-colors">
+              className="text-[var(--wl-text-placeholder)] hover:text-red-400 transition-colors">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -200,9 +200,9 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
           <Input value={newSub} onChange={e => setNewSub(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); }}}
             placeholder="Nueva subtarea..."
-            className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm focus-visible:ring-brand placeholder:text-white/25" />
+            className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-sm focus-visible:ring-brand placeholder:text-[var(--wl-text-placeholder)]" />
           <Button type="button" variant="outline" onClick={addSubtask} size="sm"
-            className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white shrink-0">
+            className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] shrink-0">
             <Plus className="w-3.5 h-3.5" />
           </Button>
         </div>
@@ -211,7 +211,7 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
       {/* Botones */}
       <div className="flex gap-2 pt-1">
         <Button type="button" variant="outline" onClick={onCancel}
-          className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white">
+          className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]">
           Cancelar
         </Button>
         <Button type="button" disabled={saving} onClick={handleSave}
@@ -270,10 +270,10 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-xl max-h-[85vh] flex flex-col overflow-hidden p-0">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-xl max-h-[85vh] flex flex-col overflow-hidden p-0">
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-[var(--wl-border)] shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2 text-white">
+            <DialogTitle className="flex items-center gap-2 text-[var(--wl-text-primary)]">
               <Sparkles className="w-4 h-4 text-brand-light" />
               {view === 'list' ? 'Templates de tareas' : view === 'create' ? 'Nuevo template' : 'Editar template'}
             </DialogTitle>
@@ -299,12 +299,12 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
               {/* Filtro categorías */}
               <div className="flex gap-1.5 flex-wrap">
                 <button onClick={() => setFilterCat('all')}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${filterCat === 'all' ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-white/[0.04] border-[var(--wl-border)] text-white/50 hover:text-white'}`}>
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${filterCat === 'all' ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-white'}`}>
                   Todos
                 </button>
                 {CATEGORIES.map(c => (
                   <button key={c.value} onClick={() => setFilterCat(c.value)}
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${filterCat === c.value ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-white/[0.04] border-[var(--wl-border)] text-white/50 hover:text-white'}`}>
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${filterCat === c.value ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-white'}`}>
                     {c.label}
                   </button>
                 ))}
@@ -312,11 +312,11 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
 
               {loading ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="w-6 h-6 animate-spin text-white/30" />
+                  <Loader2 className="w-6 h-6 animate-spin text-[var(--wl-text-placeholder)]" />
                 </div>
               ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-12 text-center">
-                  <LayoutGrid className="w-10 h-10 text-white/15" />
+                  <LayoutGrid className="w-10 h-10 text-[var(--wl-text-placeholder)]" />
                   <p className="text-[var(--wl-text-muted)] text-sm">No hay templates aún.</p>
                   <Button size="sm" onClick={() => setView('create')}
                     className="bg-brand hover:bg-brand-dark text-white gap-1.5 text-xs">
@@ -332,12 +332,12 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
                       <div className="p-3.5 flex items-start gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-semibold text-white">{tpl.title}</p>
+                            <p className="text-sm font-semibold text-[var(--wl-text-primary)]">{tpl.title}</p>
                             <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${CATEGORY_COLORS[tpl.category] ?? CATEGORY_COLORS.general}`}>
                               {CATEGORIES.find(c => c.value === tpl.category)?.label ?? tpl.category}
                             </span>
                             {tpl.estimatedDays > 0 && (
-                              <span className="text-[10px] text-white/30">{tpl.estimatedDays}d</span>
+                              <span className="text-[10px] text-[var(--wl-text-placeholder)]">{tpl.estimatedDays}d</span>
                             )}
                           </div>
                           {tpl.description && (
@@ -346,15 +346,15 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           <button onClick={() => setExpandedId(expandedId === tpl.id ? null : tpl.id)}
-                            className="p-1.5 rounded-md text-white/20 hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
+                            className="p-1.5 rounded-md text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors">
                             {expandedId === tpl.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                           </button>
                           <button onClick={() => { setEditing(tpl); setView('edit'); }}
-                            className="p-1.5 rounded-md text-white/20 hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
+                            className="p-1.5 rounded-md text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors">
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                           <button onClick={() => handleDeactivate(tpl.id)}
-                            className="p-1.5 rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                            className="p-1.5 rounded-md text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-500/10 transition-colors">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -363,15 +363,15 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
                       {/* Expandido — subtareas */}
                       {expandedId === tpl.id && (
                         <div className="px-3.5 pb-3.5 border-t border-[var(--wl-border)] pt-3 space-y-2">
-                          <div className="flex items-center gap-4 text-[11px] text-white/35 flex-wrap">
+                          <div className="flex items-center gap-4 text-[11px] text-[var(--wl-text-muted)] flex-wrap">
                             <span>Prioridad: <span className="text-[var(--wl-text-secondary)]">{PRIORITIES.find(p => p.value === tpl.priority)?.label}</span></span>
                             <span>Visibilidad: <span className="text-[var(--wl-text-secondary)]">{VISIBILITIES.find(v => v.value === tpl.visibility)?.label}</span></span>
                           </div>
                           {(tpl.subtasks ?? []).length > 0 && (
                             <div className="space-y-1">
-                              <p className="text-[11px] text-white/30 uppercase tracking-wider font-medium">Subtareas</p>
+                              <p className="text-[11px] text-[var(--wl-text-placeholder)] uppercase tracking-wider font-medium">Subtareas</p>
                               {(tpl.subtasks ?? []).map((sub, i) => (
-                                <div key={i} className="flex items-center gap-2 text-xs text-white/50">
+                                <div key={i} className="flex items-center gap-2 text-xs text-[var(--wl-text-muted)]">
                                   <span className="w-1 h-1 rounded-full bg-white/20 shrink-0" />
                                   {sub.title}
                                 </div>

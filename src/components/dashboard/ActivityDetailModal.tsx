@@ -59,7 +59,7 @@ export default function ActivityDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-lg w-full max-h-[90vh] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-lg w-full max-h-[90vh] flex flex-col p-0 overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-[var(--wl-border)] shrink-0">
           <div className="flex items-start gap-3 pr-6">
@@ -67,7 +67,7 @@ export default function ActivityDetailModal({
               <CalendarRange className="w-4 h-4 text-brand-light" />
             </div>
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-base font-semibold text-white leading-snug">
+              <DialogTitle className="text-base font-semibold text-[var(--wl-text-primary)] leading-snug">
                 {activity.title}
               </DialogTitle>
               <div className="flex flex-wrap items-center gap-2 mt-1.5">
@@ -86,10 +86,10 @@ export default function ActivityDetailModal({
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-5">
           {/* Meta row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div className="flex items-start gap-2 text-white/50">
+            <div className="flex items-start gap-2 text-[var(--wl-text-muted)]">
               <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               <div>
-                <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Fechas</p>
+                <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-0.5">Fechas</p>
                 <p className="text-[var(--wl-text-secondary)] text-xs">
                   {fmtDate(activity.startDate)}
                   {activity.endDate && activity.endDate !== activity.startDate
@@ -101,9 +101,9 @@ export default function ActivityDetailModal({
 
             {assignees.length > 0 && (
               <div className="flex items-start gap-2">
-                <Users className="w-3.5 h-3.5 shrink-0 mt-0.5 text-white/50" />
+                <Users className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[var(--wl-text-muted)]" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">
+                  <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-1">
                     {assignees.length === 1 ? 'Responsable' : `Responsables (${assignees.length})`}
                   </p>
                   {assignees.length === 1 ? (
@@ -139,8 +139,8 @@ export default function ActivityDetailModal({
 
           {/* Description */}
           {activity.description && (
-            <div className="rounded-lg bg-white/[0.03] border border-[var(--wl-border-subtle)] px-3 py-2.5">
-              <p className="text-xs text-white/55 leading-relaxed whitespace-pre-wrap">
+            <div className="rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)] px-3 py-2.5">
+              <p className="text-xs text-[var(--wl-text-primary)]/55 leading-relaxed whitespace-pre-wrap">
                 {activity.description}
               </p>
             </div>
@@ -162,7 +162,7 @@ export default function ActivityDetailModal({
               size="sm"
               variant="outline"
               onClick={() => { onEdit(activity); onClose(); }}
-              className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)] gap-1.5 text-xs h-8"
+              className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] gap-1.5 text-xs h-8"
             >
               <Pencil className="w-3.5 h-3.5" />
               Editar actividad
@@ -171,7 +171,7 @@ export default function ActivityDetailModal({
               size="sm"
               variant="ghost"
               onClick={onClose}
-              className="text-white/30 hover:text-white hover:bg-[var(--wl-hover)] text-xs h-8 ml-auto"
+              className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] text-xs h-8 ml-auto"
             >
               <X className="w-3.5 h-3.5 mr-1" />
               Cerrar

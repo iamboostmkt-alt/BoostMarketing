@@ -23,11 +23,11 @@ export function LogoBrand({ size = 'md', showName = true }: LogoBrandProps) {
         {logoUrl ? (
           <img src={logoUrl} alt={agencyName} className="w-3/4 h-3/4 object-contain" />
         ) : (
-          <span className={`font-bold text-white ${s.text}`}>{agencyName.slice(0,2).toUpperCase()}</span>
+          <span className={`font-bold text-[var(--wl-text-primary)] ${s.text}`}>{agencyName.slice(0,2).toUpperCase()}</span>
         )}
       </div>
       {showName && (
-        <span className={`font-bold text-white ${s.text}`}>{agencyName}</span>
+        <span className={`font-bold text-[var(--wl-text-primary)] ${s.text}`}>{agencyName}</span>
       )}
     </div>
   );

@@ -152,9 +152,9 @@ export default function ActivityForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-lg w-full max-h-[92vh] overflow-y-auto">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-lg w-full max-h-[92vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-white">
+          <DialogTitle className="text-xl font-semibold text-[var(--wl-text-primary)]">
             {activity ? 'Editar Actividad' : 'Nueva Actividad'}
           </DialogTitle>
         </DialogHeader>
@@ -169,7 +169,7 @@ export default function ActivityForm({
               placeholder="Nombre de la actividad"
               required
               disabled={loading}
-              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand"
+              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand"
             />
           </div>
 
@@ -178,10 +178,10 @@ export default function ActivityForm({
             <div className="space-y-1.5">
               <Label className="text-sm text-[var(--wl-text-secondary)]">Estado</Label>
               <Select value={status} onValueChange={setStatus} disabled={loading}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white focus:ring-brand">
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] focus:ring-brand">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
                   <SelectItem value="pending">Pendiente</SelectItem>
                   <SelectItem value="in_progress">En Progreso</SelectItem>
                   <SelectItem value="completed">Completado</SelectItem>
@@ -191,10 +191,10 @@ export default function ActivityForm({
             <div className="space-y-1.5">
               <Label className="text-sm text-[var(--wl-text-secondary)]">Prioridad</Label>
               <Select value={priority} onValueChange={setPriority} disabled={loading}>
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white focus:ring-brand">
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] focus:ring-brand">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
                   <SelectItem value="low">Baja</SelectItem>
                   <SelectItem value="medium">Media</SelectItem>
                   <SelectItem value="high">Alta</SelectItem>
@@ -212,8 +212,8 @@ export default function ActivityForm({
               disabled={loading}
               onClick={() => { setStartOpen((p) => !p); setEndOpen(false); }}
               className={cn(
-                'w-full justify-start text-left font-normal bg-white/[0.04] border-[var(--wl-border)] hover:bg-white/[0.08] hover:text-white text-sm',
-                !startDate && 'text-white/30'
+                'w-full justify-start text-left font-normal bg-[var(--wl-hover)] border-[var(--wl-border)] hover:bg-[var(--wl-border)] hover:text-[var(--wl-text-primary)] text-sm',
+                !startDate && 'text-[var(--wl-text-placeholder)]'
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4 text-[var(--wl-text-muted)]" />
@@ -222,7 +222,7 @@ export default function ActivityForm({
             {startOpen && (
               <div className="rounded-lg border border-[var(--wl-border)] bg-[#0e0e14] shadow-2xl p-1">
                 <div className="flex justify-end p-1">
-                  <button type="button" onClick={() => setStartOpen(false)} className="text-white/30 hover:text-[var(--wl-text-secondary)] p-1 rounded">
+                  <button type="button" onClick={() => setStartOpen(false)} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] p-1 rounded">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -230,7 +230,7 @@ export default function ActivityForm({
                   mode="single"
                   selected={startDate}
                   onSelect={(d) => { setStartDate(d); setStartOpen(false); }}
-                  className="text-white"
+                  className="text-[var(--wl-text-primary)]"
                 />
               </div>
             )}
@@ -245,8 +245,8 @@ export default function ActivityForm({
               disabled={loading}
               onClick={() => { setEndOpen((p) => !p); setStartOpen(false); }}
               className={cn(
-                'w-full justify-start text-left font-normal bg-white/[0.04] border-[var(--wl-border)] hover:bg-white/[0.08] hover:text-white text-sm',
-                !endDate && 'text-white/30'
+                'w-full justify-start text-left font-normal bg-[var(--wl-hover)] border-[var(--wl-border)] hover:bg-[var(--wl-border)] hover:text-[var(--wl-text-primary)] text-sm',
+                !endDate && 'text-[var(--wl-text-placeholder)]'
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4 text-[var(--wl-text-muted)]" />
@@ -255,7 +255,7 @@ export default function ActivityForm({
             {endOpen && (
               <div className="rounded-lg border border-[var(--wl-border)] bg-[#0e0e14] shadow-2xl p-1">
                 <div className="flex justify-end p-1">
-                  <button type="button" onClick={() => setEndOpen(false)} className="text-white/30 hover:text-[var(--wl-text-secondary)] p-1 rounded">
+                  <button type="button" onClick={() => setEndOpen(false)} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] p-1 rounded">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -264,7 +264,7 @@ export default function ActivityForm({
                   selected={endDate}
                   onSelect={(d) => { setEndDate(d); setEndOpen(false); }}
                   disabled={(d) => (startDate ? d < startDate : false)}
-                  className="text-white"
+                  className="text-[var(--wl-text-primary)]"
                 />
               </div>
             )}
@@ -279,7 +279,7 @@ export default function ActivityForm({
                   <span className="ml-1.5 text-brand-light">({assignedUserIds.length})</span>
                 )}
               </Label>
-              <div className="rounded-lg border border-[var(--wl-border)] bg-white/[0.02] max-h-40 overflow-y-auto">
+              <div className="rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] max-h-40 overflow-y-auto">
                 {users.map((u) => {
                   const selected = assignedUserIds.includes(u.id);
                   return (
@@ -307,7 +307,7 @@ export default function ActivityForm({
                 <button
                   type="button"
                   onClick={() => setAssignees([])}
-                  className="text-xs text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors"
+                  className="text-xs text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors"
                 >
                   Limpiar selección
                 </button>
@@ -324,15 +324,15 @@ export default function ActivityForm({
                 onValueChange={(v) => setClientId(v === 'none' ? '' : v)}
                 disabled={loading}
               >
-                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white focus:ring-brand">
+                <SelectTrigger className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] focus:ring-brand">
                   <SelectValue placeholder="Sin cuenta asignada" />
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-h-48">
-                  <SelectItem value="none" className="text-white/50 focus:bg-white/[0.06]">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-h-48">
+                  <SelectItem value="none" className="text-[var(--wl-text-muted)] focus:bg-[var(--wl-hover)]">
                     Sin cuenta asignada
                   </SelectItem>
                   {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="focus:bg-white/[0.06]">
+                    <SelectItem key={c.id} value={c.id} className="focus:bg-[var(--wl-hover)]">
                       {c.name}{c.company ? ` — ${c.company}` : ''}
                     </SelectItem>
                   ))}
@@ -343,10 +343,10 @@ export default function ActivityForm({
 
           {/* Visible to client toggle */}
           {isManager && clientId && (
-            <div className="flex items-center justify-between bg-white/[0.03] border border-[var(--wl-border-subtle)] rounded-lg px-3 py-2.5">
+            <div className="flex items-center justify-between bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)] rounded-lg px-3 py-2.5">
               <div>
                 <p className="text-sm text-[var(--wl-text-secondary)]">Visible para el cliente</p>
-                <p className="text-[11px] text-white/30">El cliente puede ver esta actividad en su portal</p>
+                <p className="text-[11px] text-[var(--wl-text-placeholder)]">El cliente puede ver esta actividad en su portal</p>
               </div>
               <button type="button" onClick={() => setVisibleToClient(v => !v)}
                 className={"relative inline-flex h-5 w-9 items-center rounded-full transition-colors " + (visibleToClient ? "bg-brand" : "bg-white/[0.12]")}>
@@ -364,7 +364,7 @@ export default function ActivityForm({
               placeholder="Descripción de la actividad..."
               rows={3}
               disabled={loading}
-              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand resize-none"
+              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand resize-none"
             />
           </div>
 
@@ -374,7 +374,7 @@ export default function ActivityForm({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white"
+              className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
             >
               Cancelar
             </Button>

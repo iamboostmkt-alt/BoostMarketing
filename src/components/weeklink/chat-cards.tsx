@@ -27,7 +27,7 @@ export function VideoCard({
           onClick={() => setOpen(false)}>
           <div className="relative w-full max-w-3xl mx-4" onClick={e => e.stopPropagation()}>
             <button onClick={() => setOpen(false)}
-              className="absolute -top-9 right-0 flex items-center gap-1 text-[13px] text-[var(--wl-text-secondary)] hover:text-white transition-colors">
+              className="absolute -top-9 right-0 flex items-center gap-1 text-[13px] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] transition-colors">
               <X className="h-4 w-4" strokeWidth={1.75} /> Cerrar
             </button>
             <video src={thumb} controls autoPlay playsInline preload="auto"
@@ -36,7 +36,7 @@ export function VideoCard({
             <div className="mt-2 flex items-center justify-between px-1">
               <p className="text-[12px] text-[var(--wl-text-muted)] truncate">{name}</p>
               <a href={thumb} download={name}
-                className="text-[11px] text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors ml-3 shrink-0">
+                className="text-[11px] text-[var(--wl-text-primary)]/30 hover:text-[var(--wl-text-secondary)] transition-colors ml-3 shrink-0">
                 ↓ descargar
               </a>
             </div>
@@ -58,7 +58,7 @@ export function VideoCard({
           <p className="truncate text-[12px] text-[var(--wl-text-muted)]">{name}</p>
           <a href={thumb} download={name}
             onClick={e => e.stopPropagation()}
-            className="ml-2 shrink-0 text-[10px] text-white/25 hover:text-white/50 transition-colors">
+            className="ml-2 shrink-0 text-[10px] text-[var(--wl-text-primary)]/25 hover:text-[var(--wl-text-primary)]/50 transition-colors">
             ↓ descargar
           </a>
         </div>
@@ -124,10 +124,10 @@ export function HeadlineOptions({ options }: { options: { key: string; text: str
           key={o.key}
           className={cn('flex items-center gap-3 px-3 py-2.5', i !== options.length - 1 && 'border-b border-[var(--wl-border-subtle)]')}
         >
-          <span className="flex h-5 w-5 items-center justify-center rounded-md bg-white/[0.06] text-[11px] font-semibold text-white/65">
+          <span className="flex h-5 w-5 items-center justify-center rounded-md bg-white/[0.06] text-[11px] font-semibold text-[var(--wl-text-primary)]/65">
             {o.key}
           </span>
-          <span className="text-[13px] text-white/65">{o.text}</span>
+          <span className="text-[13px] text-[var(--wl-text-primary)]/65">{o.text}</span>
         </div>
       ))}
     </div>
@@ -145,7 +145,7 @@ export function ImageGallery({ images }: { images: string[] }) {
         </div>
       ))}
       {extra > 0 && (
-        <button className="flex h-[72px] w-[72px] flex-col items-center justify-center rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] text-white/65 transition-colors hover:text-white/90">
+        <button className="flex h-[72px] w-[72px] flex-col items-center justify-center rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] text-[var(--wl-text-primary)]/65 transition-colors hover:text-[var(--wl-text-primary)]/90">
           <span className="text-[13px] font-semibold">+{extra}</span>
           <span className="text-[10px] text-[var(--wl-text-muted)]">más</span>
         </button>

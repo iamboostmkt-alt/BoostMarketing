@@ -33,7 +33,7 @@ export default function Navbar({ agencyName = 'BoostMarketing', logoUrl }: Navba
       {isImageSrc(logoUrl) ? (
         <Image src={logoUrl!} alt={agencyName} width={24} height={24} className="w-3/4 h-3/4 object-contain" />
       ) : (
-        <span className="text-xs font-bold text-white">{agencyName.slice(0,2).toUpperCase()}</span>
+        <span className="text-xs font-bold text-[var(--wl-text-primary)]">{agencyName.slice(0,2).toUpperCase()}</span>
       )}
     </div>
   )

@@ -32,7 +32,7 @@ export default function ContactCard({ contact, onClick, index = 0 }: ContactCard
     >
       {/* Name + Status Badge */}
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h4 className="text-sm font-semibold text-white/90 truncate leading-tight">
+        <h4 className="text-sm font-semibold text-[var(--wl-text-primary)] truncate leading-tight">
           {contact.name}
         </h4>
         <span
@@ -47,20 +47,20 @@ export default function ContactCard({ contact, onClick, index = 0 }: ContactCard
       {/* Company */}
       {contact.company && (
         <div className="flex items-center gap-1.5 mb-1.5">
-          <Building2 className="w-3.5 h-3.5 text-white/30 shrink-0" />
+          <Building2 className="w-3.5 h-3.5 text-[var(--wl-text-placeholder)] shrink-0" />
           <span className="text-xs text-[var(--wl-text-muted)] truncate">{contact.company}</span>
         </div>
       )}
 
       {/* Email */}
       <div className="flex items-center gap-1.5 mb-2">
-        <Mail className="w-3.5 h-3.5 text-white/30 shrink-0" />
+        <Mail className="w-3.5 h-3.5 text-[var(--wl-text-placeholder)] shrink-0" />
         <span className="text-xs text-[var(--wl-text-muted)] truncate">{contact.email}</span>
       </div>
 
       {/* Deal Value */}
       {contact.value > 0 && (
-        <div className="flex items-center gap-1.5 pt-2 border-t border-white/[0.04]">
+        <div className="flex items-center gap-1.5 pt-2 border-t border-[var(--wl-border-subtle)]">
           <DollarSign className="w-3.5 h-3.5 text-green-400/60 shrink-0" />
           <span className="text-xs font-semibold text-green-400/80">
             {formatCurrency(contact.value)}

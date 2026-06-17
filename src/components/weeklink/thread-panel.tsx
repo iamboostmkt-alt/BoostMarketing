@@ -23,7 +23,7 @@ export function ThreadPanel() {
     <aside className="flex h-full w-[360px] shrink-0 flex-col border-l border-[var(--wl-border-subtle)] bg-[#11131a]">
       <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-[var(--wl-border-subtle)] px-5">
         <h2 className="text-[15px] font-semibold tracking-tight">Hilo</h2>
-        <button aria-label="Cerrar hilo" className="flex h-8 w-8 items-center justify-center rounded-lg text-white/65 transition-colors hover:bg-[var(--wl-hover)] hover:text-white/90">
+        <button aria-label="Cerrar hilo" className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--wl-text-primary)]/65 transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]/90">
           <X className="h-[18px] w-[18px]" strokeWidth={1.75} />
         </button>
       </header>
@@ -31,13 +31,13 @@ export function ThreadPanel() {
       <div className="flex-1 overflow-y-auto  px-5 py-3">
         {/* Root message */}
         <div className="flex gap-3 py-2 group relative -mx-2 px-2 rounded-xl hover:bg-white/[0.02] transition-colors">
-          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white" style={{ background: '#8B5CF6' }}>
+          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-[var(--wl-text-primary)]" style={{ background: '#8B5CF6' }}>
             SO
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-0.5">
-              <span className="text-[13px] font-semibold text-white/90">Sofia</span>
-              <span className="text-[11px] text-white/25">10:24 AM</span>
+              <span className="text-[13px] font-semibold text-[var(--wl-text-primary)]/90">Sofia</span>
+              <span className="text-[11px] text-[var(--wl-text-primary)]/25">10:24 AM</span>
             </div>
             <div className="text-[13.5px] leading-[1.55] text-[var(--wl-text-secondary)]"><p>Aquí está el concepto de campaña para GymnasTwin 💪</p>
           <div className="mt-2">
@@ -52,49 +52,49 @@ export function ThreadPanel() {
         </div>
 
         <div className="flex gap-3 py-2 group relative -mx-2 px-2 rounded-xl hover:bg-white/[0.02] transition-colors">
-          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white" style={{ background: '#8B5CF6' }}>
+          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-[var(--wl-text-primary)]" style={{ background: '#8B5CF6' }}>
             MA
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-0.5">
-              <span className="text-[13px] font-semibold text-white/90">Marcos</span>
-              <span className="text-[11px] text-white/25">10:25 AM</span>
+              <span className="text-[13px] font-semibold text-[var(--wl-text-primary)]/90">Marcos</span>
+              <span className="text-[11px] text-[var(--wl-text-primary)]/25">10:25 AM</span>
             </div>
             <div className="text-[13.5px] leading-[1.55] text-[var(--wl-text-secondary)]"><p>Se ve increíble. Revisemos el CTA final.</p></div>
           </div>
         </div>
         <div className="flex gap-3 py-2 group relative -mx-2 px-2 rounded-xl hover:bg-white/[0.02] transition-colors">
-          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white" style={{ background: '#8B5CF6' }}>
+          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-[var(--wl-text-primary)]" style={{ background: '#8B5CF6' }}>
             AL
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-0.5">
-              <span className="text-[13px] font-semibold text-white/90">Alex</span>
-              <span className="text-[11px] text-white/25">10:28 AM</span>
+              <span className="text-[13px] font-semibold text-[var(--wl-text-primary)]/90">Alex</span>
+              <span className="text-[11px] text-[var(--wl-text-primary)]/25">10:28 AM</span>
             </div>
             <div className="text-[13.5px] leading-[1.55] text-[var(--wl-text-secondary)]"><p>Propongo estas 2 variaciones.</p></div>
           </div>
         </div>
         <div className="flex gap-3 py-2 group relative -mx-2 px-2 rounded-xl hover:bg-white/[0.02] transition-colors">
-          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white" style={{ background: '#8B5CF6' }}>
+          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-[var(--wl-text-primary)]" style={{ background: '#8B5CF6' }}>
             SO
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-0.5">
-              <span className="text-[13px] font-semibold text-white/90">Sofia</span>
-              <span className="text-[11px] text-white/25">10:31 AM</span>
+              <span className="text-[13px] font-semibold text-[var(--wl-text-primary)]/90">Sofia</span>
+              <span className="text-[11px] text-[var(--wl-text-primary)]/25">10:31 AM</span>
             </div>
             <div className="text-[13.5px] leading-[1.55] text-[var(--wl-text-secondary)]"><p>Perfecto, subo la versión final.</p></div>
           </div>
         </div>
         <div className="flex gap-3 py-2 group relative -mx-2 px-2 rounded-xl hover:bg-white/[0.02] transition-colors">
-          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white" style={{ background: '#8B5CF6' }}>
+          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-[var(--wl-text-primary)]" style={{ background: '#8B5CF6' }}>
             DI
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-0.5">
-              <span className="text-[13px] font-semibold text-white/90">Diseno</span>
-              <span className="text-[11px] text-white/25">10:35 AM</span>
+              <span className="text-[13px] font-semibold text-[var(--wl-text-primary)]/90">Diseno</span>
+              <span className="text-[11px] text-[var(--wl-text-primary)]/25">10:35 AM</span>
             </div>
             <div className="text-[13.5px] leading-[1.55] text-[var(--wl-text-secondary)]"><p>Genial equipo, estamos listos.</p></div>
           </div>
@@ -111,10 +111,10 @@ export function ThreadPanel() {
           <div className="mb-4 flex items-center">
             <div className="flex -space-x-2">
               {['AB','CD','EF','GH','IJ'].map((ini, i) => (
-                <div key={i} className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-[#11131a]" style={{background:'#8B5CF6'}}>{ini}</div>
+                <div key={i} className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-[var(--wl-text-primary)] ring-2 ring-[#11131a]" style={{background:'#8B5CF6'}}>{ini}</div>
               ))}
             </div>
-            <span className="-ml-2 flex h-[26px] items-center justify-center rounded-full border border-[var(--wl-border)] bg-[var(--wl-elevated)] px-2 text-[11px] font-medium text-white/65 ring-2 ring-[#11131a]">
+            <span className="-ml-2 flex h-[26px] items-center justify-center rounded-full border border-[var(--wl-border)] bg-[var(--wl-elevated)] px-2 text-[11px] font-medium text-[var(--wl-text-primary)]/65 ring-2 ring-[#11131a]">
               +8
             </span>
           </div>
@@ -143,7 +143,7 @@ export function ThreadPanel() {
                   <span className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ backgroundColor: `${f.color}1f`, color: f.color }}>
                     <f.icon className="h-4 w-4" strokeWidth={1.75} />
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-[12.5px] text-white/65">{f.name}</span>
+                  <span className="min-w-0 flex-1 truncate text-[12.5px] text-[var(--wl-text-primary)]/65">{f.name}</span>
                   <span className="text-[11px] text-[var(--wl-text-muted)]">{f.size}</span>
                 </button>
               </li>
@@ -153,7 +153,7 @@ export function ThreadPanel() {
           <PanelLabel>Etiquetas</PanelLabel>
           <div className="flex flex-wrap gap-1.5">
             {['campaña', 'gymnastwin', 'ver2'].map((t) => (
-              <span key={t} className="rounded-md border border-[var(--wl-border)] bg-white/[0.03] px-2 py-1 text-[11px] text-white/65">
+              <span key={t} className="rounded-md border border-[var(--wl-border)] bg-white/[0.03] px-2 py-1 text-[11px] text-[var(--wl-text-primary)]/65">
                 {t}
               </span>
             ))}

@@ -59,18 +59,18 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div className="text-center py-4">
             <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">Revisa tu email</h2>
-            <p className="text-sm text-white/50 mb-6">
+            <h2 className="text-xl font-bold text-[var(--wl-text-primary)] mb-2">Revisa tu email</h2>
+            <p className="text-sm text-[var(--wl-text-muted)] mb-6">
               Si existe una cuenta con <span className="text-[var(--wl-text-secondary)]">{email}</span>,
               recibirás un enlace para restablecer tu contraseña. El enlace es válido por 1 hora.
             </p>
-            <p className="text-xs text-white/30">
+            <p className="text-xs text-[var(--wl-text-placeholder)]">
               ¿No lo ves? Revisa la carpeta de spam.
             </p>
           </div>
         ) : (
           <>
-            <h1 className="text-2xl font-bold text-white mb-1">¿Olvidaste tu contraseña?</h1>
+            <h1 className="text-2xl font-bold text-[var(--wl-text-primary)] mb-1">¿Olvidaste tu contraseña?</h1>
             <p className="text-sm text-[var(--wl-text-muted)] mb-6">
               Ingresa tu email y te enviaremos un enlace para restablecerla.
             </p>
@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
                   Email
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--wl-text-placeholder)]" />
                   <Input
                     id="email"
                     type="email"
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
                     required
                     disabled={loading}
                     autoComplete="email"
-                    className="pl-10 bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
+                    className="pl-10 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:border-brand focus:ring-brand/20"
                   />
                 </div>
               </div>
