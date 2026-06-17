@@ -12,13 +12,14 @@ export const metadata: Metadata = {
 
 export default function WeeklinkLayout({ children }: { children: React.ReactNode }) {
   return (
-    // Forzar fondo blanco — independiente del tema dark del dashboard
     <div
+      className="auth-bg"
       style={{
         background: '#F6F7FB',
         color: '#111827',
-        minHeight: '100vh',
+        minHeight: '100dvh',
         fontFamily: 'var(--font-inter, system-ui, sans-serif)',
+        position: 'relative',
       }}
     >
       {children}

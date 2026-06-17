@@ -602,22 +602,18 @@ html.light {
   transition: none !important;
 }
 
-/* ── Páginas públicas: siempre light, no heredan dark del html ── */
-/* Auth pages (login, register) y landing weeklink */
-.auth-page,
-.weeklink-landing {
-  color-scheme: light !important;
-}
-.auth-page *,
-.weeklink-landing * {
-  /* No hereda nada del tema oscuro */
+/* ── Páginas públicas: always light ────────────────────────── */
+/* El html tiene bg #080808 pero páginas de auth y landing deben ser claras */
+html:has(> body > div[style*="F6F7FB"]),
+html:has(> body > div.auth-bg) {
+  background: #F6F7FB !important;
 }
 
-/* Forzar que el html.dark no afecte páginas con fondo propio */
-html.dark .auth-bg {
-  background: #F6F7FB !important;
-  color: #111827 !important;
-}
-html.dark .auth-bg .text-white {
-  color: #FFFFFF !important; /* mantener en botones primarios */
+/* Landing /weeklink — los textos siguen siendo los del archivo (hardcoded) */
+/* No tocar — la landing usa text-[#111827] hardcodeado, no text-white */
+
+/* TopNav de landing — fondo blanco, no negro */
+.weeklink-nav {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid rgba(17,24,39,0.06) !important;
 }

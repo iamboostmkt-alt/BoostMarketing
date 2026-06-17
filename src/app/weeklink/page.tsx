@@ -183,10 +183,10 @@ export default function WeeklinkHome() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F7FB] font-sans antialiased">
+    <div className="min-h-[100dvh] bg-[#F6F7FB] font-sans antialiased" style={{ background: '#F6F7FB' }}>
 
       {/* ── Navbar ── */}
-      <nav className={`fixed left-0 right-0 top-0 z-50 transition-all duration-200 ${scrolled ? 'bg-white/90 shadow-sm' : ''}`}
+      <nav className={`fixed left-0 right-0 top-0 z-50 transition-all duration-200 ${scrolled ? 'bg-white/95 shadow-sm' : 'bg-white/95'}`}
         style={{ backdropFilter: 'blur(18px)', height: '72px' }}>
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-8">

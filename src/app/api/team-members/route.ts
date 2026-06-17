@@ -18,6 +18,7 @@ export async function GET() {
 
     const users = await db.user.findMany({
       where: {
+        workspaceId,
         role: { in: INTERNAL_ROLES as unknown as Role[] },
         active: true,
       },
