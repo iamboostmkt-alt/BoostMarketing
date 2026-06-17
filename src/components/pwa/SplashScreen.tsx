@@ -56,7 +56,7 @@ export function SplashScreen() {
         Weeklink
       </p>
       <p className="text-[13px] text-white/35 mt-1">
-        CRM para agencias modernas
+        Organiza tareas, clientes y proyectos
       </p>
 
       {/* Loader dots */}

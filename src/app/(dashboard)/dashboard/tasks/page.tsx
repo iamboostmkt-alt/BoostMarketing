@@ -16,7 +16,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, DropResult, useTouchSensor, useMouseSensor } from '@hello-pangea/dnd';
 import TaskCard from '@/components/dashboard/TaskCard';
 import TaskForm from '@/components/dashboard/TaskForm';
 import TaskDetailModal from '@/components/dashboard/TaskDetailModal';
@@ -124,7 +124,11 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
   });
 
   return (
-    <DragDropContext onDragEnd={handleDragEnd}>
+    <DragDropContext
+      onDragEnd={handleDragEnd}
+      sensors={[useTouchSensor, useMouseSensor]}
+      enableDefaultSensors={false}
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {resolvedGroups.map((group) => {
           const groupTasks = tasks
@@ -135,8 +139,10 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
               if (!b.dueDate) return -1;
               return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
             });
+          // En móvil (una columna) ocultar columnas vacías para reducir ruido
+          const isEmpty = groupTasks.length === 0;
           return (
-            <div key={group.id} className="space-y-2">
+            <div key={group.id} className={`space-y-2 ${isEmpty ? 'sm:block hidden' : ''}`}>
               {/* Column header */}
               <div className="flex items-center gap-2 px-2 py-1">
                 <span className={`w-1.5 h-1.5 rounded-full ${group.color}`} />
