@@ -204,18 +204,17 @@ export default function DashboardHome() {
 
         {/* ── HEADER ───────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 min-w-0 flex-1">
-            <Avatar className="h-11 w-11 shrink-0 rounded-[12px] overflow-hidden ring-1 ring-black/[0.06]">
+          <div className="flex items-start gap-3 min-w-0 flex-1 overflow-hidden">
+            <Avatar className="h-10 w-10 shrink-0 rounded-[12px] overflow-hidden ring-1 ring-black/[0.06]">
               <AvatarImage src={userImage || undefined} alt={userName} className="object-cover" />
               <AvatarFallback className="rounded-[12px] text-sm font-semibold"
                 style={{ backgroundColor: (userColor || '#7c3aed') + '20', color: userColor || '#7c3aed' }}>
                 {userInitials(session?.user?.name || null, session?.user?.email || '')}
               </AvatarFallback>
             </Avatar>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-[18px] sm:text-[22px] font-bold leading-tight" style={{ color: 'var(--wl-text-primary)' }}>
-                {greeting()},{''}
-                <span className="text-[#7C3AED] break-all"> {userName.split(' ')[0]}</span> 👋
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <h1 className="text-[16px] sm:text-[20px] font-bold leading-snug truncate" style={{ color: 'var(--wl-text-primary)' }}>
+                {greeting()}, <span className="text-[#7C3AED]">{userName.split(' ')[0]}</span> 👋
               </h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[12px] capitalize" style={{ color: 'var(--wl-text-muted)' }}>{fmtDate()}</span>
@@ -234,7 +233,7 @@ export default function DashboardHome() {
             <motion.button
               onClick={() => setTaskFormOpen(true)}
               whileTap={{ scale: 0.97 }}
-              className="flex h-9 items-center gap-1.5 rounded-[12px] px-4 text-[13px] font-semibold text-white transition-all"
+              className="flex h-9 w-9 sm:w-auto items-center justify-center sm:gap-1.5 rounded-[12px] sm:px-4 text-[13px] font-semibold text-white transition-all"
               style={{ background: '#7C3AED', boxShadow: '0 4px 12px rgba(124,58,237,0.25)' }}
             >
               <Plus className="h-4 w-4" />
@@ -243,8 +242,8 @@ export default function DashboardHome() {
             {isManager && (
               <motion.button onClick={() => setInviteOpen(true)} whileTap={{ scale: 0.97 }}
                 className="flex h-9 w-9 items-center justify-center rounded-[12px] transition-all"
-                style={{ background: '#FFFFFF', border: '1px solid rgba(17,24,39,0.08)', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' }}>
-                <Users className="h-4 w-4 text-[rgba(17,24,39,0.5)]" />
+                style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', boxShadow: 'var(--wl-shadow)' }}>
+                <Users className="h-4 w-4" style={{ color: 'var(--wl-text-muted)' }} />
               </motion.button>
             )}
           </div>
