@@ -49,23 +49,23 @@ function KpiCard({ label, value, icon: Icon, color, change, up, onClick }: {
   return (
     <motion.div
       onClick={onClick}
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.18 }}
-      className="wl-kpi-card rounded-[20px] p-5 cursor-pointer"
+      whileHover={{ y: -1 }}
+      transition={{ duration: 0.15 }}
+      className="wl-kpi-card rounded-[16px] p-3.5 cursor-pointer"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-10 h-10 rounded-[12px] flex items-center justify-center" style={{ background: color + '15' }}>
-          <Icon className="w-5 h-5" style={{ color }} />
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: color + '18' }}>
+          <Icon className="w-4 h-4" style={{ color }} />
         </div>
         {change && (
-          <div className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${up ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
-            {up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+          <div className={`flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${up ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-400 bg-red-400/10'}`}>
+            {up ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
             {change}
           </div>
         )}
       </div>
-      <p className="text-[28px] font-bold leading-none mb-1" style={{ color: 'var(--wl-text-primary)' }}>{value}</p>
-      <p className="text-[13px] font-medium" style={{ color: 'var(--wl-text-muted)' }}>{label}</p>
+      <p className="text-[22px] font-bold leading-none mb-1" style={{ color: 'var(--wl-text-primary)' }}>{value}</p>
+      <p className="text-[11px] font-medium leading-tight" style={{ color: 'var(--wl-text-muted)' }}>{label}</p>
     </motion.div>
   );
 }
@@ -178,7 +178,7 @@ export default function DashboardHome() {
   if (loading) {
     return (
       <div className="wl-dashboard-bg px-4 sm:px-6 lg:px-8 py-6 space-y-6" style={{ minHeight: '100%' }}>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-2.5">
           {[1,2,3,4].map(i => (
             <div key={i} className="rounded-[20px] p-5 animate-pulse" style={{ height: 120, background: 'var(--wl-surface)', border: '1px solid var(--wl-border)' }}>
               <div className="w-10 h-10 rounded-xl mb-4" style={{ background: 'var(--wl-hover)' }} />
@@ -290,7 +290,7 @@ export default function DashboardHome() {
         )}
 
         {/* ── KPI CARDS ─────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2.5">
           {kpis.map((k, i) => (
             <motion.div key={k.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
               <KpiCard {...k} onClick={() => router.push(k.href)} />
