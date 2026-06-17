@@ -120,41 +120,49 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
     const hasTarget = !!rect;
 
     // Tooltip posición
-    const tooltipW = 300;
-    const tooltipH = 140;
+    const tooltipW = typeof window !== 'undefined' && window.innerWidth < 640
+      ? Math.min(300, window.innerWidth - 32)
+      : 300;
+    const tooltipH = 160;
     let tooltipStyle: React.CSSProperties = {};
 
     if (rect && step) {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
+      const isMobile = vw < 640;
       const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
 
-      if (step.placement === 'right') {
+      // En móvil o cuando el elemento está fuera de la zona visible → centrar siempre
+      const isOffscreen = rect.top < 50 || rect.top > vh - 50;
+      if (isMobile || isOffscreen) {
+        tooltipStyle = {
+          left: Math.max(8, (vw - Math.min(tooltipW, vw - 16)) / 2),
+          top: Math.max(80, (vh - tooltipH) / 2 - 40),
+        };
+      } else if (step.placement === 'right') {
         tooltipStyle = {
           left: Math.min(rect.right + PAD + 12, vw - tooltipW - 8),
-          top: Math.max(8, Math.min(rect.top, vh - tooltipH - 8)),
+          top: Math.max(70, Math.min(rect.top, vh - tooltipH - 8)),
         };
       } else if (step.placement === 'left') {
         tooltipStyle = {
           left: Math.max(8, rect.left - tooltipW - 12),
-          top: Math.max(8, Math.min(rect.top, vh - tooltipH - 8)),
+          top: Math.max(70, Math.min(rect.top, vh - tooltipH - 8)),
         };
       } else if (step.placement === 'bottom') {
         tooltipStyle = {
           left: Math.max(8, Math.min(cx - tooltipW / 2, vw - tooltipW - 8)),
-          top: rect.bottom + 12,
+          top: Math.min(rect.bottom + 12, vh - tooltipH - 8),
         };
       } else if (step.placement === 'top') {
         tooltipStyle = {
           left: Math.max(8, Math.min(cx - tooltipW / 2, vw - tooltipW - 8)),
-          top: Math.max(8, rect.top - tooltipH - 12),
+          top: Math.max(70, rect.top - tooltipH - 12),
         };
       } else {
-        // center
         tooltipStyle = {
           left: Math.max(8, (vw - tooltipW) / 2),
-          top: Math.max(8, (vh - tooltipH) / 2),
+          top: Math.max(70, (vh - tooltipH) / 2),
         };
       }
     } else {

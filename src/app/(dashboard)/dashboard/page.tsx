@@ -1073,7 +1073,14 @@ export default function DashboardPage() {
           {draggableSections.map(section => (
             <div
               key={section.id}
-              style={{ gridColumn: `span ${widthToSpan[section.width]}`, minWidth: 0, overflow: 'hidden' }}
+              className={`
+                ${widthToSpan[section.width] <= 3 ? 'col-span-4 sm:col-span-4 lg:col-span-3' :
+                  widthToSpan[section.width] <= 4 ? 'col-span-4 sm:col-span-4 lg:col-span-4' :
+                  widthToSpan[section.width] <= 6 ? 'col-span-12 sm:col-span-6 lg:col-span-6' :
+                  widthToSpan[section.width] <= 8 ? 'col-span-12 sm:col-span-8 lg:col-span-8' :
+                  'col-span-12'}
+              `}
+              style={{ minWidth: 0, overflow: 'hidden' }}
             >
               <SectionWrapper
                 id={section.id}

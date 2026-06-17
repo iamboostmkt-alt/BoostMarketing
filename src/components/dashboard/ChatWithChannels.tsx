@@ -2579,11 +2579,12 @@ FORMATO:
 
               <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 px-1 mb-1 mt-1">Accesos rápidos</p>
               {[
-                { href: '/dashboard/ai',       icon: '✨', label: 'Chat IA',   sub: 'Boosti + múltiples modelos',  action: null },
-                { href: '/dashboard/tasks',    icon: '✅', label: 'Tareas',    sub: 'Ver y gestionar tareas',    action: null },
-                { href: '',                    icon: '📅', label: 'Reuniones', sub: 'Agendar videollamada',       action: 'meeting' },
-                { href: '/dashboard/projects', icon: '📁', label: 'Proyectos', sub: 'Campañas y proyectos',       action: null },
-                { href: '/dashboard/clients',  icon: '👥', label: 'Cuentas',   sub: 'Gestión de cuentas',        action: null },
+                { href: '/dashboard/ai',       icon: '✨', label: 'Chat con IA',  sub: 'Boosti · Claude · Gemini · Llama', action: null, highlight: true },
+                { href: '/dashboard/tasks',    icon: '✅', label: 'Tareas',       sub: 'Ver y gestionar tareas',           action: null },
+                { href: '',                    icon: '📅', label: 'Reuniones',    sub: 'Agendar videollamada',              action: 'meeting' },
+                { href: '/dashboard/projects', icon: '📁', label: 'Proyectos',    sub: 'Campañas y proyectos',              action: null },
+                { href: '/dashboard/clients',  icon: '👥', label: 'Cuentas',      sub: 'Gestión de cuentas',               action: null },
+                { href: '/dashboard/calendar', icon: '📆', label: 'Calendario',   sub: 'Reuniones y eventos',              action: null },
               ].map(app => (
                 app.action === 'meeting' ? (
                   <button key="meetings" type="button"
@@ -3154,7 +3155,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
             <div className="pt-3 pb-3">
               <div className="flex items-center justify-between px-4 mb-2">
                 <p className="text-[9px] font-medium uppercase tracking-widest text-white/20">Archivos</p>
-                <button className="text-[10px] text-violet-400/50 hover:text-violet-400 transition-colors" onClick={() => onSetTab('members' as any)}>Ver todos</button>
+                <a href="/dashboard/files" className="text-[10px] text-violet-400/50 hover:text-violet-400 transition-colors">Ver todos</a>
               </div>
               {/* Filtros */}
               <div className="flex gap-1.5 px-3 mb-2">
@@ -3676,10 +3677,10 @@ export default function ChatWithChannels() {
         <>
           {/* Mobile backdrop */}
           <div
-            className="fixed inset-0 z-[59] bg-black/50 lg:hidden"
+            className="fixed inset-x-0 top-14 bottom-0 z-[59] bg-black/50 lg:hidden"
             onClick={() => setShowRightPanel(false)}
           />
-          <div className="fixed inset-y-0 right-0 z-[60] lg:relative lg:inset-auto lg:z-auto" style={{ width: 320 }}>
+          <div className="fixed top-14 bottom-0 right-0 z-[60] lg:relative lg:top-auto lg:bottom-auto lg:z-auto" style={{ width: 320 }}>
             <RightPanel
               tab={rightTab as any}
               onSetTab={setRightTab as any}
