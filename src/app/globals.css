@@ -760,3 +760,14 @@ html:has(.auth-bg) body {
 html:not(:has(.auth-bg)) {
   background: #080808 !important;
 }
+
+/* ── TopNav fixed spacer ────────────────────────────────── */
+.wl-topnav-spacer {
+  height: 56px;
+  flex-shrink: 0;
+}
+@supports (padding-top: env(safe-area-inset-top)) {
+  .wl-topnav-spacer {
+    height: calc(56px + env(safe-area-inset-top, 0px));
+  }
+}

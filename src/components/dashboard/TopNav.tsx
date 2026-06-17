@@ -65,7 +65,7 @@ export default function TopNav() {
   };
 
   return (
-    <header className="wl-topnav sticky top-0 z-30 dark-nav">
+    <header className="wl-topnav fixed top-0 left-0 right-0 z-30 dark-nav">
       <div className="flex items-center h-12 px-4 md:px-6 gap-3">
 
         <Button

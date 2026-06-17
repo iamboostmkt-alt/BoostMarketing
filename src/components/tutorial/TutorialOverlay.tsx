@@ -87,12 +87,35 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
 
     if (isMobile && isNavTarget) {
       window.dispatchEvent(new CustomEvent('wl:open-sidebar'));
-      const t = setTimeout(measure, 320);
-      window.addEventListener('resize', measure);
-      return () => { clearTimeout(t); window.removeEventListener('resize', measure); };
+      // Intentar varias veces hasta encontrar el elemento
+      let attempts = 0;
+      const tryMeasure = () => {
+        attempts++;
+        const r = getElementRect(step.target);
+        if (r && r.width > 0) {
+          setRect(r);
+          requestAnimationFrame(() => setAnimIn(true));
+        } else if (attempts < 8) {
+          setTimeout(tryMeasure, 150);
+        } else {
+          // Si no lo encuentra, mostrar tooltip centrado
+          setRect(null);
+          requestAnimationFrame(() => setAnimIn(true));
+        }
+      };
+      const t = setTimeout(tryMeasure, 400);
+      window.addEventListener('resize', tryMeasure);
+      return () => { clearTimeout(t); window.removeEventListener('resize', tryMeasure); };
     }
 
-    measure();
+    // Desktop o paso no nav — medir directo
+    const r = getElementRect(step.target);
+    if (r && r.width > 0) {
+      setRect(r);
+    } else {
+      setRect(null); // tooltip centrado si no hay elemento
+    }
+    requestAnimationFrame(() => setAnimIn(true));
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   }, [phase, stepIdx, step]);

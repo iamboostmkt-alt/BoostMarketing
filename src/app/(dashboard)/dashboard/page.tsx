@@ -32,7 +32,7 @@ function greeting() {
 }
 
 function fmtDate() {
-  return new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 const roleBadge: Record<string, string> = {

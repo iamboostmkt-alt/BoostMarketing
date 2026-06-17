@@ -12,8 +12,12 @@ export default async function BillingLayout({ children }: { children: React.Reac
   if (!session) redirect('/login?callbackUrl=/billing');
 
   return (
-    <div className="auth-bg" style={{ background: '#F6F7FB', minHeight: '100dvh', fontFamily: 'var(--font-inter, system-ui, sans-serif)', position: 'relative' }}>
-      {children}
-    </div>
+    <>
+      {/* Script que aplica fondo claro antes del primer paint */}
+      <script dangerouslySetInnerHTML={{ __html: `document.documentElement.style.background='#F6F7FB';document.body.style.background='#F6F7FB';` }} />
+      <div className="auth-bg" style={{ background: '#F6F7FB', minHeight: '100dvh', fontFamily: 'var(--font-inter, system-ui, sans-serif)', position: 'relative' }}>
+        {children}
+      </div>
+    </>
   );
 }

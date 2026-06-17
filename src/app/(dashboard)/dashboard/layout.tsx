@@ -93,10 +93,9 @@ export default function DashboardLayout({
 
             {/* Main area */}
             <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-              {/* Top navigation — shrink-0 garantiza que no scrollea */}
-              <div className="shrink-0">
-                <TopNav />
-              </div>
+              {/* Top navigation — fixed, necesita spacer */}
+              <TopNav />
+              <div className="shrink-0 wl-topnav-spacer" />
 
               {/* Main content — ÚNICO área scrolleable */}
               <main className="flex-1 min-h-0 overflow-hidden flex flex-col" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}>

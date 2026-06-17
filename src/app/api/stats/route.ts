@@ -29,9 +29,9 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // âœ… FIX: eliminado "active"
+    // Contar todos los clientes activos del workspace
     const activeClients = await db.client.count({
-      where: { userId, workspaceId },
+      where: { workspaceId, status: { in: ['active', 'prospect'] } },
     });
 
     const contacts = await db.contact.findMany({
