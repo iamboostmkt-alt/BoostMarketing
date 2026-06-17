@@ -697,3 +697,31 @@ html:not(:has(.auth-bg)) {
 .light [data-sidebar="sidebar"] {
   background-color: #0F1117 !important;
 }
+
+/* ── wl-kpi-card: card del dashboard home ──────────────── */
+/* dark (default) */
+.wl-kpi-card {
+  background: #0F1117;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+}
+/* light override */
+.light .wl-kpi-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(17,24,39,0.06) !important;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.04) !important;
+}
+
+/* ── Dashboard page background ─────────────────────────── */
+.wl-dashboard-bg {
+  background: #07070A;
+}
+.light .wl-dashboard-bg {
+  background: #F6F7FB !important;
+}
+
+/* ── Fix barra blanca en TopNav al navegar ─────────────── */
+/* Asegurar que el contenedor del dashboard sea siempre oscuro */
+html:not(:has(.auth-bg)) body {
+  background: #080808 !important;
+}

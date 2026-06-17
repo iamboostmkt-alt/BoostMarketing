@@ -49,10 +49,9 @@ function KpiCard({ label, value, icon: Icon, color, change, up, onClick }: {
   return (
     <motion.div
       onClick={onClick}
-      whileHover={{ y: -2, boxShadow: '0 12px 40px rgba(15,23,42,0.08)' }}
+      whileHover={{ y: -2 }}
       transition={{ duration: 0.18 }}
-      className="rounded-[20px] p-5 cursor-pointer"
-      style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', boxShadow: 'var(--wl-shadow)' }}
+      className="wl-kpi-card rounded-[20px] p-5 cursor-pointer"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="w-10 h-10 rounded-[12px] flex items-center justify-center" style={{ background: color + '15' }}>
@@ -76,8 +75,7 @@ function SectionCard({ title, action, actionHref, children }: {
   title: string; action?: string; actionHref?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[20px] p-5 flex flex-col gap-0"
-      style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', boxShadow: 'var(--wl-shadow)' }}>
+    <div className="wl-kpi-card rounded-[20px] p-5 flex flex-col gap-0">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[15px] font-semibold" style={{ color: 'var(--wl-text-primary)' }}>{title}</h3>
         {action && actionHref && (
@@ -179,7 +177,7 @@ export default function DashboardHome() {
   // ── Skeleton ─────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6" style={{ background: 'var(--wl-bg, #F6F7FB)', minHeight: '100%' }}>
+      <div className="wl-dashboard-bg px-4 sm:px-6 lg:px-8 py-6 space-y-6" style={{ minHeight: '100%' }}>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1,2,3,4].map(i => (
             <div key={i} className="rounded-[20px] p-5 animate-pulse" style={{ height: 120, background: 'var(--wl-surface)', border: '1px solid var(--wl-border)' }}>
@@ -200,7 +198,7 @@ export default function DashboardHome() {
 
   return (
     <>
-      <div className="flex flex-col px-4 sm:px-6 lg:px-8 py-5 gap-5" style={{ background: 'var(--wl-bg, #F6F7FB)', minHeight: '100%' }}>
+      <div className="wl-dashboard-bg flex flex-col px-4 sm:px-6 lg:px-8 py-5 gap-5" style={{ minHeight: '100%' }}>
 
         {/* ── HEADER ───────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4">
@@ -213,8 +211,13 @@ export default function DashboardHome() {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 overflow-hidden">
-              <h1 className="text-[16px] sm:text-[20px] font-bold leading-snug truncate" style={{ color: 'var(--wl-text-primary)' }}>
-                {greeting()}, <span className="text-[#7C3AED]">{userName.split(' ')[0]}</span> 👋
+              <h1 className="text-[15px] sm:text-[19px] font-bold leading-snug" style={{ color: 'var(--wl-text-primary)' }}>
+                {greeting()},{' '}
+                <span className="text-[#7C3AED]">
+                  {userName.split(' ')[0].length > 10
+                    ? userName.split(' ')[0].slice(0, 10) + '…'
+                    : userName.split(' ')[0]}
+                </span>{' '}👋
               </h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[12px] capitalize" style={{ color: 'var(--wl-text-muted)' }}>{fmtDate()}</span>
