@@ -89,6 +89,11 @@ export default function SettingsPage() {
   const [savingBrand, setSavingBrand] = useState(false);
   const [savedBrand, setSavedBrand] = useState(false);
   const [workspaceName, setWorkspaceName] = useState('');
+  const [workspaceData, setWorkspaceData] = useState<{
+    plan: string; trialEndsAt: string | null; isFoundingMember: boolean;
+    billingCycle: string; aiTier: string; extraClients: number;
+    _count: { users: number; clients: number; tasks: number };
+  } | null>(null);
 
   useEffect(() => {
     fetch('/api/cms/settings').then(r => r.json()).then(d => {
@@ -97,6 +102,7 @@ export default function SettingsPage() {
     }).catch(() => {});
     fetch('/api/workspace/me').then(r => r.json()).then(d => {
       if (d.workspace?.name) setWorkspaceName(d.workspace.name);
+      if (d.workspace) setWorkspaceData(d.workspace);
     }).catch(() => {});
 
     async function fetchProfile() {
@@ -605,6 +611,138 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="empresa" className="space-y-6">
+
+            {/* ── CARD SUSCRIPCIÓN ──────────────────────────── */}
+            {workspaceData && (() => {
+              const PLANS: Record<string, { label: string; monthly: number; annual: number; clients: number; color: string; icon: string }> = {
+                FREE:       { label: 'Clásico',    monthly: 350,  annual: 3360,  clients: 5,   color: '#6B7280', icon: '⚡' },
+                PRO:        { label: 'Pro',         monthly: 450,  annual: 4320,  clients: 12,  color: '#3B82F6', icon: '🚀' },
+                BUSINESS:   { label: 'Business',    monthly: 550,  annual: 5280,  clients: 999, color: '#8B5CF6', icon: '💼' },
+                ENTERPRISE: { label: 'Enterprise',  monthly: 1500, annual: 14400, clients: 999, color: '#F59E0B', icon: '🏢' },
+              };
+              const plan = PLANS[workspaceData.plan] || PLANS.FREE;
+              const price = workspaceData.billingCycle === 'annual' ? plan.annual : plan.monthly;
+              const pricePerMonth = workspaceData.billingCycle === 'annual' ? Math.round(plan.annual / 12) : plan.monthly;
+              const isTrial = workspaceData.trialEndsAt && new Date(workspaceData.trialEndsAt) > new Date();
+              const trialDays = isTrial ? Math.ceil((new Date(workspaceData.trialEndsAt!).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+              const clientsUsed = workspaceData._count.clients;
+              const clientsLimit = plan.clients + workspaceData.extraClients;
+              const clientsPct = clientsLimit < 999 ? Math.min(Math.round((clientsUsed / clientsLimit) * 100), 100) : 0;
+              const clientsColor = clientsPct > 85 ? '#EF4444' : clientsPct > 65 ? '#F59E0B' : '#10B981';
+              const AI_LABELS: Record<string, string> = { basic: 'IA Básica', medium: 'IA Media', premium: 'IA Premium' };
+
+              return (
+                <div className="glass-card rounded-xl overflow-hidden">
+                  {/* Header del plan */}
+                  <div className="p-5 border-b border-white/[0.05]"
+                    style={{ background: `linear-gradient(135deg, ${plan.color}18 0%, ${plan.color}08 100%)` }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                          style={{ background: plan.color + '22', border: `1px solid ${plan.color}40` }}>
+                          {plan.icon}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-white font-bold text-base">Plan {plan.label}</h3>
+                            {workspaceData.isFoundingMember && (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                style={{ background: 'rgba(251,191,36,0.15)', color: '#FBB724', border: '1px solid rgba(251,191,36,0.25)' }}>
+                                ⭐ Founding Member
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-white/40 text-xs mt-0.5">
+                            {workspaceData.billingCycle === 'annual' ? 'Facturación anual' : 'Facturación mensual'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-white font-bold text-xl">${pricePerMonth.toLocaleString()}</p>
+                        <p className="text-white/30 text-[11px]">MXN/mes</p>
+                        {workspaceData.billingCycle === 'annual' && (
+                          <p className="text-emerald-400 text-[10px] font-medium mt-0.5">
+                            ${price.toLocaleString()}/año · Ahorras ${((plan.monthly * 12) - plan.annual).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-5 space-y-4">
+                    {/* Trial o estado activo */}
+                    {isTrial ? (
+                      <div className="rounded-lg p-3 flex items-center gap-3"
+                        style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.20)' }}>
+                        <div className="text-xl shrink-0">⏳</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold text-amber-400">Prueba gratuita activa</p>
+                          <p className="text-[12px] text-white/50 mt-0.5">
+                            Te quedan <strong className="text-amber-400">{trialDays} día{trialDays !== 1 ? 's' : ''}</strong> · Termina el {new Date(workspaceData.trialEndsAt!).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <a href="/billing" className="text-[11px] font-semibold px-3 py-1.5 rounded-lg shrink-0 transition-all"
+                          style={{ background: 'rgba(251,191,36,0.15)', color: '#FBB724', border: '1px solid rgba(251,191,36,0.25)' }}>
+                          Activar →
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="rounded-lg p-3 flex items-center gap-2.5"
+                        style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.20)' }}>
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+                        <p className="text-[12px] text-emerald-400 font-medium">Suscripción activa</p>
+                      </div>
+                    )}
+
+                    {/* Uso de clientes */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[12px] font-medium text-white/60">Clientes utilizados</p>
+                        <p className="text-[12px] font-semibold" style={{ color: clientsColor }}>
+                          {clientsUsed} / {clientsLimit < 999 ? clientsLimit : '∞'}
+                        </p>
+                      </div>
+                      {clientsLimit < 999 && (
+                        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <div className="h-full rounded-full transition-all duration-700"
+                            style={{ width: `${clientsPct}%`, background: clientsColor }} />
+                        </div>
+                      )}
+                      {clientsLimit < 999 && clientsPct > 80 && (
+                        <p className="text-[11px] text-amber-400 mt-1.5">
+                          ⚠️ Estás cerca del límite. <a href="/billing" className="underline hover:text-amber-300">Considera hacer upgrade</a>
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Detalles del plan */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: 'Usuarios', value: `${workspaceData._count.users} activos`, icon: '👥' },
+                        { label: 'Modelo de IA', value: AI_LABELS[workspaceData.aiTier] || 'Básica', icon: '🤖' },
+                        { label: 'Tareas creadas', value: workspaceData._count.tasks.toString(), icon: '✅' },
+                        { label: 'Ciclo de pago', value: workspaceData.billingCycle === 'annual' ? 'Anual' : 'Mensual', icon: '📅' },
+                      ].map(item => (
+                        <div key={item.label} className="rounded-lg p-3"
+                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <p className="text-[10px] text-white/30 mb-1">{item.icon} {item.label}</p>
+                          <p className="text-[13px] font-semibold text-white/80">{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Botón de acción */}
+                    <a href="/billing"
+                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all"
+                      style={{ background: plan.color + '18', border: `1px solid ${plan.color}35`, color: plan.color }}>
+                      {isTrial ? '🚀 Activar suscripción' : workspaceData.plan === 'ENTERPRISE' ? '📋 Ver detalles' : '⬆️ Gestionar plan'}
+                    </a>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ── BRANDING ─────────────────────────────────── */}
             <div className="glass-card rounded-xl p-6 space-y-6">
               <div className="flex items-center gap-3"><Building2 className="w-5 h-5 text-brand-light" /><h3 className="text-base font-semibold text-white">Branding de la empresa</h3></div>
               <p className="text-white/40 text-sm">El logo se usara en todos los emails del sistema</p>
