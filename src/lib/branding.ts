@@ -12,27 +12,32 @@ const DEFAULT: Branding = {
   brandColor: '#7c3aed',
 };
 
-// ── Cache en memoria — evita N+1 en 35+ llamadas por request ─────────────────
+// ── Cache en memoria — por workspaceId ───────────────────────────────────────
 const TTL_MS = 5 * 60 * 1000; // 5 minutos
-let _cache: { data: Branding; ts: number } | null = null;
+const _cache = new Map<string, { data: Branding; ts: number }>();
 
-export function clearBrandingCache() {
-  _cache = null;
+export function clearBrandingCache(workspaceId?: string) {
+  if (workspaceId) _cache.delete(workspaceId);
+  else _cache.clear();
 }
 
-export async function getBranding(): Promise<Branding> {
-  // Devolver del cache si está fresco
-  if (_cache && Date.now() - _cache.ts < TTL_MS) {
-    return _cache.data;
-  }
+export async function getBranding(workspaceId?: string): Promise<Branding> {
+  const key = workspaceId ?? '__global__';
+  const cached = _cache.get(key);
+  if (cached && Date.now() - cached.ts < TTL_MS) return cached.data;
+
   try {
-    const settings = await db.siteSettings.findFirst();
+    // Filtrar por workspaceId si se proporciona, sino tomar el primero (emails del sistema)
+    const settings = workspaceId
+      ? await db.siteSettings.findFirst({ where: { workspaceId } })
+      : await db.siteSettings.findFirst();
+
     const data: Branding = !settings ? DEFAULT : {
       logoUrl:    settings.logoUrl    || '',
       brandName:  settings.agencyName || DEFAULT.brandName,
       brandColor: DEFAULT.brandColor,
     };
-    _cache = { data, ts: Date.now() };
+    _cache.set(key, { data, ts: Date.now() });
     return data;
   } catch {
     return DEFAULT;

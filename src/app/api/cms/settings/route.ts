@@ -4,16 +4,19 @@ import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
-async function getOrCreateSettings() {
-  let settings = await db.siteSettings.findFirst();
+async function getOrCreateSettings(workspaceId?: string) {
+  const where = workspaceId ? { workspaceId } : {};
+  let settings = await db.siteSettings.findFirst({ where });
   if (!settings) {
-    settings = await db.siteSettings.create({ data: {} });
+    settings = await db.siteSettings.create({ data: workspaceId ? { workspaceId } : {} });
   }
   return settings;
 }
 
-export async function GET() {
-  const settings = await getOrCreateSettings();
+export async function GET(req: NextRequest) {
+  const result = await requireWorkspace({ roles: ['ADMIN'] });
+  const workspaceId = result.ok ? result.ctx.workspaceId : undefined;
+  const settings = await getOrCreateSettings(workspaceId);
   return NextResponse.json({ settings });
 }
 
@@ -29,7 +32,8 @@ export async function PATCH(req: NextRequest) {
     instagram, facebook, tiktok, linkedin, whatsapp,
   } = body;
 
-  const existing = await db.siteSettings.findFirst();
+  const { workspaceId } = result.ctx;
+  const existing = await db.siteSettings.findFirst({ where: { workspaceId } });
   const data: Record<string, string> = {};
   if (agencyName   !== undefined) data.agencyName   = agencyName;
   if (logoUrl      !== undefined) data.logoUrl      = logoUrl;
@@ -46,8 +50,8 @@ export async function PATCH(req: NextRequest) {
 
   const settings = existing
     ? await db.siteSettings.update({ where: { id: existing.id }, data })
-    : await db.siteSettings.create({ data });
-  clearBrandingCache(); // Invalidar cache de branding
+    : await db.siteSettings.create({ data: { ...data, workspaceId } });
+  clearBrandingCache(workspaceId); // Invalidar cache de branding del workspace
 
   revalidatePath("/");
   return NextResponse.json({ settings });

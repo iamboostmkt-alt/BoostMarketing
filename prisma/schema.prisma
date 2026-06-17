@@ -121,6 +121,7 @@ model User {
   sessions               Session[]
   notifications          Notification[]
   activityLogs           ActivityLog[]
+  siteSettings           SiteSettings[]
   tasks                  Task[]                    @relation("OwnedTasks")
   assignedTasks          Task[]                    @relation("AssignedTasks")
   taskTemplates          TaskTemplate[]
@@ -504,6 +505,7 @@ model Appointment {
 
 model SiteSettings {
   id           String @id @default(cuid())
+  workspaceId  String? @map("workspace_id")
   agencyName   String @default("BoostMarketing") @map("agency_name")
   logoUrl      String @default("") @map("logo_url")
   faviconUrl   String @default("") @map("favicon_url")
@@ -519,6 +521,8 @@ model SiteSettings {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  workspace    Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@map("site_settings")
 }

@@ -1631,7 +1631,7 @@ FORMATO:
       )}
 
       {/* Messages */}
-      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto px-5 py-3 pb-6" style={{scrollbarWidth:'none'}}>
+      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto px-5 py-3 pb-6" style={{scrollbarWidth:'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
         {loading && (
           <div className="space-y-4">
             {[1,2,3].map(i => (
