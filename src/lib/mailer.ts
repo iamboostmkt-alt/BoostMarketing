@@ -645,3 +645,39 @@ export function templateFelicitacion(
   return b ? emailLayout(content, b) : content;
 }
 
+
+// ─── Template: invitación a reunión para externo ──────────────────────────────
+export function templateInvitacionExterna(params: {
+  guestEmail: string;
+  meetingTitle: string;
+  date: string;
+  meetUrl?: string;
+  agencyName: string;
+  organizerName: string;
+  notes?: string;
+}, b?: Branding) {
+  const { meetingTitle, date, meetUrl, agencyName, organizerName, notes } = params;
+  const color = b?.brandColor || '#7c3aed';
+  const logoHtml = b?.logoUrl
+    ? `<img src="${b.logoUrl}" alt="${agencyName}" style="max-height:40px;max-width:160px;margin:0 auto 16px;display:block;" />`
+    : `<p style="text-align:center;font-size:18px;font-weight:700;color:${color};margin:0 0 16px;">${agencyName}</p>`;
+
+  const content = `
+    ${logoHtml}
+    <h2 style="color:#18181b;margin:0 0 6px;font-size:20px;text-align:center;">📅 Has sido invitado a una reunión</h2>
+    <p style="color:#6b7280;margin:0 0 20px;text-align:center;font-size:14px;">
+      <strong style="color:#18181b;">${organizerName}</strong> de <strong style="color:${color};">${agencyName}</strong> te ha invitado a la siguiente reunión:
+    </p>
+    ${infoBox(`
+      <p style="margin:0 0 8px;color:#18181b;font-weight:700;font-size:17px;">🗓 ${meetingTitle}</p>
+      <p style="margin:0 0 4px;color:#4b5563;font-size:14px;">📆 <strong>${date}</strong></p>
+      ${meetUrl ? `<p style="margin:8px 0 0;color:#6b7280;font-size:13px;word-break:break-all;">🔗 <a href="${meetUrl}" style="color:${color};">${meetUrl}</a></p>` : ''}
+      ${notes ? `<p style="margin:10px 0 0;color:#6b7280;font-size:13px;border-top:1px solid rgba(0,0,0,0.06);padding-top:8px;">📋 ${notes}</p>` : ''}
+    `, color)}
+    ${meetUrl ? btn(meetUrl, '🎥 Unirse a la Reunión', color) : ''}
+    <p style="color:#9ca3af;font-size:12px;text-align:center;margin-top:20px;">
+      Este correo fue enviado por ${agencyName} a través de Weeklink.<br/>
+      Si no esperabas esta invitación, puedes ignorar este mensaje.
+    </p>`;
+  return b ? emailLayout(content, b) : content;
+}

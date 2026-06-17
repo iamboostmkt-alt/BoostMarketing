@@ -3,7 +3,7 @@ import { MeetingCreateSchema, MeetingUpdateSchema, validateBody } from "@/lib/sc
 import { rateLimit } from "@/lib/security/rate-limit";
 import { requireWorkspace } from "@/core/auth/require-workspace";
 import { db } from "@/lib/db";
-import { sendMail, templateNuevaReunion } from "@/lib/mailer";
+import { sendMail, templateNuevaReunion, templateInvitacionExterna } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
 import { broadcastRealtime } from '@/lib/realtime-server';
 import { sendChatBotMessage } from '@/lib/chat-bot';
@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
   const validation = validateBody(MeetingCreateSchema, rawBody);
   if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
   const { name, date, notes, meetUrl, assignedUserIds, status } = validation.data;
+  const guestEmails: string[] = (await req.clone().json().catch(() => ({}))).guestEmails ?? [];
   const clientId = (rawBody as any).clientId as string | null ?? null;
   const parsed = new Date(date);
   const allMeetingIds = [...new Set([userId, ...(assignedUserIds ?? [])])] as string[];
@@ -67,8 +68,30 @@ export async function POST(req: NextRequest) {
     const dateStr = parsed.toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
     const team = await db.user.findMany({ where: { id: { in: assignedUserIds as string[] } }, select: { email: true, name: true } });
     for (const u of team) {
-      if (u.email) getBranding().then(b => sendMail(u.email!, "Nueva reunion asignada - BoostMarketing", templateNuevaReunion(u.name || u.email!, name.trim(), dateStr, (meetUrl ?? "").trim(), b))).catch(console.error);
+      if (u.email) getBranding(workspaceId).then(b => sendMail(u.email!, `Nueva reunión asignada - ${b.brandName}`, templateNuevaReunion(u.name || u.email!, name.trim(), dateStr, (meetUrl ?? "").trim(), b))).catch(console.error);
     }
+  }
+  // Enviar emails a invitados externos
+  if (guestEmails.length > 0) {
+    const dateStr = parsed.toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    const organizer = await db.user.findFirst({ where: { id: userId }, select: { name: true, email: true } });
+    getBranding(workspaceId).then(b => {
+      for (const guestEmail of guestEmails) {
+        sendMail(
+          guestEmail,
+          `Invitación a reunión: ${name.trim()} — ${b.brandName}`,
+          templateInvitacionExterna({
+            guestEmail,
+            meetingTitle: name.trim(),
+            date: dateStr,
+            meetUrl: (meetUrl ?? '').trim() || undefined,
+            agencyName: b.brandName,
+            organizerName: organizer?.name || organizer?.email || b.brandName,
+            notes: (notes ?? '').trim() || undefined,
+          }, b)
+        ).catch(console.error);
+      }
+    }).catch(console.error);
   }
   // Crear notificaciones en DB para campanita — todos los asignados
   if (allMeetingIds.length > 0) {

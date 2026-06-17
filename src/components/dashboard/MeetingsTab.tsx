@@ -53,6 +53,8 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   const [assigned,    setAssigned]    = useState<string[]>([]);
   const [clientEmail, setClientEmail] = useState('');
   const [clientId,    setClientId]    = useState('');
+  const [guestEmails, setGuestEmails] = useState<string[]>([]);
+  const [guestInput,  setGuestInput]  = useState('');
   const [visibility,  setVisibility]  = useState<'internal' | 'team' | 'client_visible'>('team');
   const [saving,      setSaving]      = useState(false);
 
@@ -84,6 +86,8 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     setClientEmail(initialClientEmail ?? (meeting as any)?.email ?? '');
     setClientId(clients.find(c => c.email === (initialClientEmail ?? (meeting as any)?.email ?? ''))?.id ?? '');
     setVisibility('team');
+    setGuestEmails((meeting as any)?.guestEmails ?? []);
+    setGuestInput('');
   }, [open, meeting, initialClientEmail]);
 
   // Esc para cerrar
@@ -116,6 +120,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
       const body = {
         name, date: new Date(date).toISOString(), notes, meetUrl,
         assignedUserIds: assigned, visibility,
+        guestEmails: guestEmails.filter(e => e.includes('@')),
         ...(clientId    ? { clientId }           : {}),
         ...(clientEmail ? { clientEmail }        : {}),
       };
@@ -323,6 +328,54 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                 </div>
               </div>
             )}
+
+            {/* Invitados externos */}
+            <div>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">
+                Invitados externos <span className="text-white/20 normal-case">(opcional · recibirán email de invitación)</span>
+              </label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="email"
+                  value={guestInput}
+                  onChange={e => setGuestInput(e.target.value)}
+                  onKeyDown={e => {
+                    if ((e.key === 'Enter' || e.key === ',') && guestInput.includes('@')) {
+                      e.preventDefault();
+                      const email = guestInput.trim().toLowerCase();
+                      if (!guestEmails.includes(email)) setGuestEmails(prev => [...prev, email]);
+                      setGuestInput('');
+                    }
+                  }}
+                  placeholder="correo@cliente.com → Enter para agregar"
+                  className="flex-1 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-[12px] text-white/70 placeholder-white/20 outline-none focus:border-purple-500/40"
+                />
+                <button type="button"
+                  onClick={() => {
+                    const email = guestInput.trim().toLowerCase();
+                    if (email.includes('@') && !guestEmails.includes(email)) {
+                      setGuestEmails(prev => [...prev, email]);
+                      setGuestInput('');
+                    }
+                  }}
+                  className="px-3 py-2 rounded-lg text-[11px] font-medium border border-white/[0.07] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
+                  + Agregar
+                </button>
+              </div>
+              {guestEmails.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {guestEmails.map(email => (
+                    <span key={email}
+                      className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] border"
+                      style={{ background: 'rgba(124,58,237,0.08)', borderColor: 'rgba(124,58,237,0.25)', color: '#c4b5fd' }}>
+                      ✉ {email}
+                      <button type="button" onClick={() => setGuestEmails(prev => prev.filter(e => e !== email))}
+                        className="text-white/30 hover:text-red-400 transition-colors ml-0.5">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Notas */}
             <div>
