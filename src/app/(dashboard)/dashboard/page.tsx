@@ -114,6 +114,7 @@ export default function DashboardHome() {
   const [messages, setMessages]       = useState<any[]>([]);
   const [clients, setClients]         = useState<any[]>([]);
   const [teamLoad, setTeamLoad]       = useState<any[]>([]);
+  const [projects,    setProjects]    = useState<any[]>([]);
   const [briefOpen, setBriefOpen]     = useState(true);
   const [taskFormOpen, setTaskFormOpen]   = useState(false);
   const [clientFormOpen, setClientFormOpen] = useState(false);
@@ -124,20 +125,22 @@ export default function DashboardHome() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsR, tasksR, meetsR, msgsR, clientsR, workloadR] = await Promise.all([
+      const [statsR, tasksR, meetsR, msgsR, clientsR, workloadR, projectsR] = await Promise.all([
         fetch('/api/stats').then(r => r.json()).catch(() => null),
         fetch('/api/tasks?scope=mine&limit=8').then(r => r.json()).catch(() => ({ tasks: [] })),
         fetch('/api/meetings?limit=4').then(r => r.json()).catch(() => ({ meetings: [] })),
-        fetch('/api/chat?room=TEAM&limit=4').then(r => r.json()).catch(() => ({ messages: [] })),
+        fetch('/api/chat?room=TEAM&limit=6').then(r => r.json()).catch(() => ({ messages: [] })),
         fetch('/api/clients?limit=4').then(r => r.json()).catch(() => ({ clients: [] })),
         fetch('/api/team/workload').then(r => r.json()).catch(() => ({ members: [] })),
+        fetch('/api/projects?limit=5').then(r => r.json()).catch(() => ({ projects: [] })),
       ]);
       if (statsR) setStats(statsR);
       setTasks(tasksR?.tasks || []);
       setMeetings(meetsR?.meetings || []);
       setMessages(msgsR?.messages || []);
       setClients(clientsR?.clients || []);
-      setTeamLoad(workloadR?.members || []);
+      setTeamLoad(workloadR?.users || workloadR?.members || []);
+      setProjects(projectsR?.projects || []);
     } finally {
       setLoading(false);
     }
@@ -328,30 +331,45 @@ export default function DashboardHome() {
             )}
           </SectionCard>
 
-          {/* Actividad del equipo */}
-          <SectionCard title="⚡ Actividad del equipo" action="Ver todo" actionHref="/dashboard/tasks">
-            {messages.length === 0 ? (
-              <Empty msg="Sin actividad reciente" />
+          {/* Producción activa — proyectos en curso */}
+          <SectionCard title="🚀 Producción activa" action="Ver todos" actionHref="/dashboard/projects">
+            {projects.length === 0 ? (
+              <Empty msg="Sin proyectos activos" />
             ) : (
-              <div className="space-y-3">
-                {messages.slice(0, 5).map((msg: any) => (
-                  <div key={msg.id} className="flex items-start gap-3">
-                    <Avatar className="h-7 w-7 shrink-0 rounded-full overflow-hidden">
-                      <AvatarImage src={msg.user?.image || undefined} />
-                      <AvatarFallback className="text-[9px] font-semibold"
-                        style={{ background: (msg.user?.color || '#7c3aed') + '20', color: msg.user?.color || '#7c3aed' }}>
-                        {userInitials(msg.user?.name || null, msg.user?.email || '')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium" style={{ color: 'var(--wl-text-primary)' }}>{msg.user?.name || msg.user?.email}</p>
-                      <p className="text-[11px] text-[var(--wl-text-muted)] truncate mt-0.5">{msg.message}</p>
-                    </div>
-                    <span className="text-[10px] text-[var(--wl-text-placeholder)] shrink-0">
-                      {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                ))}
+              <div className="space-y-2">
+                {projects.slice(0, 5).map((p: any) => {
+                  const total = p._count?.tasks || 0;
+                  const done  = p.tasks?.filter((t: any) => t.status === 'completed' || t.status === 'approved').length || 0;
+                  const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+                  const statusLabel: Record<string, string> = { active: 'En curso', completed: 'Completado', paused: 'Pausado', cancelled: 'Cancelado' };
+                  const statusCol: Record<string, string>   = { active: '#3B82F6', completed: '#10B981', paused: '#F59E0B', cancelled: '#EF4444' };
+                  return (
+                    <Link key={p.id} href={`/dashboard/projects/${p.id}`}
+                      className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
+                      <div className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                        style={{ background: p.color || '#7C3AED' }}>
+                        {(p.name || 'P')[0].toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-[12px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{p.name}</p>
+                          <span className="text-[10px] font-semibold shrink-0 px-1.5 py-0.5 rounded-full"
+                            style={{ color: statusCol[p.status] || '#6B7280', background: (statusCol[p.status] || '#6B7280') + '18' }}>
+                            {statusLabel[p.status] || p.status}
+                          </span>
+                        </div>
+                        {total > 0 && (
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'var(--wl-elevated)' }}>
+                              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: p.color || '#7C3AED' }} />
+                            </div>
+                            <span className="text-[9px] shrink-0" style={{ color: 'var(--wl-text-muted)' }}>{pct}%</span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </SectionCard>
@@ -428,7 +446,9 @@ export default function DashboardHome() {
               ) : (
                 <div className="space-y-3">
                   {clients.slice(0, 4).map((c: any) => {
-                    const progress = c.taskCount > 0 ? Math.round((c.completedTaskCount / c.taskCount) * 100) : 0;
+                    const totalC = (c.activeTasks || 0) + (c.completedTasks || 0) + (c.taskCount || 0);
+                    const doneC  = c.completedTasks || c.completedTaskCount || 0;
+                    const progress = totalC > 0 ? Math.round((doneC / totalC) * 100) : 0;
                     const progressColor = progress > 75 ? '#10B981' : progress > 40 ? '#F59E0B' : '#EF4444';
                     return (
                       <Link key={c.id} href={`/dashboard/clients`}
@@ -461,7 +481,10 @@ export default function DashboardHome() {
               ) : (
                 <div className="space-y-3">
                   {teamLoad.slice(0, 5).map((member: any) => {
-                    const pct = Math.min(Math.round((member.activeTasks / Math.max(member.totalTasks, 1)) * 100), 100);
+                    const activeArr = Array.isArray(member.activeTasks) ? member.activeTasks : [];
+                    const activeCnt = activeArr.filter((t: any) => t.status !== 'completed' && t.status !== 'approved').length;
+                    const totalCnt  = activeArr.length || member.totalTasks || 0;
+                    const pct = totalCnt > 0 ? Math.min(Math.round((activeCnt / totalCnt) * 100), 100) : 0;
                     const col = workloadColor(pct);
                     return (
                       <div key={member.id} className="flex items-center gap-3">

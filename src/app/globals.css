@@ -771,3 +771,9 @@ html:not(:has(.auth-bg)) {
     height: calc(56px + env(safe-area-inset-top, 0px));
   }
 }
+
+/* ── Spacer del TopNav fixed — transparente ─────────────── */
+.wl-topnav-spacer {
+  background: transparent !important;
+  flex-shrink: 0;
+}
