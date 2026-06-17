@@ -9,6 +9,7 @@ import {
   Target, BarChart3, Loader2, X, Check, Flag,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ProjectShareButton } from '@/components/dashboard/ProjectShareButton';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /* ─── Types ─────────────────────────────────────────── */
@@ -422,7 +423,10 @@ export default function ProjectDetailPage() {
           </div>
 
           {/* Status badge + acciones */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+            {isManager && (
+              <ProjectShareButton projectId={project.id} projectName={project.name} />
+            )}
             {isManager && (
               <select value={project.status} onChange={e => changeProjectStatus(e.target.value)}
                 className="rounded-xl bg-white/[0.04] border border-white/[0.07] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-violet-500/40 [color-scheme:dark]">

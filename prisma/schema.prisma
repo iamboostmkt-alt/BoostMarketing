@@ -60,6 +60,7 @@ model Workspace {
   aiSessions    AiSession[]
   pushSubscriptions PushSubscription[]
   projects      Project[]
+  projectTokens ProjectToken[]
   invites       WorkspaceInvite[]
   taskTemplates      TaskTemplate[]
   customRoles        CustomRole[]
@@ -701,7 +702,29 @@ model Project {
   tasks         Task[]                 @relation("ProjectTasks")
 
   @@index([workspaceId, status])
+  tokens        ProjectToken[]         @relation("ProjectTokens")
+
   @@map("projects")
+}
+
+model ProjectToken {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  projectId   String    @map("project_id")
+  workspaceId String    @map("workspace_id")
+  label       String    @default("")
+  active      Boolean   @default(true)
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  viewCount   Int       @default(0) @map("view_count")
+  lastViewAt  DateTime? @map("last_view_at")
+
+  project   Project   @relation("ProjectTokens", fields: [projectId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([projectId])
+  @@map("project_tokens")
 }
 
 model ProjectAssignedUser {
