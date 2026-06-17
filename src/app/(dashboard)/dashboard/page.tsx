@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
-  ListTodo, Users, BadgeCheck, Wallet, Clock, Video,
+  ListTodo, Users, BadgeCheck, Clock, Video,
   Plus, ArrowUpRight, ArrowDownRight, BrainCircuit,
   UserCircle, MessageSquare, X, ChevronRight,
   CalendarDays, UsersRound, Target, Pencil,
@@ -150,6 +150,17 @@ export default function DashboardHome() {
 
   // ── Computed ────────────────────────────────────────────
   const overdue   = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed' && t.status !== 'approved');
+  // Reuniones de hoy y próximos 7 días
+  const now = new Date();
+  const endOfWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const meetingsThisWeek = meetings.filter(m => {
+    const d = new Date((m as any).date);
+    return d >= now && d <= endOfWeek;
+  });
+  const meetingsToday = meetings.filter(m => {
+    const d = new Date((m as any).date);
+    return d.toDateString() === now.toDateString();
+  });
   const todayTasks = tasks.filter(t => t.dueDate && new Date(t.dueDate).toDateString() === new Date().toDateString());
   const nextMeeting = meetings[0] || null;
   const pending   = tasks.filter(t => t.status !== 'completed' && t.status !== 'approved' && t.status !== 'cancelled');
@@ -158,7 +169,7 @@ export default function DashboardHome() {
     { label: 'Tareas pendientes',     value: pending.length,                       icon: ListTodo,   color: '#3B82F6', change: '+12%', up: true,  href: '/dashboard/tasks'    },
     { label: 'Clientes activos',      value: stats?.activeClients ?? 0,            icon: UsersRound, color: '#10B981', change: '+8%',  up: true,  href: '/dashboard/clients'  },
     { label: 'Aprobaciones pendientes', value: stats?.pendingDeals ?? 0,           icon: BadgeCheck, color: '#F59E0B', change: '',     up: false, href: '/dashboard/files'    },
-    { label: 'Tareas completadas',    value: tasks.filter(t => t.status === 'completed' || t.status === 'approved').length, icon: Wallet, color: '#8B5CF6', change: '', up: true, href: '/dashboard/tasks' },
+    { label: meetingsToday.length > 0 ? 'Reuniones hoy' : 'Esta semana', value: meetingsToday.length > 0 ? meetingsToday.length : meetingsThisWeek.length, icon: Video, color: '#8B5CF6', change: '', up: true, href: '/dashboard/calendar' },
   ] : [
     { label: 'Tareas hoy',            value: todayTasks.length,                    icon: ListTodo,   color: '#3B82F6', change: '', up: true,  href: '/dashboard/tasks'   },
     { label: 'Vencidas',              value: overdue.length,                       icon: Clock,      color: overdue.length > 0 ? '#EF4444' : '#94A3B8', change: '', up: false, href: '/dashboard/tasks' },
