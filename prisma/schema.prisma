@@ -52,6 +52,7 @@ model Workspace {
   milestones    Milestone[]
   notifications Notification[]
   activityLogs  ActivityLog[]
+  siteSettings  SiteSettings[]
   contacts      Contact[]
   chatMessages  ChatMessage[]
   chatUnreads   ChatUnread[]
@@ -121,7 +122,6 @@ model User {
   sessions               Session[]
   notifications          Notification[]
   activityLogs           ActivityLog[]
-  siteSettings           SiteSettings[]
   tasks                  Task[]                    @relation("OwnedTasks")
   assignedTasks          Task[]                    @relation("AssignedTasks")
   taskTemplates          TaskTemplate[]
