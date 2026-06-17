@@ -627,3 +627,22 @@ html:has(.auth-bg) body {
   background: #F6F7FB !important;
   color: #111827 !important;
 }
+
+/* ── dark-nav: TopNav siempre oscuro, ignora .light ────────── */
+/* El TopNav tiene fondo oscuro propio — proteger iconos y texto */
+.dark-nav,
+.dark-nav * {
+  --tw-text-opacity: 1;
+}
+/* Proteger text-white en el nav oscuro cuando .light está activo */
+.light .dark-nav .text-white,
+.light .dark-nav [class*="text-white"] {
+  color: inherit !important;
+}
+/* Específicamente iconos y texto del nav */
+.light .dark-nav .text-white\/60 { color: rgba(255,255,255,0.60) !important; }
+.light .dark-nav .text-white\/85 { color: rgba(255,255,255,0.85) !important; }
+.light .dark-nav .text-white\/30 { color: rgba(255,255,255,0.30) !important; }
+.light .dark-nav .text-white\/50 { color: rgba(255,255,255,0.50) !important; }
+.light .dark-nav .text-white\/25 { color: rgba(255,255,255,0.25) !important; }
+.light .dark-nav .hover\:text-white:hover { color: #ffffff !important; }
