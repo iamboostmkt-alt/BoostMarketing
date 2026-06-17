@@ -368,7 +368,7 @@ export async function POST(req: NextRequest) {
   const rawBody     = await req.json();
   const validation = validateBody(TaskCreateSchema, rawBody);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error.issues?.[0]?.message ?? 'Datos inválidos' }, { status: 400 });
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
   const body = validation.data;
   const { title, description, priority, dueDate, assignedUserIds, clientId, visibility, references, type: taskType, parentTaskId, milestoneId } = body;
@@ -506,7 +506,7 @@ export async function PUT(req: NextRequest) {
   const rawBody    = await req.json();
   const validation = validateBody(TaskUpdateSchema, rawBody);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error.issues?.[0]?.message ?? 'Datos inválidos' }, { status: 400 });
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
   const body = validation.data;
   const { id, title, description, status, priority, dueDate, startDate, assignedUserId, assignedUserIds, clientId, visibility, references, milestoneId, phase, type: taskType } = body as any;

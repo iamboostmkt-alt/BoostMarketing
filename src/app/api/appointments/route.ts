@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   const rawBody = await req.json();
   const validation = validateBody(AppointmentCreateSchema, rawBody);
-  if (!validation.success) return NextResponse.json({ error: validation.error.issues?.[0]?.message ?? 'Datos inválidos' }, { status: 400 });
+  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
   const { name, email, phone, date, notes, assignedUserIds, meetUrl, clientId: bodyClientId } = validation.data;
 
   const parsedDate = new Date(date);

@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
 
   const rawBody = await req.json();
   const validation = validateBody(ClientCreateSchema, rawBody);
-  if (!validation.success) return NextResponse.json({ error: validation.error.issues?.[0]?.message ?? 'Datos inválidos' }, { status: 400 });
+  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
   const body = validation.data;
   const { name, email, company, phone, status, assignedManagerId } = body;
   const assignedUserIds = (rawBody as Record<string, unknown>).assignedUserIds;
@@ -364,7 +364,7 @@ export async function PUT(req: NextRequest) {
 
   const rawBody = await req.json();
   const validation = validateBody(ClientUpdateSchema, rawBody);
-  if (!validation.success) return NextResponse.json({ error: validation.error.issues?.[0]?.message ?? 'Datos inválidos' }, { status: 400 });
+  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
   const body = validation.data;
   const { id, name, email, company, phone, status, assignedManagerId } = body;
   const assignedUserIds = (rawBody as Record<string, unknown>).assignedUserIds;

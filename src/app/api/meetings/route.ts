@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   const { userId, workspaceId } = result.ctx;
   const rawBody = await req.json();
   const validation = validateBody(MeetingCreateSchema, rawBody);
-  if (!validation.success) return NextResponse.json({ error: validation.error.issues?.[0]?.message ?? 'Datos inválidos' }, { status: 400 });
+  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
   const { name, date, notes, meetUrl, assignedUserIds, status } = validation.data;
   const clientId = (rawBody as any).clientId as string | null ?? null;
   const parsed = new Date(date);
