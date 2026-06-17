@@ -92,7 +92,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-[100dvh] flex"
+      className="min-h-[100dvh] max-h-[100dvh] overflow-hidden flex"
       style={{ background: '#F6F7FB', fontFamily: 'var(--font-inter, system-ui, sans-serif)', minHeight: '100dvh' }}
     >
       {/* Panel izquierdo — solo desktop */}
@@ -276,7 +276,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 rounded-[14px] text-[14px] font-semibold text-[var(--wl-text-primary)] transition-all disabled:opacity-60 mt-2"
+                className="w-full h-12 rounded-[14px] text-[14px] font-semibold text-white transition-all disabled:opacity-60 mt-2"
                 style={{ background: '#7C3AED', boxShadow: '0 8px 24px rgba(124,58,237,0.25)' }}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Iniciar sesión →'}
@@ -311,7 +311,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={magicLoading}
-                className="w-full h-12 rounded-[14px] text-[14px] font-semibold text-[var(--wl-text-primary)] transition-all disabled:opacity-60"
+                className="w-full h-12 rounded-[14px] text-[14px] font-semibold text-white transition-all disabled:opacity-60"
                 style={{ background: '#7C3AED', boxShadow: '0 8px 24px rgba(124,58,237,0.25)' }}
               >
                 {magicLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Enviar enlace mágico ✨'}

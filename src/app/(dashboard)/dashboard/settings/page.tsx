@@ -454,8 +454,19 @@ export default function SettingsPage() {
 
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="space-y-6">
-            {/* Theme */}
-            
+            {/* Apariencia — PRIMERO */}
+            <div className="glass-card rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                  <span className="text-[16px]">🎨</span>
+                </div>
+                <div>
+                  <h3 className="text-[14px] font-semibold text-white/85">Apariencia</h3>
+                  <p className="text-[11px] text-white/40 mt-0.5">Modo oscuro o modo claro</p>
+                </div>
+              </div>
+              <ThemeToggle variant="switch" />
+            </div>
 
             {/* Notifications */}
             <div className="glass-card rounded-xl p-6">
@@ -563,20 +574,6 @@ export default function SettingsPage() {
                   </a>
                 ))}
               </div>
-            </div>
-
-            {/* Apariencia */}
-            <div className="glass-card rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
-                  <span className="text-[16px]">🎨</span>
-                </div>
-                <div>
-                  <h3 className="text-[14px] font-semibold text-white/85">Apariencia</h3>
-                  <p className="text-[11px] text-white/40 mt-0.5">Modo oscuro o modo claro</p>
-                </div>
-              </div>
-              <ThemeToggle variant="switch" />
             </div>
 
             {/* Tutorial */}

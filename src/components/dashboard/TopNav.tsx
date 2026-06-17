@@ -65,7 +65,7 @@ export default function TopNav() {
   };
 
   return (
-    <header className="border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%)", paddingTop: "max(env(safe-area-inset-top, 0px), 12px)", minHeight: "calc(48px + max(env(safe-area-inset-top, 0px), 0px))" }}>
+    <header className="sticky top-0 z-30" style={{ background: "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%)", borderBottom: "1px solid rgba(255,255,255,0.03)", paddingTop: "max(env(safe-area-inset-top, 0px), 12px)", minHeight: "calc(48px + max(env(safe-area-inset-top, 0px), 0px))" }}>
       <div className="flex items-center h-12 px-4 md:px-6 gap-3">
 
         <Button
@@ -176,14 +176,12 @@ export default function TopNav() {
                     <Settings className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
                     <span className="text-[12px]">Ajustes</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/dashboard/settings?tab=preferences"
-                      className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
-                    >
-                      <Palette className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
-                      <span className="text-[12px]">Apariencia</span>
-                    </Link>
+                  <DropdownMenuItem
+                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
+                    onSelect={() => { router.push('/dashboard/settings?tab=preferences'); }}
+                  >
+                    <Palette className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
+                    <span className="text-[12px]">Apariencia</span>
                   </DropdownMenuItem>
                   {session?.user?.role === 'ADMIN' && (
                     <DropdownMenuItem asChild>

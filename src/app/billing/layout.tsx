@@ -12,7 +12,7 @@ export default async function BillingLayout({ children }: { children: React.Reac
   if (!session) redirect('/login?callbackUrl=/billing');
 
   return (
-    <div style={{ background: '#F6F7FB', minHeight: '100vh', fontFamily: 'var(--font-inter, system-ui, sans-serif)' }}>
+    <div className="auth-bg" style={{ background: '#F6F7FB', minHeight: '100dvh', fontFamily: 'var(--font-inter, system-ui, sans-serif)', position: 'relative' }}>
       {children}
     </div>
   );

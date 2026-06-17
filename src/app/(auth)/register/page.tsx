@@ -371,7 +371,7 @@ function RegisterPageInner() {
               <button
                 type="submit"
                 disabled={loading || (step === 1 && slugStatus === 'taken')}
-                className="w-full h-12 rounded-[14px] text-[14px] font-bold text-[var(--wl-text-primary)] flex items-center justify-center gap-2 transition-all disabled:opacity-60 mt-2"
+                className="w-full h-12 rounded-[14px] text-[14px] font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60 mt-2"
                 style={{ background: '#7C3AED', boxShadow: '0 8px 24px rgba(124,58,237,0.25)' }}
               >
                 {loading ? (
