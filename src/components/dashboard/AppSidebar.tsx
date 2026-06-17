@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { TutorialOverlay } from "@/components/tutorial/TutorialOverlay";
 
 // Destino de logout: app nativa Capacitor → /login, móvil browser → /login, desktop → /weeklink
 function getLogoutUrl(): string {
@@ -339,6 +340,7 @@ function NavItemButton({
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      data-tutorial={`nav-${item.href.replace('/dashboard/', '').replace('/', '-')}`}
       className={cn(
         "group relative mx-2 flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-all duration-150",
         collapsed && "mx-0 justify-center px-2",
@@ -611,6 +613,9 @@ export default function AppSidebar() {
     return canAccessRoute(item.href, role);
   });
 
+  const sessionUserId = session?.user?.id ?? '';
+  const sessionRole   = session?.user?.role ?? '';
+
   const sidebarContent = (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -669,7 +674,7 @@ export default function AppSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <nav data-tutorial="sidebar-nav" className="flex-1 overflow-y-auto py-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
         <SectionLabel collapsed={collapsed}>Menú Principal</SectionLabel>
         <div className="space-y-0.5">
           {filteredNavItems.map((item) => (
@@ -742,6 +747,7 @@ export default function AppSidebar() {
 
   return (
     <>
+      <TutorialOverlay userId={sessionUserId} role={sessionRole} />
       {/* Desktop sidebar */}
       <aside
         style={{ width: collapsed ? 72 : 240, background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}

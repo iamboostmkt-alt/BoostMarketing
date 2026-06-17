@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useTutorial } from '@/components/tutorial/TutorialOverlay';
 import { toast } from 'sonner';
 import { Save, Moon, Bell, Globe, Palette, Camera, Building2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ const PREDEFINED_COLORS = [
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession();
+  const { reset: resetTutorial } = useTutorial(session?.user?.id ?? '', session?.user?.role ?? '');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -538,6 +540,24 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Tutorial */}
+            <div className="glass-card rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-lg">🎓</span>
+                <h3 className="text-base font-semibold text-white">Tutorial de bienvenida</h3>
+              </div>
+              <p className="text-sm text-white/40 mb-4">
+                Vuelve a ver el tutorial interactivo y el checklist de primeros pasos.
+              </p>
+              <button
+                onClick={resetTutorial}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all active:scale-95"
+                style={{ background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)' }}
+              >
+                ✨ Repetir tutorial
+              </button>
             </div>
 
             {/* Save preferences */}
