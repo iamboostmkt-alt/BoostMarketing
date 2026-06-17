@@ -156,7 +156,7 @@ export default function DashboardHome() {
   const kpis = isManager ? [
     { label: 'Tareas pendientes',     value: pending.length,                       icon: ListTodo,   color: '#3B82F6', change: '+12%', up: true,  href: '/dashboard/tasks'    },
     { label: 'Clientes activos',      value: stats?.activeClients ?? 0,            icon: UsersRound, color: '#10B981', change: '+8%',  up: true,  href: '/dashboard/clients'  },
-    { label: 'Aprobaciones pendientes', value: stats?.pendingApprovals ?? 0,       icon: BadgeCheck, color: '#F59E0B', change: '',     up: false, href: '/dashboard/files'    },
+    { label: 'Aprobaciones pendientes', value: stats?.pendingDeals ?? 0,           icon: BadgeCheck, color: '#F59E0B', change: '',     up: false, href: '/dashboard/files'    },
     { label: 'Ingresos este mes',     value: `$${((stats?.totalRevenue ?? 0)/1000).toFixed(0)}k`, icon: Wallet, color: '#8B5CF6', change: '+18%', up: true, href: '/billing' },
   ] : [
     { label: 'Tareas hoy',            value: todayTasks.length,                    icon: ListTodo,   color: '#3B82F6', change: '', up: true,  href: '/dashboard/tasks'   },
