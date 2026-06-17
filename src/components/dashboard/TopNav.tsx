@@ -66,30 +66,30 @@ export default function TopNav() {
   };
 
   return (
-    <header className="border-b border-[var(--wl-border-subtle)] sticky top-0 z-30" style={{ background: "var(--wl-sidebar-bg)", borderBottom: "1px solid var(--wl-border-subtle)", paddingTop: "max(env(safe-area-inset-top, 0px), 12px)", minHeight: "calc(48px + max(env(safe-area-inset-top, 0px), 0px))" }}>
+    <header className="border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%)", paddingTop: "max(env(safe-area-inset-top, 0px), 12px)", minHeight: "calc(48px + max(env(safe-area-inset-top, 0px), 0px))" }}>
       <div className="flex items-center h-12 px-4 md:px-6 gap-3">
 
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
+          className="md:hidden text-white/60 hover:text-white hover:bg-white/[0.06]"
           onClick={() => setMobileOpen(true)}
         >
           <Menu className="w-5 h-5" />
         </Button>
 
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-semibold text-[var(--wl-text-primary)] truncate">{workspaceName}</span>
+          <span className="text-sm font-semibold text-white/85 truncate">{workspaceName}</span>
         </div>
 
         <div className="flex-1 max-w-sm mx-auto hidden sm:block">
           <button
             onClick={() => setCommandOpen(true)}
-            className="w-full flex items-center gap-2 h-7 px-3 rounded-md border border-[var(--wl-border)] bg-[var(--wl-hover)] hover:bg-[var(--wl-hover)] transition-colors text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)]"
+            className="w-full flex items-center gap-2 h-7 px-3 rounded-md border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-white/30 hover:text-white/50"
           >
             <Search className="w-3.5 h-3.5" />
             <span className="text-xs flex-1 text-left">Buscar...</span>
-            <kbd className="hidden md:inline-flex items-center gap-0.5 h-4 px-1.5 rounded border border-[var(--wl-border)] bg-[var(--wl-hover)] text-[10px] text-[var(--wl-text-placeholder)] font-mono">
+            <kbd className="hidden md:inline-flex items-center gap-0.5 h-4 px-1.5 rounded border border-white/[0.08] bg-white/[0.04] text-[10px] text-white/25 font-mono">
               ⌘K
             </kbd>
           </button>
@@ -99,7 +99,7 @@ export default function TopNav() {
           <Button
             variant="ghost"
             size="icon"
-            className="sm:hidden text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
+            className="sm:hidden text-white/60 hover:text-white hover:bg-white/[0.06]"
             onClick={() => setCommandOpen(true)}
           >
             <Search className="w-5 h-5" />
@@ -123,7 +123,7 @@ export default function TopNav() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-56 border-[var(--wl-border)] text-[var(--wl-text-primary)] p-0 overflow-hidden relative"
+              className="w-56 border-white/[0.08] text-white p-0 overflow-hidden relative"
               style={{
                 background: 'rgba(10,10,14,0.85)',
                 backdropFilter: 'blur(24px)',
@@ -136,7 +136,7 @@ export default function TopNav() {
                 style={{ background: 'radial-gradient(ellipse at bottom right, rgba(88,28,220,0.12) 0%, transparent 70%)' }} />
 
               {/* Header: Avatar + nombre + rol */}
-              <div className="relative z-10 flex items-center gap-2.5 px-3 py-2.5 border-b border-[var(--wl-border)]">
+              <div className="relative z-10 flex items-center gap-2.5 px-3 py-2.5 border-b border-white/[0.06]">
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={userImage || undefined} alt={userName} />
                   <AvatarFallback
@@ -147,7 +147,7 @@ export default function TopNav() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium text-[var(--wl-text-primary)] truncate">{userName}</p>
+                  <p className="text-[13px] font-medium text-white/90 truncate">{userName}</p>
                   {session?.user?.customRoleLabel ? (
                     <span
                       className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium mt-0.5"
@@ -156,7 +156,7 @@ export default function TopNav() {
                       {session?.user?.customRoleLabel}
                     </span>
                   ) : (
-                    <p className="text-[10px] text-[var(--wl-text-muted)] truncate">{session?.user?.email || ''}</p>
+                    <p className="text-[10px] text-white/35 truncate">{session?.user?.email || ''}</p>
                   )}
                 </div>
               </div>
@@ -165,21 +165,21 @@ export default function TopNav() {
               <div className="relative z-10 p-1.5 space-y-0.5">
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[var(--wl-text-primary)]/55 hover:text-[var(--wl-text-primary)] focus:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] focus:bg-[var(--wl-hover)] cursor-pointer transition-all"
+                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
                     onClick={() => router.push('/dashboard/settings')}
                   >
                     <User className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
                     <span className="text-[12px]">Mi perfil</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[var(--wl-text-primary)]/55 hover:text-[var(--wl-text-primary)] focus:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] focus:bg-[var(--wl-hover)] cursor-pointer transition-all"
+                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
                     onClick={() => router.push('/dashboard/settings')}
                   >
                     <Settings className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
                     <span className="text-[12px]">Ajustes</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[var(--wl-text-primary)]/55 hover:text-[var(--wl-text-primary)] focus:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] focus:bg-[var(--wl-hover)] cursor-pointer transition-all"
+                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
                   >
                     <Palette className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
                     <span className="text-[12px]">Apariencia</span>
@@ -188,7 +188,7 @@ export default function TopNav() {
                     <DropdownMenuItem asChild>
                       <Link
                         href="/billing"
-                        className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[var(--wl-text-primary)]/55 hover:text-[var(--wl-text-primary)] focus:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] focus:bg-[var(--wl-hover)] cursor-pointer transition-all"
+                        className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
                       >
                         <Zap className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-amber-400" strokeWidth={1.5} />
                         <span className="text-[12px] flex-1">Billing & Plan</span>
@@ -197,23 +197,23 @@ export default function TopNav() {
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-[var(--wl-hover)] my-1" />
+                <DropdownMenuSeparator className="bg-white/[0.06] my-1" />
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[var(--wl-text-primary)]/55 hover:text-[var(--wl-text-primary)] focus:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] focus:bg-[var(--wl-hover)] cursor-pointer transition-all"
+                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
                   >
                     <HelpCircle className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
                     <span className="text-[12px]">Soporte</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[var(--wl-text-primary)]/55 hover:text-[var(--wl-text-primary)] focus:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] focus:bg-[var(--wl-hover)] cursor-pointer transition-all"
+                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
                   >
                     <Command className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
                     <span className="text-[12px] flex-1">Atajos</span>
-                    <span className="text-[10px] text-[var(--wl-text-placeholder)] font-mono">⌘K</span>
+                    <span className="text-[10px] text-white/25 font-mono">⌘K</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-[var(--wl-hover)] my-1" />
+                <DropdownMenuSeparator className="bg-white/[0.06] my-1" />
                 <DropdownMenuItem
                   className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-red-400/70 hover:text-red-400 focus:text-red-400 hover:bg-red-500/[0.08] focus:bg-red-500/[0.08] cursor-pointer transition-all"
                   onClick={() => signOut({ callbackUrl: getLogoutUrl() })}

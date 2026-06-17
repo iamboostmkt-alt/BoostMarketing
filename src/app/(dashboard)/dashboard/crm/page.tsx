@@ -13,7 +13,7 @@ import type { Contact } from '@/lib/types';
 type SegmentTab = 'all' | 'prospects' | 'clients' | 'unassigned' | 'active';
 
 const segmentTabs: { id: SegmentTab; label: string; icon: React.ElementType; color: string }[] = [
-  { id: 'all',        label: 'Todos',        icon: Users,     color: 'text-[var(--wl-text-secondary)]'   },
+  { id: 'all',        label: 'Todos',        icon: Users,     color: 'text-white/60'   },
   { id: 'prospects',  label: 'Prospectos',   icon: Search,    color: 'text-cyan-400'   },
   { id: 'clients',    label: 'Clientes',     icon: UserCheck, color: 'text-green-400'  },
   { id: 'active',     label: 'Activos',      icon: Zap,       color: 'text-amber-400'  },
@@ -126,8 +126,8 @@ export default function CRMPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-[var(--wl-text-primary)]">Pipeline CRM</h2>
-          <p className="text-[var(--wl-text-muted)] mt-1 text-sm">
+          <h2 className="text-2xl md:text-3xl font-bold text-white">Pipeline CRM</h2>
+          <p className="text-white/40 mt-1 text-sm">
             {filteredContacts.length} contactos &middot; Valor:{' '}
             <span className="text-green-400/80 font-semibold">{formatCurrency(totalPipelineValue)}</span>
           </p>
@@ -154,13 +154,13 @@ export default function CRMPage() {
               className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all border ${
                 isActive
                   ? 'bg-brand/20 border-brand/40 text-brand-light'
-                  : 'bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)]'
+                  : 'bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06]'
               }`}
             >
               <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-brand-light' : tab.color}`} />
               {tab.label}
               <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                isActive ? 'bg-brand/30 text-brand-light' : 'bg-[var(--wl-hover)] text-[var(--wl-text-muted)]'
+                isActive ? 'bg-brand/30 text-brand-light' : 'bg-white/[0.06] text-white/40'
               }`}>
                 {count}
               </span>
@@ -171,22 +171,22 @@ export default function CRMPage() {
 
       {/* Search */}
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--wl-text-placeholder)]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar contactos..."
-          className="pl-9 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:border-brand focus-visible:ring-brand/30 h-9"
+          className="pl-9 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30 h-9"
         />
       </div>
 
       {/* Stage pipeline info */}
       <div className="flex gap-2 flex-wrap">
         {crmStages.map((stage) => (
-          <div key={stage.id} className="flex items-center gap-1.5 text-[11px] text-[var(--wl-text-muted)]">
+          <div key={stage.id} className="flex items-center gap-1.5 text-[11px] text-white/40">
             <span className={`w-2 h-2 rounded-full inline-block ${stage.color === 'dot-cyan' ? 'bg-cyan-400' : stage.color === 'dot-purple' ? 'bg-purple-400' : stage.color === 'dot-green' ? 'bg-green-400' : 'bg-amber-400'}`} />
             <span>{stage.label}</span>
-            <span className="text-[var(--wl-text-placeholder)]">— {stage.description}</span>
+            <span className="text-white/25">— {stage.description}</span>
           </div>
         ))}
       </div>
@@ -203,7 +203,7 @@ export default function CRMPage() {
               </div>
               <div className="space-y-2.5">
                 {Array.from({ length: 2 }).map((_, i) => (
-                  <div key={i} className="bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-xl p-4 space-y-3">
+                  <div key={i} className="bg-[#15151c] border border-white/[0.06] rounded-xl p-4 space-y-3">
                     <Skeleton className="h-4 w-28" />
                     <Skeleton className="h-3 w-36" />
                     <Skeleton className="h-3 w-20" />
@@ -231,7 +231,7 @@ export default function CRMPage() {
       {contactsHasMore && (
         <div className="flex justify-center py-4">
           <button onClick={loadMoreContacts} disabled={contactsLoading}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--wl-border)] text-[13px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors disabled:opacity-50">
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/50 hover:text-white hover:bg-white/[0.04] transition-colors disabled:opacity-50">
             {contactsLoading ? 'Cargando...' : 'Cargar más contactos'}
           </button>
         </div>

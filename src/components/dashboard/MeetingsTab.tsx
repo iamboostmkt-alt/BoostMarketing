@@ -170,21 +170,21 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
         {/* Header flotante */}
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)]">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.04]">
               <Video className="h-3.5 w-3.5 text-purple-400" strokeWidth={1.5} />
             </div>
             <div>
-              <p className="text-[13px] font-medium text-[var(--wl-text-primary)] leading-none">{isEdit ? 'Editar reunión' : 'Agendar reunión'}</p>
-              <p className="mt-0.5 text-[11px] text-[var(--wl-text-placeholder)]">Se notificará a los participantes por correo</p>
+              <p className="text-[13px] font-medium text-white/85 leading-none">{isEdit ? 'Editar reunión' : 'Agendar reunión'}</p>
+              <p className="mt-0.5 text-[11px] text-white/30">Se notificará a los participantes por correo</p>
             </div>
           </div>
-          <button onClick={() => onOpenChange(false)} className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--wl-text-placeholder)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]">
+          <button onClick={() => onOpenChange(false)} className="flex h-7 w-7 items-center justify-center rounded-lg text-white/25 transition-colors hover:bg-white/[0.05] hover:text-white/60">
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Card principal */}
-        <div style={{ background: 'var(--wl-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, position: 'relative', overflow: 'hidden' }} className="p-5">
+        <div style={{ background: '#080808', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, position: 'relative', overflow: 'hidden' }} className="p-5">
           {/* Glow decorativo */}
           <div style={{ position: 'absolute', bottom: -30, right: -30, width: 250, height: 180, background: 'radial-gradient(ellipse at center, rgba(88,28,220,0.12) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
           <div style={{ position: 'absolute', top: -20, left: -20, width: 150, height: 120, background: 'radial-gradient(ellipse at center, rgba(88,28,220,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
@@ -192,47 +192,47 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
           <form onSubmit={handleSave} className="relative z-10 space-y-4">
             {/* Título */}
             <div>
-              <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Título *</label>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Título *</label>
               <input value={name} onChange={e => setName(e.target.value)} required
                 placeholder="Ej: Revisión mensual GymnasTwin"
-                className="h-[36px] w-full rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
+                className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 text-[13px] text-white/80 placeholder-white/20 outline-none transition-all focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
             </div>
 
             {/* Fecha, hora y link en grid */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Fecha *</label>
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Fecha *</label>
                 <div className="relative">
                   <button type="button" onClick={() => setCalOpen(v => !v)}
-                    className="h-[36px] w-full flex items-center gap-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3 text-[13px] text-left outline-none hover:border-purple-500/40 transition-colors"
+                    className="h-[36px] w-full flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[13px] text-left outline-none hover:border-purple-500/40 transition-colors"
                     style={{ color: selectedDate ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.25)' }}>
                     <CalendarIcon className="h-3.5 w-3.5 shrink-0 opacity-50" />
                     {selectedDate ? format(selectedDate, "d MMM yyyy", { locale: es }) : 'Seleccionar fecha'}
                   </button>
                   {calOpen && (
-                    <div className="absolute top-10 left-0 z-[9999] rounded-xl border border-[var(--wl-border)] shadow-2xl overflow-hidden"
+                    <div className="absolute top-10 left-0 z-[9999] rounded-xl border border-white/[0.08] shadow-2xl overflow-hidden"
                       style={{ background: '#0f0f14' }}>
                       <Calendar mode="single" locale={es} selected={selectedDate}
                         onSelect={d => { setSelectedDate(d); setCalOpen(false); }}
-                        className="text-[var(--wl-text-primary)]" />
+                        className="text-white" />
                     </div>
                   )}
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Hora *</label>
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Hora *</label>
                 <div className="flex gap-1.5 h-[36px]">
                   <select value={hour} onChange={e => setHour(e.target.value)}
                     style={{ fontSize: '16px', colorScheme: 'dark' }}
-                    className="flex-1 rounded-lg border border-[var(--wl-border)] bg-[#0f0f14] px-2 text-[13px] text-[var(--wl-text-secondary)] outline-none focus:border-purple-500/40">
+                    className="flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
                     {Array.from({length:24},(_,i)=>String(i).padStart(2,'0')).map(h=>(
                       <option key={h} value={h} style={{background:'#0f0f14'}}>{h}</option>
                     ))}
                   </select>
-                  <span className="flex items-center text-[var(--wl-text-placeholder)] text-[13px]">:</span>
+                  <span className="flex items-center text-white/30 text-[13px]">:</span>
                   <select value={minute} onChange={e => setMinute(e.target.value)}
                     style={{ fontSize: '16px', colorScheme: 'dark' }}
-                    className="flex-1 rounded-lg border border-[var(--wl-border)] bg-[#0f0f14] px-2 text-[13px] text-[var(--wl-text-secondary)] outline-none focus:border-purple-500/40">
+                    className="flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
                     {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m=>(
                       <option key={m} value={m} style={{background:'#0f0f14'}}>{m}</option>
                     ))}
@@ -242,13 +242,13 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
             </div>
             {/* Meet / Zoom */}
             <div>
-              <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Meet / Zoom</label>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Meet / Zoom</label>
               <div className="flex gap-1.5">
                 <input value={meetUrl} onChange={e => setMeetUrl(e.target.value)}
                   placeholder="https://meet.google.com/..."
-                  className="h-[36px] flex-1 min-w-0 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3 text-[12px] text-[var(--wl-text-secondary)] placeholder-white/15 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
+                  className="h-[36px] flex-1 min-w-0 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/15 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
                 <button type="button" onClick={() => generateMeetLink('jitsi')} title="Generar link (Jitsi)"
-                  className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] text-[var(--wl-text-placeholder)] hover:text-purple-400 hover:border-purple-500/30 transition-colors">
+                  className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 transition-colors">
                   <Link2 className="h-3.5 w-3.5" />
                 </button>
               </div>
@@ -257,10 +257,10 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
             {/* Cliente */}
             {clients.length > 0 && (
               <div>
-                <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Cuenta cliente (opcional)</label>
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Cuenta cliente (opcional)</label>
                 <select value={clientId} onChange={e => handleClientChange(e.target.value)}
                   style={{ colorScheme: 'dark' }}
-                  className="h-[36px] w-full rounded-lg border border-[var(--wl-border)] bg-[#0f0f14] px-3.5 text-[13px] text-[var(--wl-text-secondary)] outline-none focus:border-purple-500/40">
+                  className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-[#0f0f14] px-3.5 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
                   <option value="" style={{ background: '#0f0f14', color: 'rgba(255,255,255,0.7)' }}>Sin cliente</option>
                   {clients.map(c => (
                     <option key={c.id} value={c.id} style={{ background: '#0f0f14', color: 'rgba(255,255,255,0.7)' }}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
@@ -271,7 +271,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
 
             {/* Tipo de reunión */}
             <div>
-              <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Visibilidad</label>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Visibilidad</label>
               <div className="flex gap-1.5">
                 {[
                   { val: 'team' as const,     label: '👥 Equipo',      tip: 'Solo el equipo interno' },
@@ -295,7 +295,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
             {/* Participantes */}
             {teamUsers.length > 0 && (
               <div>
-                <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">
+                <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">
                   Participantes {assigned.length > 0 && <span className="text-purple-400">{assigned.length} seleccionados</span>}
                 </label>
                 <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
@@ -326,27 +326,27 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
 
             {/* Notas */}
             <div>
-              <label className="block text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-widest mb-1.5">Notas</label>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Notas</label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
                 placeholder="Agenda, temas a tratar..."
-                className="w-full rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3.5 py-2.5 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none resize-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
+                className="w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 py-2.5 text-[13px] text-white/70 placeholder-white/20 outline-none resize-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
             </div>
 
             {/* Opciones de videollamada */}
             {!meetUrl && (
-              <div className="rounded-xl border border-[var(--wl-border-subtle)] bg-[var(--wl-hover)] p-3">
-                <p className="text-[11px] text-[var(--wl-text-placeholder)] mb-2">Generar link de videollamada:</p>
+              <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                <p className="text-[11px] text-white/30 mb-2">Generar link de videollamada:</p>
                 <div className="flex gap-2 flex-wrap">
                   <button type="button" onClick={() => generateMeetLink('jitsi')}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/40 transition-colors">
                     <Video className="h-3 w-3" /> Jitsi ✓
                   </button>
                   <button type="button" onClick={() => generateMeetLink('meet')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-[var(--wl-border)] bg-[var(--wl-hover)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:border-purple-500/30 transition-colors">
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
                     <Video className="h-3 w-3" /> Google Meet
                   </button>
                   <button type="button" onClick={() => generateMeetLink('zoom')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-[var(--wl-border)] bg-[var(--wl-hover)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:border-purple-500/30 transition-colors">
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
                     <Video className="h-3 w-3" /> Zoom
                   </button>
                 </div>
@@ -356,7 +356,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
             {/* Acciones */}
             <div className="flex gap-2.5 pt-1">
               <button type="button" onClick={() => onOpenChange(false)}
-                className="flex-1 h-[36px] rounded-lg border border-[var(--wl-border)] text-[13px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors">
+                className="flex-1 h-[36px] rounded-lg border border-white/[0.08] text-[13px] text-white/50 hover:text-white hover:bg-white/[0.04] transition-colors">
                 Cancelar
               </button>
               <motion.button type="submit" disabled={saving}
@@ -460,13 +460,13 @@ export default function MeetingsTab() {
         {filters.map(f => (
           <button key={f} type="button"
             onClick={() => { setFilter(f); fetchMeetings(f); }}
-            className={"rounded-full px-3 py-1 text-xs font-medium transition-colors " + (f === filter ? 'bg-brand text-white' : 'bg-[var(--wl-hover)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-border)]')}>
+            className={"rounded-full px-3 py-1 text-xs font-medium transition-colors " + (f === filter ? 'bg-brand text-white' : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]')}>
             {f === 'all' ? 'Todas' : (STATUS[f]?.label ?? f)}
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => fetchMeetings(filter)}
-            className="border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] h-7 w-7">
+            className="border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06] h-7 w-7">
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
           <Button size="sm" onClick={() => { setEditing(null); setDialog(true); }}
@@ -479,12 +479,12 @@ export default function MeetingsTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--wl-border)]">
-                <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Reunion</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider hidden md:table-cell">Participantes</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Estado</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Acciones</th>
+              <tr className="border-b border-white/[0.06]">
+                <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Reunion</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden md:table-cell">Participantes</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Estado</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
@@ -500,18 +500,18 @@ export default function MeetingsTab() {
                 <tr>
                   <td colSpan={5} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
-                      <Video className="w-8 h-8 text-[var(--wl-text-placeholder)]" />
-                      <p className="text-sm text-[var(--wl-text-placeholder)]">No hay reuniones programadas</p>
+                      <Video className="w-8 h-8 text-white/15" />
+                      <p className="text-sm text-white/30">No hay reuniones programadas</p>
                     </div>
                   </td>
                 </tr>
               ) : meetings.map(meet => {
                 const st = STATUS[meet.status] ?? STATUS.pending;
                 return (
-                  <tr key={meet.id} className="hover:bg-[var(--wl-hover)] transition-colors">
+                  <tr key={meet.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-[var(--wl-text-primary)]">{meet.name}</p>
-                      {meet.notes && <p className="text-xs text-[var(--wl-text-muted)] truncate max-w-[180px]">{meet.notes}</p>}
+                      <p className="font-medium text-white">{meet.name}</p>
+                      {meet.notes && <p className="text-xs text-white/40 truncate max-w-[180px]">{meet.notes}</p>}
                       {meet.meetUrl && (
                         <a href={meet.meetUrl} target="_blank" rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium text-green-400 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 transition-colors w-fit">
@@ -520,7 +520,7 @@ export default function MeetingsTab() {
                       )}
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell">
-                      <span className="text-xs text-[var(--wl-text-secondary)]">
+                      <span className="text-xs text-white/60">
                         {new Date(meet.date).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </td>
@@ -535,19 +535,19 @@ export default function MeetingsTab() {
                             </AvatarFallback>
                           </Avatar>
                         ))}
-                        {(meet.assignedUsers ?? []).length === 0 && <span className="text-xs text-[var(--wl-text-placeholder)]">Sin asignar</span>}
+                        {(meet.assignedUsers ?? []).length === 0 && <span className="text-xs text-white/25">Sin asignar</span>}
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <Select value={meet.status} onValueChange={v => handleStatus(meet.id, v)}>
-                        <SelectTrigger className="w-36 h-7 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-xs focus:ring-brand">
+                        <SelectTrigger className="w-36 h-7 bg-white/[0.04] border-white/[0.08] text-white text-xs focus:ring-brand">
                           <span className={"inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium " + st.color}>
                             {st.label}
                           </span>
                         </SelectTrigger>
-                        <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+                        <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
                           {Object.entries(STATUS).map(([key, val]) => (
-                            <SelectItem key={key} value={key} className="text-sm focus:bg-[var(--wl-hover)]">
+                            <SelectItem key={key} value={key} className="text-sm focus:bg-white/[0.06]">
                               {val.label}
                             </SelectItem>
                           ))}
@@ -557,17 +557,17 @@ export default function MeetingsTab() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon"
-                          className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-violet-400 hover:bg-violet-500/10"
+                          className="h-7 w-7 text-white/30 hover:text-violet-400 hover:bg-violet-500/10"
                           onClick={() => setViewMeeting(meet)} title="Ver detalle">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         </Button>
                         <Button variant="ghost" size="icon"
-                          className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
+                          className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]"
                           onClick={() => { setEditing(meet); setDialog(true); }}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
                         <Button variant="ghost" size="icon"
-                          className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-400/10"
+                          className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10"
                           disabled={deleting === meet.id}
                           onClick={() => handleDelete(meet.id)}>
                           <Trash2 className="h-3.5 w-3.5" />
@@ -586,7 +586,7 @@ export default function MeetingsTab() {
       {meetHasMore && (
         <div className="flex justify-center py-3">
           <button onClick={loadMoreMeetings} disabled={meetLoadMore}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl border border-[var(--wl-border)] text-[12px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors disabled:opacity-50">
+            className="flex items-center gap-2 px-5 py-2 rounded-xl border border-white/[0.08] text-[12px] text-white/40 hover:text-white hover:bg-white/[0.04] transition-colors disabled:opacity-50">
             {meetLoadMore ? 'Cargando...' : `Cargar más reuniones`}
           </button>
         </div>
@@ -600,26 +600,26 @@ export default function MeetingsTab() {
         return (
           <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
             <div onClick={() => setViewMeeting(null)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} />
-            <div style={{ position: 'relative', zIndex: 9991, width: '100%', maxWidth: 460, background: 'var(--wl-bg)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, overflow: 'hidden' }}>
+            <div style={{ position: 'relative', zIndex: 9991, width: '100%', maxWidth: 460, background: '#080808', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, overflow: 'hidden' }}>
               <div className="flex items-start justify-between p-5 pb-3">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--wl-border)] bg-[var(--wl-hover)]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.04]">
                     <Video className="h-4 w-4 text-green-400" strokeWidth={1.5} />
                   </div>
                   <div>
-                    <p className="text-[15px] font-semibold text-[var(--wl-text-primary)]">{viewMeeting.name}</p>
+                    <p className="text-[15px] font-semibold text-white">{viewMeeting.name}</p>
                     <span className="text-[11px] font-medium" style={{ color: st.color }}>{st.label}</span>
                   </div>
                 </div>
-                <button onClick={() => setViewMeeting(null)} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] p-1">
+                <button onClick={() => setViewMeeting(null)} className="text-white/30 hover:text-white p-1">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </div>
               <div className="px-5 pb-5 space-y-2.5">
                 {dateStr && (
-                  <div className="flex items-center gap-2.5 py-2.5 px-3 rounded-xl bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)]">
+                  <div className="flex items-center gap-2.5 py-2.5 px-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <p className="text-[13px] text-[var(--wl-text-secondary)]">{dateStr}</p>
+                    <p className="text-[13px] text-white/70">{dateStr}</p>
                   </div>
                 )}
                 {(viewMeeting as any).meetUrl && (
@@ -631,13 +631,13 @@ export default function MeetingsTab() {
                 )}
                 {((viewMeeting as any).assignedUsers ?? []).length > 0 && (
                   <div>
-                    <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-1.5">Participantes</p>
+                    <p className="text-[10px] text-white/25 uppercase tracking-wider mb-1.5">Participantes</p>
                     <div className="flex flex-wrap gap-1.5">
                       {((viewMeeting as any).assignedUsers ?? []).slice(0,8).map((au: any) => {
                         const u = au.user ?? au;
                         return (
-                          <div key={u.id} className="flex items-center gap-1.5 rounded-full px-2 py-1 border border-[var(--wl-border)] bg-[var(--wl-hover)] text-[11px] text-[var(--wl-text-secondary)]">
-                            <div className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold text-[var(--wl-text-primary)]" style={{ background: (u.color||'#7c3aed')+'44' }}>
+                          <div key={u.id} className="flex items-center gap-1.5 rounded-full px-2 py-1 border border-white/[0.07] bg-white/[0.03] text-[11px] text-white/60">
+                            <div className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: (u.color||'#7c3aed')+'44' }}>
                               {(u.name||u.email||'U').slice(0,1).toUpperCase()}
                             </div>
                             {u.name || u.email?.split('@')[0]}
@@ -648,19 +648,19 @@ export default function MeetingsTab() {
                   </div>
                 )}
                 {(viewMeeting as any).notes && (
-                  <div className="py-2 px-3 rounded-xl bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)]">
-                    <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-1">Notas</p>
-                    <p className="text-[13px] text-[var(--wl-text-secondary)]">{(viewMeeting as any).notes}</p>
+                  <div className="py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                    <p className="text-[10px] text-white/25 uppercase tracking-wider mb-1">Notas</p>
+                    <p className="text-[13px] text-white/60">{(viewMeeting as any).notes}</p>
                   </div>
                 )}
                 <div className="flex gap-2 pt-1">
                   <button onClick={() => { setViewMeeting(null); setEditing(viewMeeting); setDialog(true); }}
-                    className="flex-1 h-9 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--wl-border)] text-[12px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors">
+                    className="flex-1 h-9 flex items-center justify-center gap-1.5 rounded-lg border border-white/[0.08] text-[12px] text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors">
                     <Pencil className="h-3.5 w-3.5" />Editar
                   </button>
                   {(viewMeeting as any).meetUrl && (
                     <a href={(viewMeeting as any).meetUrl} target="_blank" rel="noopener noreferrer"
-                      className="flex-1 h-9 flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 text-[12px] font-medium text-[var(--wl-text-primary)] hover:bg-emerald-700 transition-colors">
+                      className="flex-1 h-9 flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 text-[12px] font-medium text-white hover:bg-emerald-700 transition-colors">
                       <Video className="h-3.5 w-3.5" />Unirse
                     </a>
                   )}

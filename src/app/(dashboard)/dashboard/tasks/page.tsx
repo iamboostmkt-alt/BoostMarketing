@@ -51,7 +51,7 @@ const BOARD_GROUPS = [
     statuses: ['draft', 'pending'],
     dropStatus: 'pending',
     color: 'bg-white/60',
-    glow: 'bg-[var(--wl-hover)] ring-white/15',
+    glow: 'bg-white/[0.04] ring-white/15',
     hex: '#ffffff',
   },
   {
@@ -146,10 +146,10 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
               {/* Column header */}
               <div className="flex items-center gap-2 px-2 py-1">
                 <span className={`w-1.5 h-1.5 rounded-full ${group.color}`} />
-                <span className="text-xs font-medium text-[var(--wl-text-secondary)] uppercase tracking-wide">
+                <span className="text-xs font-medium text-white/80 uppercase tracking-wide">
                   {group.label}
                 </span>
-                <span className="text-[10px] text-[var(--wl-text-placeholder)] ml-auto bg-[var(--wl-hover)] px-1.5 py-0.5 rounded-full">
+                <span className="text-[10px] text-white/20 ml-auto bg-white/[0.06] px-1.5 py-0.5 rounded-full">
                   {groupTasks.length}
                 </span>
               </div>
@@ -159,7 +159,7 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                   const count = tasks.filter(t => t.status === s).length;
                   if (count === 0) return null;
                   return (
-                    <span key={s} className="text-[9px] text-[var(--wl-text-placeholder)] bg-[var(--wl-hover)] px-1.5 py-0.5 rounded-full">
+                    <span key={s} className="text-[9px] text-white/25 bg-white/[0.04] px-1.5 py-0.5 rounded-full">
                       {statusLabels[s] || s} {count}
                     </span>
                   );
@@ -170,8 +170,8 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`space-y-2 min-h-[calc(100vh-320px)] rounded-xl p-2 transition-colors duration-150 bg-[var(--wl-hover)] ${
-                      snapshot.isDraggingOver ? `ring-1 ${group.glow} bg-[var(--wl-hover)]` : ''
+                    className={`space-y-2 min-h-[calc(100vh-320px)] rounded-xl p-2 transition-colors duration-150 bg-white/[0.02] ${
+                      snapshot.isDraggingOver ? `ring-1 ${group.glow} bg-white/[0.04]` : ''
                     }`}
                   >
                     {groupTasks.map((task, index) => (
@@ -196,7 +196,7 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                             {(task as any).client?.name && (
                               <div className="flex items-center gap-1 px-2 pb-1 -mt-1">
                                 <span className="w-1 h-1 rounded-full bg-brand/40 shrink-0" />
-                                <span className="text-[10px] text-[var(--wl-text-placeholder)] truncate">
+                                <span className="text-[10px] text-white/25 truncate">
                                   {(task as any).client.name}
                                 </span>
                               </div>
@@ -207,8 +207,8 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
                     ))}
                     {provided.placeholder}
                     {groupTasks.length === 0 && !snapshot.isDraggingOver && (
-                      <div className="flex flex-col items-center justify-center h-16 gap-1 border border-dashed border-[var(--wl-border-subtle)] rounded-lg">
-                        <span className="text-[10px] text-[var(--wl-text-placeholder)]">Arrastra aquí</span>
+                      <div className="flex flex-col items-center justify-center h-16 gap-1 border border-dashed border-white/[0.04] rounded-lg">
+                        <span className="text-[10px] text-white/15">Arrastra aquí</span>
                       </div>
                     )}
                   </div>
@@ -237,11 +237,11 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange, i
   if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-[var(--wl-hover)] flex items-center justify-center mb-4">
-          <CheckSquare className="w-8 h-8 text-[var(--wl-text-placeholder)]" />
+        <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
+          <CheckSquare className="w-8 h-8 text-white/20" />
         </div>
-        <p className="text-sm font-medium text-[var(--wl-text-muted)] mb-1">Sin tareas activas</p>
-        <p className="text-xs text-[var(--wl-text-placeholder)] mb-4">Todo en orden — o crea una tarea para empezar</p>
+        <p className="text-sm font-medium text-white/50 mb-1">Sin tareas activas</p>
+        <p className="text-xs text-white/30 mb-4">Todo en orden — o crea una tarea para empezar</p>
         <Button onClick={onCreate} size="sm" className="bg-brand hover:bg-brand-dark text-white gap-2">
           <Plus className="w-3.5 h-3.5" /> Nueva Tarea
         </Button>
@@ -272,7 +272,7 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange, i
           {activeTasks.length === 0 && (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <CheckCircle2 className="w-10 h-10 text-green-400/40 mb-2" />
-              <p className="text-sm text-[var(--wl-text-muted)]">Todas las tareas están completadas</p>
+              <p className="text-sm text-white/40">Todas las tareas están completadas</p>
             </div>
           )}
         </motion.div>
@@ -280,23 +280,23 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange, i
 
       {/* Sección Listas colapsable */}
       {completedTasks.length > 0 && (
-        <div className="border border-[var(--wl-border)] rounded-xl overflow-hidden">
+        <div className="border border-white/[0.06] rounded-xl overflow-hidden">
           <button type="button" onClick={() => setShowCompleted(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-[var(--wl-hover)] hover:bg-[var(--wl-hover)] transition-colors">
-            <div className="flex items-center gap-2 text-sm font-medium text-[var(--wl-text-muted)]">
+            className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+            <div className="flex items-center gap-2 text-sm font-medium text-white/40">
               <CheckCircle2 className="w-4 h-4 text-green-400/60" />
               Listas ({completedTasks.length})
             </div>
-            <ChevronDown className={`w-4 h-4 text-[var(--wl-text-placeholder)] transition-transform ${showCompleted ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-white/20 transition-transform ${showCompleted ? 'rotate-180' : ''}`} />
           </button>
           {showCompleted && (
             <div className="space-y-2 p-3">
               {completedTasks.map((task) => (
-                <div key={task.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[var(--wl-hover)] opacity-60">
+                <div key={task.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.02] opacity-60">
                   <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
-                  <span className="text-sm text-[var(--wl-text-muted)] line-through truncate flex-1">{task.title}</span>
+                  <span className="text-sm text-white/50 line-through truncate flex-1">{task.title}</span>
                   <button type="button" onClick={() => cardProps.onEdit(task)}
-                    className="text-[10px] text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors shrink-0">
+                    className="text-[10px] text-white/25 hover:text-white/60 transition-colors shrink-0">
                     Ver
                   </button>
                 </div>
@@ -649,20 +649,20 @@ function TasksContent() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <p className="text-xs font-medium text-[var(--wl-text-placeholder)] uppercase tracking-widest mb-1">Tareas</p>
+          <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Tareas</p>
           <div className="flex items-baseline gap-2">
-            <h1 className="text-xl font-medium text-[var(--wl-text-primary)]">Tareas</h1>
-            <span className="text-sm text-[var(--wl-text-placeholder)]">{tabs.find(t => t.id === activeTab)?.count ?? 0} activas</span>
+            <h1 className="text-xl font-medium text-white">Tareas</h1>
+            <span className="text-sm text-white/30">{tabs.find(t => t.id === activeTab)?.count ?? 0} activas</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-[var(--wl-hover)] rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
             <button onClick={() => setViewMode('list')} title="Lista"
-              className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white/[0.1] text-[var(--wl-text-primary)]' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}>
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white/[0.1] text-white' : 'text-white/40 hover:text-white/60'}`}>
               <LayoutList className="w-4 h-4" />
             </button>
             <button onClick={() => setViewMode('board')} title="Tablero"
-              className={`p-1.5 rounded-md transition-all ${viewMode === 'board' ? 'bg-white/[0.1] text-[var(--wl-text-primary)]' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}>
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'board' ? 'bg-white/[0.1] text-white' : 'text-white/40 hover:text-white/60'}`}>
               <Columns3 className="w-4 h-4" />
             </button>
           </div>
@@ -676,13 +676,13 @@ function TasksContent() {
       {filterClientId && filterClientName && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-violet-500/20 text-xs" style={{ background: 'rgba(124,58,237,0.08)' }}>
           <div className="h-1.5 w-1.5 rounded-full bg-violet-400" />
-          <span className="text-[var(--wl-text-secondary)]">Filtrando por cuenta:</span>
+          <span className="text-white/60">Filtrando por cuenta:</span>
           <span className="text-violet-300 font-medium">{filterClientName}</span>
-          <a href="/dashboard/tasks" className="ml-auto text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors">✕ Quitar filtro</a>
+          <a href="/dashboard/tasks" className="ml-auto text-white/30 hover:text-white/60 transition-colors">✕ Quitar filtro</a>
         </div>
       )}
       {/* Tabs */}
-      <div className="flex gap-0.5 sm:gap-2 border-b border-[var(--wl-border)] pb-0 overflow-x-auto scrollbar-none">
+      <div className="flex gap-0.5 sm:gap-2 border-b border-white/[0.06] pb-0 overflow-x-auto scrollbar-none">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
@@ -690,12 +690,12 @@ function TasksContent() {
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap ${
                 active
-                  ? 'border-brand text-[var(--wl-text-primary)]'
-                  : 'border-transparent text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] hover:border-white/20'
+                  ? 'border-brand text-white'
+                  : 'border-transparent text-white/40 hover:text-white/70 hover:border-white/20'
               }`}>
               <Icon className="w-4 h-4" />
               <span className="hidden xs:inline sm:inline">{tab.label}</span>
-              <span className={`text-xs px-1.5 py-0.5 rounded-full ${active ? 'bg-brand/20 text-brand-light' : 'bg-[var(--wl-hover)] text-[var(--wl-text-placeholder)]'}`}>
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${active ? 'bg-brand/20 text-brand-light' : 'bg-white/[0.06] text-white/30'}`}>
                 {tab.count}
               </span>
             </button>
@@ -707,7 +707,7 @@ function TasksContent() {
       {activeTab === 'review' && isManager && (
         <div className="space-y-1">
           {reviewTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-[var(--wl-text-placeholder)]">
+            <div className="flex flex-col items-center justify-center py-16 text-white/30">
               <CheckCircle2 className="w-8 h-8 mb-3 opacity-40" />
               <p className="text-sm">Sin tareas en revisión</p>
             </div>
@@ -734,28 +734,28 @@ function TasksContent() {
         <div className="space-y-4">
           {clientsWithTasks.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--wl-hover)] flex items-center justify-center mb-4">
-                <Building2 className="w-8 h-8 text-[var(--wl-text-placeholder)]" />
+              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
+                <Building2 className="w-8 h-8 text-white/20" />
               </div>
-              <p className="text-sm font-medium text-[var(--wl-text-muted)] mb-1">Sin tareas de clientes</p>
-              <p className="text-xs text-[var(--wl-text-placeholder)]">No hay tareas de clientes asignadas a ti</p>
+              <p className="text-sm font-medium text-white/50 mb-1">Sin tareas de clientes</p>
+              <p className="text-xs text-white/30">No hay tareas de clientes asignadas a ti</p>
             </div>
           ) : clientsWithTasks.map((client) => (
-            <div key={client.id} className="rounded-xl border border-[var(--wl-border)] overflow-hidden">
+            <div key={client.id} className="rounded-xl border border-white/[0.06] overflow-hidden">
               <button onClick={() => setExpandedClient(expandedClient === client.id ? null : client.id)}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-[var(--wl-hover)] hover:bg-[var(--wl-hover)] transition-colors">
+                className="w-full flex items-center gap-3 px-4 py-3 bg-white/[0.03] hover:bg-white/[0.05] transition-colors">
                 <div className="w-8 h-8 rounded-lg bg-brand/20 flex items-center justify-center shrink-0">
                   <Building2 className="w-4 h-4 text-brand-light" />
                 </div>
                 <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold text-[var(--wl-text-primary)]">{client.name}</p>
-                  {client.company && <p className="text-xs text-[var(--wl-text-muted)]">{client.company}</p>}
+                  <p className="text-sm font-semibold text-white">{client.name}</p>
+                  {client.company && <p className="text-xs text-white/40">{client.company}</p>}
                 </div>
-                <span className="text-xs text-[var(--wl-text-placeholder)] bg-[var(--wl-hover)] px-2 py-0.5 rounded-full">{client.tasks.length} tareas</span>
-                <span className="text-[var(--wl-text-placeholder)] text-xs">{expandedClient === client.id ? '▲' : '▼'}</span>
+                <span className="text-xs text-white/30 bg-white/[0.06] px-2 py-0.5 rounded-full">{client.tasks.length} tareas</span>
+                <span className="text-white/30 text-xs">{expandedClient === client.id ? '▲' : '▼'}</span>
               </button>
               {expandedClient === client.id && (
-                <div className="p-3 space-y-2 border-t border-[var(--wl-border-subtle)]">
+                <div className="p-3 space-y-2 border-t border-white/[0.04]">
                   <MineTasksView
                     tasks={client.tasks}
                     viewMode={viewMode}
@@ -787,7 +787,7 @@ function TasksContent() {
               <button
                 onClick={loadMoreTasks}
                 disabled={loadingMore}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--wl-hover)] hover:bg-[var(--wl-border)] border border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] text-sm transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/50 hover:text-white text-sm transition-colors disabled:opacity-40"
               >
                 {loadingMore ? (
                   <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
@@ -838,18 +838,18 @@ function TasksContent() {
       />
       <TaskDetailModal task={viewingTask} open={!!viewingTask} onClose={() => setViewingTask(null)} onEdit={handleEdit} onStatusChange={handleStatusChange} isManager={isManager} currentUserId={currentUserId} />
       <AlertDialog open={!!deleteTask} onOpenChange={(open) => !open && setDeleteTask(null)}>
-        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+        <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-red-400" />
               </div>
-              <AlertDialogTitle className="text-[var(--wl-text-primary)]">Eliminar Tarea</AlertDialogTitle>
+              <AlertDialogTitle className="text-white">Eliminar Tarea</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-[var(--wl-text-muted)]">Esta accion no se puede deshacer.</AlertDialogDescription>
+            <AlertDialogDescription className="text-white/50">Esta accion no se puede deshacer.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.06]">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-red-500 hover:bg-red-600 text-white">
               {deleting ? 'Eliminando...' : 'Eliminar'}
             </AlertDialogAction>

@@ -100,17 +100,17 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
           </Avatar>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-[var(--wl-text-primary)] truncate">{member.name}</p>
+          <p className="text-sm font-medium text-white/90 truncate">{member.name}</p>
           <div className="flex items-center gap-1.5 mt-0.5">
             <Icon className="w-3 h-3 shrink-0" style={{ color: badge }} />
             <span className="text-[11px] truncate" style={{ color: badge }}>{label}</span>
           </div>
-          <p className="text-[11px] text-[var(--wl-text-placeholder)] truncate mt-0.5">{member.email}</p>
+          <p className="text-[11px] text-white/25 truncate mt-0.5">{member.email}</p>
         </div>
         {isAdmin && (
           <button
             onClick={() => onRoleChange(member.id, member.role)}
-            className="shrink-0 p-1.5 rounded-lg text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] transition-colors"
+            className="shrink-0 p-1.5 rounded-lg text-white/20 hover:text-white/60 hover:bg-white/[0.05] transition-colors"
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
@@ -119,7 +119,7 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
 
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-[var(--wl-text-placeholder)]">Carga de trabajo</span>
+          <span className="text-[11px] text-white/30">Carga de trabajo</span>
           <div className="flex items-center gap-2">
             {overdue > 0 && (
               <span className="flex items-center gap-1 text-[10px] text-red-400">
@@ -131,7 +131,7 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
             </span>
           </div>
         </div>
-        <div className="h-1.5 rounded-full bg-[var(--wl-hover)] overflow-hidden">
+        <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{ width: `${pct}%`, backgroundColor: color }}
@@ -142,7 +142,7 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
       {member.activeTasks.length > 0 && (
         <button
           onClick={() => setShowTasks(v => !v)}
-          className="flex items-center justify-between text-[11px] text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors"
+          className="flex items-center justify-between text-[11px] text-white/25 hover:text-white/50 transition-colors"
         >
           <span className="flex items-center gap-1.5">
             <CheckSquare className="w-3 h-3" />
@@ -153,13 +153,13 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
       )}
 
       {showTasks && (
-        <div className="space-y-1.5 border-t border-[var(--wl-border-subtle)] pt-2">
+        <div className="space-y-1.5 border-t border-white/[0.05] pt-2">
           {member.activeTasks.slice(0, 4).map(task => (
             <div key={task.id} className="flex items-center gap-2">
               <span className={"w-1.5 h-1.5 rounded-full shrink-0 " + (STATUS_DOT[task.status] ?? 'bg-white/20')} />
-              <span className="text-[11px] text-[var(--wl-text-muted)] truncate flex-1">{task.title}</span>
+              <span className="text-[11px] text-white/50 truncate flex-1">{task.title}</span>
               {task.dueDate && (
-                <span className={"text-[10px] shrink-0 " + (new Date(task.dueDate) < new Date() ? 'text-red-400' : 'text-[var(--wl-text-placeholder)]')}>
+                <span className={"text-[10px] shrink-0 " + (new Date(task.dueDate) < new Date() ? 'text-red-400' : 'text-white/20')}>
                   <Clock className="w-2.5 h-2.5 inline mr-0.5" />
                   {new Date(task.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
                 </span>
@@ -167,7 +167,7 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
             </div>
           ))}
           {member.activeTasks.length > 4 && (
-            <p className="text-[10px] text-[var(--wl-text-placeholder)] pl-3.5">+{member.activeTasks.length - 4} más</p>
+            <p className="text-[10px] text-white/20 pl-3.5">+{member.activeTasks.length - 4} más</p>
           )}
         </div>
       )}
@@ -240,9 +240,9 @@ export default function TeamPage() {
     <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="text-xs font-medium text-[var(--wl-text-placeholder)] uppercase tracking-widest mb-1">Equipo</p>
-          <h1 className="text-xl font-medium text-[var(--wl-text-primary)]">Equipo interno</h1>
-          <p className="text-[var(--wl-text-muted)] text-sm mt-0.5">
+          <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Equipo</p>
+          <h1 className="text-xl font-medium text-white">Equipo interno</h1>
+          <p className="text-white/40 text-sm mt-0.5">
             {members.length} miembro{members.length !== 1 ? 's' : ''} · {totalActive} tareas activas
             {totalOverdue > 0 && <span className="text-red-400 ml-2">· {totalOverdue} vencidas</span>}
           </p>
@@ -266,19 +266,19 @@ export default function TeamPage() {
           { label: 'Roles',         value: groups.length,  color: '#34d399' },
         ].map(s => (
           <div key={s.label} className="glass-card rounded-xl px-4 py-3">
-            <p className="text-[11px] text-[var(--wl-text-placeholder)] uppercase tracking-wide mb-1">{s.label}</p>
+            <p className="text-[11px] text-white/30 uppercase tracking-wide mb-1">{s.label}</p>
             <p className="text-2xl font-medium" style={{ color: s.color }}>{s.value}</p>
           </div>
         ))}
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--wl-text-placeholder)]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar por nombre, email o rol…"
-          className="w-full pl-9 pr-4 py-2 rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border)] text-sm text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus:outline-none focus:border-white/20 transition-colors"
+          className="w-full pl-9 pr-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/20 transition-colors"
         />
       </div>
 
@@ -295,8 +295,8 @@ export default function TeamPage() {
         </div>
       ) : groups.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Users className="w-12 h-12 text-[var(--wl-text-placeholder)] mb-3" />
-          <p className="text-[var(--wl-text-muted)] text-sm">
+          <Users className="w-12 h-12 text-white/10 mb-3" />
+          <p className="text-white/40 text-sm">
             {search ? 'Sin resultados para esa búsqueda' : 'No hay miembros en el equipo'}
           </p>
         </div>
@@ -308,8 +308,8 @@ export default function TeamPage() {
               <div key={g.role}>
                 <div className="flex items-center gap-2 mb-3">
                   <Icon className="w-4 h-4" style={{ color: g.meta.color }} />
-                  <span className="text-sm font-medium text-[var(--wl-text-secondary)]">{g.meta.label}</span>
-                  <span className="text-xs text-[var(--wl-text-placeholder)] bg-[var(--wl-hover)] px-2 py-0.5 rounded-full">{g.members.length}</span>
+                  <span className="text-sm font-medium text-white/60">{g.meta.label}</span>
+                  <span className="text-xs text-white/20 bg-white/[0.05] px-2 py-0.5 rounded-full">{g.members.length}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {g.members.map(m => (

@@ -98,9 +98,9 @@ export default function CustomRoleDialog({ open, onOpenChange, role, onSaved }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-lg w-full">
+      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg w-full">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-[var(--wl-text-primary)]">
+          <DialogTitle className="flex items-center gap-2 text-white">
             <Tags className="h-4 w-4 text-brand-light" />
             {isEdit ? 'Editar Rol' : 'Crear Rol Personalizado'}
           </DialogTitle>
@@ -109,29 +109,29 @@ export default function CustomRoleDialog({ open, onOpenChange, role, onSaved }: 
         <form onSubmit={handleSave} className="space-y-5 mt-2">
           {/* Label */}
           <div className="space-y-1.5">
-            <Label className="text-[var(--wl-text-secondary)] text-xs">Nombre visible *</Label>
+            <Label className="text-white/70 text-xs">Nombre visible *</Label>
             <Input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Ej: Editor de Video, Fotógrafo, Community Manager"
-              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand"
+              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label className="text-[var(--wl-text-secondary)] text-xs">Descripción</Label>
+            <Label className="text-white/70 text-xs">Descripción</Label>
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Responsabilidades del rol…"
-              className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand"
+              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand"
             />
           </div>
 
           {/* Color */}
           <div className="space-y-1.5">
-            <Label className="text-[var(--wl-text-secondary)] text-xs">Color del rol</Label>
+            <Label className="text-white/70 text-xs">Color del rol</Label>
             <div className="flex flex-wrap gap-2 items-center">
               {ROLE_COLORS.map((c) => (
                 <button
@@ -144,20 +144,20 @@ export default function CustomRoleDialog({ open, onOpenChange, role, onSaved }: 
               ))}
               <div className="flex items-center gap-2 ml-1">
                 <div className="h-7 w-7 rounded-full border border-white/20" style={{ backgroundColor: color }} />
-                <span className="text-xs text-[var(--wl-text-muted)] font-mono">{color}</span>
+                <span className="text-xs text-white/40 font-mono">{color}</span>
               </div>
             </div>
           </div>
 
           {/* Permissions */}
           <div className="space-y-2">
-            <Label className="text-[var(--wl-text-secondary)] text-xs">Permisos del módulo</Label>
-            <div className="rounded-xl border border-[var(--wl-border)] divide-y divide-white/[0.04] overflow-hidden">
+            <Label className="text-white/70 text-xs">Permisos del módulo</Label>
+            <div className="rounded-xl border border-white/[0.06] divide-y divide-white/[0.04] overflow-hidden">
               {ALL_PERMISSIONS.map(({ key, label: permLabel, desc }) => (
-                <div key={key} className="flex items-center justify-between px-4 py-3 hover:bg-[var(--wl-hover)] transition-colors">
+                <div key={key} className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.02] transition-colors">
                   <div className="min-w-0 mr-3">
-                    <p className="text-sm font-medium text-[var(--wl-text-secondary)]">{permLabel}</p>
-                    <p className="text-xs text-[var(--wl-text-muted)]">{desc}</p>
+                    <p className="text-sm font-medium text-white/80">{permLabel}</p>
+                    <p className="text-xs text-white/35">{desc}</p>
                   </div>
                   <Switch
                     checked={permissions[key] ?? false}
@@ -175,7 +175,7 @@ export default function CustomRoleDialog({ open, onOpenChange, role, onSaved }: 
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={saving}
-              className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
+              className="flex-1 border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06]"
             >
               Cancelar
             </Button>

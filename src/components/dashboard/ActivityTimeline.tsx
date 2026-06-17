@@ -131,8 +131,8 @@ export default function ActivityTimeline() {
   if (activities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Bell className="w-10 h-10 text-[var(--wl-text-placeholder)] mb-3" />
-        <p className="text-sm text-[var(--wl-text-muted)]">No hay actividad reciente</p>
+        <Bell className="w-10 h-10 text-white/20 mb-3" />
+        <p className="text-sm text-white/40">No hay actividad reciente</p>
       </div>
     );
   }
@@ -141,13 +141,13 @@ export default function ActivityTimeline() {
     <div className="max-h-96 overflow-y-auto custom-scrollbar p-4">
       <div className="relative">
         {/* Timeline line */}
-        <div className="absolute left-4 top-3 bottom-3 w-px bg-[var(--wl-hover)]" />
+        <div className="absolute left-4 top-3 bottom-3 w-px bg-white/[0.06]" />
 
         <div className="space-y-4">
           {activities.map((activity) => {
             const Icon = entityIcons[activity.entity] || Bell;
-            const color = entityColors[activity.entity] || 'text-[var(--wl-text-muted)]';
-            const bgColor = entityBgColors[activity.entity] || 'bg-[var(--wl-hover)]';
+            const color = entityColors[activity.entity] || 'text-white/40';
+            const bgColor = entityBgColors[activity.entity] || 'bg-white/[0.06]';
 
             return (
               <div key={activity.id} className="relative flex items-start gap-3">
@@ -160,10 +160,10 @@ export default function ActivityTimeline() {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0 pt-0.5">
-                  <p className="text-sm text-[var(--wl-text-secondary)] leading-snug">
+                  <p className="text-sm text-white/80 leading-snug">
                     {getActionLabel(activity.action, activity.details)}
                   </p>
-                  <p className="text-xs text-[var(--wl-text-placeholder)] mt-1">
+                  <p className="text-xs text-white/25 mt-1">
                     {formatDistanceToNow(new Date(activity.createdAt), {
                       addSuffix: true,
                       locale: es,

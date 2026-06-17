@@ -133,20 +133,20 @@ export default function CommandPalette() {
       title="Búsqueda global"
       description="Busca tareas, cuentas, contactos o navega…"
     >
-      <div className="flex items-center border-b border-[var(--wl-border)] px-3">
-        <Search className="h-4 w-4 shrink-0 text-[var(--wl-text-placeholder)] mr-2" />
+      <div className="flex items-center border-b border-white/[0.06] px-3">
+        <Search className="h-4 w-4 shrink-0 text-white/30 mr-2" />
         <input
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Buscar tareas, cuentas, contactos…"
-          className="flex-1 bg-transparent py-3 text-[13px] text-[var(--wl-text-secondary)] placeholder-white/25 outline-none"
+          className="flex-1 bg-transparent py-3 text-[13px] text-white/80 placeholder-white/25 outline-none"
           autoFocus
         />
-        {searching && <Loader2 className="h-3.5 w-3.5 animate-spin text-[var(--wl-text-placeholder)] ml-2" />}
+        {searching && <Loader2 className="h-3.5 w-3.5 animate-spin text-white/30 ml-2" />}
       </div>
 
       <CommandList className="max-h-[400px]">
-        <CommandEmpty className="py-8 text-center text-[13px] text-[var(--wl-text-placeholder)]">
+        <CommandEmpty className="py-8 text-center text-[13px] text-white/30">
           {query.length >= 2 ? 'Sin resultados.' : 'Escribe para buscar…'}
         </CommandEmpty>
 
@@ -155,15 +155,15 @@ export default function CommandPalette() {
           <CommandGroup heading={`Resultados (${results.length})`}>
             {results.map(r => (
               <CommandItem key={r.id} onSelect={() => go(r.href)}
-                className="text-[var(--wl-text-secondary)] aria-selected:text-[var(--wl-text-primary)] aria-selected:bg-[var(--wl-hover)] cursor-pointer">
+                className="text-white/70 aria-selected:text-white aria-selected:bg-white/[0.06] cursor-pointer">
                 {typeIcon(r.type)}
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="text-[13px] truncate">{r.label}</span>
                   {r.sublabel && (
-                    <span className="text-[10px] text-[var(--wl-text-placeholder)] truncate">{r.sublabel}</span>
+                    <span className="text-[10px] text-white/30 truncate">{r.sublabel}</span>
                   )}
                 </div>
-                <span className="text-[10px] text-[var(--wl-text-placeholder)] ml-2 shrink-0">{typeLabel(r.type)}</span>
+                <span className="text-[10px] text-white/25 ml-2 shrink-0">{typeLabel(r.type)}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -175,17 +175,17 @@ export default function CommandPalette() {
             <CommandGroup heading="Navegar">
               {NAV.map(cmd => (
                 <CommandItem key={cmd.href} onSelect={() => go(cmd.href)}
-                  className="text-[var(--wl-text-secondary)] aria-selected:text-[var(--wl-text-primary)] aria-selected:bg-[var(--wl-hover)] cursor-pointer">
-                  <cmd.icon className="mr-2 h-4 w-4 text-[var(--wl-text-muted)]" />
+                  className="text-white/70 aria-selected:text-white aria-selected:bg-white/[0.06] cursor-pointer">
+                  <cmd.icon className="mr-2 h-4 w-4 text-white/40" />
                   <span>{cmd.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
-            <CommandSeparator className="bg-[var(--wl-hover)]" />
+            <CommandSeparator className="bg-white/[0.06]" />
             <CommandGroup heading="Crear">
               {ACTIONS.map(cmd => (
                 <CommandItem key={cmd.href} onSelect={() => go(cmd.href)}
-                  className="text-[var(--wl-text-secondary)] aria-selected:text-[var(--wl-text-primary)] aria-selected:bg-[var(--wl-hover)] cursor-pointer">
+                  className="text-white/70 aria-selected:text-white aria-selected:bg-white/[0.06] cursor-pointer">
                   <Plus className="mr-2 h-4 w-4 text-violet-400/70" />
                   <span>{cmd.label}</span>
                 </CommandItem>
@@ -195,7 +195,7 @@ export default function CommandPalette() {
         )}
       </CommandList>
 
-      <div className="border-t border-[var(--wl-border-subtle)] px-3 py-2 flex items-center gap-3 text-[10px] text-[var(--wl-text-placeholder)]">
+      <div className="border-t border-white/[0.05] px-3 py-2 flex items-center gap-3 text-[10px] text-white/20">
         <span><kbd className="font-mono">↑↓</kbd> navegar</span>
         <span><kbd className="font-mono">↵</kbd> abrir</span>
         <span><kbd className="font-mono">esc</kbd> cerrar</span>

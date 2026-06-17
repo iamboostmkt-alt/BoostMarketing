@@ -45,37 +45,37 @@ export function PortalMeetingCard({ appointment, isManager = false, onDelete, on
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <Video className={`h-4 w-4 shrink-0 ${isPast ? 'text-[var(--wl-text-placeholder)]' : 'text-green-400'}`} />
-            <p className="text-sm font-medium text-[var(--wl-text-primary)] truncate">{appointment.name || 'Videollamada'}</p>
+            <Video className={`h-4 w-4 shrink-0 ${isPast ? 'text-white/30' : 'text-green-400'}`} />
+            <p className="text-sm font-medium text-white truncate">{appointment.name || 'Videollamada'}</p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
               {cfg.label}
             </span>
-            <ChevronDown className={`w-3.5 h-3.5 text-[var(--wl-text-placeholder)] transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
           </div>
         </div>
         {!expanded && (
-          <p className="text-[11px] text-[var(--wl-text-muted)] pl-6">{fmtDate(appointment.date)}</p>
+          <p className="text-[11px] text-white/35 pl-6">{fmtDate(appointment.date)}</p>
         )}
       </div>
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-[var(--wl-border)] pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
           <div className="grid grid-cols-2 gap-2">
-            <div className="bg-[var(--wl-hover)] rounded-lg p-2.5">
-              <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-0.5">Fecha</p>
-              <p className="text-xs text-[var(--wl-text-secondary)] font-medium">{fmtDate(appointment.date)}</p>
+            <div className="bg-white/[0.03] rounded-lg p-2.5">
+              <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Fecha</p>
+              <p className="text-xs text-white/70 font-medium">{fmtDate(appointment.date)}</p>
             </div>
-            <div className="bg-[var(--wl-hover)] rounded-lg p-2.5">
-              <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-0.5">Hora</p>
-              <p className="text-xs text-[var(--wl-text-secondary)] font-medium">
+            <div className="bg-white/[0.03] rounded-lg p-2.5">
+              <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Hora</p>
+              <p className="text-xs text-white/70 font-medium">
                 {format(new Date(appointment.date), 'HH:mm', { locale: es })}
               </p>
             </div>
           </div>
           {appointment.notes && (
-            <p className="text-xs text-[var(--wl-text-secondary)] leading-relaxed">{appointment.notes}</p>
+            <p className="text-xs text-white/60 leading-relaxed">{appointment.notes}</p>
           )}
           {appointment.meetUrl && (
             <a href={appointment.meetUrl} target="_blank" rel="noopener noreferrer"
@@ -85,9 +85,9 @@ export function PortalMeetingCard({ appointment, isManager = false, onDelete, on
             </a>
           )}
           {isManager && (
-            <div className="flex gap-2 pt-2 border-t border-[var(--wl-border-subtle)]" onClick={e => e.stopPropagation()}>
+            <div className="flex gap-2 pt-2 border-t border-white/[0.04]" onClick={e => e.stopPropagation()}>
               <button type="button" onClick={() => onEdit?.(appointment)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-[var(--wl-hover)] hover:bg-[var(--wl-border)] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] transition-colors">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
                 <Pencil className="w-3 h-3" />Editar
               </button>
               <button type="button" onClick={() => onRemind?.(appointment.id)}

@@ -22,14 +22,14 @@ export default function DashboardError({
       <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
         <AlertTriangle className="w-7 h-7 text-red-400" />
       </div>
-      <h2 className="text-lg font-medium text-[var(--wl-text-primary)] mb-1">Algo salió mal</h2>
-      <p className="text-sm text-[var(--wl-text-muted)] mb-6 max-w-sm">
+      <h2 className="text-lg font-medium text-white mb-1">Algo salió mal</h2>
+      <p className="text-sm text-white/40 mb-6 max-w-sm">
         {error.message || 'Ocurrió un error inesperado en esta sección.'}
       </p>
       <div className="flex items-center gap-3">
         <button
           onClick={reset}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--wl-hover)] hover:bg-white/[0.1] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] text-sm transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-white/70 hover:text-white text-sm transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Reintentar
@@ -43,7 +43,7 @@ export default function DashboardError({
         </button>
       </div>
       {error.digest && (
-        <p className="mt-4 text-[10px] text-[var(--wl-text-placeholder)] font-mono">ID: {error.digest}</p>
+        <p className="mt-4 text-[10px] text-white/20 font-mono">ID: {error.digest}</p>
       )}
     </div>
   );

@@ -32,34 +32,34 @@ export function DeliverableHistory({ taskId }: { taskId: string }) {
       .finally(() => setLoading(false));
   }, [taskId]);
 
-  if (loading) return <div className="text-xs text-[var(--wl-text-placeholder)] py-2">Cargando historial...</div>;
-  if (logs.length === 0) return <div className="text-xs text-[var(--wl-text-placeholder)] py-2">Sin historial aún.</div>;
+  if (loading) return <div className="text-xs text-white/30 py-2">Cargando historial...</div>;
+  if (logs.length === 0) return <div className="text-xs text-white/30 py-2">Sin historial aún.</div>;
 
   return (
     <div className="space-y-2 mt-3">
-      <p className="text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Historial</p>
+      <p className="text-[11px] font-medium text-white/40 uppercase tracking-wider">Historial</p>
       <div className="relative">
-        <div className="absolute left-2.5 top-2 bottom-2 w-px bg-[var(--wl-hover)]" />
+        <div className="absolute left-2.5 top-2 bottom-2 w-px bg-white/[0.06]" />
         <div className="space-y-2">
           {logs.map((log) => {
-            const cfg = statusConfig[log.status] || { label: log.status, icon: Clock, color: 'text-[var(--wl-text-muted)]' };
+            const cfg = statusConfig[log.status] || { label: log.status, icon: Clock, color: 'text-white/40' };
             const Icon = cfg.icon;
             return (
               <div key={log.id} className="flex items-start gap-3 pl-1">
                 <div className="relative z-10 mt-0.5 shrink-0">
-                  <div className="w-4 h-4 rounded-full bg-[var(--wl-hover)] border border-[var(--wl-border)] flex items-center justify-center">
+                  <div className="w-4 h-4 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
                     <Icon className={`w-2.5 h-2.5 ${cfg.color}`} />
                   </div>
                 </div>
                 <div className="flex-1 pb-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
-                    <span className="text-[10px] text-[var(--wl-text-placeholder)]">
+                    <span className="text-[10px] text-white/25">
                       {new Date(log.createdAt).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
                     </span>
                   </div>
-                  {log.note && <p className="text-xs text-[var(--wl-text-muted)] mt-0.5">{log.note}</p>}
-                  {log.createdBy && <p className="text-[10px] text-[var(--wl-text-placeholder)] mt-0.5">{log.createdBy}</p>}
+                  {log.note && <p className="text-xs text-white/40 mt-0.5">{log.note}</p>}
+                  {log.createdBy && <p className="text-[10px] text-white/25 mt-0.5">{log.createdBy}</p>}
                 </div>
               </div>
             );

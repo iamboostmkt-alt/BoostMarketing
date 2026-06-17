@@ -104,7 +104,7 @@ export default function PushNotificationManager() {
   if (showBanner && !subscribed) {
     return (
       <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:w-[340px] z-50
-                      rounded-[20px] border border-[var(--wl-border)] bg-[var(--wl-surface)] shadow-2xl p-4"
+                      rounded-[20px] border border-white/[0.08] bg-[#0F1117] shadow-2xl p-4"
         style={{ animation: 'slideUp 0.3s ease' }}>
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
@@ -112,26 +112,26 @@ export default function PushNotificationManager() {
             <Bell className="w-5 h-5 text-violet-400" strokeWidth={1.75} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-[var(--wl-text-primary)] mb-0.5">
+            <p className="text-[13px] font-semibold text-white mb-0.5">
               Activa las notificaciones
             </p>
-            <p className="text-[11px] text-[var(--wl-text-muted)] leading-relaxed">
+            <p className="text-[11px] text-white/45 leading-relaxed">
               Recibe alertas de tareas, mensajes y reuniones en tiempo real.
             </p>
             <div className="flex gap-2 mt-3">
               <button onClick={subscribe} disabled={loading}
-                className="flex-1 rounded-[10px] py-2 text-[12px] font-semibold text-[var(--wl-text-primary)] transition-all disabled:opacity-60"
+                className="flex-1 rounded-[10px] py-2 text-[12px] font-semibold text-white transition-all disabled:opacity-60"
                 style={{ background: '#7C3AED' }}>
                 {loading ? 'Activando...' : 'Activar'}
               </button>
               <button onClick={() => setShowBanner(false)}
-                className="rounded-[10px] px-3 py-2 text-[12px] font-medium text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] transition-colors border border-[var(--wl-border)]">
+                className="rounded-[10px] px-3 py-2 text-[12px] font-medium text-white/40 hover:text-white/70 transition-colors border border-white/[0.08]">
                 Ahora no
               </button>
             </div>
           </div>
           <button onClick={() => setShowBanner(false)}
-            className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors shrink-0 mt-0.5">
+            className="text-white/20 hover:text-white/50 transition-colors shrink-0 mt-0.5">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>

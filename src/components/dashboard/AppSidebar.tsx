@@ -109,7 +109,7 @@ function UserDropdown({
           <AvatarImage src={user.image ?? undefined} alt={user.name} />
           <AvatarFallback
             style={{ backgroundColor: user.color || "#7c3aed" }}
-            className="text-[10px] font-medium text-[var(--wl-text-primary)]"
+            className="text-[10px] font-medium text-white"
           >
             {initials}
           </AvatarFallback>
@@ -124,12 +124,12 @@ function UserDropdown({
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              "absolute z-50 mt-2 w-56 overflow-hidden rounded-xl border border-[var(--wl-border)] bg-[#16161e] shadow-2xl",
+              "absolute z-50 mt-2 w-56 overflow-hidden rounded-xl border border-white/[0.08] bg-[#16161e] shadow-2xl",
               collapsed ? "left-full ml-2 top-0" : "right-0 bottom-full mb-2"
             )}
           >
             {/* Header: Avatar + nombre + rol */}
-            <div className="flex items-center gap-3 px-3 py-3 border-b border-[var(--wl-border)]">
+            <div className="flex items-center gap-3 px-3 py-3 border-b border-white/[0.06]">
               <Avatar className="h-9 w-9 shrink-0">
                 <AvatarImage src={user.image ?? undefined} alt={user.name} />
                 <AvatarFallback
@@ -140,7 +140,7 @@ function UserDropdown({
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[var(--wl-text-primary)] truncate">{user.name}</p>
+                <p className="text-sm font-medium text-white/90 truncate">{user.name}</p>
                 {user.customRoleLabel ? (
                   <span
                     className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium mt-0.5"
@@ -149,7 +149,7 @@ function UserDropdown({
                     {user.customRoleLabel}
                   </span>
                 ) : (
-                  <p className="text-[11px] text-[var(--wl-text-muted)] truncate">Usuario</p>
+                  <p className="text-[11px] text-white/40 truncate">Usuario</p>
                 )}
               </div>
             </div>
@@ -158,42 +158,42 @@ function UserDropdown({
             <div className="p-1">
               <button
                 onClick={() => { setOpen(false); router.push("/dashboard/settings"); }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
               >
                 <User className="h-4 w-4" strokeWidth={1.5} />
                 <span>Mi perfil</span>
               </button>
               <button
                 onClick={() => { setOpen(false); router.push("/dashboard/settings"); }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white"
               >
                 <Settings className="h-4 w-4" strokeWidth={1.5} />
                 <span>Ajustes</span>
               </button>
-              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]">
+              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
                 <Palette className="h-4 w-4" strokeWidth={1.5} />
                 <span className="flex-1 text-left">Apariencia</span>
-                <ChevronRight className="h-3.5 w-3.5 text-[var(--wl-text-placeholder)]" />
+                <ChevronRight className="h-3.5 w-3.5 text-white/30" />
               </button>
-              <Link href="/billing" onClick={() => setOpen(false)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]">
+              <Link href="/billing" onClick={() => setOpen(false)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
                 <Zap className="h-4 w-4 text-amber-400" strokeWidth={1.5} />
                 <span>Billing & Plan</span>
                 <span className="ml-auto text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full">Upgrade</span>
               </Link>
-              <div className="my-1 h-px bg-[var(--wl-hover)]" />
-              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]">
+              <div className="my-1 h-px bg-white/[0.06]" />
+              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
                 <HelpCircle className="h-4 w-4" strokeWidth={1.5} />
                 <span>Soporte</span>
               </button>
-              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-primary)]">
+              <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white">
                 <Command className="h-4 w-4" strokeWidth={1.5} />
                 <span>Atajos</span>
-                <span className="ml-auto text-[10px] text-[var(--wl-text-placeholder)] font-mono">⌘K</span>
+                <span className="ml-auto text-[10px] text-white/25 font-mono">⌘K</span>
               </button>
-              <div className="my-1 h-px bg-[var(--wl-hover)]" />
+              <div className="my-1 h-px bg-white/[0.06]" />
               <button
                 onClick={() => signOut({ callbackUrl: getLogoutUrl() })}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--wl-text-secondary)] transition-colors hover:bg-red-500/10 hover:text-red-400"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-red-500/10 hover:text-red-400"
               >
                 <LogOut className="h-4 w-4" strokeWidth={1.5} />
                 <span>Cerrar sesión</span>
@@ -229,7 +229,7 @@ function WorkspaceSwitcher({
   const trigger = collapsed ? (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button onClick={() => setOpen(!open)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--wl-hover)] transition-colors hover:bg-white/[0.07]">
+        <button onClick={() => setOpen(!open)} className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] transition-colors hover:bg-white/[0.07]">
           <Avatar className="h-7 w-7">
             <AvatarImage src={image ?? undefined} alt={name} />
             <AvatarFallback style={{ backgroundColor: color + "33", color }} className="text-[10px] font-semibold">{initial}</AvatarFallback>
@@ -239,13 +239,13 @@ function WorkspaceSwitcher({
       <TooltipContent side="right">{name}</TooltipContent>
     </Tooltip>
   ) : (
-    <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 rounded-lg bg-[var(--wl-hover)] px-3 py-2.5 transition-colors hover:bg-white/[0.07]">
+    <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 rounded-lg bg-white/[0.04] px-3 py-2.5 transition-colors hover:bg-white/[0.07]">
       <Avatar className="h-7 w-7 shrink-0">
         <AvatarImage src={image ?? undefined} alt={name} />
         <AvatarFallback style={{ backgroundColor: color + "33", color }} className="text-[10px] font-semibold">{initial}</AvatarFallback>
       </Avatar>
-      <span className="flex-1 truncate text-left text-sm font-medium text-[var(--wl-text-secondary)]">{name}</span>
-      <ChevronDown className={`h-4 w-4 shrink-0 text-[var(--wl-text-placeholder)] transition-transform ${open ? "rotate-180" : ""}`} />
+      <span className="flex-1 truncate text-left text-sm font-medium text-white/75">{name}</span>
+      <ChevronDown className={`h-4 w-4 shrink-0 text-white/30 transition-transform ${open ? "rotate-180" : ""}`} />
     </button>
   );
 
@@ -253,52 +253,52 @@ function WorkspaceSwitcher({
     <div ref={ref} className="relative">
       {trigger}
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-[var(--wl-border)] bg-[#0e0e14] shadow-2xl overflow-hidden max-h-[70vh] overflow-y-auto">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-white/[0.08] bg-[#0e0e14] shadow-2xl overflow-hidden max-h-[70vh] overflow-y-auto">
           {/* Header */}
-          <div className="px-3 py-2.5 border-b border-[var(--wl-border)]">
-            <p className="text-xs font-semibold text-[var(--wl-text-secondary)] truncate">{workspaceName}</p>
-            <p className="text-[10px] text-[var(--wl-text-placeholder)] mt-0.5">{isAdmin ? "Administrador" : isManager ? "Project Manager" : "Equipo"}</p>
+          <div className="px-3 py-2.5 border-b border-white/[0.06]">
+            <p className="text-xs font-semibold text-white/80 truncate">{workspaceName}</p>
+            <p className="text-[10px] text-white/30 mt-0.5">{isAdmin ? "Administrador" : isManager ? "Project Manager" : "Equipo"}</p>
           </div>
 
           {/* Admin stats */}
           {isAdmin && (
-            <div className="px-3 py-2 border-b border-[var(--wl-border)]">
-              <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-2">Workspace</p>
-              <Link href="/billing" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[var(--wl-hover)] transition-colors group">
-                <span className="text-xs text-[var(--wl-text-secondary)] group-hover:text-[var(--wl-text-secondary)]">Plan actual</span>
+            <div className="px-3 py-2 border-b border-white/[0.06]">
+              <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Workspace</p>
+              <Link href="/billing" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+                <span className="text-xs text-white/60 group-hover:text-white/80">Plan actual</span>
                 <span className="text-[10px] font-semibold text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full">Ver plan →</span>
               </Link>
-              <Link href="/dashboard/team" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[var(--wl-hover)] transition-colors group">
-                <span className="text-xs text-[var(--wl-text-secondary)] group-hover:text-[var(--wl-text-secondary)]">Miembros</span>
-                <span className="text-[10px] text-[var(--wl-text-muted)]">Ver todos →</span>
+              <Link href="/dashboard/team" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+                <span className="text-xs text-white/60 group-hover:text-white/80">Miembros</span>
+                <span className="text-[10px] text-white/40">Ver todos →</span>
               </Link>
-              <Link href="/dashboard/clients" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[var(--wl-hover)] transition-colors group">
-                <span className="text-xs text-[var(--wl-text-secondary)] group-hover:text-[var(--wl-text-secondary)]">Cuentas activas</span>
-                <span className="text-[10px] text-[var(--wl-text-muted)]">Ver →</span>
+              <Link href="/dashboard/clients" onClick={() => setOpen(false)} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+                <span className="text-xs text-white/60 group-hover:text-white/80">Cuentas activas</span>
+                <span className="text-[10px] text-white/40">Ver →</span>
               </Link>
             </div>
           )}
 
           {/* PM + equipo acciones */}
           <div className="px-3 py-2">
-            <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-2">Acciones</p>
+            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Acciones</p>
             {role !== "CLIENT" && (
-              <Link href="/dashboard/tasks?new=1" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[var(--wl-hover)] transition-colors group">
-                <span className="text-[var(--wl-text-muted)] group-hover:text-purple-400 text-sm">+</span>
-                <span className="text-xs text-[var(--wl-text-secondary)] group-hover:text-[var(--wl-text-secondary)]">Nueva tarea</span>
+              <Link href="/dashboard/tasks?new=1" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+                <span className="text-white/40 group-hover:text-purple-400 text-sm">+</span>
+                <span className="text-xs text-white/60 group-hover:text-white/80">Nueva tarea</span>
               </Link>
             )}
-            <Link href="/dashboard/settings" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[var(--wl-hover)] transition-colors group">
-              <span className="text-[var(--wl-text-muted)] group-hover:text-[var(--wl-text-secondary)] text-sm">⚙</span>
-              <span className="text-xs text-[var(--wl-text-secondary)] group-hover:text-[var(--wl-text-secondary)]">Ajustes</span>
+            <Link href="/dashboard/settings" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+              <span className="text-white/40 group-hover:text-white/60 text-sm">⚙</span>
+              <span className="text-xs text-white/60 group-hover:text-white/80">Ajustes</span>
             </Link>
             {isAdmin && (
               <button
                 onClick={() => { setOpen(false); onInvite(); }}
-                className="flex w-full items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[var(--wl-hover)] transition-colors group"
+                className="flex w-full items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group"
               >
-                <span className="text-[var(--wl-text-muted)] group-hover:text-purple-400 text-sm">👥</span>
-                <span className="text-xs text-[var(--wl-text-secondary)] group-hover:text-[var(--wl-text-secondary)]">Invitar usuario</span>
+                <span className="text-white/40 group-hover:text-purple-400 text-sm">👥</span>
+                <span className="text-xs text-white/60 group-hover:text-white/80">Invitar usuario</span>
               </button>
             )}
           </div>
@@ -312,7 +312,7 @@ function WorkspaceSwitcher({
 function SectionLabel({ children, collapsed }: { children: React.ReactNode; collapsed: boolean }) {
   if (collapsed) return null;
   return (
-    <div className="mb-0.5 mt-3 px-3 text-[9px] font-medium uppercase tracking-widest text-[var(--wl-text-muted)]">
+    <div className="mb-0.5 mt-3 px-3 text-[9px] font-medium uppercase tracking-widest text-white/15">
       {children}
     </div>
   );
@@ -345,14 +345,14 @@ function NavItemButton({
       className={cn(
         "group relative mx-2 flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-all duration-150",
         collapsed && "mx-0 justify-center px-2",
-        isActive ? "text-[var(--wl-text-primary)]" : "text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]"
+        isActive ? "text-white/85" : "text-white/40 hover:text-white/70"
       )}
     >
       {/* Active background */}
       {isActive && (
         <motion.div
           layoutId="nav-active-bg"
-          className="absolute inset-0 rounded-lg bg-[var(--wl-hover)]"
+          className="absolute inset-0 rounded-lg bg-white/[0.05]"
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
         />
       )}
@@ -362,7 +362,7 @@ function NavItemButton({
         <div
           className="pointer-events-none absolute inset-y-0 right-0 w-20 rounded-r-lg"
           style={{
-            background: "linear-gradient(to left, var(--wl-active) 0%, transparent 70%)",
+            background: "linear-gradient(to left, rgba(139,92,246,0.12) 0%, transparent 70%)",
           }}
         />
       )}
@@ -378,13 +378,13 @@ function NavItemButton({
 
       {/* Hover background */}
       {!isActive && (
-        <div className="absolute inset-0 rounded-lg bg-[var(--wl-hover)] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+        <div className="absolute inset-0 rounded-lg bg-white/[0.04] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
       )}
 
       <Icon
         className={cn(
           "relative z-10 h-[14px] w-[14px] shrink-0 transition-colors duration-150",
-          isActive ? "text-violet-400/80" : "text-[var(--wl-text-placeholder)] group-hover:text-[var(--wl-text-secondary)]"
+          isActive ? "text-violet-400/80" : "text-white/30 group-hover:text-white/60"
         )}
         strokeWidth={1.5}
       />
@@ -393,11 +393,11 @@ function NavItemButton({
         <>
           <span className="relative z-10 flex-1 truncate">{item.label}</span>
           {badge && badge > 0 ? (
-            <span className="relative z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-[var(--wl-text-primary)]" style={{ background: '#7c3aed' }}>
+            <span className="relative z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white" style={{ background: '#7c3aed' }}>
               {badge > 99 ? '99+' : badge}
             </span>
           ) : (isActive || isHovered) && (
-            <ChevronRight className="relative z-10 h-3 w-3 text-[var(--wl-text-placeholder)]" />
+            <ChevronRight className="relative z-10 h-3 w-3 text-white/20" />
           )}
         </>
       )}
@@ -429,13 +429,13 @@ function ClientsSection({ collapsed, clients, isAdmin }: {
         onClick={() => setOpen(!open)}
         className="flex w-full items-center gap-2 px-3 py-1"
       >
-        <span className="flex-1 text-left text-[10px] uppercase tracking-widest text-[var(--wl-text-placeholder)]">
+        <span className="flex-1 text-left text-[10px] uppercase tracking-widest text-white/20">
           Cuentas
         </span>
         {open ? (
-          <ChevronDown className="h-3 w-3 text-[var(--wl-text-placeholder)]" />
+          <ChevronDown className="h-3 w-3 text-white/20" />
         ) : (
-          <ChevronRight className="h-3 w-3 text-[var(--wl-text-placeholder)]" />
+          <ChevronRight className="h-3 w-3 text-white/20" />
         )}
       </button>
       <AnimatePresence>
@@ -450,7 +450,7 @@ function ClientsSection({ collapsed, clients, isAdmin }: {
             <div className="mt-1 space-y-0.5 pl-4">
               <Link
                 href="/dashboard/clients"
-                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-[var(--wl-text-muted)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]"
+                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75"
               >
                 <div className="h-2 w-2 rounded-full bg-purple-400/60" />
                 <span className="truncate">Gestión de cuentas</span>
@@ -460,7 +460,7 @@ function ClientsSection({ collapsed, clients, isAdmin }: {
                 <Link
                   key={c.id}
                   href={isAdmin ? `/dashboard/client-portal?clientId=${c.id}` : `/dashboard/tasks?clientId=${c.id}`}
-                  className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-[var(--wl-text-muted)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]"
+                  className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/40 transition-colors hover:bg-white/[0.04] hover:text-white/70"
                 >
                   <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: c.color || '#7c3aed' }} />
                   <span className="truncate">{c.name}</span>
@@ -494,13 +494,13 @@ function SettingsDropdown({ collapsed }: { collapsed: boolean }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "group relative mx-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--wl-text-muted)] transition-all duration-150 hover:text-[var(--wl-text-primary)]",
+        "group relative mx-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/45 transition-all duration-150 hover:text-white/90",
         collapsed && "mx-0 w-full justify-center px-2"
       )}
     >
-      <div className="absolute inset-0 rounded-lg bg-[var(--wl-hover)] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+      <div className="absolute inset-0 rounded-lg bg-white/[0.04] opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
       <Settings
-        className="relative z-10 h-[15px] w-[15px] shrink-0 text-[var(--wl-text-primary)]/55 transition-colors duration-150 group-hover:text-purple-400"
+        className="relative z-10 h-[15px] w-[15px] shrink-0 text-white/55 transition-colors duration-150 group-hover:text-purple-400"
         strokeWidth={1.5}
       />
       {!collapsed && (
@@ -509,7 +509,7 @@ function SettingsDropdown({ collapsed }: { collapsed: boolean }) {
           {isHovered && (
             <ChevronDown
               className={cn(
-                "relative z-10 h-3 w-3 text-[var(--wl-text-placeholder)] transition-transform duration-200",
+                "relative z-10 h-3 w-3 text-white/20 transition-transform duration-200",
                 open && "rotate-180"
               )}
             />
@@ -540,7 +540,7 @@ function SettingsDropdown({ collapsed }: { collapsed: boolean }) {
             transition={{ duration: 0.15 }}
             className="overflow-hidden"
           >
-            <div className="ml-6 mt-1 space-y-0.5 border-l border-[var(--wl-border)] pl-3">
+            <div className="ml-6 mt-1 space-y-0.5 border-l border-white/[0.06] pl-3">
               {[
                 { label: "Perfil",         tab: "profile" },
                 { label: "Preferencias",   tab: "preferences" },
@@ -549,7 +549,7 @@ function SettingsDropdown({ collapsed }: { collapsed: boolean }) {
                 <Link
                   key={item.label}
                   href={`/dashboard/settings?tab=${item.tab}`}
-                  className="block rounded-lg px-3 py-1.5 text-xs text-[var(--wl-text-muted)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]"
+                  className="block rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/80"
                 >
                   {item.label}
                 </Link>
@@ -634,12 +634,12 @@ export default function AppSidebar() {
       <div className="flex h-14 items-center justify-between px-3">
         {!collapsed ? (
           <>
-            <span className="text-sm font-semibold text-[var(--wl-text-primary)]">Weeklink</span>
+            <span className="text-sm font-semibold text-white/90">Weeklink</span>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={() => setCollapsed(true)}
-                  className="rounded-lg p-1.5 text-[var(--wl-text-placeholder)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)] border border-[var(--wl-border)]"
+                  className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-white/60 border border-white/[0.08]"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" strokeWidth={1.5} />
                 </button>
@@ -653,7 +653,7 @@ export default function AppSidebar() {
               <TooltipTrigger asChild>
                 <button
                   onClick={() => setCollapsed(false)}
-                  className="rounded-lg p-1.5 text-[var(--wl-text-placeholder)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)] border border-[var(--wl-border)]"
+                  className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-white/60 border border-white/[0.08]"
                 >
                   <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.5} />
                 </button>
@@ -667,9 +667,9 @@ export default function AppSidebar() {
       {/* Workspace label */}
       {!collapsed && (
         <div className="px-3 pt-1 pb-0.5 flex items-center gap-1.5">
-          <span className="text-[10px] uppercase tracking-widest text-[var(--wl-text-placeholder)] font-medium">Workspace</span>
-          <span className="text-[10px] text-[var(--wl-text-placeholder)]">·</span>
-          <span className="text-[10px] text-[var(--wl-text-muted)] font-medium truncate">{workspaceName}</span>
+          <span className="text-[10px] uppercase tracking-widest text-white/20 font-medium">Workspace</span>
+          <span className="text-[10px] text-white/20">·</span>
+          <span className="text-[10px] text-white/35 font-medium truncate">{workspaceName}</span>
         </div>
       )}
       <div className="mx-2 mt-1">
@@ -713,7 +713,7 @@ export default function AppSidebar() {
                 <div className="mt-1 space-y-0.5 pl-4">
                   <Link
                     href="/dashboard/team"
-                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-[var(--wl-text-muted)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]"
+                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75"
                   >
                     <div className="h-2 w-2 rounded-full bg-sky-400/60" />
                     <span className="truncate">Ver equipo</span>
@@ -733,9 +733,9 @@ export default function AppSidebar() {
       </nav>
 
       {/* Herramientas — fixed at bottom, never collapses */}
-      <div className="border-t border-[var(--wl-border)] pb-2 pt-2">
+      <div className="border-t border-white/[0.06] pb-2 pt-2">
         {!collapsed && (
-          <div className="mb-1 px-3 text-[10px] font-medium uppercase tracking-widest text-[var(--wl-text-placeholder)]">
+          <div className="mb-1 px-3 text-[10px] font-medium uppercase tracking-widest text-white/20">
             Herramientas
           </div>
         )}
@@ -763,7 +763,7 @@ export default function AppSidebar() {
       {/* Desktop sidebar */}
       <aside
         style={{ width: collapsed ? 72 : 240, background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
-        className="hidden md:flex flex-col border-r border-[var(--wl-border)] overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
+        className="hidden md:flex flex-col border-r border-white/[0.06] overflow-hidden shrink-0 transition-[width] duration-300 ease-in-out"
       >
         {sidebarContent}
       </aside>
@@ -778,24 +778,24 @@ export default function AppSidebar() {
 
       {/* Mobile sidebar — siempre expandido, ignora collapsed */}
       <aside
-        className="fixed top-0 left-0 z-50 h-[100dvh] w-[240px] border-r border-[var(--wl-border)] md:hidden transition-transform duration-300 ease-in-out flex flex-col pt-[env(safe-area-inset-top,0px)]"
+        className="fixed top-0 left-0 z-50 h-[100dvh] w-[240px] border-r border-white/[0.06] md:hidden transition-transform duration-300 ease-in-out flex flex-col pt-[env(safe-area-inset-top,0px)]"
         style={{ transform: mobileOpen ? "translateX(0)" : "translateX(-280px)", background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}
       >
         {/* Botón cerrar en mobile */}
         <div className="flex h-14 items-center justify-between px-3 shrink-0">
-          <span className="text-sm font-semibold text-[var(--wl-text-primary)]">Weeklink</span>
+          <span className="text-sm font-semibold text-white/90">Weeklink</span>
           <button
             onClick={() => setMobileOpen(false)}
-            className="rounded-lg p-1.5 text-[var(--wl-text-placeholder)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)] border border-[var(--wl-border)]"
+            className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-white/60 border border-white/[0.08]"
           >
             <ChevronLeft className="h-3.5 w-3.5" strokeWidth={1.5} />
           </button>
         </div>
         {/* Workspace label */}
         <div className="px-3 pt-1 pb-0.5 flex items-center gap-1.5">
-          <span className="text-[10px] uppercase tracking-widest text-[var(--wl-text-placeholder)] font-medium">Workspace</span>
-          <span className="text-[10px] text-[var(--wl-text-placeholder)]">·</span>
-          <span className="text-[10px] text-[var(--wl-text-muted)] font-medium truncate">{workspaceName}</span>
+          <span className="text-[10px] uppercase tracking-widest text-white/20 font-medium">Workspace</span>
+          <span className="text-[10px] text-white/20">·</span>
+          <span className="text-[10px] text-white/35 font-medium truncate">{workspaceName}</span>
         </div>
         <div className="mx-2 mt-1">
           <WorkspaceSwitcher
@@ -835,7 +835,7 @@ export default function AppSidebar() {
                   <Link
                     href="/dashboard/team"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-[var(--wl-text-muted)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]"
+                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75"
                   >
                     <div className="h-2 w-2 rounded-full bg-sky-400/60" />
                     <span className="truncate">Ver equipo</span>
@@ -853,8 +853,8 @@ export default function AppSidebar() {
           )}
         </nav>
         {/* Bottom tools */}
-        <div className="border-t border-[var(--wl-border)] pb-2 pt-2">
-          <div className="mb-1 px-3 text-[10px] font-medium uppercase tracking-widest text-[var(--wl-text-placeholder)]">Herramientas</div>
+        <div className="border-t border-white/[0.06] pb-2 pt-2">
+          <div className="mb-1 px-3 text-[10px] font-medium uppercase tracking-widest text-white/20">Herramientas</div>
           <SettingsDropdown collapsed={false} />
         </div>
       </aside>

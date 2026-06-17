@@ -37,13 +37,13 @@ import type { SiteSettings, PortfolioItem, Testimonial, TeamMember } from '@/lib
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm text-[var(--wl-text-secondary)]">{label}</Label>
+      <Label className="text-sm text-white/70">{label}</Label>
       {children}
     </div>
   );
 }
 
-const inputCls = 'bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] placeholder:text-[var(--wl-text-placeholder)] focus-visible:ring-brand';
+const inputCls = 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand';
 const areaCls  = `${inputCls} resize-none`;
 
 // ── Image uploader component ───────────────────────────────────────────────────
@@ -101,12 +101,12 @@ function ImageUploader({ value, onChange, folder = 'team', label = 'Foto' }: Ima
 
   return (
     <div className="space-y-2">
-      <Label className="text-sm text-[var(--wl-text-secondary)]">{label}</Label>
+      <Label className="text-sm text-white/70">{label}</Label>
       {value ? (
-        <div className="relative w-full h-36 rounded-lg overflow-hidden border border-[var(--wl-border)] bg-[var(--wl-hover)] group">
+        <div className="relative w-full h-36 rounded-lg overflow-hidden border border-white/[0.08] bg-white/[0.03] group">
           <Image src={value} alt="preview" fill className="object-cover" unoptimized />
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Button type="button" size="sm" variant="outline" className="border-white/30 text-[var(--wl-text-primary)] bg-white/10 hover:bg-white/20 gap-1.5 text-xs h-7"
+            <Button type="button" size="sm" variant="outline" className="border-white/30 text-white bg-white/10 hover:bg-white/20 gap-1.5 text-xs h-7"
               onClick={() => inputRef.current?.click()} disabled={uploading}>
               {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
               Cambiar
@@ -119,7 +119,7 @@ function ImageUploader({ value, onChange, folder = 'team', label = 'Foto' }: Ima
         </div>
       ) : (
         <div
-          className="w-full h-28 rounded-lg border-2 border-dashed border-[var(--wl-border)] bg-[var(--wl-hover)] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-brand/50 hover:bg-[var(--wl-hover)] transition-colors"
+          className="w-full h-28 rounded-lg border-2 border-dashed border-white/[0.10] bg-white/[0.02] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-brand/50 hover:bg-white/[0.04] transition-colors"
           onClick={() => inputRef.current?.click()}
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
@@ -127,9 +127,9 @@ function ImageUploader({ value, onChange, folder = 'team', label = 'Foto' }: Ima
           {uploading
             ? <Loader2 className="h-6 w-6 text-brand animate-spin" />
             : <>
-                <Upload className="h-5 w-5 text-[var(--wl-text-placeholder)]" />
-                <p className="text-xs text-[var(--wl-text-placeholder)]">Arrastra o haz clic para subir</p>
-                <p className="text-[10px] text-[var(--wl-text-placeholder)]">JPG, PNG, WebP · máx 5 MB</p>
+                <Upload className="h-5 w-5 text-white/30" />
+                <p className="text-xs text-white/30">Arrastra o haz clic para subir</p>
+                <p className="text-[10px] text-white/20">JPG, PNG, WebP · máx 5 MB</p>
               </>}
         </div>
       )}
@@ -205,8 +205,8 @@ function SettingsTab() {
         <Textarea value={form.heroSubtitle ?? ''} onChange={(e) => set('heroSubtitle', e.target.value)} className={areaCls} rows={3} placeholder="Impulsamos tu presencia digital..." />
       </Field>
 
-      <div className="border-t border-[var(--wl-border)] pt-4">
-        <p className="text-sm font-medium text-[var(--wl-text-secondary)] mb-4">Contacto</p>
+      <div className="border-t border-white/[0.06] pt-4">
+        <p className="text-sm font-medium text-white/70 mb-4">Contacto</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Email de contacto">
             <Input value={form.email ?? ''} onChange={(e) => set('email', e.target.value)} className={inputCls} placeholder="hola@tuagencia.com" type="email" />
@@ -217,8 +217,8 @@ function SettingsTab() {
         </div>
       </div>
 
-      <div className="border-t border-[var(--wl-border)] pt-4">
-        <p className="text-sm font-medium text-[var(--wl-text-secondary)] mb-4">Redes sociales</p>
+      <div className="border-t border-white/[0.06] pt-4">
+        <p className="text-sm font-medium text-white/70 mb-4">Redes sociales</p>
         <div className="grid gap-4 sm:grid-cols-2">
           {(['instagram', 'facebook', 'tiktok', 'linkedin', 'whatsapp'] as const).map((net) => (
             <Field key={net} label={net.charAt(0).toUpperCase() + net.slice(1)}>
@@ -315,20 +315,20 @@ function PortfolioTab() {
   return (
     <>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-[var(--wl-text-muted)]">{items.length} proyecto{items.length !== 1 ? 's' : ''}</p>
+        <p className="text-sm text-white/50">{items.length} proyecto{items.length !== 1 ? 's' : ''}</p>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={fetchItems} className="h-8 w-8 border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"><RefreshCw className="h-3.5 w-3.5" /></Button>
+          <Button variant="outline" size="icon" onClick={fetchItems} className="h-8 w-8 border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06]"><RefreshCw className="h-3.5 w-3.5" /></Button>
           <Button size="sm" onClick={openCreate} className="bg-brand hover:bg-brand-dark text-white gap-1.5 h-8 px-3 text-xs"><Plus className="h-3.5 w-3.5" />Nuevo</Button>
         </div>
       </div>
 
       <div className="glass-card rounded-xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead><tr className="border-b border-[var(--wl-border)]">
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase">Proyecto</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase hidden md:table-cell">Tags</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase">Visible</th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-[var(--wl-text-muted)] uppercase">Acciones</th>
+          <thead><tr className="border-b border-white/[0.06]">
+            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase">Proyecto</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase hidden md:table-cell">Tags</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase">Visible</th>
+            <th className="px-4 py-3 text-right text-xs font-medium text-white/40 uppercase">Acciones</th>
           </tr></thead>
           <tbody className="divide-y divide-white/[0.04]">
             {loading
@@ -336,26 +336,26 @@ function PortfolioTab() {
                   <tr key={i}><td className="px-4 py-3"><Skeleton className="h-4 w-40" /></td><td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-4 w-24" /></td><td className="px-4 py-3"><Skeleton className="h-4 w-8" /></td><td className="px-4 py-3"><Skeleton className="h-7 w-16 ml-auto" /></td></tr>
                 ))
               : items.length === 0
-              ? <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-[var(--wl-text-placeholder)]">No hay proyectos. Crea el primero.</td></tr>
+              ? <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-white/30">No hay proyectos. Crea el primero.</td></tr>
               : items.map((item) => (
-                  <tr key={item.id} className="hover:bg-[var(--wl-hover)]">
+                  <tr key={item.id} className="hover:bg-white/[0.02]">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-[var(--wl-text-primary)] truncate max-w-[180px]">{item.title}</p>
+                      <p className="font-medium text-white truncate max-w-[180px]">{item.title}</p>
                       {item.imageUrl && <a href={item.imageUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-brand-light/70 hover:text-brand-light flex items-center gap-0.5 mt-0.5"><ExternalLink className="h-2.5 w-2.5" />Ver imagen</a>}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <p className="text-xs text-[var(--wl-text-muted)] truncate max-w-[160px]">{item.tags || '—'}</p>
+                      <p className="text-xs text-white/40 truncate max-w-[160px]">{item.tags || '—'}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={() => toggleActive(item)} className={`text-xs font-medium ${item.active ? 'text-green-400' : 'text-[var(--wl-text-placeholder)]'} hover:opacity-80 transition-opacity flex items-center gap-1`}>
+                      <button onClick={() => toggleActive(item)} className={`text-xs font-medium ${item.active ? 'text-green-400' : 'text-white/30'} hover:opacity-80 transition-opacity flex items-center gap-1`}>
                         {item.active ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                         {item.active ? 'Sí' : 'No'}
                       </button>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-400/10" onClick={() => setDeleteTarget(item)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10" onClick={() => setDeleteTarget(item)}><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
                     </td>
                   </tr>
@@ -366,7 +366,7 @@ function PortfolioTab() {
 
       {/* Form dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-lg w-full">
+        <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg w-full">
           <DialogHeader><DialogTitle>{editItem ? 'Editar Proyecto' : 'Nuevo Proyecto'}</DialogTitle></DialogHeader>
           <form onSubmit={saveItem} className="space-y-4 pt-1">
             <Field label="Título *"><Input required value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} className={inputCls} placeholder="Nombre del proyecto" /></Field>
@@ -386,10 +386,10 @@ function PortfolioTab() {
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="pf-active" checked={form.active} onChange={(e) => setForm((p) => ({ ...p, active: e.target.checked }))} className="accent-brand" />
-              <label htmlFor="pf-active" className="text-sm text-[var(--wl-text-secondary)]">Visible en el sitio</label>
+              <label htmlFor="pf-active" className="text-sm text-white/70">Visible en el sitio</label>
             </div>
             <div className="flex gap-3 pt-1">
-              <Button type="button" variant="outline" onClick={() => setFormOpen(false)} className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]">Cancelar</Button>
+              <Button type="button" variant="outline" onClick={() => setFormOpen(false)} className="flex-1 border-white/[0.08] text-white/70 hover:text-white">Cancelar</Button>
               <Button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand-dark text-white">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : editItem ? 'Guardar' : 'Crear'}</Button>
             </div>
           </form>
@@ -397,16 +397,16 @@ function PortfolioTab() {
       </Dialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+        <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center"><AlertTriangle className="w-5 h-5 text-red-400" /></div>
-              <AlertDialogTitle className="text-[var(--wl-text-primary)]">¿Eliminar proyecto?</AlertDialogTitle>
+              <AlertDialogTitle className="text-white">¿Eliminar proyecto?</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-[var(--wl-text-muted)]">Se eliminará &ldquo;{deleteTarget?.title}&rdquo;. Esta acción no se puede deshacer.</AlertDialogDescription>
+            <AlertDialogDescription className="text-white/50">Se eliminará &ldquo;{deleteTarget?.title}&rdquo;. Esta acción no se puede deshacer.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={deleteItem} disabled={deleting} className="bg-red-500 hover:bg-red-600 text-white">{deleting ? 'Eliminando…' : 'Eliminar'}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -495,20 +495,20 @@ function TestimonialsTab() {
   return (
     <>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-[var(--wl-text-muted)]">{items.length} testimonio{items.length !== 1 ? 's' : ''}</p>
+        <p className="text-sm text-white/50">{items.length} testimonio{items.length !== 1 ? 's' : ''}</p>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={fetchItems} className="h-8 w-8 border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"><RefreshCw className="h-3.5 w-3.5" /></Button>
+          <Button variant="outline" size="icon" onClick={fetchItems} className="h-8 w-8 border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06]"><RefreshCw className="h-3.5 w-3.5" /></Button>
           <Button size="sm" onClick={openCreate} className="bg-brand hover:bg-brand-dark text-white gap-1.5 h-8 px-3 text-xs"><Plus className="h-3.5 w-3.5" />Nuevo</Button>
         </div>
       </div>
 
       <div className="glass-card rounded-xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead><tr className="border-b border-[var(--wl-border)]">
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase">Cliente</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase hidden md:table-cell">Testimonio</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase">Visible</th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-[var(--wl-text-muted)] uppercase">Acciones</th>
+          <thead><tr className="border-b border-white/[0.06]">
+            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase">Cliente</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase hidden md:table-cell">Testimonio</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase">Visible</th>
+            <th className="px-4 py-3 text-right text-xs font-medium text-white/40 uppercase">Acciones</th>
           </tr></thead>
           <tbody className="divide-y divide-white/[0.04]">
             {loading
@@ -516,26 +516,26 @@ function TestimonialsTab() {
                   <tr key={i}><td className="px-4 py-3"><Skeleton className="h-4 w-32" /></td><td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-4 w-48" /></td><td className="px-4 py-3"><Skeleton className="h-4 w-8" /></td><td className="px-4 py-3"><Skeleton className="h-7 w-16 ml-auto" /></td></tr>
                 ))
               : items.length === 0
-              ? <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-[var(--wl-text-placeholder)]">No hay testimonios. Crea el primero.</td></tr>
+              ? <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-white/30">No hay testimonios. Crea el primero.</td></tr>
               : items.map((item) => (
-                  <tr key={item.id} className="hover:bg-[var(--wl-hover)]">
+                  <tr key={item.id} className="hover:bg-white/[0.02]">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-[var(--wl-text-primary)]">{item.name}</p>
-                      <p className="text-xs text-[var(--wl-text-muted)]">{[item.role, item.company].filter(Boolean).join(' · ')}</p>
+                      <p className="font-medium text-white">{item.name}</p>
+                      <p className="text-xs text-white/40">{[item.role, item.company].filter(Boolean).join(' · ')}</p>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <p className="text-xs text-[var(--wl-text-muted)] truncate max-w-xs">{item.text}</p>
+                      <p className="text-xs text-white/40 truncate max-w-xs">{item.text}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={() => toggleActive(item)} className={`text-xs font-medium ${item.active ? 'text-green-400' : 'text-[var(--wl-text-placeholder)]'} hover:opacity-80 flex items-center gap-1`}>
+                      <button onClick={() => toggleActive(item)} className={`text-xs font-medium ${item.active ? 'text-green-400' : 'text-white/30'} hover:opacity-80 flex items-center gap-1`}>
                         {item.active ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                         {item.active ? 'Sí' : 'No'}
                       </button>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-400/10" onClick={() => setDeleteTarget(item)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10" onClick={() => setDeleteTarget(item)}><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
                     </td>
                   </tr>
@@ -546,7 +546,7 @@ function TestimonialsTab() {
 
       {/* Form dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-lg w-full">
+        <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg w-full">
           <DialogHeader><DialogTitle>{editItem ? 'Editar Testimonio' : 'Nuevo Testimonio'}</DialogTitle></DialogHeader>
           <form onSubmit={saveItem} className="space-y-4 pt-1">
             <div className="grid grid-cols-2 gap-3">
@@ -564,10 +564,10 @@ function TestimonialsTab() {
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="tm-active" checked={form.active} onChange={(e) => setForm((p) => ({ ...p, active: e.target.checked }))} className="accent-brand" />
-              <label htmlFor="tm-active" className="text-sm text-[var(--wl-text-secondary)]">Visible en el sitio</label>
+              <label htmlFor="tm-active" className="text-sm text-white/70">Visible en el sitio</label>
             </div>
             <div className="flex gap-3 pt-1">
-              <Button type="button" variant="outline" onClick={() => setFormOpen(false)} className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]">Cancelar</Button>
+              <Button type="button" variant="outline" onClick={() => setFormOpen(false)} className="flex-1 border-white/[0.08] text-white/70 hover:text-white">Cancelar</Button>
               <Button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand-dark text-white">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : editItem ? 'Guardar' : 'Crear'}</Button>
             </div>
           </form>
@@ -575,16 +575,16 @@ function TestimonialsTab() {
       </Dialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+        <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center"><AlertTriangle className="w-5 h-5 text-red-400" /></div>
-              <AlertDialogTitle className="text-[var(--wl-text-primary)]">¿Eliminar testimonio?</AlertDialogTitle>
+              <AlertDialogTitle className="text-white">¿Eliminar testimonio?</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-[var(--wl-text-muted)]">Se eliminará el testimonio de &ldquo;{deleteTarget?.name}&rdquo;. Esta acción no se puede deshacer.</AlertDialogDescription>
+            <AlertDialogDescription className="text-white/50">Se eliminará el testimonio de &ldquo;{deleteTarget?.name}&rdquo;. Esta acción no se puede deshacer.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={deleteItem} disabled={deleting} className="bg-red-500 hover:bg-red-600 text-white">{deleting ? 'Eliminando…' : 'Eliminar'}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -673,20 +673,20 @@ function TeamTab() {
   return (
     <>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-[var(--wl-text-muted)]">{items.length} miembro{items.length !== 1 ? 's' : ''}</p>
+        <p className="text-sm text-white/50">{items.length} miembro{items.length !== 1 ? 's' : ''}</p>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={fetchItems} className="h-8 w-8 border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"><RefreshCw className="h-3.5 w-3.5" /></Button>
+          <Button variant="outline" size="icon" onClick={fetchItems} className="h-8 w-8 border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06]"><RefreshCw className="h-3.5 w-3.5" /></Button>
           <Button size="sm" onClick={openCreate} className="bg-brand hover:bg-brand-dark text-white gap-1.5 h-8 px-3 text-xs"><Plus className="h-3.5 w-3.5" />Nuevo</Button>
         </div>
       </div>
 
       <div className="glass-card rounded-xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead><tr className="border-b border-[var(--wl-border)]">
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase">Miembro</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase hidden md:table-cell">Cargo</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase">Visible</th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-[var(--wl-text-muted)] uppercase">Acciones</th>
+          <thead><tr className="border-b border-white/[0.06]">
+            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase">Miembro</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase hidden md:table-cell">Cargo</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase">Visible</th>
+            <th className="px-4 py-3 text-right text-xs font-medium text-white/40 uppercase">Acciones</th>
           </tr></thead>
           <tbody className="divide-y divide-white/[0.04]">
             {loading
@@ -694,26 +694,26 @@ function TeamTab() {
                   <tr key={i}><td className="px-4 py-3"><Skeleton className="h-4 w-32" /></td><td className="px-4 py-3 hidden md:table-cell"><Skeleton className="h-4 w-24" /></td><td className="px-4 py-3"><Skeleton className="h-4 w-8" /></td><td className="px-4 py-3"><Skeleton className="h-7 w-16 ml-auto" /></td></tr>
                 ))
               : items.length === 0
-              ? <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-[var(--wl-text-placeholder)]">No hay miembros. Crea el primero.</td></tr>
+              ? <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-white/30">No hay miembros. Crea el primero.</td></tr>
               : items.map((item) => (
-                  <tr key={item.id} className="hover:bg-[var(--wl-hover)]">
+                  <tr key={item.id} className="hover:bg-white/[0.02]">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-[var(--wl-text-primary)] truncate max-w-[180px]">{item.name}</p>
+                      <p className="font-medium text-white truncate max-w-[180px]">{item.name}</p>
                       {item.imageUrl && <a href={item.imageUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-brand-light/70 hover:text-brand-light flex items-center gap-0.5 mt-0.5"><ExternalLink className="h-2.5 w-2.5" />Ver foto</a>}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <p className="text-xs text-[var(--wl-text-muted)] truncate max-w-[160px]">{item.role || '—'}</p>
+                      <p className="text-xs text-white/40 truncate max-w-[160px]">{item.role || '—'}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={() => toggleActive(item)} className={`text-xs font-medium ${item.isActive ? 'text-green-400' : 'text-[var(--wl-text-placeholder)]'} hover:opacity-80 transition-opacity flex items-center gap-1`}>
+                      <button onClick={() => toggleActive(item)} className={`text-xs font-medium ${item.isActive ? 'text-green-400' : 'text-white/30'} hover:opacity-80 transition-opacity flex items-center gap-1`}>
                         {item.isActive ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                         {item.isActive ? 'Sí' : 'No'}
                       </button>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-400/10" onClick={() => setDeleteTarget(item)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10" onClick={() => setDeleteTarget(item)}><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
                     </td>
                   </tr>
@@ -724,7 +724,7 @@ function TeamTab() {
 
       {/* Form dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)] max-w-lg w-full">
+        <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg w-full">
           <DialogHeader><DialogTitle>{editItem ? 'Editar Miembro' : 'Nuevo Miembro'}</DialogTitle></DialogHeader>
           <form onSubmit={saveItem} className="space-y-4 pt-1">
             <div className="grid grid-cols-2 gap-3">
@@ -741,10 +741,10 @@ function TeamTab() {
             <Field label="Orden"><Input type="number" value={form.order} onChange={(e) => setForm((p) => ({ ...p, order: Number(e.target.value) }))} className={inputCls} /></Field>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="tm2-active" checked={form.isActive} onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))} className="accent-brand" />
-              <label htmlFor="tm2-active" className="text-sm text-[var(--wl-text-secondary)]">Visible en el carrusel</label>
+              <label htmlFor="tm2-active" className="text-sm text-white/70">Visible en el carrusel</label>
             </div>
             <div className="flex gap-3 pt-1">
-              <Button type="button" variant="outline" onClick={() => setFormOpen(false)} className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]">Cancelar</Button>
+              <Button type="button" variant="outline" onClick={() => setFormOpen(false)} className="flex-1 border-white/[0.08] text-white/70 hover:text-white">Cancelar</Button>
               <Button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand-dark text-white">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : editItem ? 'Guardar' : 'Crear'}</Button>
             </div>
           </form>
@@ -752,16 +752,16 @@ function TeamTab() {
       </Dialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+        <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center"><AlertTriangle className="w-5 h-5 text-red-400" /></div>
-              <AlertDialogTitle className="text-[var(--wl-text-primary)]">¿Eliminar miembro?</AlertDialogTitle>
+              <AlertDialogTitle className="text-white">¿Eliminar miembro?</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-[var(--wl-text-muted)]">Se eliminará a &ldquo;{deleteTarget?.name}&rdquo; del carrusel. Esta acción no se puede deshacer.</AlertDialogDescription>
+            <AlertDialogDescription className="text-white/50">Se eliminará a &ldquo;{deleteTarget?.name}&rdquo; del carrusel. Esta acción no se puede deshacer.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={deleteItem} disabled={deleting} className="bg-red-500 hover:bg-red-600 text-white">{deleting ? 'Eliminando…' : 'Eliminar'}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -775,20 +775,20 @@ function TeamTab() {
 export default function CMSContent() {
   return (
     <Tabs defaultValue="settings" className="space-y-4">
-      <TabsList className="bg-[var(--wl-hover)] border border-[var(--wl-border)] flex-wrap h-auto gap-1 p-1">
-        <TabsTrigger value="settings" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-1.5">
+      <TabsList className="bg-white/[0.04] border border-white/[0.06] flex-wrap h-auto gap-1 p-1">
+        <TabsTrigger value="settings" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-1.5">
           <Settings2 className="h-4 w-4" />
           Configuración
         </TabsTrigger>
-        <TabsTrigger value="portfolio" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-1.5">
+        <TabsTrigger value="portfolio" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-1.5">
           <FolderOpen className="h-4 w-4" />
           Portafolio
         </TabsTrigger>
-        <TabsTrigger value="testimonials" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-1.5">
+        <TabsTrigger value="testimonials" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-1.5">
           <MessageSquareQuote className="h-4 w-4" />
           Testimonios
         </TabsTrigger>
-        <TabsTrigger value="team" className="data-[state=active]:bg-brand data-[state=active]:text-white text-[var(--wl-text-muted)] gap-1.5">
+        <TabsTrigger value="team" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-1.5">
           <Users className="h-4 w-4" />
           Equipo
         </TabsTrigger>

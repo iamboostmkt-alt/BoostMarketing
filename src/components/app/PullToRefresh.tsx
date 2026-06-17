@@ -61,7 +61,7 @@ export function PullToRefresh({ onRefresh, children, className }: PullToRefreshP
       {showIndicator && (
         <div className="absolute left-0 right-0 z-50 flex justify-center pointer-events-none"
           style={{ top: refreshing ? 8 : Math.max(0, pullDistance - 44), transition: refreshing ? 'top 0.2s' : 'none' }}>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--wl-border)] bg-[var(--wl-elevated)]"
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-[#1a1d2e]"
             style={{ transform: `scale(${0.6 + progress * 0.4})`, transition: 'transform 0.1s' }}>
             {refreshing
               ? <div className="h-4 w-4 rounded-full border-2 border-violet-400/30 border-t-violet-400 animate-spin" />

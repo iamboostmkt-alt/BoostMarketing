@@ -45,11 +45,11 @@ export default function SupportTicket({ onClose }: SupportTicketProps) {
         <CheckCircle2 className="w-7 h-7 text-green-400" />
       </div>
       <div>
-        <p className="text-sm font-medium text-[var(--wl-text-primary)]">Ticket enviado</p>
-        <p className="text-xs text-[var(--wl-text-muted)] mt-1">Notificamos el problema a soporte técnico.<br/>En breve recibirás respuesta.</p>
+        <p className="text-sm font-medium text-white/90">Ticket enviado</p>
+        <p className="text-xs text-white/40 mt-1">Notificamos el problema a soporte técnico.<br/>En breve recibirás respuesta.</p>
       </div>
       {onClose && (
-        <button onClick={onClose} className="text-xs text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors mt-2">
+        <button onClick={onClose} className="text-xs text-white/30 hover:text-white/60 transition-colors mt-2">
           Cerrar
         </button>
       )}
@@ -64,26 +64,26 @@ export default function SupportTicket({ onClose }: SupportTicketProps) {
             <LifeBuoy className="w-3.5 h-3.5 text-yellow-300" />
           </div>
           <div>
-            <p className="text-sm font-medium text-[var(--wl-text-primary)]">Reportar problema</p>
-            <p className="text-[11px] text-[var(--wl-text-placeholder)]">Te responderemos a la brevedad</p>
+            <p className="text-sm font-medium text-white/90">Reportar problema</p>
+            <p className="text-[11px] text-white/30">Te responderemos a la brevedad</p>
           </div>
         </div>
         {onClose && (
-          <button onClick={onClose} className="p-1 rounded text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors">
+          <button onClick={onClose} className="p-1 rounded text-white/20 hover:text-white/50 transition-colors">
             <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
       <div className="space-y-1">
-        <p className="text-[11px] text-[var(--wl-text-muted)] uppercase tracking-wider">Tipo de reporte</p>
+        <p className="text-[11px] text-white/40 uppercase tracking-wider">Tipo de reporte</p>
         <div className="grid grid-cols-1 gap-1">
           {TICKET_TYPES.map(t => (
             <button key={t.value} onClick={() => setType(t.value)}
               className={`text-left px-3 py-2 rounded-lg text-xs transition-all ${
                 type === t.value
-                  ? 'text-[var(--wl-text-primary)] font-medium'
-                  : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)]'
+                  ? 'text-white font-medium'
+                  : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03]'
               }`}
               style={type === t.value ? { background: 'rgba(124,58,237,0.18)', border: '1px solid rgba(124,58,237,0.3)' } : { border: '1px solid transparent' }}
             >
@@ -94,22 +94,22 @@ export default function SupportTicket({ onClose }: SupportTicketProps) {
       </div>
 
       <div className="space-y-1">
-        <p className="text-[11px] text-[var(--wl-text-muted)] uppercase tracking-wider">Describe el problema</p>
+        <p className="text-[11px] text-white/40 uppercase tracking-wider">Describe el problema</p>
         <textarea style={{ fontSize: "16px" }}
           value={message}
           onChange={e => setMessage(e.target.value)}
           placeholder="Describe el problema con el mayor detalle posible..."
           rows={4}
           maxLength={2000}
-          className="w-full bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-xl px-3 py-2.5 text-sm text-[var(--wl-text-secondary)] placeholder:text-[var(--wl-text-placeholder)] resize-none focus:outline-none focus:border-violet-500/40 transition-colors"
+          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white/80 placeholder:text-white/20 resize-none focus:outline-none focus:border-violet-500/40 transition-colors"
         />
-        <p className="text-[10px] text-[var(--wl-text-placeholder)] text-right">{message.length}/2000</p>
+        <p className="text-[10px] text-white/20 text-right">{message.length}/2000</p>
       </div>
 
       <button
         onClick={handleSubmit}
         disabled={sending || !message.trim()}
-        className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-[var(--wl-text-primary)] transition-all disabled:opacity-40"
+        className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white transition-all disabled:opacity-40"
         style={{ background: 'linear-gradient(135deg, #7c3aed, #9333ea)' }}
       >
         <Send className="w-3.5 h-3.5" />

@@ -25,14 +25,14 @@ export default function ContactCard({ contact, onClick, index = 0 }: ContactCard
       onClick={() => onClick(contact)}
       className="
         cursor-grab active:cursor-grabbing
-        bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-xl p-4
+        bg-[#15151c] border border-white/[0.06] rounded-xl p-4
         hover:border-white/[0.12] hover:shadow-[0_0_20px_rgba(124,58,237,0.08)]
         transition-all duration-200 group
       "
     >
       {/* Name + Status Badge */}
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h4 className="text-sm font-semibold text-[var(--wl-text-primary)] truncate leading-tight">
+        <h4 className="text-sm font-semibold text-white/90 truncate leading-tight">
           {contact.name}
         </h4>
         <span
@@ -47,20 +47,20 @@ export default function ContactCard({ contact, onClick, index = 0 }: ContactCard
       {/* Company */}
       {contact.company && (
         <div className="flex items-center gap-1.5 mb-1.5">
-          <Building2 className="w-3.5 h-3.5 text-[var(--wl-text-placeholder)] shrink-0" />
-          <span className="text-xs text-[var(--wl-text-muted)] truncate">{contact.company}</span>
+          <Building2 className="w-3.5 h-3.5 text-white/30 shrink-0" />
+          <span className="text-xs text-white/40 truncate">{contact.company}</span>
         </div>
       )}
 
       {/* Email */}
       <div className="flex items-center gap-1.5 mb-2">
-        <Mail className="w-3.5 h-3.5 text-[var(--wl-text-placeholder)] shrink-0" />
-        <span className="text-xs text-[var(--wl-text-muted)] truncate">{contact.email}</span>
+        <Mail className="w-3.5 h-3.5 text-white/30 shrink-0" />
+        <span className="text-xs text-white/40 truncate">{contact.email}</span>
       </div>
 
       {/* Deal Value */}
       {contact.value > 0 && (
-        <div className="flex items-center gap-1.5 pt-2 border-t border-[var(--wl-border-subtle)]">
+        <div className="flex items-center gap-1.5 pt-2 border-t border-white/[0.04]">
           <DollarSign className="w-3.5 h-3.5 text-green-400/60 shrink-0" />
           <span className="text-xs font-semibold text-green-400/80">
             {formatCurrency(contact.value)}

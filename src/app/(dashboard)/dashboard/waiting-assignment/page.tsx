@@ -10,15 +10,15 @@ export default function WaitingAssignmentPage() {
       </div>
 
       <div className="space-y-2 max-w-md">
-        <h1 className="text-2xl font-bold text-[var(--wl-text-primary)]">Tu cuenta está siendo configurada</h1>
-        <p className="text-[var(--wl-text-muted)] text-sm leading-relaxed">
+        <h1 className="text-2xl font-bold text-white">Tu cuenta está siendo configurada</h1>
+        <p className="text-white/50 text-sm leading-relaxed">
           Tu project manager será asignado pronto. Recibirás acceso completo al portal
           una vez que tu equipo haya configurado tu cuenta.
         </p>
       </div>
 
       <div className="flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2 text-sm text-[var(--wl-text-muted)]">
+        <div className="flex items-center gap-2 text-sm text-white/40">
           <UserCheck className="w-4 h-4" />
           <span>Esperando asignación de Project Manager</span>
         </div>
@@ -33,7 +33,7 @@ export default function WaitingAssignmentPage() {
         </div>
       </div>
 
-      <p className="text-xs text-[var(--wl-text-placeholder)] max-w-xs">
+      <p className="text-xs text-white/25 max-w-xs">
         Si crees que esto es un error, contacta a tu agencia o escribe a soporte.
       </p>
     </div>

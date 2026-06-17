@@ -9,6 +9,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       defaultTheme="dark"
       enableSystem={false}
       storageKey="wl-theme"
+      themes={['dark', 'light']}
       disableTransitionOnChange={false}
     >
       {children}

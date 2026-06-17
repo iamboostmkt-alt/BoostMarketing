@@ -29,7 +29,7 @@ export function SplashScreen() {
     <div
       className="fixed inset-0 z-[99999] flex flex-col items-center justify-center"
       style={{
-        background: 'var(--wl-bg)',
+        background: '#07070A',
         transition: 'opacity 0.4s ease',
         opacity: fadeOut ? 0 : 1,
         pointerEvents: fadeOut ? 'none' : 'all',
@@ -52,10 +52,10 @@ export function SplashScreen() {
       </div>
 
       {/* Nombre */}
-      <p className="text-[22px] font-semibold text-[var(--wl-text-primary)] tracking-tight">
+      <p className="text-[22px] font-semibold text-white tracking-tight">
         Weeklink
       </p>
-      <p className="text-[13px] text-[var(--wl-text-muted)] mt-1">
+      <p className="text-[13px] text-white/35 mt-1">
         Organiza tareas, clientes y proyectos
       </p>
 

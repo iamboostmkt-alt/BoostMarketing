@@ -44,10 +44,10 @@ export default function MeetingsPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-[22px] font-semibold tracking-tight">Reuniones</h1>
-          <p className="text-[13px] text-[var(--wl-text-muted)] mt-0.5">{upcoming} próximas reuniones</p>
+          <p className="text-[13px] text-white/40 mt-0.5">{upcoming} próximas reuniones</p>
         </div>
         <a href="/dashboard/calendar"
-          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-[13px] font-medium text-[var(--wl-text-primary)] hover:bg-primary/90 transition-colors">
+          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-[13px] font-medium text-white hover:bg-primary/90 transition-colors">
           <Plus className="h-4 w-4" strokeWidth={2} />
           Nueva reunión
         </a>
@@ -58,7 +58,7 @@ export default function MeetingsPage() {
         {(['all','pending','confirmed','completed'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors ${
-              filter === f ? 'bg-primary/15 text-primary' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)]'
+              filter === f ? 'bg-primary/15 text-primary' : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
             }`}>
             {f === 'all' ? 'Todas' : STATUS_STYLE[f]?.label}
           </button>
@@ -72,8 +72,8 @@ export default function MeetingsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Calendar className="h-10 w-10 text-[var(--wl-text-placeholder)]" strokeWidth={1.5} />
-          <p className="text-[13px] text-[var(--wl-text-placeholder)]">No hay reuniones</p>
+          <Calendar className="h-10 w-10 text-white/10" strokeWidth={1.5} />
+          <p className="text-[13px] text-white/30">No hay reuniones</p>
           <a href="/dashboard/calendar" className="text-[12px] text-primary hover:underline">
             Ir al calendario →
           </a>
@@ -86,14 +86,14 @@ export default function MeetingsPage() {
             const style = STATUS_STYLE[m.status] ?? STATUS_STYLE.pending;
             return (
               <div key={m.id}
-                className="rounded-2xl border border-[var(--wl-border)] bg-[var(--wl-hover)] p-4 hover:bg-[var(--wl-hover)] transition-colors">
+                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.03] transition-colors">
                 <div className="flex items-start gap-4">
                   {/* Fecha */}
-                  <div className="shrink-0 flex flex-col items-center justify-center rounded-xl bg-[var(--wl-hover)] border border-[var(--wl-border)] w-14 h-14">
-                    <span className="text-[11px] font-medium text-[var(--wl-text-muted)] uppercase">
+                  <div className="shrink-0 flex flex-col items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.06] w-14 h-14">
+                    <span className="text-[11px] font-medium text-white/40 uppercase">
                       {date.toLocaleDateString('es-MX', { month: 'short' })}
                     </span>
-                    <span className="text-[20px] font-bold text-[var(--wl-text-primary)] leading-none">
+                    <span className="text-[20px] font-bold text-white/90 leading-none">
                       {date.getDate()}
                     </span>
                   </div>
@@ -101,7 +101,7 @@ export default function MeetingsPage() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-[14px] font-semibold text-[var(--wl-text-primary)] truncate">{m.name}</h3>
+                      <h3 className="text-[14px] font-semibold text-white/90 truncate">{m.name}</h3>
                       <span className="shrink-0 rounded-md px-2 py-0.5 text-[10px] font-medium"
                         style={{ background: style.bg, color: style.color }}>
                         {style.label}
@@ -113,7 +113,7 @@ export default function MeetingsPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-4 text-[12px] text-[var(--wl-text-muted)]">
+                    <div className="flex items-center gap-4 text-[12px] text-white/40">
                       <span className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" strokeWidth={1.75} />
                         {date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
@@ -127,7 +127,7 @@ export default function MeetingsPage() {
                     </div>
 
                     {m.notes && (
-                      <p className="mt-1.5 text-[12px] text-[var(--wl-text-placeholder)] line-clamp-1">{m.notes}</p>
+                      <p className="mt-1.5 text-[12px] text-white/30 line-clamp-1">{m.notes}</p>
                     )}
                   </div>
 
@@ -141,7 +141,7 @@ export default function MeetingsPage() {
                       </a>
                     )}
                     <a href="/dashboard/calendar"
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] transition-colors">
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/[0.06] transition-colors">
                       <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.75} />
                     </a>
                   </div>

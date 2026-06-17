@@ -234,7 +234,7 @@ export default function TaskCard({
 
           {/* Title + description */}
           <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-medium tracking-tight text-[var(--wl-text-primary)] truncate leading-snug">
+            <h4 className="text-sm font-medium tracking-tight text-white/90 truncate leading-snug">
               {task.title}
             </h4>
             {(task as any).client && (
@@ -244,7 +244,7 @@ export default function TaskCard({
               </p>
             )}
             {task.description && (
-              <p className="mt-0.5 text-xs text-[var(--wl-text-muted)] truncate">
+              <p className="mt-0.5 text-xs text-white/35 truncate">
                 {task.description}
               </p>
             )}
@@ -263,14 +263,14 @@ export default function TaskCard({
                 {(!canEdit || canEdit(task)) && (
                   <button
                     onClick={(e) => { e.stopPropagation(); onEdit(task); }}
-                    className="flex h-6 w-6 items-center justify-center rounded-md text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] transition-colors"
+                    className="flex h-6 w-6 items-center justify-center rounded-md text-white/30 hover:text-white/70 hover:bg-white/[0.06] transition-colors"
                   >
                     <Pencil className="h-3 w-3" />
                   </button>
                 )}
                 <button
                   onClick={(e) => { e.stopPropagation(); onDelete(task); }}
-                  className="flex h-6 w-6 items-center justify-center rounded-md text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                  className="flex h-6 w-6 items-center justify-center rounded-md text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                 >
                   <Trash2 className="h-3 w-3" />
                 </button>
@@ -328,7 +328,7 @@ export default function TaskCard({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={(e) => { e.stopPropagation(); void onMarkPending(task); }}
-                  className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-[var(--wl-text-muted)] hover:bg-[var(--wl-hover)] transition-colors"
+                  className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-white/40 hover:bg-white/[0.05] transition-colors"
                 >
                   <RotateCcw className="h-3 w-3" />
                   Reabrir
@@ -357,21 +357,21 @@ export default function TaskCard({
               onClick={(e) => { e.stopPropagation(); setShowStatusPicker(false); }}
             >
               <div
-                className="w-full max-w-sm rounded-t-2xl bg-[var(--wl-surface)] border-t border-[var(--wl-border)] pb-8"
+                className="w-full max-w-sm rounded-t-2xl bg-[#0F1117] border-t border-white/[0.08] pb-8"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Handle */}
                 <div className="flex justify-center pt-3 pb-2">
                   <div className="w-10 h-1 rounded-full bg-white/20" />
                 </div>
-                <p className="text-[12px] font-medium text-[var(--wl-text-muted)] text-center pb-3 truncate px-4">
+                <p className="text-[12px] font-medium text-white/40 text-center pb-3 truncate px-4">
                   {task.title}
                 </p>
                 <div className="divide-y divide-white/[0.05]">
                   {STATUS_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
-                      className={`w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors active:bg-[var(--wl-hover)] ${task.status === opt.value ? 'bg-[var(--wl-hover)]' : ''}`}
+                      className={`w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors active:bg-white/[0.05] ${task.status === opt.value ? 'bg-white/[0.04]' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowStatusPicker(false);
@@ -379,7 +379,7 @@ export default function TaskCard({
                       }}
                     >
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: opt.color }} />
-                      <span className={`text-[14px] ${task.status === opt.value ? 'text-[var(--wl-text-primary)] font-medium' : 'text-[var(--wl-text-secondary)]'}`}>
+                      <span className={`text-[14px] ${task.status === opt.value ? 'text-white font-medium' : 'text-white/70'}`}>
                         {opt.label}
                       </span>
                       {task.status === opt.value && (
@@ -396,7 +396,7 @@ export default function TaskCard({
           {task.dueDate && (
             <div className={cn(
               "flex items-center gap-1 text-[11px]",
-              overdue ? "text-red-400" : "text-[var(--wl-text-muted)]"
+              overdue ? "text-red-400" : "text-white/35"
             )}>
               <Calendar className="h-3 w-3" />
               {formatDueDate(task.dueDate)}
@@ -418,7 +418,7 @@ export default function TaskCard({
                 </Avatar>
               ))}
               {assignees.length > 3 && (
-                <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#0d0d0d] bg-[#1a1a1a] text-[9px] text-[var(--wl-text-muted)] ring-1 ring-white/10">
+                <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#0d0d0d] bg-[#1a1a1a] text-[9px] text-white/50 ring-1 ring-white/10">
                   +{assignees.length - 3}
                 </div>
               )}
@@ -443,7 +443,7 @@ export default function TaskCard({
           });
           return (
             <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] text-[var(--wl-text-placeholder)] flex items-center gap-1">
+              <span className="text-[10px] text-white/30 flex items-center gap-1">
                 📎 {validAtts.length} {validAtts.length === 1 ? 'archivo' : 'archivos'}
               </span>
               {imgs.slice(0, 4).map((a: any, i: number) => (
@@ -453,26 +453,26 @@ export default function TaskCard({
                 </div>
               ))}
               {nonImgs.slice(0, 2).map((a: any, i: number) => (
-                <div key={i} className="h-6 w-6 rounded-full bg-[var(--wl-hover)] border border-[var(--wl-border)] flex items-center justify-center shrink-0"
+                <div key={i} className="h-6 w-6 rounded-full bg-white/[0.06] border border-white/[0.10] flex items-center justify-center shrink-0"
                   title={a.fileName}>
-                  <span className="text-[8px] text-[var(--wl-text-muted)]">
+                  <span className="text-[8px] text-white/50">
                     {(a.fileName || '').split('.').pop()?.slice(0,3).toUpperCase() || '📎'}
                   </span>
                 </div>
               ))}
               {validAtts.length > 6 && (
-                <span className="text-[9px] text-[var(--wl-text-placeholder)]">+{validAtts.length - 6}</span>
+                <span className="text-[9px] text-white/30">+{validAtts.length - 6}</span>
               )}
             </div>
           );
         })()}
 
         {/* ── Subtasks ── */}
-        <div className="mt-2.5 border-t border-[var(--wl-border-subtle)] pt-2.5">
+        <div className="mt-2.5 border-t border-white/[0.04] pt-2.5">
           <div className="flex items-center justify-between">
             <button
               onClick={(e) => { e.stopPropagation(); setSubtasksOpen(!subtasksOpen); }}
-              className="flex items-center gap-1.5 text-[11px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] transition-colors"
+              className="flex items-center gap-1.5 text-[11px] text-white/35 hover:text-white/60 transition-colors"
             >
               {subtasksOpen
                 ? <ChevronDown className="h-3 w-3" />
@@ -480,13 +480,13 @@ export default function TaskCard({
               }
               <span>Subtareas</span>
               {totalCount > 0 && (
-                <span className="text-[var(--wl-text-placeholder)]">{completedCount}/{totalCount}</span>
+                <span className="text-white/25">{completedCount}/{totalCount}</span>
               )}
             </button>
 
             {/* Progress bar */}
             {totalCount > 0 && (
-              <div className="flex-1 mx-3 h-1 rounded-full bg-[var(--wl-hover)] overflow-hidden">
+              <div className="flex-1 mx-3 h-1 rounded-full bg-white/[0.06] overflow-hidden">
                 <motion.div
                   className="h-full bg-[#7c3aed] rounded-full origin-left"
                   initial={{ scaleX: 0 }}
@@ -498,7 +498,7 @@ export default function TaskCard({
 
             <button
               onClick={(e) => { e.stopPropagation(); onAddSubtask?.(task); }}
-              className="flex items-center gap-0.5 text-[11px] text-[var(--wl-text-placeholder)] hover:text-purple-400/70 transition-colors"
+              className="flex items-center gap-0.5 text-[11px] text-white/25 hover:text-purple-400/70 transition-colors"
             >
               <Plus className="h-3 w-3" />
               Agregar
@@ -517,7 +517,7 @@ export default function TaskCard({
               >
                 <div className="mt-2 space-y-1 pl-4">
                   {loadingSubtasks && (
-                    <p className="text-[11px] text-[var(--wl-text-placeholder)] py-1">Cargando...</p>
+                    <p className="text-[11px] text-white/25 py-1">Cargando...</p>
                   )}
                   {!loadingSubtasks && subtasks.map((sub, i) => (
                     <motion.div
@@ -525,7 +525,7 @@ export default function TaskCard({
                       initial={{ opacity: 0, x: -4 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.15, delay: i * 0.04 }}
-                      className="flex items-center gap-2 py-1 px-2 rounded-md hover:bg-[var(--wl-hover)] transition-colors"
+                      className="flex items-center gap-2 py-1 px-2 rounded-md hover:bg-white/[0.02] transition-colors"
                     >
                       <div className={cn(
                         "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors",
@@ -534,21 +534,21 @@ export default function TaskCard({
                           : "border-white/15"
                       )}>
                         {sub.status === "completed" && (
-                          <Check className="h-2 w-2 text-[var(--wl-text-primary)]" />
+                          <Check className="h-2 w-2 text-white" />
                         )}
                       </div>
                       <span className={cn(
                         "text-[11px] flex-1 truncate",
                         sub.status === "completed"
-                          ? "text-[var(--wl-text-placeholder)] line-through"
-                          : "text-[var(--wl-text-primary)]/55"
+                          ? "text-white/25 line-through"
+                          : "text-white/55"
                       )}>
                         {sub.title}
                       </span>
                     </motion.div>
                   ))}
                   {!loadingSubtasks && subtasks.length === 0 && (
-                    <p className="text-[11px] text-[var(--wl-text-placeholder)] py-1 px-2">Sin subtareas</p>
+                    <p className="text-[11px] text-white/20 py-1 px-2">Sin subtareas</p>
                   )}
                 </div>
               </motion.div>

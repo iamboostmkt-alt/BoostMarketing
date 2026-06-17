@@ -67,7 +67,7 @@ function isOverdue(dateStr: string | null): boolean {
 function FileIcon({ type }: { type: string }) {
   if (type.startsWith('image/')) return <ImageIcon className="w-4 h-4 text-blue-400" />;
   if (type === 'application/pdf') return <FileText className="w-4 h-4 text-red-400" />;
-  return <FileText className="w-4 h-4 text-[var(--wl-text-muted)]" />;
+  return <FileText className="w-4 h-4 text-white/40" />;
 }
 
 // Descripción colapsable — muestra máximo 5 líneas, botón "ver más" si es larga
@@ -76,10 +76,10 @@ function DescriptionBlock({ description }: { description: string }) {
   const lines = description.split('\n');
   const isTall = lines.length > 5 || description.length > 280;
   return (
-    <div className="rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)] px-3 py-2.5">
-      <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-1.5">Descripción</p>
+    <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] px-3 py-2.5">
+      <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1.5">Descripción</p>
       <div className={`relative ${!expanded && isTall ? 'max-h-24 overflow-hidden' : ''}`}>
-        <p className="text-xs text-[var(--wl-text-secondary)] leading-relaxed whitespace-pre-wrap">{description}</p>
+        <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{description}</p>
         {!expanded && isTall && (
           <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none"
             style={{ background: 'linear-gradient(to bottom, transparent, rgba(15,17,23,0.95))' }} />
@@ -419,16 +419,16 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
         <SheetContent
           side="right"
-          className="bg-[var(--wl-surface)] border-l border-[var(--wl-border)] text-[var(--wl-text-primary)] w-full sm:max-w-lg flex flex-col p-0 overflow-hidden gap-0"
+          className="bg-[#15151c] border-l border-white/[0.08] text-white w-full sm:max-w-lg flex flex-col p-0 overflow-hidden gap-0"
         >
           {/* Header */}
-          <div className="px-5 pt-5 pb-4 border-b border-[var(--wl-border)] shrink-0">
+          <div className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
             <div className="flex items-start gap-3 pr-6">
               <div className="w-9 h-9 rounded-xl bg-brand/15 flex items-center justify-center shrink-0 mt-0.5">
                 <CheckSquare className="w-4 h-4 text-brand-light" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-base font-semibold text-[var(--wl-text-primary)] leading-snug">{task.title}</p>
+                <p className="text-base font-semibold text-white leading-snug">{task.title}</p>
                 <div className="flex flex-wrap items-center gap-2 mt-1.5">
                   <div className="relative">
                     <button
@@ -439,33 +439,33 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                       <svg className="w-2.5 h-2.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     {statusDropOpen && (
-                      <div className="absolute top-full left-0 mt-1 z-50 bg-[#16161e] border border-[var(--wl-border)] rounded-xl shadow-2xl p-1 min-w-[180px] max-h-[60vh] overflow-y-auto">
+                      <div className="absolute top-full left-0 mt-1 z-50 bg-[#16161e] border border-white/[0.08] rounded-xl shadow-2xl p-1 min-w-[180px] max-h-[60vh] overflow-y-auto">
                         {isManager ? (
                           <>
-                            <p className="px-3 pt-1.5 pb-0.5 text-[9px] font-semibold text-[var(--wl-text-placeholder)] uppercase tracking-wider">Progreso</p>
+                            <p className="px-3 pt-1.5 pb-0.5 text-[9px] font-semibold text-white/20 uppercase tracking-wider">Progreso</p>
                             {(['pending','in_progress'] as const).map(s => (
                               <button key={s} onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, s); }}
-                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-[var(--wl-hover)] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
+                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
                                 <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'pending':'Por hacer','in_progress':'En curso'} as Record<string,string>)[s]}</span>
-                                {task.status === s && <svg className="w-3 h-3 text-[var(--wl-text-secondary)] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                                {task.status === s && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                               </button>
                             ))}
-                            <div className="my-1 border-t border-[var(--wl-border-subtle)]" />
-                            <p className="px-3 pt-1 pb-0.5 text-[9px] font-semibold text-[var(--wl-text-placeholder)] uppercase tracking-wider">Revisión</p>
+                            <div className="my-1 border-t border-white/[0.05]" />
+                            <p className="px-3 pt-1 pb-0.5 text-[9px] font-semibold text-white/20 uppercase tracking-wider">Revisión</p>
                             {(['internal_review','client_review','changes_requested'] as const).map(s => (
                               <button key={s} onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, s); }}
-                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-[var(--wl-hover)] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
+                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
                                 <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'internal_review':'Revisión interna','client_review':'En revisión cliente','changes_requested':'Cambios pedidos'} as Record<string,string>)[s]}</span>
-                                {task.status === s && <svg className="w-3 h-3 text-[var(--wl-text-secondary)] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                                {task.status === s && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                               </button>
                             ))}
-                            <div className="my-1 border-t border-[var(--wl-border-subtle)]" />
-                            <p className="px-3 pt-1 pb-0.5 text-[9px] font-semibold text-[var(--wl-text-placeholder)] uppercase tracking-wider">Cierre</p>
+                            <div className="my-1 border-t border-white/[0.05]" />
+                            <p className="px-3 pt-1 pb-0.5 text-[9px] font-semibold text-white/20 uppercase tracking-wider">Cierre</p>
                             {(['approved','scheduled','published','completed'] as const).map(s => (
                               <button key={s} onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, s); }}
-                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-[var(--wl-hover)] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
+                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
                                 <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'approved':'Aprobado','scheduled':'Programado','published':'Publicado','completed':'Completado'} as Record<string,string>)[s]}</span>
-                                {task.status === s && <svg className="w-3 h-3 text-[var(--wl-text-secondary)] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                                {task.status === s && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                               </button>
                             ))}
                           </>
@@ -473,9 +473,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                           <>
                             {(['pending','in_progress','internal_review','changes_requested'] as const).map(s => (
                               <button key={s} onClick={async () => { setStatusDropOpen(false); if (onStatusChange) await onStatusChange(task.id, s); }}
-                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-[var(--wl-hover)] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
+                                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-white/[0.05] ${task.status === s ? 'opacity-100' : 'opacity-50'}`}>
                                 <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[s]}>{({'pending':'Por hacer','in_progress':'En curso','internal_review':'En revisión','changes_requested':'Con observaciones'} as Record<string,string>)[s]}</span>
-                                {task.status === s && <svg className="w-3 h-3 text-[var(--wl-text-secondary)] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                                {task.status === s && <svg className="w-3 h-3 text-white/60 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                               </button>
                             ))}
                           </>
@@ -483,9 +483,9 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                       </div>
                     )}
                   </div>
-                  <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-[var(--wl-text-muted)]'}`}>{priorityLabels[task.priority] || task.priority}</span>
+                  <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>{priorityLabels[task.priority] || task.priority}</span>
                   {overdue && (<span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-400"><AlertCircle className="w-3 h-3" />Vencida</span>)}
-                  {attachments.length > 0 && (<span className="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--wl-text-muted)]"><Paperclip className="w-3 h-3" />{attachments.length}</span>)}
+                  {attachments.length > 0 && (<span className="inline-flex items-center gap-1 text-[10px] font-medium text-white/40"><Paperclip className="w-3 h-3" />{attachments.length}</span>)}
                 </div>
               </div>
             </div>
@@ -500,25 +500,25 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
           >
             {/* Meta */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-              <div className="flex items-start gap-2 text-[var(--wl-text-muted)]">
+              <div className="flex items-start gap-2 text-white/50">
                 <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-0.5">Inicio</p>
-                  <p className="text-[var(--wl-text-secondary)] text-xs">{fmtDate(task.startDate)}</p>
+                  <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Inicio</p>
+                  <p className="text-white/70 text-xs">{fmtDate(task.startDate)}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2 text-[var(--wl-text-muted)]">
+              <div className="flex items-start gap-2 text-white/50">
                 <CalendarIcon className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${overdue ? 'text-red-400' : ''}`} />
                 <div>
-                  <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-0.5">Fecha límite</p>
-                  <p className={`text-xs ${overdue ? 'text-red-400' : 'text-[var(--wl-text-secondary)]'}`}>{fmtDate(task.dueDate)}</p>
+                  <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Fecha límite</p>
+                  <p className={`text-xs ${overdue ? 'text-red-400' : 'text-white/70'}`}>{fmtDate(task.dueDate)}</p>
                 </div>
               </div>
               {assignees.length > 0 && (
                 <div className="flex items-start gap-2 col-span-1 sm:col-span-2">
-                  <Users className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[var(--wl-text-muted)]" />
+                  <Users className="w-3.5 h-3.5 shrink-0 mt-0.5 text-white/50" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-1">{assignees.length === 1 ? 'Responsable' : `Responsables (${assignees.length})`}</p>
+                    <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">{assignees.length === 1 ? 'Responsable' : `Responsables (${assignees.length})`}</p>
                     {assignees.length === 1 ? (
                       <div className="flex items-center gap-1.5">
                         <Avatar className="h-5 w-5">
@@ -527,12 +527,12 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                             {initials(assignees[0].name, assignees[0].email)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-xs text-[var(--wl-text-secondary)]">{assignees[0].name || assignees[0].email}</span>
+                        <span className="text-xs text-white/70">{assignees[0].name || assignees[0].email}</span>
                       </div>
                     ) : (
                       <div className="space-y-1">
                         <UserAvatarStack users={assignees as ActivityAssignee[]} max={6} size="sm" />
-                        <p className="text-[10px] text-[var(--wl-text-muted)] mt-1">{assignees.map((u) => u.name || u.email).join(', ')}</p>
+                        <p className="text-[10px] text-white/40 mt-1">{assignees.map((u) => u.name || u.email).join(', ')}</p>
                       </div>
                     )}
                   </div>
@@ -540,10 +540,10 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               )}
               {task.client && (
                 <div className="flex items-start gap-2 col-span-1 sm:col-span-2">
-                  <Building2 className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[var(--wl-text-muted)]" />
+                  <Building2 className="w-3.5 h-3.5 shrink-0 mt-0.5 text-white/50" />
                   <div>
-                    <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider mb-0.5">Cliente</p>
-                    <p className="text-xs text-[var(--wl-text-secondary)]">{task.client.name}{task.client.company && <span className="text-[var(--wl-text-muted)]"> — {task.client.company}</span>}</p>
+                    <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Cliente</p>
+                    <p className="text-xs text-white/70">{task.client.name}{task.client.company && <span className="text-white/40"> — {task.client.company}</span>}</p>
                   </div>
                 </div>
               )}
@@ -596,7 +596,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                         value={deliveryLink}
                         onChange={e => setDeliveryLink(e.target.value)}
                         placeholder="https://drive.google.com/... o link del trabajo"
-                        className="flex-1 h-9 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-hover)] px-3 text-[12px] text-[var(--wl-text-secondary)] placeholder-white/20 outline-none focus:border-violet-500/40"
+                        className="flex-1 h-9 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/20 outline-none focus:border-violet-500/40"
                       />
                       <button type="button"
                         disabled={!deliveryLink.trim()}
@@ -617,7 +617,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                           setShowLinkInput(false);
                           setShowCompleteAfterUpload(true);
                         }}
-                        className="h-9 px-3 rounded-lg text-[12px] font-medium text-[var(--wl-text-primary)] bg-violet-600 hover:bg-violet-700 disabled:opacity-40 transition-colors">
+                        className="h-9 px-3 rounded-lg text-[12px] font-medium text-white bg-violet-600 hover:bg-violet-700 disabled:opacity-40 transition-colors">
                         Guardar
                       </button>
                     </div>
@@ -628,17 +628,17 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               {/* Modal confirmar completar tras subir archivo — solo team */}
               {showCompleteAfterUpload && (
                 <div className="rounded-xl border border-violet-500/30 p-3.5 space-y-3" style={{ background: 'rgba(124,58,237,0.08)' }}>
-                  <p className="text-xs font-medium text-[var(--wl-text-secondary)]">✅ Archivo subido — ¿marcar tarea como completada?</p>
+                  <p className="text-xs font-medium text-white/80">✅ Archivo subido — ¿marcar tarea como completada?</p>
                   <div className="flex gap-2">
                     <button onClick={async () => {
                       setShowCompleteAfterUpload(false);
                       if (onStatusChange) await onStatusChange(task!.id, 'internal_review');
                       toast.success('Tarea enviada a revisión ✓');
-                    }} className="flex-1 py-1.5 rounded-lg text-xs font-medium text-[var(--wl-text-primary)] transition-all" style={{ background: '#7c3aed' }}>
+                    }} className="flex-1 py-1.5 rounded-lg text-xs font-medium text-white transition-all" style={{ background: '#7c3aed' }}>
                       Sí, enviar a revisión
                     </button>
                     <button onClick={() => { setShowCompleteAfterUpload(false); toast.success('Archivo subido ✓'); }}
-                      className="px-3 py-1.5 rounded-lg text-xs text-[var(--wl-text-muted)] border border-[var(--wl-border)] hover:text-[var(--wl-text-primary)] transition-colors">
+                      className="px-3 py-1.5 rounded-lg text-xs text-white/40 border border-white/[0.08] hover:text-white transition-colors">
                       No por ahora
                     </button>
                   </div>
@@ -649,11 +649,11 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               {isManager && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Paperclip className="w-3.5 h-3.5 text-[var(--wl-text-muted)]" />
-                    <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider">Archivos adjuntos {attachments.length > 0 && `(${attachments.length})`}</p>
+                    <Paperclip className="w-3.5 h-3.5 text-white/40" />
+                    <p className="text-[10px] text-white/30 uppercase tracking-wider">Archivos adjuntos {attachments.length > 0 && `(${attachments.length})`}</p>
                   </div>
                   <label htmlFor="file-upload-input" className="cursor-pointer">
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[var(--wl-hover)] hover:bg-white/[0.1] border border-[var(--wl-border)] rounded-md text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] text-xs transition-colors">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-md text-white/60 hover:text-white text-xs transition-colors">
                       {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
                       {isUploading ? 'Subiendo...' : 'Adjuntar'}
                     </div>
@@ -663,8 +663,8 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               {/* TEAM: label archivos pequeño */}
               {!isManager && attachments.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <Paperclip className="w-3 h-3 text-[var(--wl-text-placeholder)]" />
-                  <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider">Archivos ({attachments.length})</p>
+                  <Paperclip className="w-3 h-3 text-white/30" />
+                  <p className="text-[10px] text-white/25 uppercase tracking-wider">Archivos ({attachments.length})</p>
                 </div>
               )}
 
@@ -685,13 +685,13 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 if (refImages.length === 0) return null;
                 return (
                   <div className="space-y-2">
-                    <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider flex items-center gap-1.5">
+                    <p className="text-[10px] text-white/25 uppercase tracking-wider flex items-center gap-1.5">
                       <span>🖼</span> Referencias visuales ({refImages.length})
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {refImages.map((r: any, i: number) => (
                         <div key={i} className="group cursor-pointer" onClick={() => setLightbox(r.url)}>
-                          <div className="relative rounded-xl overflow-hidden bg-[var(--wl-hover)] border border-[var(--wl-border)]"
+                          <div className="relative rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06]"
                             style={{ aspectRatio: '1' }}>
                             <img
                               src={r.url}
@@ -708,18 +708,18 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-end pb-2 gap-1">
                               <div className="flex gap-1.5">
                                 <button onClick={e => { e.stopPropagation(); setLightbox(r.url); }}
-                                  className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded-lg text-[var(--wl-text-primary)] text-[10px] hover:bg-white/30">
+                                  className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded-lg text-white text-[10px] hover:bg-white/30">
                                   <ExternalLink className="w-3 h-3" /> Ver
                                 </button>
                                 <button onClick={e => { e.stopPropagation(); downloadFile(r.url, r.title || r.name || 'referencia'); }}
-                                  className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded-lg text-[var(--wl-text-primary)] text-[10px] hover:bg-white/30">
+                                  className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded-lg text-white text-[10px] hover:bg-white/30">
                                   <Download className="w-3 h-3" /> Descargar
                                 </button>
                               </div>
                             </div>
                           </div>
                           {r.title && (
-                            <p className="text-[10px] text-[var(--wl-text-placeholder)] truncate mt-1 px-0.5">{r.title}</p>
+                            <p className="text-[10px] text-white/30 truncate mt-1 px-0.5">{r.title}</p>
                           )}
                         </div>
                       ))}
@@ -744,11 +744,11 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 if (refLinks.length === 0) return null;
                 return (
                   <div className="space-y-1.5">
-                    <p className="text-[10px] text-[var(--wl-text-placeholder)] uppercase tracking-wider">Referencias ({refLinks.length})</p>
+                    <p className="text-[10px] text-white/25 uppercase tracking-wider">Referencias ({refLinks.length})</p>
                     {refLinks.map((r: any, i: number) => (
                       <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)] hover:border-violet-500/30 transition-colors group">
-                        <span className="text-[10px] font-bold px-1 rounded bg-white/10 text-[var(--wl-text-muted)] uppercase">{r.type || 'link'}</span>
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05] hover:border-violet-500/30 transition-colors group">
+                        <span className="text-[10px] font-bold px-1 rounded bg-white/10 text-white/40 uppercase">{r.type || 'link'}</span>
                         <span className="text-[11px] text-blue-400 group-hover:text-blue-300 truncate">{r.title || r.url}</span>
                       </a>
                     ))}
@@ -761,7 +761,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 <div className="grid grid-cols-2 gap-2">
                   {imageAttachments.map(a => (
                     <div key={a.id} className="flex flex-col gap-1">
-                      <div className="relative group aspect-square rounded-lg overflow-hidden bg-[var(--wl-hover)] border border-[var(--wl-border)] cursor-pointer" onClick={() => setLightbox(a.fileUrl)}>
+                      <div className="relative group aspect-square rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.06] cursor-pointer" onClick={() => setLightbox(a.fileUrl)}>
                         <img src={a.fileUrl} alt={a.fileName} className="w-full h-full object-cover" />
                         {(a as any).reviewStatus === 'approved' && (
                           <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(34,197,94,0.18)', border: '2px solid rgba(34,197,94,0.5)', borderRadius: '8px' }} />
@@ -770,8 +770,8 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                           <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(234,179,8,0.18)', border: '2px solid rgba(234,179,8,0.5)', borderRadius: '8px' }} />
                         )}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                          <button onClick={e => { e.stopPropagation(); window.open(a.fileUrl, '_blank'); }} className="p-1 bg-white/20 rounded hover:bg-white/30"><ExternalLink className="w-3 h-3 text-[var(--wl-text-primary)]" /></button>
-                          <button onClick={e => { e.stopPropagation(); handleDelete(a.id); }} className="p-1 bg-red-500/40 rounded hover:bg-red-500/60" disabled={deletingId === a.id}><Trash2 className="w-3 h-3 text-[var(--wl-text-primary)]" /></button>
+                          <button onClick={e => { e.stopPropagation(); window.open(a.fileUrl, '_blank'); }} className="p-1 bg-white/20 rounded hover:bg-white/30"><ExternalLink className="w-3 h-3 text-white" /></button>
+                          <button onClick={e => { e.stopPropagation(); handleDelete(a.id); }} className="p-1 bg-red-500/40 rounded hover:bg-red-500/60" disabled={deletingId === a.id}><Trash2 className="w-3 h-3 text-white" /></button>
                         </div>
                       </div>
                       {/* Badge reviewStatus */}
@@ -786,7 +786,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                             ✏️ Cambios pedidos
                           </div>
                           {(a as any).reviewComment && (
-                            <p className="text-[10px] text-[var(--wl-text-muted)] px-1 truncate" title={(a as any).reviewComment}>{(a as any).reviewComment}</p>
+                            <p className="text-[10px] text-white/40 px-1 truncate" title={(a as any).reviewComment}>{(a as any).reviewComment}</p>
                           )}
                         </div>
                       )}
@@ -809,7 +809,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                         <div className="p-2 rounded-lg border border-violet-500/20 space-y-1.5" style={{ background: 'rgba(124,58,237,0.06)' }}>
                           <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
                             placeholder={`(${a.fileName}) correcciones: ...`} rows={2}
-                            className="w-full bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-lg px-2 py-1.5 text-[10px] text-[var(--wl-text-secondary)] placeholder:text-[var(--wl-text-placeholder)] resize-none focus:outline-none focus:border-violet-500/40" />
+                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-2 py-1.5 text-[10px] text-white/70 placeholder:text-white/20 resize-none focus:outline-none focus:border-violet-500/40" />
                           <button onClick={async () => {
                             if (!reviewComment.trim()) { toast.error('Escribe las correcciones'); return; }
                             await handleAttachmentReview(a.id, 'changes_requested', reviewComment);
@@ -827,15 +827,15 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
 
               {/* File list */}
               {loadingFiles ? (
-                <div className="flex items-center gap-2 text-[var(--wl-text-placeholder)] text-xs py-2"><Loader2 className="w-3 h-3 animate-spin" />Cargando archivos...</div>
+                <div className="flex items-center gap-2 text-white/30 text-xs py-2"><Loader2 className="w-3 h-3 animate-spin" />Cargando archivos...</div>
               ) : (
                 <div className="space-y-1.5">
                   {attachments.filter(a => !a.fileType.startsWith('image/')).map(a => (
-                    <div key={a.id} className="flex items-center gap-3 p-2.5 bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)] rounded-lg group hover:bg-[var(--wl-hover)] transition-colors">
+                    <div key={a.id} className="flex items-center gap-3 p-2.5 bg-white/[0.03] border border-white/[0.05] rounded-lg group hover:bg-white/[0.05] transition-colors">
                       <FileIcon type={a.fileType} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-[var(--wl-text-secondary)] truncate">{a.fileName}</p>
-                        <p className="text-[10px] text-[var(--wl-text-placeholder)]">
+                        <p className="text-xs text-white/80 truncate">{a.fileName}</p>
+                        <p className="text-[10px] text-white/30">
                           {fmtSize(a.fileSize)} · {a.user.name || 'Usuario'} · {fmtDate(a.createdAt)}
                           {(a as any).task?.parentTaskId === null && (a as any).task?.id !== task?.id && (
                             <span className="ml-1 text-violet-400/60">↳ {(a as any).task?.title}</span>
@@ -846,14 +846,14 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                         </p>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => window.open(a.fileUrl, '_blank')} className="p-1 hover:bg-[var(--wl-border)] rounded text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)]"><Download className="w-3 h-3" /></button>
+                        <button onClick={() => window.open(a.fileUrl, '_blank')} className="p-1 hover:bg-white/[0.08] rounded text-white/40 hover:text-white"><Download className="w-3 h-3" /></button>
                         {isManager && (
                           <button onClick={() => { setReviewingFile(reviewingFile === a.id ? null : a.id); setReviewComment(''); }}
-                            className="p-1 hover:bg-violet-500/20 rounded text-[var(--wl-text-muted)] hover:text-violet-400" title="Revisar entrega">
+                            className="p-1 hover:bg-violet-500/20 rounded text-white/40 hover:text-violet-400" title="Revisar entrega">
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           </button>
                         )}
-                        <button onClick={() => handleDelete(a.id)} disabled={deletingId === a.id} className="p-1 hover:bg-red-500/20 rounded text-[var(--wl-text-muted)] hover:text-red-400">
+                        <button onClick={() => handleDelete(a.id)} disabled={deletingId === a.id} className="p-1 hover:bg-red-500/20 rounded text-white/40 hover:text-red-400">
                           {deletingId === a.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                         </button>
                       </div>
@@ -873,7 +873,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                           <div className="space-y-1.5">
                             <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
                               placeholder="Escribe un comentario..." rows={2}
-                              className="w-full bg-[var(--wl-hover)] border border-[var(--wl-border)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--wl-text-secondary)] placeholder:text-[var(--wl-text-placeholder)] resize-none focus:outline-none focus:border-violet-500/40" />
+                              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-white/70 placeholder:text-white/20 resize-none focus:outline-none focus:border-violet-500/40" />
                             <button onClick={() => { if (reviewComment.trim()) handleFileReview('comments', a.id, a.fileName, (a as any).task?.parentTaskId ? (a as any).task?.id : undefined); else toast.error('Escribe un comentario'); }}
                               disabled={reviewLoading || !reviewComment.trim()}
                               className="w-full py-1.5 rounded-lg text-[11px] font-medium text-blue-300 border border-blue-500/30 hover:bg-blue-500/10 transition-colors disabled:opacity-40">
@@ -885,42 +885,42 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                     </div>
                   ))}
                   {attachments.length === 0 && !loadingFiles && (
-                    <p className="text-[10px] text-[var(--wl-text-placeholder)] text-center py-3">No hay archivos adjuntos</p>
+                    <p className="text-[10px] text-white/20 text-center py-3">No hay archivos adjuntos</p>
                   )}
                 </div>
               )}
             </div>
 
             {/* Subtareas */}
-            <div className="border border-[var(--wl-border)] rounded-xl overflow-hidden">
+            <div className="border border-white/[0.06] rounded-xl overflow-hidden">
               <button
                 type="button"
                 onClick={() => setSubtasksOpen(v => !v)}
-                className="w-full flex items-center justify-between px-3 py-2.5 bg-[var(--wl-hover)] hover:bg-[var(--wl-hover)] transition-colors"
+                className="w-full flex items-center justify-between px-3 py-2.5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
               >
-                <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-[11px] font-medium text-white/40 uppercase tracking-wider">
                   <CheckSquare className="w-3 h-3 text-violet-400/60" />
                   Subtareas{subtasks.length > 0 && ` (${subtasks.length})`}{subtasks.length === 0 && ' —'}
                 </div>
-                <svg className={`w-3.5 h-3.5 text-[var(--wl-text-placeholder)] transition-transform ${subtasksOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                <svg className={`w-3.5 h-3.5 text-white/20 transition-transform ${subtasksOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
               </button>
               {subtasksOpen && (
                 <div className="px-3 pb-3 pt-2 space-y-1.5">
                   {subtasks.length === 0 ? (
-                    <p className="text-[11px] text-[var(--wl-text-placeholder)] text-center py-2">Sin subtareas</p>
+                    <p className="text-[11px] text-white/20 text-center py-2">Sin subtareas</p>
                   ) : (
                     subtasks.map((sub) => (
-                      <div key={sub.id} className="rounded-lg bg-[var(--wl-hover)] border border-[var(--wl-border-subtle)] overflow-hidden group/sub">
+                      <div key={sub.id} className="rounded-lg bg-white/[0.02] border border-white/[0.04] overflow-hidden group/sub">
                         {/* Fila principal */}
                         <div className="flex items-center gap-2.5 py-1.5 px-2">
-                          <span className="text-[var(--wl-text-placeholder)] text-xs shrink-0">↳</span>
-                          <span className={`flex-1 text-xs font-medium ${sub.status === 'completed' ? 'text-[var(--wl-text-placeholder)] line-through' : 'text-[var(--wl-text-secondary)]'}`}>
+                          <span className="text-white/20 text-xs shrink-0">↳</span>
+                          <span className={`flex-1 text-xs font-medium ${sub.status === 'completed' ? 'text-white/30 line-through' : 'text-white/70'}`}>
                             {sub.title}
                           </span>
                           <span className={`text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ${
                             sub.status === 'completed' ? 'bg-green-500/15 text-green-300' :
                             sub.status === 'in_progress' ? 'bg-blue-500/15 text-blue-300' :
-                            'bg-[var(--wl-hover)] text-[var(--wl-text-placeholder)]'
+                            'bg-white/[0.06] text-white/30'
                           }`}>
                             {sub.status === 'completed' ? 'Lista' : sub.status === 'in_progress' ? 'En progreso' : 'Pendiente'}
                           </span>
@@ -928,7 +928,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                           <button
                             type="button"
                             onClick={() => { setEditingSubtask(sub); setNewSubtaskOpen(true); }}
-                            className="p-1 rounded text-[var(--wl-text-placeholder)] hover:text-violet-400 hover:bg-violet-500/10 transition-all shrink-0"
+                            className="p-1 rounded text-white/20 hover:text-violet-400 hover:bg-violet-500/10 transition-all shrink-0"
                             title="Editar subtarea"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -941,7 +941,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                               await fetch(`/api/tasks?id=${sub.id}`, { method: 'DELETE' });
                               setSubtasks(prev => prev.filter(s => s.id !== sub.id));
                             }}
-                            className="p-1 rounded text-[var(--wl-text-placeholder)] hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                            className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
                             title="Eliminar subtarea"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -963,18 +963,18 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
             </div>
 
             {/* Created by */}
-            {task.user && (<div className="text-[10px] text-[var(--wl-text-placeholder)]">Creada por {task.user.name || task.user.email}</div>)}
+            {task.user && (<div className="text-[10px] text-white/30">Creada por {task.user.name || task.user.email}</div>)}
           </motion.div>
 
           {/* Footer */}
-          <div className="border-t border-[var(--wl-border)] px-5 py-3 flex items-center gap-2 shrink-0 flex-wrap">
+          <div className="border-t border-white/[0.06] px-5 py-3 flex items-center gap-2 shrink-0 flex-wrap">
             {onEdit && (() => {
               // TEAM_MEMBER solo edita tareas que él creó
               // PM/Admin pueden editar cualquier tarea
               const isCreator = (task as any).userId === currentUserId;
               return isManager || isCreator;
             })() && (
-              <Button size="sm" variant="outline" onClick={() => onEdit(task)} className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] gap-1.5 text-xs h-8">
+              <Button size="sm" variant="outline" onClick={() => onEdit(task)} className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-1.5 text-xs h-8">
                 <Pencil className="w-3.5 h-3.5" />Editar tarea
               </Button>
             )}
@@ -992,7 +992,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 toast.success('Tarea devuelta a revisión');
                 onClose();
               }}
-                className="gap-1.5 text-xs h-8 border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-amber-300 hover:border-amber-500/30 hover:bg-amber-500/10">
+                className="gap-1.5 text-xs h-8 border-white/[0.08] text-white/40 hover:text-amber-300 hover:border-amber-500/30 hover:bg-amber-500/10">
                 <RotateCcw className="w-3.5 h-3.5" />Devolver
               </Button>
             )}
@@ -1031,7 +1031,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 <CheckCircle2 className="w-3.5 h-3.5" />Aprobar tarea
               </Button>
             )}
-            <Button size="sm" variant="ghost" onClick={onClose} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)] text-xs h-8 ml-auto">
+            <Button size="sm" variant="ghost" onClick={onClose} className="text-white/30 hover:text-white hover:bg-white/[0.06] text-xs h-8 ml-auto">
               <X className="w-3.5 h-3.5 mr-1" />Cerrar
             </Button>
           </div>
@@ -1060,7 +1060,7 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
       {/* Lightbox */}
       {lightbox && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
-          <button className="absolute top-4 right-4 text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]" onClick={() => setLightbox(null)}><X className="w-6 h-6" /></button>
+          <button className="absolute top-4 right-4 text-white/60 hover:text-white" onClick={() => setLightbox(null)}><X className="w-6 h-6" /></button>
           <img src={lightbox} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg" onClick={e => e.stopPropagation()} />
         </div>
       )}

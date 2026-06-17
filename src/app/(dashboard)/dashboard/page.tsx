@@ -103,21 +103,21 @@ function RealTaskCard({ task, compact = false }: { task: Task; compact?: boolean
   if (compact) {
     return (
       <motion.div
-        className="relative overflow-hidden rounded-xl border border-[var(--wl-border)] px-3 py-2.5"
+        className="relative overflow-hidden rounded-xl border border-white/[0.06] px-3 py-2.5"
         style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0e14 100%)' }}
         whileHover={{ borderColor: 'rgba(124,58,237,0.2)' }}
       >
         <div className="absolute top-0 left-0 h-full w-0.5 rounded-full" style={{ background: bar }} />
         <div className="pl-2">
           <div className="flex items-center justify-between gap-2 mb-0.5">
-            <span className="text-[12px] font-medium text-[var(--wl-text-primary)] truncate flex-1">{task.title}</span>
+            <span className="text-[12px] font-medium text-white/85 truncate flex-1">{task.title}</span>
             <span className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-medium" style={style}>
               {(statusLabels[task.status] || task.status).split(' ')[0]}
             </span>
           </div>
           <div className="flex items-center gap-2">
             {task.dueDate && (
-              <span className={`text-[10px] flex items-center gap-1 ${new Date(task.dueDate) < new Date() ? 'text-red-400' : 'text-[var(--wl-text-placeholder)]'}`}>
+              <span className={`text-[10px] flex items-center gap-1 ${new Date(task.dueDate) < new Date() ? 'text-red-400' : 'text-white/30'}`}>
                 <Clock className="h-3 w-3" />
                 {new Date(task.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
               </span>
@@ -125,7 +125,7 @@ function RealTaskCard({ task, compact = false }: { task: Task; compact?: boolean
             {task.client?.name && (
               <span className="text-[10px] text-violet-400/50 truncate">{task.client.name}</span>
             )}
-            <span className={`text-[10px] font-medium ml-auto ${priorityColors[task.priority] || 'text-[var(--wl-text-placeholder)]'}`}>
+            <span className={`text-[10px] font-medium ml-auto ${priorityColors[task.priority] || 'text-white/30'}`}>
               {priorityLabels[task.priority] || task.priority}
             </span>
           </div>
@@ -136,7 +136,7 @@ function RealTaskCard({ task, compact = false }: { task: Task; compact?: boolean
 
   return (
     <motion.div
-      className="relative overflow-hidden rounded-[14px] border border-[var(--wl-border)] p-4"
+      className="relative overflow-hidden rounded-[14px] border border-white/[0.06] p-4"
       style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0e14 100%)' }}
       whileHover={{ y: -2, borderColor: 'rgba(124,58,237,0.2)' }}
       transition={{ duration: 0.2 }}
@@ -147,13 +147,13 @@ function RealTaskCard({ task, compact = false }: { task: Task; compact?: boolean
       <div className="relative z-10 pl-3">
         {task.dueDate && (
           <div className="mb-2 flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-[var(--wl-text-muted)]" />
-            <span className={`text-[11px] ${new Date(task.dueDate) < new Date() ? 'text-red-400' : 'text-[var(--wl-text-muted)]'}`}>
+            <Clock className="h-3.5 w-3.5 text-white/35" />
+            <span className={`text-[11px] ${new Date(task.dueDate) < new Date() ? 'text-red-400' : 'text-white/35'}`}>
               {new Date(task.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
             </span>
           </div>
         )}
-        <h4 className="mb-2 text-[13px] leading-snug text-[var(--wl-text-primary)]">{task.title}</h4>
+        <h4 className="mb-2 text-[13px] leading-snug text-white/85">{task.title}</h4>
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium" style={style}>
             {statusLabels[task.status] || task.status}
@@ -163,7 +163,7 @@ function RealTaskCard({ task, compact = false }: { task: Task; compact?: boolean
           )}
         </div>
         <div className="flex items-center justify-between">
-          <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-[var(--wl-text-muted)]'}`}>
+          <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>
             {priorityLabels[task.priority] || task.priority}
           </span>
           {assignee && (
@@ -189,12 +189,12 @@ function MeetingCard({ meeting, compact = false }: { meeting: Appointment; compa
         <div className="h-7 w-7 rounded-lg bg-green-500/10 flex flex-col items-center justify-center shrink-0">
           <p className="text-[10px] font-bold text-green-300 leading-none">{d.getDate()}</p>
         </div>
-        <span className="text-[11px] text-[var(--wl-text-secondary)] truncate">{meeting.name}</span>
+        <span className="text-[11px] text-white/70 truncate">{meeting.name}</span>
       </div>
     );
   }
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--wl-border-subtle)]"
+    <div className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.04]"
       style={{ background: 'rgba(255,255,255,0.02)' }}>
       <div className="w-10 h-10 rounded-lg bg-green-500/10 flex flex-col items-center justify-center shrink-0">
         <p className="text-sm font-bold text-green-300 leading-none">{d.getDate()}</p>
@@ -203,8 +203,8 @@ function MeetingCard({ meeting, compact = false }: { meeting: Appointment; compa
         </p>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[var(--wl-text-primary)] truncate">{meeting.name}</p>
-        <p className="text-xs text-[var(--wl-text-muted)]">{d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</p>
+        <p className="text-sm font-medium text-white/90 truncate">{meeting.name}</p>
+        <p className="text-xs text-white/40">{d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</p>
       </div>
       {(meeting as any).meetLink && (
         <a href={(meeting as any).meetLink} target="_blank" rel="noopener noreferrer"
@@ -424,7 +424,7 @@ export default function DashboardPage() {
               return (
                 <motion.div
                   key={s.label}
-                  className="rounded-[14px] border border-[var(--wl-border)] p-5 group hover:border-[var(--wl-border)] transition-all overflow-hidden"
+                  className="rounded-[14px] border border-white/[0.06] p-5 group hover:border-white/[0.08] transition-all overflow-hidden"
                   style={{
                     background: 'linear-gradient(135deg, #080808 0%, #0e0e14 100%)',
                   }}
@@ -436,7 +436,7 @@ export default function DashboardPage() {
                   <div className="absolute right-0 bottom-0 w-20 h-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
                     style={{ background: 'radial-gradient(circle at bottom right, rgba(88,28,220,0.18) 0%, transparent 70%)' }} />
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] text-[var(--wl-text-muted)] truncate pr-2">{s.label}</span>
+                    <span className="text-[11px] text-white/35 truncate pr-2">{s.label}</span>
                     {s.change && (
                       <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${s.up ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                         {s.up ? '+' : ''}{s.change}
@@ -447,7 +447,7 @@ export default function DashboardPage() {
                     {loadingStats ? <Skeleton className="h-9 w-16" /> : (
                       <motion.span
                         key={String(s.value)}
-                        className="text-3xl font-semibold text-[var(--wl-text-primary)] leading-none"
+                        className="text-3xl font-semibold text-white/90 leading-none"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.4 }}
@@ -474,7 +474,7 @@ export default function DashboardPage() {
               {loadingTasks
                 ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)
                 : activeTasks.length === 0
-                  ? <p className="text-xs text-[var(--wl-text-placeholder)] text-center py-6">Sin tareas activas 🎉</p>
+                  ? <p className="text-xs text-white/30 text-center py-6">Sin tareas activas 🎉</p>
                   : activeTasks.slice(0, 6).map(t => (
                       <div key={t.id} className="flex items-center gap-2.5">
                         {/* Avatar con inicial */}
@@ -497,7 +497,7 @@ export default function DashboardPage() {
             </div>
             {!loadingTasks && activeTasks.length > 0 && (
               <Link href="/dashboard/tasks">
-                <button className="w-full text-[11px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors py-1.5 text-center border-t border-[var(--wl-border-subtle)]">
+                <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1.5 text-center border-t border-white/[0.04]">
                   Ver todas ({activeTasks.length}) →
                 </button>
               </Link>
@@ -511,7 +511,7 @@ export default function DashboardPage() {
             {loadingTasks
               ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)
               : overdueTasks.length === 0
-                ? <p className="text-xs text-[var(--wl-text-placeholder)] text-center py-6">Sin tareas vencidas ✓</p>
+                ? <p className="text-xs text-white/30 text-center py-6">Sin tareas vencidas ✓</p>
                 : overdueTasks.slice(0, isCompact ? 5 : 3).map(t => <RealTaskCard key={t.id} task={t} compact={isCompact} />)
             }
           </div>
@@ -523,12 +523,12 @@ export default function DashboardPage() {
             {loadingTasks
               ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-8 w-full my-1" />)
               : completedRecent.length === 0
-                ? <p className="text-xs text-[var(--wl-text-placeholder)] text-center py-6">Sin completadas esta semana</p>
+                ? <p className="text-xs text-white/30 text-center py-6">Sin completadas esta semana</p>
                 : completedRecent.slice(0, 5).map(t => (
                     <div key={t.id} className="flex items-center gap-3 py-2.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-green-400/60 shrink-0" />
-                      <span className="flex-1 text-xs text-[var(--wl-text-muted)] line-through truncate">{t.title}</span>
-                      {t.client?.name && <span className="text-[10px] text-[var(--wl-text-placeholder)] shrink-0">{t.client.name}</span>}
+                      <span className="flex-1 text-xs text-white/40 line-through truncate">{t.title}</span>
+                      {t.client?.name && <span className="text-[10px] text-white/20 shrink-0">{t.client.name}</span>}
                     </div>
                   ))
             }
@@ -539,12 +539,12 @@ export default function DashboardPage() {
         return (
           <div>
             <div className="flex items-center gap-2 flex-wrap mb-3">
-              <Filter className="w-3 h-3 text-[var(--wl-text-placeholder)] shrink-0" />
+              <Filter className="w-3 h-3 text-white/30 shrink-0" />
               <Select value={teamStatusFilter} onValueChange={setTeamStatusFilter}>
-                <SelectTrigger className="h-7 w-32 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-xs">
+                <SelectTrigger className="h-7 w-32 bg-white/[0.04] border-white/[0.08] text-white text-xs">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
                   <SelectItem value="all"         className="text-xs">Todos estados</SelectItem>
                   <SelectItem value="pending"     className="text-xs">Pendiente</SelectItem>
                   <SelectItem value="in_progress" className="text-xs">En progreso</SelectItem>
@@ -553,10 +553,10 @@ export default function DashboardPage() {
               </Select>
               {teamUsers.length > 0 && (
                 <Select value={teamUserFilter} onValueChange={setTeamUserFilter}>
-                  <SelectTrigger className="h-7 w-36 bg-[var(--wl-hover)] border-[var(--wl-border)] text-[var(--wl-text-primary)] text-xs">
+                  <SelectTrigger className="h-7 w-36 bg-white/[0.04] border-white/[0.08] text-white text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-[var(--wl-text-primary)]">
+                  <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
                     <SelectItem value="all" className="text-xs">Todos usuarios</SelectItem>
                     {teamUsers.map(u => (
                       <SelectItem key={u.id} value={u.id} className="text-xs">{u.name || u.email}</SelectItem>
@@ -574,12 +574,12 @@ export default function DashboardPage() {
                     </div>
                   ))
                 : filteredTeamTasks.length === 0
-                  ? <p className="text-xs text-[var(--wl-text-placeholder)] text-center py-6">No hay tareas con estos filtros</p>
+                  ? <p className="text-xs text-white/30 text-center py-6">No hay tareas con estos filtros</p>
                   : filteredTeamTasks.slice(0, 8).map(task => {
                       const owner = task.user;
                       const assignee = task.assignedUser;
                       return (
-                        <div key={task.id} className="flex items-center gap-3 py-2.5 hover:bg-[var(--wl-hover)] transition-colors rounded-lg -mx-1 px-1">
+                        <div key={task.id} className="flex items-center gap-3 py-2.5 hover:bg-white/[0.02] transition-colors rounded-lg -mx-1 px-1">
                           <Avatar className="h-8 w-8 shrink-0">
                             <AvatarImage src={(owner as any)?.image || undefined} />
                             <AvatarFallback
@@ -589,14 +589,14 @@ export default function DashboardPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[var(--wl-text-primary)] truncate">{task.title}</p>
+                            <p className="text-sm font-medium text-white/90 truncate">{task.title}</p>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              <span className="text-xs text-[var(--wl-text-muted)]">{owner?.name || owner?.email}</span>
+                              <span className="text-xs text-white/35">{owner?.name || owner?.email}</span>
                               {assignee && assignee.id !== owner?.id && (
-                                <span className="text-[10px] text-[var(--wl-text-placeholder)]">→ {assignee.name || assignee.email}</span>
+                                <span className="text-[10px] text-white/25">→ {assignee.name || assignee.email}</span>
                               )}
                               {task.dueDate && (
-                                <div className="flex items-center gap-0.5 text-xs text-[var(--wl-text-placeholder)]">
+                                <div className="flex items-center gap-0.5 text-xs text-white/25">
                                   <Clock className="w-3 h-3" />
                                   {new Date(task.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                                 </div>
@@ -614,7 +614,7 @@ export default function DashboardPage() {
             </div>
             {!loadingTeam && teamTasks.length > 20 && (
               <Link href="/dashboard/tasks">
-                <button className="w-full text-[11px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors py-2 text-center mt-2">
+                <button className="w-full text-[11px] text-white/30 hover:text-violet-400 transition-colors py-2 text-center mt-2">
                   Ver todas las tareas del equipo →
                 </button>
               </Link>
@@ -628,21 +628,21 @@ export default function DashboardPage() {
             {loadingMeet
               ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)
               : meetings.filter(m => new Date(m.date) >= now).length === 0
-                ? <p className="text-xs text-[var(--wl-text-placeholder)] text-center py-6">Sin reuniones próximas</p>
+                ? <p className="text-xs text-white/30 text-center py-6">Sin reuniones próximas</p>
                 : meetings.filter(m => new Date(m.date) >= now).slice(0, 5).map(m => {
                     const d = new Date(m.date);
                     const timeStr = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
                     const dateStr = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
                     const isToday = d.toDateString() === now.toDateString();
                     return (
-                      <div key={m.id} className="flex items-center gap-3 py-2.5 px-2 rounded-xl hover:bg-[var(--wl-hover)] transition-colors group">
+                      <div key={m.id} className="flex items-center gap-3 py-2.5 px-2 rounded-xl hover:bg-white/[0.03] transition-colors group">
                         <div className="w-16 shrink-0 text-right">
-                          <p className="text-sm font-semibold text-[var(--wl-text-secondary)]">{timeStr}</p>
-                          <p className="text-[10px] text-[var(--wl-text-placeholder)]">{isToday ? 'Hoy' : dateStr}</p>
+                          <p className="text-sm font-semibold text-white/80">{timeStr}</p>
+                          <p className="text-[10px] text-white/30">{isToday ? 'Hoy' : dateStr}</p>
                         </div>
                         <div className="w-px h-8 rounded-full shrink-0" style={{ background: 'rgba(124,58,237,0.4)' }} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-[var(--wl-text-primary)] truncate">{m.name}</p>
+                          <p className="text-xs font-medium text-white/85 truncate">{m.name}</p>
                           {(m as any).assignedUsers?.length > 0 && (
                             <div className="flex -space-x-1 mt-1">
                               {(m as any).assignedUsers.slice(0, 3).map((au: any) => (
@@ -691,7 +691,7 @@ export default function DashboardPage() {
               : chatMessages.length === 0
                 ? (
                   <div className="flex flex-col items-center justify-center py-6 gap-2">
-                    <p className="text-xs text-[var(--wl-text-placeholder)]">Sin mensajes recientes</p>
+                    <p className="text-xs text-white/30">Sin mensajes recientes</p>
                     <Link href="/dashboard/chat">
                       <button className="text-[11px] text-violet-400/70 hover:text-violet-400 transition-colors">
                         Ir al chat →
@@ -711,19 +711,19 @@ export default function DashboardPage() {
                       return `hace ${Math.floor(hrs / 24)}d`;
                     })();
                     return (
-                      <div key={msg.id} className="flex items-start gap-3 py-3 hover:bg-[var(--wl-hover)] transition-colors -mx-1 px-1 rounded-lg">
+                      <div key={msg.id} className="flex items-start gap-3 py-3 hover:bg-white/[0.02] transition-colors -mx-1 px-1 rounded-lg">
                         <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-[10px] font-medium"
                           style={{ backgroundColor: (msg.user.color || '#7c3aed') + '33', color: msg.user.color || '#7c3aed' }}>
                           {initials}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-baseline gap-2 mb-0.5">
-                            <span className="text-[12px] font-medium text-[var(--wl-text-secondary)]">
+                            <span className="text-[12px] font-medium text-white/80">
                               {msg.user.name || msg.user.email.split('@')[0]}
                             </span>
-                            <span className="text-[10px] text-[var(--wl-text-placeholder)]">{timeAgo}</span>
+                            <span className="text-[10px] text-white/25">{timeAgo}</span>
                           </div>
-                          <p className={`text-[11px] text-[var(--wl-text-muted)] ${isCompact ? 'truncate' : 'line-clamp-2'}`}>
+                          <p className={`text-[11px] text-white/50 ${isCompact ? 'truncate' : 'line-clamp-2'}`}>
                             {msg.message}
                           </p>
                         </div>
@@ -734,7 +734,7 @@ export default function DashboardPage() {
             {!loadingChat && chatMessages.length > 0 && (
               <div className="pt-2">
                 <Link href="/dashboard/chat">
-                  <button className="w-full text-[11px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors py-1 text-center">
+                  <button className="w-full text-[11px] text-white/30 hover:text-violet-400 transition-colors py-1 text-center">
                     Ver chat completo →
                   </button>
                 </Link>
@@ -759,10 +759,10 @@ export default function DashboardPage() {
             <div className="flex gap-1">
               {tabs.map(tab => (
                 <button key={tab.id} onClick={() => setTaskTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${taskTab === tab.id ? 'text-[var(--wl-text-primary)]' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${taskTab === tab.id ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                   style={taskTab === tab.id ? { background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)' } : { border: '1px solid transparent' }}>
                   {tab.label}
-                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${taskTab === tab.id ? 'bg-violet-500/30 text-violet-300' : 'bg-[var(--wl-hover)] text-[var(--wl-text-placeholder)]'}`}>
+                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${taskTab === tab.id ? 'bg-violet-500/30 text-violet-300' : 'bg-white/[0.06] text-white/30'}`}>
                     {tab.count}
                   </span>
                 </button>
@@ -772,7 +772,7 @@ export default function DashboardPage() {
               {loadingTasks
                 ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)
                 : tabTasks[taskTab].length === 0
-                  ? <p className="text-xs text-[var(--wl-text-placeholder)] text-center py-6">Sin tareas en este estado</p>
+                  ? <p className="text-xs text-white/30 text-center py-6">Sin tareas en este estado</p>
                   : tabTasks[taskTab].slice(0, 8).map(t => (
                       <div key={t.id} className="flex items-center gap-2.5">
                         <div className="h-7 w-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold"
@@ -785,7 +785,7 @@ export default function DashboardPage() {
               }
             </div>
             <Link href="/dashboard/tasks">
-              <button className="w-full text-[11px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors py-1.5 text-center border-t border-[var(--wl-border-subtle)]">
+              <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1.5 text-center border-t border-white/[0.04]">
                 Ver todas las tareas →
               </button>
             </Link>
@@ -797,7 +797,7 @@ export default function DashboardPage() {
         return (
           <div className="space-y-2 overflow-y-auto custom-scrollbar" style={{ maxHeight: '280px' }}>
             {deliverables.length === 0
-              ? <p className="text-xs text-[var(--wl-text-placeholder)] text-center py-6">Sin entregas en revisión</p>
+              ? <p className="text-xs text-white/30 text-center py-6">Sin entregas en revisión</p>
               : deliverables.slice(0, 5).map(t => {
                   const imgAttachment = (t as any).attachments?.find((a: any) => a.fileType?.startsWith('image/'));
                   const timeAgo = (() => {
@@ -809,18 +809,18 @@ export default function DashboardPage() {
                   })();
                   const assignee = t.assignedUser ?? t.user;
                   return (
-                    <div key={t.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-[var(--wl-border-subtle)] hover:border-violet-500/20 transition-all"
+                    <div key={t.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-white/[0.05] hover:border-violet-500/20 transition-all"
                       style={{ background: 'rgba(255,255,255,0.02)' }}>
-                      <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-[var(--wl-hover)] flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-white/[0.06] flex items-center justify-center">
                         {imgAttachment
                           ? <img src={imgAttachment.fileUrl} alt={t.title} className="w-full h-full object-cover" />
-                          : <CheckSquare className="w-5 h-5 text-[var(--wl-text-placeholder)]" />
+                          : <CheckSquare className="w-5 h-5 text-white/20" />
                         }
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-[var(--wl-text-primary)] truncate">{t.title}</p>
-                        <p className="text-[10px] text-[var(--wl-text-muted)] truncate">{t.client?.name || 'Sin cliente'}</p>
-                        <p className="text-[10px] text-[var(--wl-text-placeholder)] mt-0.5">
+                        <p className="text-xs font-medium text-white/85 truncate">{t.title}</p>
+                        <p className="text-[10px] text-white/35 truncate">{t.client?.name || 'Sin cliente'}</p>
+                        <p className="text-[10px] text-white/25 mt-0.5">
                           Por {assignee?.name || assignee?.email?.split('@')[0] || 'Usuario'} · {timeAgo}
                         </p>
                       </div>
@@ -833,7 +833,7 @@ export default function DashboardPage() {
                 })
             }
             <Link href="/dashboard/tasks">
-              <button className="w-full text-[11px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors py-1.5 text-center border-t border-[var(--wl-border-subtle)]">
+              <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1.5 text-center border-t border-white/[0.04]">
                 Ver todas →
               </button>
             </Link>
@@ -863,8 +863,8 @@ export default function DashboardPage() {
                 { label: 'Creadas', value: activityData.reduce((a,d) => a+d.created, 0), color: '#8B5CF6', trend: '+12%' },
                 { label: 'En revisión', value: deliverables.length, color: '#F59E0B', trend: '' },
               ].map(s => (
-                <div key={s.label} className="rounded-xl p-3 border border-[var(--wl-border-subtle)]" style={{ background: 'var(--wl-surface)' }}>
-                  <p className="text-[10px] text-[var(--wl-text-muted)] mb-1">{s.label}</p>
+                <div key={s.label} className="rounded-xl p-3 border border-white/[0.05]" style={{ background: '#0F1117' }}>
+                  <p className="text-[10px] text-white/35 mb-1">{s.label}</p>
                   <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
                   {s.trend && <p className="text-[10px] text-green-400/70 mt-0.5">▲ {s.trend}</p>}
                 </div>
@@ -877,24 +877,24 @@ export default function DashboardPage() {
         return (
           <div className="space-y-2 overflow-y-auto custom-scrollbar" style={{ maxHeight: '280px' }}>
             {activeClients.length === 0
-              ? <p className="text-xs text-[var(--wl-text-placeholder)] text-center py-6">Sin clientes activos</p>
+              ? <p className="text-xs text-white/30 text-center py-6">Sin clientes activos</p>
               : activeClients.map(c => {
                   const pct = c.progress ?? (c.completedTasks && c.activeTasks + c.completedTasks > 0
                     ? Math.round(c.completedTasks / (c.activeTasks + c.completedTasks) * 100) : 0);
                   const health = pct >= 70 ? '#22C55E' : pct >= 40 ? '#F59E0B' : '#EF4444';
                   return (
-                    <div key={c.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-[var(--wl-border-subtle)] hover:border-[var(--wl-border)] transition-all"
-                      style={{ background: 'var(--wl-surface)' }}>
+                    <div key={c.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-white/[0.05] hover:border-white/[0.08] transition-all"
+                      style={{ background: '#0F1117' }}>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold"
                         style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa' }}>
                         {(c.name || 'C')[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <p className="text-xs font-medium text-[var(--wl-text-primary)] truncate">{c.name}</p>
+                          <p className="text-xs font-medium text-white/85 truncate">{c.name}</p>
                           <span className="text-xs font-semibold shrink-0 ml-2" style={{ color: health }}>{pct}%</span>
                         </div>
-                        <p className="text-[10px] text-[var(--wl-text-muted)] truncate mb-1.5">{c.company || 'Sin campaña'}</p>
+                        <p className="text-[10px] text-white/35 truncate mb-1.5">{c.company || 'Sin campaña'}</p>
                         <div className="h-1.5 rounded-full w-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
                           <motion.div className="h-full rounded-full"
                             style={{ background: 'linear-gradient(90deg, #7C3AED, #A855F7)' }}
@@ -909,7 +909,7 @@ export default function DashboardPage() {
                 })
             }
             <Link href="/dashboard/clients">
-              <button className="w-full text-[11px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors py-1.5 text-center border-t border-[var(--wl-border-subtle)]">
+              <button className="w-full text-[11px] text-white/25 hover:text-violet-400 transition-colors py-1.5 text-center border-t border-white/[0.04]">
                 Ver todos →
               </button>
             </Link>
@@ -917,7 +917,7 @@ export default function DashboardPage() {
         );
 
       default:
-        return <p className="text-xs text-[var(--wl-text-placeholder)] text-center py-4">Sección: {id}</p>;
+        return <p className="text-xs text-white/20 text-center py-4">Sección: {id}</p>;
     }
   };
 
@@ -971,7 +971,7 @@ export default function DashboardPage() {
           {/* Texto */}
           <div>
             <motion.h1
-              className="text-2xl font-semibold text-[var(--wl-text-primary)]"
+              className="text-2xl font-semibold text-white/90"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
@@ -982,7 +982,7 @@ export default function DashboardPage() {
               </span>
             </motion.h1>
             <div className="mt-0.5 flex items-center gap-3">
-              <span className="text-[13px] text-[var(--wl-text-muted)] capitalize">{fmtDate}</span>
+              <span className="text-[13px] text-white/35 capitalize">{fmtDate}</span>
               {userRole && (
                 <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
                   style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa' }}>
@@ -1181,7 +1181,7 @@ export default function DashboardPage() {
                             {ri > 0 && (
                               <button
                                 onClick={() => moveSectionToRow(section.id, ri - 1)}
-                                className="flex items-center gap-1 text-[10px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors px-1.5 py-0.5 rounded border border-[var(--wl-border)] hover:border-violet-500/30"
+                                className="flex items-center gap-1 text-[10px] text-white/30 hover:text-violet-400 transition-colors px-1.5 py-0.5 rounded border border-white/[0.06] hover:border-violet-500/30"
                                 title="Mover a fila anterior"
                               >
                                 ↑ Subir fila
@@ -1191,7 +1191,7 @@ export default function DashboardPage() {
                             {ri < rows.length - 1 && (
                               <button
                                 onClick={() => moveSectionToRow(section.id, ri + 1)}
-                                className="flex items-center gap-1 text-[10px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors px-1.5 py-0.5 rounded border border-[var(--wl-border)] hover:border-violet-500/30"
+                                className="flex items-center gap-1 text-[10px] text-white/30 hover:text-violet-400 transition-colors px-1.5 py-0.5 rounded border border-white/[0.06] hover:border-violet-500/30"
                                 title="Mover a fila siguiente"
                               >
                                 ↓ Bajar fila
@@ -1202,13 +1202,13 @@ export default function DashboardPage() {
                           <div className="flex items-center gap-1">
                             {!isFirst && (
                               <button onClick={() => moveSection(section.id, 'up')}
-                                className="text-[10px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors w-5 h-5 flex items-center justify-center rounded border border-[var(--wl-border)]">
+                                className="text-[10px] text-white/25 hover:text-violet-400 transition-colors w-5 h-5 flex items-center justify-center rounded border border-white/[0.06]">
                                 ←
                               </button>
                             )}
                             {!isLast && (
                               <button onClick={() => moveSection(section.id, 'down')}
-                                className="text-[10px] text-[var(--wl-text-placeholder)] hover:text-violet-400 transition-colors w-5 h-5 flex items-center justify-center rounded border border-[var(--wl-border)]">
+                                className="text-[10px] text-white/25 hover:text-violet-400 transition-colors w-5 h-5 flex items-center justify-center rounded border border-white/[0.06]">
                                 →
                               </button>
                             )}

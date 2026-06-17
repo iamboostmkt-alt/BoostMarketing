@@ -45,20 +45,20 @@ export function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEv
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-[var(--wl-text-secondary)]">{monthLabel}</h2>
+        <h2 className="text-sm font-medium text-white/70">{monthLabel}</h2>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm"
-            className="h-7 w-7 p-0 text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
+            className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
             onClick={() => setCurrentMonth((m) => subMonths(m, 1))}>
             <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
           <Button variant="ghost" size="sm"
-            className="h-7 px-2 text-xs text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
+            className="h-7 px-2 text-xs text-white/50 hover:text-white hover:bg-white/[0.06]"
             onClick={() => setCurrentMonth(new Date())}>
             Hoy
           </Button>
           <Button variant="ghost" size="sm"
-            className="h-7 w-7 p-0 text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] hover:bg-[var(--wl-hover)]"
+            className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
             onClick={() => setCurrentMonth((m) => addMonths(m, 1))}>
             <ChevronRight className="w-3.5 h-3.5" />
           </Button>
@@ -67,11 +67,11 @@ export function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEv
 
       <div className="grid grid-cols-7">
         {DAY_NAMES.map((name) => (
-          <div key={name} className="text-center text-[10px] font-medium text-[var(--wl-text-placeholder)] py-1.5 uppercase tracking-wide">{name}</div>
+          <div key={name} className="text-center text-[10px] font-medium text-white/25 py-1.5 uppercase tracking-wide">{name}</div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 border-t border-l border-[var(--wl-border-subtle)]">
+      <div className="grid grid-cols-7 border-t border-l border-white/[0.04]">
         {days.map((day) => {
           const dayTasks       = getTasksForDay(tasks, day);
           const dayAppts       = appointments.filter((a: any) => a.date && sameLocalDay(a.date, day));
@@ -87,17 +87,17 @@ export function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEv
               onClick={() => { if (isCurrentMonth) onSelectDay(day); }}
               className={`
                 relative flex flex-col items-center justify-start min-h-[56px] md:min-h-[64px]
-                border-b border-r border-[var(--wl-border-subtle)] pt-1.5 pb-1 px-1
+                border-b border-r border-white/[0.04] pt-1.5 pb-1 px-1
                 transition-colors duration-150
-                ${isCurrentMonth ? 'text-[var(--wl-text-secondary)]' : 'text-[var(--wl-text-placeholder)] cursor-default'}
+                ${isCurrentMonth ? 'text-white/80' : 'text-white/15 cursor-default'}
                 ${today ? 'bg-brand/[0.06]' : ''}
-                ${isCurrentMonth && !today ? 'hover:bg-[var(--wl-hover)]' : ''}
+                ${isCurrentMonth && !today ? 'hover:bg-white/[0.03]' : ''}
               `}
             >
               <span className={`text-xs leading-none ${
                 today
                   ? 'inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand text-white text-[10px] font-medium'
-                  : isCurrentMonth ? 'text-[var(--wl-text-muted)]' : 'text-[var(--wl-text-placeholder)]'
+                  : isCurrentMonth ? 'text-white/50' : 'text-white/15'
               }`}>
                 {format(day, 'd')}
               </span>
@@ -132,18 +132,18 @@ export function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEv
         })}
       </div>
 
-      <div className="flex items-center gap-4 pt-1 border-t border-[var(--wl-border-subtle)]">
+      <div className="flex items-center gap-4 pt-1 border-t border-white/[0.04]">
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
-          <span className="text-[10px] text-[var(--wl-text-placeholder)]">Pendientes</span>
+          <span className="text-[10px] text-white/25">Pendientes</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
-          <span className="text-[10px] text-[var(--wl-text-placeholder)]">Completadas</span>
+          <span className="text-[10px] text-white/25">Completadas</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />
-          <span className="text-[10px] text-[var(--wl-text-placeholder)]">Reuniones</span>
+          <span className="text-[10px] text-white/25">Reuniones</span>
         </div>
       </div>
     </div>

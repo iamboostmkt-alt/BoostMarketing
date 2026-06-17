@@ -48,8 +48,8 @@ function generateWeeklyData() {
 function CustomTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#1c1c27] border border-[var(--wl-border)] rounded-lg p-3 shadow-lg">
-        <p className="text-[var(--wl-text-secondary)] text-xs mb-1">{label}</p>
+      <div className="bg-[#1c1c27] border border-white/[0.08] rounded-lg p-3 shadow-lg">
+        <p className="text-white/60 text-xs mb-1">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={index} className="text-sm" style={{ color: entry.color }}>
             {entry.name}: <span className="font-semibold">{entry.value}</span>
@@ -193,12 +193,12 @@ export default function AnalyticsPage() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-[var(--wl-text-primary)]">Analytics</h2>
-          <p className="text-[var(--wl-text-muted)] mt-1">Visualiza el rendimiento de tu negocio</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-white">Analytics</h2>
+          <p className="text-white/40 mt-1">Visualiza el rendimiento de tu negocio</p>
         </div>
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-[var(--wl-text-placeholder)]" />
-          <span className="text-sm text-[var(--wl-text-muted)]">Últimos 30 días</span>
+          <Calendar className="w-4 h-4 text-white/30" />
+          <span className="text-sm text-white/40">Últimos 30 días</span>
         </div>
       </div>
 
@@ -232,9 +232,9 @@ export default function AnalyticsPage() {
                 {loading ? (
                   <Skeleton className="h-8 w-20 mb-1" />
                 ) : (
-                  <p className="text-2xl font-bold text-[var(--wl-text-primary)]">{stat.value}</p>
+                  <p className="text-2xl font-bold text-white">{stat.value}</p>
                 )}
-                <p className="text-sm text-[var(--wl-text-muted)] mt-0.5">{stat.label}</p>
+                <p className="text-sm text-white/40 mt-0.5">{stat.label}</p>
               </div>
             </div>
           );
@@ -253,15 +253,15 @@ export default function AnalyticsPage() {
         </div>
       ) : !hasData ? (
         <div className="glass-card rounded-xl p-16 text-center">
-          <BarChart3 className="w-12 h-12 text-[var(--wl-text-placeholder)] mx-auto mb-3" />
-          <p className="text-[var(--wl-text-muted)] text-sm">No hay datos suficientes para mostrar gráficos</p>
-          <p className="text-[var(--wl-text-placeholder)] text-xs mt-1">Agrega contactos y tareas para ver tus analytics</p>
+          <BarChart3 className="w-12 h-12 text-white/15 mx-auto mb-3" />
+          <p className="text-white/40 text-sm">No hay datos suficientes para mostrar gráficos</p>
+          <p className="text-white/25 text-xs mt-1">Agrega contactos y tareas para ver tus analytics</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Bar Chart: Contacts by Stage */}
           <div className="glass-card rounded-xl p-6">
-            <h3 className="text-base font-semibold text-[var(--wl-text-primary)] mb-4">Contactos por Etapa</h3>
+            <h3 className="text-base font-semibold text-white mb-4">Contactos por Etapa</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={contactsByStage} barSize={48}>
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
@@ -289,7 +289,7 @@ export default function AnalyticsPage() {
 
           {/* Line Chart: Tasks Completed per Week */}
           <div className="glass-card rounded-xl p-6">
-            <h3 className="text-base font-semibold text-[var(--wl-text-primary)] mb-4">Tareas por Semana</h3>
+            <h3 className="text-base font-semibold text-white mb-4">Tareas por Semana</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={weeklyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
@@ -336,7 +336,7 @@ export default function AnalyticsPage() {
 
           {/* Pie Chart: Task Status Distribution */}
           <div className="glass-card rounded-xl p-6 lg:col-span-2">
-            <h3 className="text-base font-semibold text-[var(--wl-text-primary)] mb-4">Distribución por Estado de Tareas</h3>
+            <h3 className="text-base font-semibold text-white mb-4">Distribución por Estado de Tareas</h3>
             <div className="flex flex-col md:flex-row items-center justify-center gap-8">
               <ResponsiveContainer width="100%" height={300} className="max-w-[400px]">
                 <PieChart>
@@ -368,8 +368,8 @@ export default function AnalyticsPage() {
                       className="w-3 h-3 rounded-full shrink-0"
                       style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
                     />
-                    <span className="text-sm text-[var(--wl-text-secondary)]">{entry.name}</span>
-                    <span className="text-sm font-semibold text-[var(--wl-text-primary)] ml-2">{entry.value}</span>
+                    <span className="text-sm text-white/60">{entry.name}</span>
+                    <span className="text-sm font-semibold text-white ml-2">{entry.value}</span>
                   </div>
                 ))}
               </div>
