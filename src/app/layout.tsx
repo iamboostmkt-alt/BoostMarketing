@@ -42,6 +42,8 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <head>
+        {/* Script inline: establece tema antes del primer render para evitar flash */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('wl-theme')||'dark';document.documentElement.classList.add(t);document.documentElement.style.background=t==='light'?'#F6F7FB':'#080808';}catch(e){document.documentElement.classList.add('dark');document.documentElement.style.background='#080808';}})();` }} />
         {settings?.faviconUrl ? (
           <link rel="icon" href={settings.faviconUrl} />
         ) : (

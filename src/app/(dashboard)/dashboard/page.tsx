@@ -93,7 +93,7 @@ function SectionCard({ title, action, actionHref, children }: {
 function Empty({ msg }: { msg: string }) {
   return (
     <div className="py-8 text-center">
-      <p className="text-[13px] text-[rgba(17,24,39,0.35)]">{msg}</p>
+      <p className="text-[13px]" style={{ color: 'var(--wl-text-muted)' }}>{msg}</p>
     </div>
   );
 }
@@ -269,7 +269,7 @@ export default function DashboardHome() {
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-[#8B5CF6]"
                   style={{ background: 'rgba(139,92,246,0.10)' }}>IA</span>
               </div>
-              <p className="text-[13px] text-[rgba(17,24,39,0.6)] leading-relaxed">
+              <p className="text-[13px] leading-relaxed" style={{ color: 'var(--wl-text-secondary)' }}>
                 {pending.length > 0
                   ? `Tienes ${pending.length} tarea${pending.length > 1 ? 's' : ''} pendiente${pending.length > 1 ? 's' : ''}.${overdue.length > 0 ? ` ${overdue.length} vencida${overdue.length > 1 ? 's' : ''} — atención inmediata.` : ''}${nextMeeting ? ` Reunión próxima: ${nextMeeting.name}.` : ''}`
                   : 'Todo al día. Sin tareas pendientes por ahora.'}
@@ -278,12 +278,12 @@ export default function DashboardHome() {
                 <Link href="/dashboard/tasks" className="text-[12px] font-medium text-[#7C3AED] flex items-center gap-1 hover:underline">
                   Ver mis tareas <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
-                <Link href="/dashboard/calendar" className="text-[12px] font-medium text-[rgba(17,24,39,0.45)] flex items-center gap-1 hover:text-[#111827] transition-colors">
+                <Link href="/dashboard/calendar" className="text-[12px] font-medium text-[var(--wl-text-muted)] flex items-center gap-1 hover:text-[var(--wl-text-primary)] transition-colors">
                   Abrir calendario <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
-            <button onClick={() => setBriefOpen(false)} className="text-[rgba(17,24,39,0.25)] hover:text-[rgba(17,24,39,0.5)] transition-colors shrink-0">
+            <button onClick={() => setBriefOpen(false)} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors shrink-0">
               <X className="w-4 h-4" />
             </button>
           </motion.div>
@@ -313,7 +313,7 @@ export default function DashboardHome() {
                     <div className="w-1.5 h-8 rounded-full shrink-0" style={{ background: priorityColor[t.priority] || '#94A3B8' }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-medium truncate group-hover:text-[#7C3AED] transition-colors" style={{ color: 'var(--wl-text-primary)' }}>{t.title}</p>
-                      <p className="text-[11px] text-[rgba(17,24,39,0.4)] mt-0.5">
+                      <p className="text-[11px] text-[var(--wl-text-muted)] mt-0.5">
                         {t.client?.name && <span className="mr-2">{t.client.name}</span>}
                         {t.dueDate && <span className={new Date(t.dueDate) < new Date() ? 'text-red-500' : ''}>{new Date(t.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>}
                       </p>
@@ -345,9 +345,9 @@ export default function DashboardHome() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-medium" style={{ color: 'var(--wl-text-primary)' }}>{msg.user?.name || msg.user?.email}</p>
-                      <p className="text-[11px] text-[rgba(17,24,39,0.5)] truncate mt-0.5">{msg.message}</p>
+                      <p className="text-[11px] text-[var(--wl-text-muted)] truncate mt-0.5">{msg.message}</p>
                     </div>
-                    <span className="text-[10px] text-[rgba(17,24,39,0.3)] shrink-0">
+                    <span className="text-[10px] text-[var(--wl-text-placeholder)] shrink-0">
                       {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -375,7 +375,7 @@ export default function DashboardHome() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{m.name}</p>
-                        <p className="text-[11px] text-[rgba(17,24,39,0.4)] mt-0.5">
+                        <p className="text-[11px] text-[var(--wl-text-muted)] mt-0.5">
                           {isToday ? 'Hoy' : d.toLocaleDateString('es-ES', { weekday: 'short' })}, {d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
@@ -410,9 +410,9 @@ export default function DashboardHome() {
                       <div className="text-[13px] font-semibold text-[#8B5CF6]">#</div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-semibold text-[#7C3AED] mb-0.5">{msg.room?.replace('TEAM_', '').toLowerCase() || 'general'}</p>
-                        <p className="text-[12px] text-[#111827] font-medium">{msg.user?.name?.split(' ')[0]}: <span className="font-normal text-[rgba(17,24,39,0.6)]">{msg.message?.slice(0, 50)}{msg.message?.length > 50 ? '…' : ''}</span></p>
+                        <p className="text-[12px] text-[var(--wl-text-primary)] font-medium">{msg.user?.name?.split(' ')[0]}: <span className="font-normal text-[var(--wl-text-secondary)]">{msg.message?.slice(0, 50)}{msg.message?.length > 50 ? '…' : ''}</span></p>
                       </div>
-                      <span className="text-[10px] text-[rgba(17,24,39,0.3)] shrink-0">
+                      <span className="text-[10px] text-[var(--wl-text-placeholder)] shrink-0">
                         {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </Link>
