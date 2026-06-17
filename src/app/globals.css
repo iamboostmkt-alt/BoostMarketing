@@ -617,3 +617,13 @@ html:has(> body > div.auth-bg) {
   background: #FFFFFF !important;
   border-bottom: 1px solid rgba(17,24,39,0.06) !important;
 }
+
+/* ── Fix definitivo: html oscuro no afecta páginas públicas ── */
+/* Cuando el body tiene un hijo con .auth-bg, el html se vuelve claro */
+html:has(.auth-bg) {
+  background: #F6F7FB !important;
+}
+html:has(.auth-bg) body {
+  background: #F6F7FB !important;
+  color: #111827 !important;
+}

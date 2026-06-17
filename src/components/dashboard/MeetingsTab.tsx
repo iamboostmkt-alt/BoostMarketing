@@ -164,7 +164,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
         exit={{ opacity: 0, scale: 0.96, y: 10 }}
         transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
         onClick={e => e.stopPropagation()}
-        style={{ position: 'relative', zIndex: 9991, width: '100%', maxWidth: 520, maxHeight: '92dvh', overflowY: 'auto', borderRadius: '16px 16px 0 0' }}
+        style={{ position: 'relative', zIndex: 9991, width: '100%', maxWidth: 520, maxHeight: 'calc(100dvh - 56px)', overflowY: 'auto', borderRadius: '16px 16px 0 0' }}
         className="sm:rounded-2xl"
       >
         {/* Header flotante */}

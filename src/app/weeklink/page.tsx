@@ -455,7 +455,7 @@ export default function WeeklinkHome() {
         <div className="overflow-hidden rounded-[28px] bg-[#7C3AED] px-12 py-16 text-center"
           style={{ boxShadow: '0 20px 60px rgba(124,58,237,0.25)' }}>
           <p className="mb-2 text-[12px] font-semibold uppercase tracking-widest text-violet-300">Únete hoy</p>
-          <h2 className="mb-4 text-[40px] font-bold tracking-tight text-[var(--wl-text-primary)]">
+          <h2 className="mb-4 text-[40px] font-bold tracking-tight text-white">
             Empieza gratis. Crece sin límites.
           </h2>
           <p className="mb-8 text-[16px] text-violet-200">15 días de acceso completo. Sin tarjeta de crédito. Cancela cuando quieras.</p>
@@ -466,7 +466,7 @@ export default function WeeklinkHome() {
               Crear mi workspace gratis →
             </Link>
             <button onClick={() => scrollTo('precios')}
-              className="inline-flex h-12 items-center rounded-[14px] border border-white/30 px-8 text-[15px] font-medium text-[var(--wl-text-primary)] transition-all hover:bg-white/10">
+              className="inline-flex h-12 items-center rounded-[14px] border border-white/30 px-8 text-[15px] font-medium text-white transition-all hover:bg-white/10">
               Ver planes
             </button>
           </div>

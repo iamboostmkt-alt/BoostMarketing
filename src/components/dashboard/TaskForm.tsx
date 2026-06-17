@@ -309,7 +309,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   return (
     <>
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="bg-[#15151c] border-l border-white/[0.06] text-white w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0">
+      <SheetContent side="right" className="bg-[#15151c] border-l border-white/[0.06] text-white w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0" style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}>
         <div className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
           <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">
             {isEditing ? 'Editar Tarea' : isSubtask ? 'Nueva Subtarea' : isManager ? 'Nueva Tarea' : 'Solicitar Entrega'}
