@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireWorkspace } from "@/core/auth/require-workspace";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { db } from "@/lib/db";
 import { sendChatBotMessage, buildMentions } from "@/lib/chat-bot";
 import { sendMail, templateFelicitacion, templateCambioEstado } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
 
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 10, windowMs: 60_000, identifier: 'celebrate' });
+  if (!rl.success) return rl.response;
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
   const { workspaceId } = result.ctx;

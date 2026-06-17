@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireWorkspace } from "@/core/auth/require-workspace";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
@@ -10,6 +11,8 @@ const Schema = z.object({
 
 // PATCH — actualizar foto y/o nombre del usuario actual
 export async function PATCH(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 20, windowMs: 60_000, identifier: 'user-profile' });
+  if (!rl.success) return rl.response;
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
   const { userId } = result.ctx;

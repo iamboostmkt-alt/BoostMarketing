@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MANAGER_ROLES , hasRole } from '@/core/constants/roles';
 import { requireWorkspace } from "@/core/auth/require-workspace";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendMail, templateNuevaTarea } from "@/lib/mailer";
@@ -9,6 +10,8 @@ import { getBranding } from "@/lib/branding";
 
 
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(req, { limit: 15, windowMs: 60_000, identifier: 'task-remind' });
+  if (!rl.success) return rl.response;
   const result = await requireWorkspace();
   if (!result.ok) return result.response;
   const { userId, workspaceId, role } = result.ctx;
