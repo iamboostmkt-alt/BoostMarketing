@@ -158,12 +158,12 @@ export default function DashboardHome() {
     { label: 'Tareas pendientes',     value: pending.length,                       icon: ListTodo,   color: '#3B82F6', change: '+12%', up: true,  href: '/dashboard/tasks'    },
     { label: 'Clientes activos',      value: stats?.activeClients ?? 0,            icon: UsersRound, color: '#10B981', change: '+8%',  up: true,  href: '/dashboard/clients'  },
     { label: 'Aprobaciones pendientes', value: stats?.pendingDeals ?? 0,           icon: BadgeCheck, color: '#F59E0B', change: '',     up: false, href: '/dashboard/files'    },
-    { label: 'Ingresos este mes',     value: `$${((stats?.totalRevenue ?? 0)/1000).toFixed(0)}k`, icon: Wallet, color: '#8B5CF6', change: '+18%', up: true, href: '/billing' },
+    { label: 'Tareas completadas',    value: tasks.filter(t => t.status === 'completed' || t.status === 'approved').length, icon: Wallet, color: '#8B5CF6', change: '', up: true, href: '/dashboard/tasks' },
   ] : [
     { label: 'Tareas hoy',            value: todayTasks.length,                    icon: ListTodo,   color: '#3B82F6', change: '', up: true,  href: '/dashboard/tasks'   },
     { label: 'Vencidas',              value: overdue.length,                       icon: Clock,      color: overdue.length > 0 ? '#EF4444' : '#94A3B8', change: '', up: false, href: '/dashboard/tasks' },
     { label: 'Completadas esta semana', value: tasks.filter(t => t.status === 'completed').length, icon: BadgeCheck, color: '#10B981', change: '', up: true, href: '/dashboard/tasks' },
-    { label: 'Próxima reunión',       value: nextMeeting ? new Date(nextMeeting.date).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '—', icon: Video, color: '#F59E0B', change: '', up: true, href: '/dashboard/calendar' },
+    { label: 'Próxima reunión',       value: nextMeeting ? new Date(nextMeeting.date).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'Sin reunión', icon: Video, color: '#F59E0B', change: '', up: true, href: '/dashboard/calendar' },
   ];
 
   const priorityColor: Record<string, string> = { urgent: '#EF4444', high: '#F97316', medium: '#F59E0B', low: '#94A3B8' };

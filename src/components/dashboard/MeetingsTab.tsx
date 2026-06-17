@@ -651,7 +651,7 @@ export default function MeetingsTab() {
           ? new Date((viewMeeting as any).date).toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' }) + ' — ' + new Date((viewMeeting as any).date).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
           : '';
         return (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '72px 16px 16px', overflowY: 'auto' }}>
             <div onClick={() => setViewMeeting(null)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} />
             <div style={{ position: 'relative', zIndex: 9991, width: '100%', maxWidth: 460, background: '#080808', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, overflow: 'hidden' }}>
               <div className="flex items-start justify-between p-5 pb-3">

@@ -22,6 +22,14 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status");
   const where: Record<string, unknown> = { workspaceId };
   if (status) where.status = status;
+  // Por defecto solo mostrar reuniones futuras (próximas 90 días)
+  // A menos que se pida explícitamente el histórico
+  const showAll = new URL(req.url).searchParams.get('showAll') === 'true';
+  if (!showAll) {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    where.date = { gte: startOfToday };
+  }
   const limit  = Math.min(parseInt(new URL(req.url).searchParams.get('limit') || '50'), 100);
   const cursor = new URL(req.url).searchParams.get('cursor') || undefined;
   const rawMeetings = await db.appointment.findMany({

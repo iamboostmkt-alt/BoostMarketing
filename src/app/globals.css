@@ -645,9 +645,6 @@ html.light {
 /* ── Páginas públicas: always light ────────────────────────── */
 /* El html tiene bg #080808 pero páginas de auth y landing deben ser claras */
 html:has(> body > div[style*="F6F7FB"]),
-html:has(> body > div.auth-bg) {
-  background: #F6F7FB !important;
-}
 
 /* Landing /weeklink — los textos siguen siendo los del archivo (hardcoded) */
 /* No tocar — la landing usa text-[#111827] hardcodeado, no text-white */
@@ -660,13 +657,6 @@ html:has(> body > div.auth-bg) {
 
 /* ── Fix definitivo: html oscuro no afecta páginas públicas ── */
 /* Cuando el body tiene un hijo con .auth-bg, el html se vuelve claro */
-html:has(.auth-bg) {
-  background: #F6F7FB !important;
-}
-html:has(.auth-bg) body {
-  background: #F6F7FB !important;
-  color: #111827 !important;
-}
 
 /* ── dark-nav: TopNav siempre oscuro, ignora .light ────────── */
 /* El TopNav tiene fondo oscuro propio — proteger iconos y texto */
@@ -687,11 +677,7 @@ html:has(.auth-bg) body {
 .light .dark-nav .text-white\/25 { color: rgba(255,255,255,0.25) !important; }
 .light .dark-nav .hover\:text-white:hover { color: #ffffff !important; }
 
-/* ── Dashboard: el html siempre oscuro cuando está el dashboard ─ */
 /* El TopNav es siempre oscuro, el html también debe serlo en app */
-html:not(:has(.auth-bg)) {
-  background: #080808 !important;
-}
 
 /* El sidebar móvil no debe mostrar fondo claro cuando .light está activo */
 .light [data-sidebar="sidebar"] {
@@ -722,9 +708,6 @@ html:not(:has(.auth-bg)) {
 
 /* ── Fix barra blanca en TopNav al navegar ─────────────── */
 /* Asegurar que el contenedor del dashboard sea siempre oscuro */
-html:not(:has(.auth-bg)) body {
-  background: #080808 !important;
-}
 
 /* ── wl-topnav: TopNav siempre estable, no se mueve ────────── */
 .wl-topnav {
@@ -746,22 +729,10 @@ html:not(:has(.auth-bg)) body {
   }
 }
 
-/* ── Anti-flash: billing y auth siempre claros ──────────────── */
 /* Cuando billing layout monta, el html debe ser claro inmediatamente */
 /* Esto se logra con :has() que es síncrono en CSS */
-html:has(.auth-bg) {
-  background: #F6F7FB !important;
-  color-scheme: light !important;
-}
-html:has(.auth-bg) body {
-  background: #F6F7FB !important;
-}
 /* El dashboard siempre oscuro */
-html:not(:has(.auth-bg)) {
-  background: #080808 !important;
-}
 
-/* ── TopNav fixed spacer ────────────────────────────────── */
 .wl-topnav-spacer {
   height: 56px;
   flex-shrink: 0;
@@ -776,4 +747,35 @@ html:not(:has(.auth-bg)) {
 .wl-topnav-spacer {
   background: transparent !important;
   flex-shrink: 0;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   REGLA ÚNICA DE TEMA — NO DUPLICAR
+   ══════════════════════════════════════════════════════════════ */
+
+/* El html siempre oscuro en el dashboard */
+html {
+  background: #080808;
+}
+
+/* Auth pages y billing: fondo claro cuando hay .auth-bg en DOM */
+html:has(.auth-bg) {
+  background: #F6F7FB !important;
+}
+html:has(.auth-bg) body {
+  background: #F6F7FB !important;
+  color: #111827 !important;
+}
+
+/* TopNav fixed spacer */
+.wl-topnav-spacer {
+  background: transparent !important;
+  flex-shrink: 0;
+  height: 56px;
+}
+@supports (padding-top: env(safe-area-inset-top)) {
+  .wl-topnav-spacer {
+    height: calc(56px + env(safe-area-inset-top, 0px));
+  }
 }
