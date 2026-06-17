@@ -51,8 +51,8 @@ function KpiCard({ label, value, icon: Icon, color, change, up, onClick }: {
       onClick={onClick}
       whileHover={{ y: -2, boxShadow: '0 12px 40px rgba(15,23,42,0.08)' }}
       transition={{ duration: 0.18 }}
-      className="bg-white rounded-[20px] p-5 cursor-pointer"
-      style={{ border: '1px solid rgba(17,24,39,0.05)', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}
+      className="rounded-[20px] p-5 cursor-pointer"
+      style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', boxShadow: 'var(--wl-shadow)' }}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="w-10 h-10 rounded-[12px] flex items-center justify-center" style={{ background: color + '15' }}>
@@ -65,8 +65,8 @@ function KpiCard({ label, value, icon: Icon, color, change, up, onClick }: {
           </div>
         )}
       </div>
-      <p className="text-[28px] font-bold text-[#111827] leading-none mb-1">{value}</p>
-      <p className="text-[13px] text-[rgba(17,24,39,0.5)] font-medium">{label}</p>
+      <p className="text-[28px] font-bold leading-none mb-1" style={{ color: 'var(--wl-text-primary)' }}>{value}</p>
+      <p className="text-[13px] font-medium" style={{ color: 'var(--wl-text-muted)' }}>{label}</p>
     </motion.div>
   );
 }
@@ -76,10 +76,10 @@ function SectionCard({ title, action, actionHref, children }: {
   title: string; action?: string; actionHref?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-[20px] p-5 flex flex-col gap-0"
-      style={{ border: '1px solid rgba(17,24,39,0.05)', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}>
+    <div className="rounded-[20px] p-5 flex flex-col gap-0"
+      style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', boxShadow: 'var(--wl-shadow)' }}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[15px] font-semibold text-[#111827]">{title}</h3>
+        <h3 className="text-[15px] font-semibold" style={{ color: 'var(--wl-text-primary)' }}>{title}</h3>
         {action && actionHref && (
           <Link href={actionHref} className="text-[12px] font-medium text-[#8B5CF6] hover:text-[#7C3AED] transition-colors flex items-center gap-1">
             {action} <ChevronRight className="w-3.5 h-3.5" />
@@ -179,19 +179,19 @@ export default function DashboardHome() {
   // ── Skeleton ─────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6" style={{ background: '#F6F7FB', minHeight: '100%' }}>
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6" style={{ background: 'var(--wl-bg, #F6F7FB)', minHeight: '100%' }}>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1,2,3,4].map(i => (
-            <div key={i} className="bg-white rounded-[20px] p-5 animate-pulse" style={{ height: 120, border: '1px solid rgba(17,24,39,0.05)' }}>
-              <div className="w-10 h-10 bg-gray-100 rounded-xl mb-4" />
-              <div className="h-7 bg-gray-100 rounded w-12 mb-2" />
-              <div className="h-3 bg-gray-100 rounded w-24" />
+            <div key={i} className="rounded-[20px] p-5 animate-pulse" style={{ height: 120, background: 'var(--wl-surface)', border: '1px solid var(--wl-border)' }}>
+              <div className="w-10 h-10 rounded-xl mb-4" style={{ background: 'var(--wl-hover)' }} />
+              <div className="h-7 rounded w-12 mb-2" style={{ background: 'var(--wl-hover)' }} />
+              <div className="h-3 rounded w-24" style={{ background: 'var(--wl-hover)' }} />
             </div>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {[1,2,3].map(i => (
-            <div key={i} className="bg-white rounded-[20px] p-5 animate-pulse" style={{ height: 200, border: '1px solid rgba(17,24,39,0.05)' }} />
+            <div key={i} className="rounded-[20px] p-5 animate-pulse" style={{ height: 200, background: 'var(--wl-surface)', border: '1px solid var(--wl-border)' }} />
           ))}
         </div>
       </div>
@@ -200,11 +200,11 @@ export default function DashboardHome() {
 
   return (
     <>
-      <div className="flex flex-col px-4 sm:px-6 lg:px-8 py-5 gap-5" style={{ background: '#F6F7FB', minHeight: '100%' }}>
+      <div className="flex flex-col px-4 sm:px-6 lg:px-8 py-5 gap-5" style={{ background: 'var(--wl-bg, #F6F7FB)', minHeight: '100%' }}>
 
         {/* ── HEADER ───────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
             <Avatar className="h-11 w-11 shrink-0 rounded-[12px] overflow-hidden ring-1 ring-black/[0.06]">
               <AvatarImage src={userImage || undefined} alt={userName} className="object-cover" />
               <AvatarFallback className="rounded-[12px] text-sm font-semibold"
@@ -212,12 +212,13 @@ export default function DashboardHome() {
                 {userInitials(session?.user?.name || null, session?.user?.email || '')}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h1 className="text-[22px] font-bold text-[#111827] leading-tight">
-                {greeting()}, <span className="text-[#7C3AED]">{userName.split(' ')[0]}</span> 👋
+            <div className="min-w-0 flex-1">
+              <h1 className="text-[18px] sm:text-[22px] font-bold leading-tight" style={{ color: 'var(--wl-text-primary)' }}>
+                {greeting()},{''}
+                <span className="text-[#7C3AED] break-all"> {userName.split(' ')[0]}</span> 👋
               </h1>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[12px] text-[rgba(17,24,39,0.45)] capitalize">{fmtDate()}</span>
+                <span className="text-[12px] capitalize" style={{ color: 'var(--wl-text-muted)' }}>{fmtDate()}</span>
                 {userRole && (
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
                     style={{ background: 'rgba(124,58,237,0.08)', color: '#7C3AED' }}>
@@ -262,7 +263,7 @@ export default function DashboardHome() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1.5">
-                <p className="text-[13px] font-semibold text-[#111827]">Daily Brief</p>
+                <p className="text-[13px] font-semibold" style={{ color: 'var(--wl-text-primary)' }}>Daily Brief</p>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-[#8B5CF6]"
                   style={{ background: 'rgba(139,92,246,0.10)' }}>IA</span>
               </div>
@@ -306,10 +307,10 @@ export default function DashboardHome() {
               <div className="space-y-2">
                 {pending.slice(0, 5).map(t => (
                   <Link key={t.id} href={`/dashboard/tasks`}
-                    className="flex items-center gap-3 p-3 rounded-[14px] group transition-all hover:bg-[#F6F7FB]">
+                    className="flex items-center gap-3 p-3 rounded-[14px] group transition-all hover:bg-[var(--wl-hover)]">
                     <div className="w-1.5 h-8 rounded-full shrink-0" style={{ background: priorityColor[t.priority] || '#94A3B8' }} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-[#111827] truncate group-hover:text-[#7C3AED] transition-colors">{t.title}</p>
+                      <p className="text-[13px] font-medium truncate group-hover:text-[#7C3AED] transition-colors" style={{ color: 'var(--wl-text-primary)' }}>{t.title}</p>
                       <p className="text-[11px] text-[rgba(17,24,39,0.4)] mt-0.5">
                         {t.client?.name && <span className="mr-2">{t.client.name}</span>}
                         {t.dueDate && <span className={new Date(t.dueDate) < new Date() ? 'text-red-500' : ''}>{new Date(t.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>}
@@ -341,7 +342,7 @@ export default function DashboardHome() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium text-[#111827]">{msg.user?.name || msg.user?.email}</p>
+                      <p className="text-[12px] font-medium" style={{ color: 'var(--wl-text-primary)' }}>{msg.user?.name || msg.user?.email}</p>
                       <p className="text-[11px] text-[rgba(17,24,39,0.5)] truncate mt-0.5">{msg.message}</p>
                     </div>
                     <span className="text-[10px] text-[rgba(17,24,39,0.3)] shrink-0">
@@ -364,14 +365,14 @@ export default function DashboardHome() {
                   const isToday = d.toDateString() === new Date().toDateString();
                   const minsLeft = (d.getTime() - Date.now()) / 60000;
                   return (
-                    <div key={m.id} className="flex items-center gap-3 p-3 rounded-[14px] transition-all hover:bg-[#F6F7FB]">
+                    <div key={m.id} className="flex items-center gap-3 p-3 rounded-[14px] transition-all hover:bg-[var(--wl-hover)]">
                       <div className="w-10 h-10 rounded-[10px] flex flex-col items-center justify-center shrink-0"
                         style={{ background: 'rgba(16,185,129,0.08)' }}>
                         <p className="text-[10px] font-bold text-emerald-600 leading-none">{d.getDate()}</p>
                         <p className="text-[9px] text-emerald-500">{d.toLocaleDateString('es-ES', { month: 'short' })}</p>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-medium text-[#111827] truncate">{m.name}</p>
+                        <p className="text-[13px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{m.name}</p>
                         <p className="text-[11px] text-[rgba(17,24,39,0.4)] mt-0.5">
                           {isToday ? 'Hoy' : d.toLocaleDateString('es-ES', { weekday: 'short' })}, {d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -403,7 +404,7 @@ export default function DashboardHome() {
                 <div className="space-y-3">
                   {messages.slice(0, 4).map((msg: any) => (
                     <Link key={msg.id} href="/dashboard/chat"
-                      className="flex items-start gap-3 p-2.5 rounded-[12px] hover:bg-[#F6F7FB] transition-all">
+                      className="flex items-start gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
                       <div className="text-[13px] font-semibold text-[#8B5CF6]">#</div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-semibold text-[#7C3AED] mb-0.5">{msg.room?.replace('TEAM_', '').toLowerCase() || 'general'}</p>
@@ -429,15 +430,15 @@ export default function DashboardHome() {
                     const progressColor = progress > 75 ? '#10B981' : progress > 40 ? '#F59E0B' : '#EF4444';
                     return (
                       <Link key={c.id} href={`/dashboard/clients`}
-                        className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[#F6F7FB] transition-all">
+                        className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
                         <div className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[11px] font-bold text-white shrink-0"
                           style={{ background: c.color || '#7C3AED' }}>
                           {(c.name || 'C')[0].toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium text-[#111827] truncate">{c.name}</p>
+                          <p className="text-[13px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{c.name}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <div className="flex-1 h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
+                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--wl-elevated)' }}>
                               <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: progressColor }} />
                             </div>
                             <span className="text-[10px] font-medium shrink-0" style={{ color: progressColor }}>{progress}%</span>
@@ -471,10 +472,10 @@ export default function DashboardHome() {
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <p className="text-[12px] font-medium text-[#111827] truncate">{member.name?.split(' ')[0]}</p>
+                            <p className="text-[12px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{member.name?.split(' ')[0]}</p>
                             <span className="text-[11px] font-semibold ml-2 shrink-0" style={{ color: col }}>{pct}%</span>
                           </div>
-                          <div className="h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
+                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--wl-elevated)' }}>
                             <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }}
                               transition={{ duration: 0.6, delay: 0.1 }} style={{ background: col }} />
                           </div>

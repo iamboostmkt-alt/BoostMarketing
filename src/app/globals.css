@@ -646,3 +646,14 @@ html:has(.auth-bg) body {
 .light .dark-nav .text-white\/50 { color: rgba(255,255,255,0.50) !important; }
 .light .dark-nav .text-white\/25 { color: rgba(255,255,255,0.25) !important; }
 .light .dark-nav .hover\:text-white:hover { color: #ffffff !important; }
+
+/* ── Dashboard: el html siempre oscuro cuando está el dashboard ─ */
+/* El TopNav es siempre oscuro, el html también debe serlo en app */
+html:not(:has(.auth-bg)) {
+  background: #080808 !important;
+}
+
+/* El sidebar móvil no debe mostrar fondo claro cuando .light está activo */
+.light [data-sidebar="sidebar"] {
+  background-color: #0F1117 !important;
+}
