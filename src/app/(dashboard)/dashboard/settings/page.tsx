@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import { useTutorial } from '@/components/tutorial/TutorialOverlay';
 import { toast } from 'sonner';
 import { Save, Moon, Bell, Globe, Palette, Camera, Building2, Upload } from 'lucide-react';
@@ -33,6 +34,8 @@ const PREDEFINED_COLORS = [
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession();
+  const searchParams = useSearchParams();
+  const urlTab = searchParams.get('tab');
   const { reset: resetTutorial } = useTutorial(session?.user?.id ?? '', session?.user?.role ?? '');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -200,7 +203,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div>
-        <Tabs defaultValue="profile" className="space-y-6">
+        <Tabs defaultValue={["profile","preferences","empresa"].includes(urlTab ?? "") ? urlTab! : "profile"} className="space-y-6">
           <TabsList className="bg-white/[0.04] border border-white/[0.06]">
             <TabsTrigger
               value="profile"

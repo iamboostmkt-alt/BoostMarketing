@@ -26,7 +26,7 @@ const DEFAULT_LINKS: Record<NotificationType, string> = {
   activity:    "/dashboard/calendar",
   meeting:     "/dashboard/calendar",
   appointment: "/dashboard/calendar",
-  lead:        "/dashboard/contacts",
+  lead:        "/dashboard/crm",
   welcome:     "/dashboard",
   info:        "/dashboard",
   mention:     "/dashboard/chat",

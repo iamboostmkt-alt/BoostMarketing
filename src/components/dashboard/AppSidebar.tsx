@@ -540,13 +540,17 @@ function SettingsDropdown({ collapsed }: { collapsed: boolean }) {
             className="overflow-hidden"
           >
             <div className="ml-6 mt-1 space-y-0.5 border-l border-white/[0.06] pl-3">
-              {["General", "Notificaciones", "Seguridad", "Apariencia"].map((item) => (
+              {[
+                { label: "Perfil",         tab: "profile" },
+                { label: "Preferencias",   tab: "preferences" },
+                { label: "Empresa",        tab: "empresa" },
+              ].map((item) => (
                 <Link
-                  key={item}
-                  href={`/dashboard/settings/${item.toLowerCase()}`}
+                  key={item.label}
+                  href={`/dashboard/settings?tab=${item.tab}`}
                   className="block rounded-lg px-3 py-1.5 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/80"
                 >
-                  {item}
+                  {item.label}
                 </Link>
               ))}
             </div>
