@@ -472,7 +472,11 @@ function AuditLogsTab() {
 
 export default function AdminDashboardPage() {
   const { data: session } = useSession();
-  const role    = session?.user?.role as string | undefined;
+  const role        = session?.user?.role as string | undefined;
+  const workspaceId = session?.user?.workspaceId as string | undefined;
+  // CMS solo para el workspace original de BoostMarketing
+  const boostWsId   = process.env.NEXT_PUBLIC_BOOST_WORKSPACE_ID;
+  const isCmsEnabled = boostWsId ? workspaceId === boostWsId : false;
   const isAdmin = role === 'ADMIN';
 
   // Users state
@@ -788,9 +792,11 @@ export default function AdminDashboardPage() {
               <TabsTrigger value="logs" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
                 <Shield className="w-4 h-4" /> Audit Logs
               </TabsTrigger>
-              <TabsTrigger value="cms" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
-                <LayoutTemplate className="h-4 w-4" />Contenido
-              </TabsTrigger>
+              {isCmsEnabled && (
+                <TabsTrigger value="cms" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
+                  <LayoutTemplate className="h-4 w-4" />Contenido
+                </TabsTrigger>
+              )}
             </>
           )}
         </TabsList>
@@ -1377,7 +1383,7 @@ export default function AdminDashboardPage() {
         )}
 
         {/* ── CMS tab ───────────────────────────────────────────────────────── */}
-        {isAdmin && (
+        {isAdmin && isCmsEnabled && (
           <TabsContent value="cms" className="mt-4">
             <CMSContent />
           </TabsContent>

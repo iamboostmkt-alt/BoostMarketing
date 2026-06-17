@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from "react";
+import { useEffect } from 'react';
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -565,6 +566,13 @@ function SettingsDropdown({ collapsed }: { collapsed: boolean }) {
 export default function AppSidebar() {
   const pathname = usePathname();
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar();
+
+  // Tutorial: escuchar evento para abrir sidebar en móvil
+  useEffect(() => {
+    const handler = () => setMobileOpen(true);
+    window.addEventListener('wl:open-sidebar', handler);
+    return () => window.removeEventListener('wl:open-sidebar', handler);
+  }, [setMobileOpen]);
   // En móvil nunca colapsamos el sidebar — forzar expandido al abrir
   const [savedCollapsed, setSavedCollapsed] = React.useState(false);
   const { data: session } = useSession();

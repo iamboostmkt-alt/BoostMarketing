@@ -71,15 +71,27 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
     } catch { /* */ }
   }, [userId]);
 
-  // Medir el elemento target
+  // Medir el elemento target — abrir sidebar en móvil si es necesario
   useEffect(() => {
     if (phase !== 'spotlight' || !step) return;
     setAnimIn(false);
+
     const measure = () => {
       const r = getElementRect(step.target);
       setRect(r);
       requestAnimationFrame(() => setAnimIn(true));
     };
+
+    const isMobile = window.innerWidth < 1024;
+    const isNavTarget = step.target.startsWith('nav-') || step.target === 'sidebar-nav';
+
+    if (isMobile && isNavTarget) {
+      window.dispatchEvent(new CustomEvent('wl:open-sidebar'));
+      const t = setTimeout(measure, 320);
+      window.addEventListener('resize', measure);
+      return () => { clearTimeout(t); window.removeEventListener('resize', measure); };
+    }
+
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
@@ -192,9 +204,7 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
                   height={rect.height + PAD * 2}
                   rx={10}
                   fill="black"
-                  style={{
-                    transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
-                  }}
+                  style={{ transition: 'x 0.35s ease, y 0.35s ease, width 0.35s ease, height 0.35s ease' }}
                 />
               )}
             </mask>
@@ -205,19 +215,31 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
             fill="rgba(0,0,0,0.72)"
             mask="url(#spotlight-mask)"
           />
-          {/* Borde de spotlight */}
+          {/* Borde de spotlight + halo */}
           {rect && (
-            <rect
-              x={rect.left - PAD}
-              y={rect.top - PAD}
-              width={rect.width + PAD * 2}
-              height={rect.height + PAD * 2}
-              rx={10}
-              fill="none"
-              stroke="rgba(139,92,246,0.7)"
-              strokeWidth={2}
-              style={{ transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)' }}
-            />
+            <>
+              <rect
+                x={rect.left - PAD - 5}
+                y={rect.top - PAD - 5}
+                width={rect.width + PAD * 2 + 10}
+                height={rect.height + PAD * 2 + 10}
+                rx={14}
+                fill="none"
+                stroke="rgba(139,92,246,0.2)"
+                strokeWidth={3}
+              />
+              <rect
+                x={rect.left - PAD}
+                y={rect.top - PAD}
+                width={rect.width + PAD * 2}
+                height={rect.height + PAD * 2}
+                rx={10}
+                fill="none"
+                stroke="rgba(139,92,246,0.85)"
+                strokeWidth={2}
+                strokeDasharray="0"
+              />
+            </>
           )}
         </svg>
 

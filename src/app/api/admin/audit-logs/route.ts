@@ -17,12 +17,13 @@ export async function GET(req: NextRequest) {
 
   const [logs, total] = await Promise.all([
     db.activityLog.findMany({
+      where: { workspaceId },
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
       include: { user: { select: { name: true, email: true } } },
     }),
-    db.activityLog.count(),
+    db.activityLog.count({ where: { workspaceId } }),
   ]);
 
   return NextResponse.json({ logs, total, page, pages: Math.ceil(total / limit) });

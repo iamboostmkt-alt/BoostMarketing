@@ -203,14 +203,18 @@ export default function WeeklinkHome() {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-[14px] font-medium text-[#374151] hover:text-[#111827] transition-colors px-3 py-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/login" className="hidden sm:flex text-[14px] font-medium text-[#374151] hover:text-[#111827] transition-colors px-3 py-2">
               Iniciar sesión
             </Link>
+            <Link href="/login" className="flex sm:hidden text-[13px] font-medium text-[#374151] hover:text-[#111827] transition-colors px-2 py-2">
+              Entrar
+            </Link>
             <Link href="/register"
-              className="flex h-10 items-center rounded-[14px] bg-[#7C3AED] px-5 text-[14px] font-semibold text-white transition-all hover:bg-[#6D28D9]"
+              className="flex h-9 sm:h-10 items-center rounded-[14px] bg-[#7C3AED] px-4 sm:px-5 text-[13px] sm:text-[14px] font-semibold text-white transition-all hover:bg-[#6D28D9] whitespace-nowrap"
               style={{ boxShadow: '0 8px 30px rgba(124,58,237,0.22)' }}>
-              Comenzar gratis
+              <span className="hidden sm:inline">Comenzar gratis</span>
+              <span className="sm:hidden">Comenzar</span>
             </Link>
           </div>
         </div>
