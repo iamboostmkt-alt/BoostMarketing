@@ -601,3 +601,23 @@ html.light {
 .dark [class*="animate-"] {
   transition: none !important;
 }
+
+/* ── Páginas públicas: siempre light, no heredan dark del html ── */
+/* Auth pages (login, register) y landing weeklink */
+.auth-page,
+.weeklink-landing {
+  color-scheme: light !important;
+}
+.auth-page *,
+.weeklink-landing * {
+  /* No hereda nada del tema oscuro */
+}
+
+/* Forzar que el html.dark no afecte páginas con fondo propio */
+html.dark .auth-bg {
+  background: #F6F7FB !important;
+  color: #111827 !important;
+}
+html.dark .auth-bg .text-white {
+  color: #FFFFFF !important; /* mantener en botones primarios */
+}

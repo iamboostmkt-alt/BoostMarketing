@@ -3,7 +3,6 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 // Destino de logout: app nativa Capacitor → /login, móvil browser → /login, desktop → /weeklink
 function getLogoutUrl(): string {
@@ -105,8 +104,7 @@ export default function TopNav() {
             <Search className="w-5 h-5" />
           </Button>
 
-          <ThemeToggle variant="icon" />
-        <NotificationsDropdown />
+          <NotificationsDropdown />
 
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
@@ -178,11 +176,14 @@ export default function TopNav() {
                     <Settings className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
                     <span className="text-[12px]">Ajustes</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
-                  >
-                    <Palette className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
-                    <span className="text-[12px]">Apariencia</span>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/dashboard/settings?tab=preferences"
+                      className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-white/55 hover:text-white/90 focus:text-white/90 hover:bg-white/[0.05] focus:bg-white/[0.05] cursor-pointer transition-all"
+                    >
+                      <Palette className="h-3.5 w-3.5 shrink-0 transition-all group-hover:text-violet-400" strokeWidth={1.5} />
+                      <span className="text-[12px]">Apariencia</span>
+                    </Link>
                   </DropdownMenuItem>
                   {session?.user?.role === 'ADMIN' && (
                     <DropdownMenuItem asChild>

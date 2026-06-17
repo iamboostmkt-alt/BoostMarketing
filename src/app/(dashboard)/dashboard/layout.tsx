@@ -104,7 +104,7 @@ export default function DashboardLayout({
                   <ForbiddenBanner />
                 </Suspense>
                 <ErrorBoundary>
-                  <div className="h-full overflow-y-auto overflow-x-hidden custom-scrollbar">
+                  <div className="h-full overflow-y-auto overflow-x-hidden custom-scrollbar" style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
                     {children}
                   </div>
                 </ErrorBoundary>

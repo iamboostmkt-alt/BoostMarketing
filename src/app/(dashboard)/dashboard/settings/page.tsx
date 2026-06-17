@@ -455,19 +455,7 @@ export default function SettingsPage() {
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="space-y-6">
             {/* Theme */}
-            <div className="glass-card rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <Moon className="w-5 h-5 text-brand-light" />
-                <h3 className="text-base font-semibold text-white">Tema</h3>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-white/70">Modo oscuro</p>
-                  <p className="text-xs text-white/30 mt-0.5">El tema oscuro está activado por defecto</p>
-                </div>
-                <Switch checked={true} disabled className="data-[state=checked]:bg-brand" />
-              </div>
-            </div>
+            
 
             {/* Notifications */}
             <div className="glass-card rounded-xl p-6">

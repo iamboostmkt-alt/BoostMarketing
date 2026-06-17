@@ -92,8 +92,8 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex"
-      style={{ background: '#F6F7FB', fontFamily: 'var(--font-inter, system-ui, sans-serif)' }}
+      className="min-h-[100dvh] flex"
+      style={{ background: '#F6F7FB', fontFamily: 'var(--font-inter, system-ui, sans-serif)', minHeight: '100dvh' }}
     >
       {/* Panel izquierdo — solo desktop */}
       <div
