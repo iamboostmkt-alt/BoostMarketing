@@ -63,3 +63,4 @@ server.log
 *.py
 graphify-out/
 supabase/.temp/
+BoostMarketing/
