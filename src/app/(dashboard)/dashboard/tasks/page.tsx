@@ -146,7 +146,7 @@ function BoardView({ tasks, onEdit, onDelete, onView, onMarkComplete, onMarkPend
               {/* Column header */}
               <div className="flex items-center gap-2 px-2 py-1">
                 <span className={`w-1.5 h-1.5 rounded-full ${group.color}`} />
-                <span className="text-xs font-medium text-white/80 uppercase tracking-wide">
+                <span className="text-xs font-medium text-[var(--wl-text-secondary)] uppercase tracking-wide">
                   {group.label}
                 </span>
                 <span className="text-[10px] text-white/20 ml-auto bg-white/[0.06] px-1.5 py-0.5 rounded-full">
@@ -272,7 +272,7 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange, i
           {activeTasks.length === 0 && (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <CheckCircle2 className="w-10 h-10 text-green-400/40 mb-2" />
-              <p className="text-sm text-white/40">Todas las tareas están completadas</p>
+              <p className="text-sm text-[var(--wl-text-muted)]">Todas las tareas están completadas</p>
             </div>
           )}
         </motion.div>
@@ -280,10 +280,10 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange, i
 
       {/* Sección Listas colapsable */}
       {completedTasks.length > 0 && (
-        <div className="border border-white/[0.06] rounded-xl overflow-hidden">
+        <div className="border border-[var(--wl-border)] rounded-xl overflow-hidden">
           <button type="button" onClick={() => setShowCompleted(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-            <div className="flex items-center gap-2 text-sm font-medium text-white/40">
+            className="w-full flex items-center justify-between px-4 py-3 bg-white/[0.02] hover:bg-[var(--wl-hover)] transition-colors">
+            <div className="flex items-center gap-2 text-sm font-medium text-[var(--wl-text-muted)]">
               <CheckCircle2 className="w-4 h-4 text-green-400/60" />
               Listas ({completedTasks.length})
             </div>
@@ -296,7 +296,7 @@ function MineTasksView({ tasks, viewMode, cardProps, onCreate, onStatusChange, i
                   <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
                   <span className="text-sm text-white/50 line-through truncate flex-1">{task.title}</span>
                   <button type="button" onClick={() => cardProps.onEdit(task)}
-                    className="text-[10px] text-white/25 hover:text-white/60 transition-colors shrink-0">
+                    className="text-[10px] text-white/25 hover:text-[var(--wl-text-secondary)] transition-colors shrink-0">
                     Ver
                   </button>
                 </div>
@@ -658,11 +658,11 @@ function TasksContent() {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
             <button onClick={() => setViewMode('list')} title="Lista"
-              className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white/[0.1] text-white' : 'text-white/40 hover:text-white/60'}`}>
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white/[0.1] text-white' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}>
               <LayoutList className="w-4 h-4" />
             </button>
             <button onClick={() => setViewMode('board')} title="Tablero"
-              className={`p-1.5 rounded-md transition-all ${viewMode === 'board' ? 'bg-white/[0.1] text-white' : 'text-white/40 hover:text-white/60'}`}>
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'board' ? 'bg-white/[0.1] text-white' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}>
               <Columns3 className="w-4 h-4" />
             </button>
           </div>
@@ -676,13 +676,13 @@ function TasksContent() {
       {filterClientId && filterClientName && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-violet-500/20 text-xs" style={{ background: 'rgba(124,58,237,0.08)' }}>
           <div className="h-1.5 w-1.5 rounded-full bg-violet-400" />
-          <span className="text-white/60">Filtrando por cuenta:</span>
+          <span className="text-[var(--wl-text-secondary)]">Filtrando por cuenta:</span>
           <span className="text-violet-300 font-medium">{filterClientName}</span>
-          <a href="/dashboard/tasks" className="ml-auto text-white/30 hover:text-white/60 transition-colors">✕ Quitar filtro</a>
+          <a href="/dashboard/tasks" className="ml-auto text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors">✕ Quitar filtro</a>
         </div>
       )}
       {/* Tabs */}
-      <div className="flex gap-0.5 sm:gap-2 border-b border-white/[0.06] pb-0 overflow-x-auto scrollbar-none">
+      <div className="flex gap-0.5 sm:gap-2 border-b border-[var(--wl-border)] pb-0 overflow-x-auto scrollbar-none">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
@@ -691,7 +691,7 @@ function TasksContent() {
               className={`flex items-center gap-1.5 px-2.5 sm:px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap ${
                 active
                   ? 'border-brand text-white'
-                  : 'border-transparent text-white/40 hover:text-white/70 hover:border-white/20'
+                  : 'border-transparent text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] hover:border-white/20'
               }`}>
               <Icon className="w-4 h-4" />
               <span className="hidden xs:inline sm:inline">{tab.label}</span>
@@ -741,7 +741,7 @@ function TasksContent() {
               <p className="text-xs text-white/30">No hay tareas de clientes asignadas a ti</p>
             </div>
           ) : clientsWithTasks.map((client) => (
-            <div key={client.id} className="rounded-xl border border-white/[0.06] overflow-hidden">
+            <div key={client.id} className="rounded-xl border border-[var(--wl-border)] overflow-hidden">
               <button onClick={() => setExpandedClient(expandedClient === client.id ? null : client.id)}
                 className="w-full flex items-center gap-3 px-4 py-3 bg-white/[0.03] hover:bg-white/[0.05] transition-colors">
                 <div className="w-8 h-8 rounded-lg bg-brand/20 flex items-center justify-center shrink-0">
@@ -749,7 +749,7 @@ function TasksContent() {
                 </div>
                 <div className="flex-1 text-left">
                   <p className="text-sm font-semibold text-white">{client.name}</p>
-                  {client.company && <p className="text-xs text-white/40">{client.company}</p>}
+                  {client.company && <p className="text-xs text-[var(--wl-text-muted)]">{client.company}</p>}
                 </div>
                 <span className="text-xs text-white/30 bg-white/[0.06] px-2 py-0.5 rounded-full">{client.tasks.length} tareas</span>
                 <span className="text-white/30 text-xs">{expandedClient === client.id ? '▲' : '▼'}</span>
@@ -787,7 +787,7 @@ function TasksContent() {
               <button
                 onClick={loadMoreTasks}
                 disabled={loadingMore}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/50 hover:text-white text-sm transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-[var(--wl-border)] text-white/50 hover:text-white text-sm transition-colors disabled:opacity-40"
               >
                 {loadingMore ? (
                   <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
@@ -838,7 +838,7 @@ function TasksContent() {
       />
       <TaskDetailModal task={viewingTask} open={!!viewingTask} onClose={() => setViewingTask(null)} onEdit={handleEdit} onStatusChange={handleStatusChange} isManager={isManager} currentUserId={currentUserId} />
       <AlertDialog open={!!deleteTask} onOpenChange={(open) => !open && setDeleteTask(null)}>
-        <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
+        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center">
@@ -849,7 +849,7 @@ function TasksContent() {
             <AlertDialogDescription className="text-white/50">Esta accion no se puede deshacer.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.06]">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-red-500 hover:bg-red-600 text-white">
               {deleting ? 'Eliminando...' : 'Eliminar'}
             </AlertDialogAction>

@@ -34,7 +34,7 @@ function UnassignedGuard({ children }: { children: React.ReactNode }) {
   if (userRole === 'UNASSIGNED') {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-6 px-4"
-        style={{ background: '#07070A' }}>
+        style={{ background: 'var(--wl-bg)' }}>
         <div className="flex flex-col items-center gap-4 text-center max-w-sm">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl text-3xl"
             style={{ background: 'rgba(139,92,246,0.12)' }}>
@@ -49,12 +49,12 @@ function UnassignedGuard({ children }: { children: React.ReactNode }) {
               Una vez asignado podrás acceder al dashboard.
             </p>
           </div>
-          <div className="mt-2 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-[13px] text-white/40 text-center">
+          <div className="mt-2 rounded-xl border border-[var(--wl-border)] bg-white/[0.03] px-4 py-3 text-[13px] text-[var(--wl-text-muted)] text-center">
             {session.user?.email}
           </div>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="mt-2 flex h-10 items-center rounded-[12px] border border-white/[0.08] bg-white/[0.04] px-5 text-[13px] text-white/60 transition-colors hover:bg-white/[0.08] hover:text-white/80">
+            className="mt-2 flex h-10 items-center rounded-[12px] border border-[var(--wl-border)] bg-white/[0.04] px-5 text-[13px] text-[var(--wl-text-secondary)] transition-colors hover:bg-white/[0.08] hover:text-[var(--wl-text-secondary)]">
             Cerrar sesión
           </button>
         </div>

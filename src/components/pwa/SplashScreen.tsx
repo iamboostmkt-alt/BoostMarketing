@@ -29,7 +29,7 @@ export function SplashScreen() {
     <div
       className="fixed inset-0 z-[99999] flex flex-col items-center justify-center"
       style={{
-        background: '#07070A',
+        background: 'var(--wl-bg)',
         transition: 'opacity 0.4s ease',
         opacity: fadeOut ? 0 : 1,
         pointerEvents: fadeOut ? 'none' : 'all',

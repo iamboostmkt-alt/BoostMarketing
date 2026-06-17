@@ -25,7 +25,7 @@ export default function ContactCard({ contact, onClick, index = 0 }: ContactCard
       onClick={() => onClick(contact)}
       className="
         cursor-grab active:cursor-grabbing
-        bg-[#15151c] border border-white/[0.06] rounded-xl p-4
+        bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-xl p-4
         hover:border-white/[0.12] hover:shadow-[0_0_20px_rgba(124,58,237,0.08)]
         transition-all duration-200 group
       "
@@ -48,14 +48,14 @@ export default function ContactCard({ contact, onClick, index = 0 }: ContactCard
       {contact.company && (
         <div className="flex items-center gap-1.5 mb-1.5">
           <Building2 className="w-3.5 h-3.5 text-white/30 shrink-0" />
-          <span className="text-xs text-white/40 truncate">{contact.company}</span>
+          <span className="text-xs text-[var(--wl-text-muted)] truncate">{contact.company}</span>
         </div>
       )}
 
       {/* Email */}
       <div className="flex items-center gap-1.5 mb-2">
         <Mail className="w-3.5 h-3.5 text-white/30 shrink-0" />
-        <span className="text-xs text-white/40 truncate">{contact.email}</span>
+        <span className="text-xs text-[var(--wl-text-muted)] truncate">{contact.email}</span>
       </div>
 
       {/* Deal Value */}

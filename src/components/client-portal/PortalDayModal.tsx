@@ -64,7 +64,7 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
 
   return (
     <Dialog open={!!day} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg max-h-[80vh] overflow-y-auto">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white capitalize">{label}</DialogTitle>
         </DialogHeader>
@@ -72,17 +72,17 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
         {!hasItems ? (
           <div className="py-12 flex flex-col items-center gap-3 text-center">
             <Calendar className="w-10 h-10 text-white/15" />
-            <p className="text-white/40 text-sm">No hay elementos este día.</p>
+            <p className="text-[var(--wl-text-muted)] text-sm">No hay elementos este día.</p>
           </div>
         ) : (
           <div className="space-y-4 mt-1">
             {dayTasks.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Entregas ({dayTasks.length})</p>
+                <p className="text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Entregas ({dayTasks.length})</p>
                 {dayTasks.map((task) => {
                   const cfg = taskStatusConfig[(task as any).deliverableStatus ?? task.status] ?? taskStatusConfig.pending;
                   return (
-                    <div key={task.id} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 space-y-2">
+                    <div key={task.id} className="rounded-lg border border-[var(--wl-border)] bg-white/[0.02] p-3 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-medium text-white">{task.title}</p>
                         <span className={`flex-shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
@@ -90,7 +90,7 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
                         </span>
                       </div>
                       {task.description && (
-                        <p className="text-xs text-white/40 line-clamp-2">{task.description}</p>
+                        <p className="text-xs text-[var(--wl-text-muted)] line-clamp-2">{task.description}</p>
                       )}
                       <div className="flex items-center gap-3 text-[11px] text-white/35 flex-wrap">
                         {task.dueDate && <span>Vence: {fmtDate(task.dueDate)}</span>}
@@ -113,7 +113,7 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
                       {isManager && (
                         <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
                           <button type="button" onClick={() => { onEditTask?.(task); onClose(); }}
-                            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white transition-colors">
                             <Pencil className="w-3 h-3" /> Editar
                           </button>
                           <button type="button" onClick={() => { if (confirm('¿Eliminar "' + task.title + '"?')) { onDeleteTask?.(task.id); } }}
@@ -138,7 +138,7 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
 
             {dayAppts.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Videollamadas ({dayAppts.length})</p>
+                <p className="text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Videollamadas ({dayAppts.length})</p>
                 {dayAppts.map((apt: any) => (
                   <div key={apt.id} className="rounded-lg border border-green-500/20 bg-green-500/[0.04] p-3 space-y-2">
                     <div className="flex items-center gap-2">
@@ -161,7 +161,7 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
                     {isManager && (
                       <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
                         <button type="button" onClick={() => { onEditAppt?.(apt); onClose(); }}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white transition-colors">
                           <Pencil className="w-3 h-3" /> Editar
                         </button>
                         <button type="button" onClick={() => { if (confirm('¿Eliminar "' + apt.name + '"?')) { onDeleteAppt?.(apt.id); onClose(); } }}
@@ -177,7 +177,7 @@ export function PortalDayModal({ day, tasks, appointments = [], isManager = fals
           </div>
         )}
 
-        <div className="flex gap-2 pt-2 border-t border-white/[0.06] mt-2 flex-wrap">
+        <div className="flex gap-2 pt-2 border-t border-[var(--wl-border)] mt-2 flex-wrap">
           <button type="button" onClick={() => { onEditTask?.(null); onClose(); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand/15 hover:bg-brand/25 border border-brand/25 text-brand-light transition-colors">
             <Plus className="w-3.5 h-3.5" />

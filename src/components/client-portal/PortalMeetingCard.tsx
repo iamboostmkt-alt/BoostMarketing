@@ -61,21 +61,21 @@ export function PortalMeetingCard({ appointment, isManager = false, onDelete, on
       </div>
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-[var(--wl-border)] pt-3">
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-white/[0.03] rounded-lg p-2.5">
               <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Fecha</p>
-              <p className="text-xs text-white/70 font-medium">{fmtDate(appointment.date)}</p>
+              <p className="text-xs text-[var(--wl-text-secondary)] font-medium">{fmtDate(appointment.date)}</p>
             </div>
             <div className="bg-white/[0.03] rounded-lg p-2.5">
               <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Hora</p>
-              <p className="text-xs text-white/70 font-medium">
+              <p className="text-xs text-[var(--wl-text-secondary)] font-medium">
                 {format(new Date(appointment.date), 'HH:mm', { locale: es })}
               </p>
             </div>
           </div>
           {appointment.notes && (
-            <p className="text-xs text-white/60 leading-relaxed">{appointment.notes}</p>
+            <p className="text-xs text-[var(--wl-text-secondary)] leading-relaxed">{appointment.notes}</p>
           )}
           {appointment.meetUrl && (
             <a href={appointment.meetUrl} target="_blank" rel="noopener noreferrer"
@@ -87,7 +87,7 @@ export function PortalMeetingCard({ appointment, isManager = false, onDelete, on
           {isManager && (
             <div className="flex gap-2 pt-2 border-t border-white/[0.04]" onClick={e => e.stopPropagation()}>
               <button type="button" onClick={() => onEdit?.(appointment)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-white/[0.04] hover:bg-white/[0.08] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white transition-colors">
                 <Pencil className="w-3 h-3" />Editar
               </button>
               <button type="button" onClick={() => onRemind?.(appointment.id)}

@@ -46,9 +46,9 @@ interface DayModalProps {
 function CompletedTasksSection({ tasks }: { tasks: Task[] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-white/[0.06] rounded-lg overflow-hidden">
+    <div className="border border-[var(--wl-border)] rounded-lg overflow-hidden">
       <button type="button" onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+        className="w-full flex items-center justify-between px-3 py-2 bg-white/[0.02] hover:bg-[var(--wl-hover)] transition-colors">
         <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/30 uppercase tracking-wider">
           <CheckSquare className="w-3 h-3 text-green-400/50" />
           Listas ({tasks.length})
@@ -60,7 +60,7 @@ function CompletedTasksSection({ tasks }: { tasks: Task[] }) {
           {tasks.map(t => (
             <div key={t.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-white/[0.02]">
               <CheckCircle2 className="w-3.5 h-3.5 text-green-400/60 shrink-0" />
-              <span className="text-xs text-white/40 line-through truncate">{t.title}</span>
+              <span className="text-xs text-[var(--wl-text-muted)] line-through truncate">{t.title}</span>
             </div>
           ))}
         </div>
@@ -126,8 +126,8 @@ function DayModal({
  
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="bg-[#15151c] border-white/[0.06] text-white max-w-lg w-full max-h-[85vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-lg w-full max-h-[85vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-4 border-b border-[var(--wl-border)] shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-brand/15 flex items-center justify-center shrink-0">
               <CalendarDays className="w-4 h-4 text-brand-light" />
@@ -136,7 +136,7 @@ function DayModal({
               <DialogTitle className="text-base font-semibold text-white leading-tight">
                 {isToday(day) ? 'Hoy · ' : ''}{label}
               </DialogTitle>
-              <p className="text-xs text-white/40 mt-0.5">
+              <p className="text-xs text-[var(--wl-text-muted)] mt-0.5">
                     {total === 0 ? 'Sin elementos' : `${total} elemento${total !== 1 ? 's' : ''}`}
               </p>
             </div>
@@ -147,13 +147,13 @@ function DayModal({
           {/* Tareas */}
           {dayTasks.length > 0 && (
             <section className="space-y-2">
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">
                 <CheckSquare className="w-3 h-3" />
                 Tareas ({dayTasks.length})
               </div>
               {dayTasks.map((task) => (
                 <div key={task.id}
-                  className="w-full text-left bg-white/[0.03] border border-white/[0.05] rounded-lg p-3.5 hover:border-white/[0.10] hover:bg-white/[0.05] transition-colors group">
+                  className="w-full text-left bg-white/[0.03] border border-[var(--wl-border-subtle)] rounded-lg p-3.5 hover:border-white/[0.10] hover:bg-white/[0.05] transition-colors group">
                   <div className="flex items-start gap-2.5">
                     <button type="button" className="flex-1 text-left"
                       onClick={() => { onEditTask(task); onClose(); }}>
@@ -169,7 +169,7 @@ function DayModal({
                         <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-3 mt-2.5 pl-1 flex-wrap">
-                        <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>
+                        <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-[var(--wl-text-muted)]'}`}>
                           {priorityLabels[task.priority] || task.priority}
                         </span>
                         {task.dueDate && (
@@ -207,7 +207,7 @@ function DayModal({
           {/* Videollamadas */}
           {dayAppointments.length > 0 && (
             <section className="space-y-2">
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">
                 <Video className="w-3 h-3" />
                 Videollamadas ({dayAppointments.length})
               </div>
@@ -260,7 +260,7 @@ function DayModal({
           {/* Milestones */}
           {dayMilestones.length > 0 && (
             <section className="space-y-2">
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">
                 <span className="text-yellow-400">🏁</span>
                 Milestones ({dayMilestones.length})
               </div>
@@ -293,14 +293,14 @@ function DayModal({
                 <Sparkles className="w-5 h-5 text-white/20" />
               </div>
               <div>
-                <p className="text-sm font-medium text-white/40">Sin elementos este dia</p>
+                <p className="text-sm font-medium text-[var(--wl-text-muted)]">Sin elementos este dia</p>
                 <p className="text-xs text-white/25 mt-0.5">No hay nada programado</p>
               </div>
             </div>
           )}
         </div>
  
-        <div className="border-t border-white/[0.06] px-5 py-3 flex gap-2 shrink-0">
+        <div className="border-t border-[var(--wl-border)] px-5 py-3 flex gap-2 shrink-0">
           <Button size="sm"
             className="bg-brand hover:bg-brand-dark text-white gap-1.5 text-xs h-8"
             onClick={() => { onNewTask(); onClose(); }}>
@@ -314,7 +314,7 @@ function DayModal({
             Reunion
           </Button>
           <Button size="sm" variant="ghost"
-            className="text-white/30 hover:text-white hover:bg-white/[0.06] text-xs h-8 ml-auto"
+            className="text-white/30 hover:text-white hover:bg-[var(--wl-hover)] text-xs h-8 ml-auto"
             onClick={onClose}>
             Cerrar
           </Button>

@@ -141,18 +141,18 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
       {/* Navigation */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-[var(--wl-hover)]"
             onClick={() => view === 'month' ? setCurrentMonth(m => subMonths(m, 1)) : setCurrentWeek(w => subWeeks(w, 1))}>
             <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
-          <span className="text-sm font-medium text-white/70 min-w-[180px] text-center">
+          <span className="text-sm font-medium text-[var(--wl-text-secondary)] min-w-[180px] text-center">
             {view === 'month' ? monthLabel : weekLabel}
           </span>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-[var(--wl-hover)]"
             onClick={() => view === 'month' ? setCurrentMonth(m => addMonths(m, 1)) : setCurrentWeek(w => addWeeks(w, 1))}>
             <ChevronRight className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-white/50 hover:text-white hover:bg-white/[0.06]"
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-white/50 hover:text-white hover:bg-[var(--wl-hover)]"
             onClick={() => { setCurrentMonth(new Date()); setCurrentWeek(new Date()); }}>
             Hoy
           </Button>
@@ -161,7 +161,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
           <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
             {(['month', 'week', 'timeline'] as CalendarView[]).map((v) => (
               <button key={v} onClick={() => setView(v)}
-                className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === v ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}>
+                className={`px-2.5 py-1 text-xs rounded-md transition-all ${view === v ? 'bg-white/[0.08] text-white' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}>
                 {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Timeline'}
               </button>
             ))}
@@ -169,17 +169,17 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
           {view === 'timeline' && (
             <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
               <button onClick={() => setTimelineZoom('compact')}
-                className={`px-2 py-1 text-xs rounded-md transition-all ${timelineZoom === 'compact' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}
+                className={`px-2 py-1 text-xs rounded-md transition-all ${timelineZoom === 'compact' ? 'bg-white/[0.08] text-white' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}
                 title="Vista compacta">
                 S
               </button>
               <button onClick={() => setTimelineZoom('normal')}
-                className={`px-2 py-1 text-xs rounded-md transition-all ${timelineZoom === 'normal' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}
+                className={`px-2 py-1 text-xs rounded-md transition-all ${timelineZoom === 'normal' ? 'bg-white/[0.08] text-white' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}
                 title="Vista normal">
                 M
               </button>
               <button onClick={() => setTimelineZoom('expanded')}
-                className={`px-2 py-1 text-xs rounded-md transition-all ${timelineZoom === 'expanded' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'}`}
+                className={`px-2 py-1 text-xs rounded-md transition-all ${timelineZoom === 'expanded' ? 'bg-white/[0.08] text-white' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'}`}
                 title="Vista expandida">
                 L
               </button>
@@ -191,7 +191,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
       {view === 'month' && (
         <div className="space-y-4">
       {/* Day names */}
-      <div className="grid grid-cols-7 border-b border-white/[0.06]">
+      <div className="grid grid-cols-7 border-b border-[var(--wl-border)]">
         {DAY_NAMES.map(name => (
           <div key={name} className="text-center text-[10px] font-medium text-white/20 py-2 uppercase tracking-widest">{name}</div>
         ))}
@@ -219,10 +219,10 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
               className={`
                 relative flex flex-col items-start justify-start min-h-[68px] md:min-h-[80px] rounded-lg transition-all overflow-hidden
                 border pt-1.5 pb-1 px-1
-                ${isCurrentMonth ? 'text-white/80' : 'text-white/20'}
+                ${isCurrentMonth ? 'text-[var(--wl-text-secondary)]' : 'text-white/20'}
                 ${today && !isSelected ? 'border-brand/50 bg-brand/[0.07]' : 'border-transparent'}
                 ${isSelected ? 'border-brand bg-brand/20 text-white shadow-lg shadow-brand/10' : ''}
-                ${!isSelected && !today ? 'hover:bg-white/[0.04] hover:border-white/[0.08]' : ''}
+                ${!isSelected && !today ? 'hover:bg-[var(--wl-hover)] hover:border-[var(--wl-border)]' : ''}
                 ${hasAppointment && !isSelected ? 'ring-1 ring-inset ring-green-400/20' : ''}
               `}
             >
@@ -261,10 +261,10 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                     className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 ${
                       today
                         ? 'bg-brand/20 border-brand text-white'
-                        : task.priority === 'urgent' ? 'bg-red-500/10 border-red-500/70 text-white/80'
-                        : task.priority === 'high' ? 'bg-orange-400/10 border-orange-400/60 text-white/80'
-                        : task.priority === 'medium' ? 'bg-violet-400/10 border-violet-400/60 text-white/80'
-                        : 'bg-violet-500/[0.08] border-violet-500/30 text-white/70'
+                        : task.priority === 'urgent' ? 'bg-red-500/10 border-red-500/70 text-[var(--wl-text-secondary)]'
+                        : task.priority === 'high' ? 'bg-orange-400/10 border-orange-400/60 text-[var(--wl-text-secondary)]'
+                        : task.priority === 'medium' ? 'bg-violet-400/10 border-violet-400/60 text-[var(--wl-text-secondary)]'
+                        : 'bg-violet-500/[0.08] border-violet-500/30 text-[var(--wl-text-secondary)]'
                     }`}
                     title={task.title}
                   >
@@ -273,7 +273,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                 ))}
                 {dayAppointments.slice(0, 1).map((apt, i) => (
                   <div key={`aptchip-${i}`}
-                    className="w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 border-green-500/60 bg-white/[0.03] text-white/60"
+                    className="w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 border-green-500/60 bg-white/[0.03] text-[var(--wl-text-secondary)]"
                     title={apt.name}>
                     {apt.name}
                   </div>
@@ -323,7 +323,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                       ? 'bg-brand text-white'
                       : selectedDay && isSameDay(day, selectedDay)
                       ? 'bg-white/[0.12] text-white'
-                      : 'text-white/60 hover:bg-white/[0.06] hover:text-white'
+                      : 'text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white'
                   }`}
                 >
                   {format(day, 'd')}
@@ -367,7 +367,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                   <div className="w-full space-y-px">
                     {dayTasks.slice(0, 4).map((task, i) => (
                       <div key={`chip-${task.id}-${i}`}
-                        className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 bg-white/[0.03] text-white/60 ${
+                        className={`w-full truncate text-[10px] font-medium px-1 py-px rounded-sm leading-tight border-l-2 bg-white/[0.03] text-[var(--wl-text-secondary)] ${
                           task.priority === 'urgent' ? 'border-red-500/70'
                           : task.priority === 'high' ? 'border-orange-400/60'
                           : task.priority === 'medium' ? 'border-violet-400/50'
@@ -487,7 +487,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                       className="flex items-center gap-2"
                     >
                       <div className={`${labelW} shrink-0 text-right pr-2`}>
-                        <p className={`${textSz} text-white/60 truncate`}>{task.title}</p>
+                        <p className={`${textSz} text-[var(--wl-text-secondary)] truncate`}>{task.title}</p>
                         {(task as any).client?.name && (
                           <p className="text-[9px] text-white/25 truncate">{(task as any).client.name}</p>
                         )}
@@ -518,7 +518,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
                           title={task.title}
                         >
-                          <span className="text-[9px] text-white/80 truncate font-medium">{task.title}</span>
+                          <span className="text-[9px] text-[var(--wl-text-secondary)] truncate font-medium">{task.title}</span>
                         </motion.div>
                       </div>
                     </motion.div>
@@ -542,7 +542,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                       className="flex items-center gap-2"
                     >
                       <div className={`${labelW} shrink-0 text-right pr-2`}>
-                        <p className={`${textSz} text-white/60 truncate`}>{task.title}</p>
+                        <p className={`${textSz} text-[var(--wl-text-secondary)] truncate`}>{task.title}</p>
                       </div>
                       <div className={`flex-1 relative ${rowH}`}>
                         <div className="absolute inset-y-0 w-full flex">
@@ -581,7 +581,7 @@ export default function CalendarGrid({ tasks, activities = [], appointments = []
                       className="flex items-center gap-2"
                     >
                       <div className={`${labelW} shrink-0 text-right pr-2`}>
-                        <p className={`${textSz} text-white/60 truncate`}>{apt.name}</p>
+                        <p className={`${textSz} text-[var(--wl-text-secondary)] truncate`}>{apt.name}</p>
                       </div>
                       <div className={`flex-1 relative ${rowH}`}>
                         <div className="absolute inset-y-0 w-full flex">

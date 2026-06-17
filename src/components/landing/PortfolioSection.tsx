@@ -88,7 +88,7 @@ export default function PortfolioSection({ items }: PortfolioSectionProps) {
                   )}
 
                   {item.projectUrl && (
-                    <div className="mt-4 pt-4 border-t border-white/[0.06]">
+                    <div className="mt-4 pt-4 border-t border-[var(--wl-border)]">
                       <a
                         href={item.projectUrl}
                         target="_blank"

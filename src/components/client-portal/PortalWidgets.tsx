@@ -8,9 +8,9 @@ export function CompletedDeliverables({ tasks }: { tasks: any[] }) {
   const [open, setOpen] = useState(false);
   if (tasks.length === 0) return null;
   return (
-    <div className="border border-white/[0.06] rounded-xl overflow-hidden mt-2">
+    <div className="border border-[var(--wl-border)] rounded-xl overflow-hidden mt-2">
       <button type="button" onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-2.5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-white/[0.02] hover:bg-[var(--wl-hover)] transition-colors">
         <div className="flex items-center gap-2 text-xs font-medium text-white/35">
           <CheckCircle2 className="w-3.5 h-3.5 text-green-400/50" />
           Listas ({tasks.length})
@@ -42,7 +42,7 @@ export function ProgressBar({ total, completed }: { total: number; completed: nu
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-xs text-white/50">
         <span>Progreso general</span>
-        <span className="font-semibold text-white/80">{pct}%</span>
+        <span className="font-semibold text-[var(--wl-text-secondary)]">{pct}%</span>
       </div>
       <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
         <motion.div

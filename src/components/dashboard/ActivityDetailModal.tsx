@@ -59,9 +59,9 @@ export default function ActivityDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg w-full max-h-[90vh] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-lg w-full max-h-[90vh] flex flex-col p-0 overflow-hidden">
         {/* Header */}
-        <DialogHeader className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
+        <DialogHeader className="px-5 pt-5 pb-4 border-b border-[var(--wl-border)] shrink-0">
           <div className="flex items-start gap-3 pr-6">
             <div className="w-9 h-9 rounded-xl bg-brand/15 flex items-center justify-center shrink-0 mt-0.5">
               <CalendarRange className="w-4 h-4 text-brand-light" />
@@ -74,7 +74,7 @@ export default function ActivityDetailModal({
                 <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusCls}`}>
                   {statusLbl}
                 </span>
-                <span className={`text-[10px] font-medium ${priorityColors[activity.priority] || 'text-white/40'}`}>
+                <span className={`text-[10px] font-medium ${priorityColors[activity.priority] || 'text-[var(--wl-text-muted)]'}`}>
                   {priorityLabels[activity.priority] || activity.priority}
                 </span>
               </div>
@@ -90,7 +90,7 @@ export default function ActivityDetailModal({
               <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               <div>
                 <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Fechas</p>
-                <p className="text-white/70 text-xs">
+                <p className="text-[var(--wl-text-secondary)] text-xs">
                   {fmtDate(activity.startDate)}
                   {activity.endDate && activity.endDate !== activity.startDate
                     ? ` → ${fmtDate(activity.endDate)}`
@@ -120,14 +120,14 @@ export default function ActivityDetailModal({
                           {initials(assignees[0].name, assignees[0].email)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs text-white/70">
+                      <span className="text-xs text-[var(--wl-text-secondary)]">
                         {assignees[0].name || assignees[0].email}
                       </span>
                     </div>
                   ) : (
                     <div className="space-y-1">
                       <UserAvatarStack users={assignees} max={6} size="sm" />
-                      <p className="text-[10px] text-white/40 mt-1">
+                      <p className="text-[10px] text-[var(--wl-text-muted)] mt-1">
                         {assignees.map((u) => u.name || u.email).join(', ')}
                       </p>
                     </div>
@@ -139,14 +139,14 @@ export default function ActivityDetailModal({
 
           {/* Description */}
           {activity.description && (
-            <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] px-3 py-2.5">
+            <div className="rounded-lg bg-white/[0.03] border border-[var(--wl-border-subtle)] px-3 py-2.5">
               <p className="text-xs text-white/55 leading-relaxed whitespace-pre-wrap">
                 {activity.description}
               </p>
             </div>
           )}
 
-          <div className="border-t border-white/[0.05]" />
+          <div className="border-t border-[var(--wl-border-subtle)]" />
 
           <ActivityCommentThread
             activityId={activity.id}
@@ -157,12 +157,12 @@ export default function ActivityDetailModal({
 
         {/* Footer */}
         {onEdit && (
-          <div className="border-t border-white/[0.06] px-5 py-3 flex items-center gap-2 shrink-0">
+          <div className="border-t border-[var(--wl-border)] px-5 py-3 flex items-center gap-2 shrink-0">
             <Button
               size="sm"
               variant="outline"
               onClick={() => { onEdit(activity); onClose(); }}
-              className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-1.5 text-xs h-8"
+              className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)] gap-1.5 text-xs h-8"
             >
               <Pencil className="w-3.5 h-3.5" />
               Editar actividad
@@ -171,7 +171,7 @@ export default function ActivityDetailModal({
               size="sm"
               variant="ghost"
               onClick={onClose}
-              className="text-white/30 hover:text-white hover:bg-white/[0.06] text-xs h-8 ml-auto"
+              className="text-white/30 hover:text-white hover:bg-[var(--wl-hover)] text-xs h-8 ml-auto"
             >
               <X className="w-3.5 h-3.5 mr-1" />
               Cerrar

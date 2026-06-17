@@ -66,7 +66,7 @@ export function PortalTaskCard({ task, onFeedback, onDelete }: PortalTaskCardPro
           </div>
         </div>
         {!expanded && task.description && (
-          <p className="text-xs text-white/40 line-clamp-1 pl-6">{task.description}</p>
+          <p className="text-xs text-[var(--wl-text-muted)] line-clamp-1 pl-6">{task.description}</p>
         )}
         {!expanded && task.dueDate && (
           <p className="text-[11px] text-white/30 pl-6">Vence: {fmtDate(task.dueDate)}</p>
@@ -74,15 +74,15 @@ export function PortalTaskCard({ task, onFeedback, onDelete }: PortalTaskCardPro
       </div>
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-[var(--wl-border)] pt-3">
           {task.description && (
-            <p className="text-xs text-white/60 leading-relaxed">{task.description}</p>
+            <p className="text-xs text-[var(--wl-text-secondary)] leading-relaxed">{task.description}</p>
           )}
           <div className="grid grid-cols-2 gap-2">
             {task.dueDate && (
               <div className="bg-white/[0.03] rounded-lg p-2.5">
                 <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Vence</p>
-                <p className="text-xs text-white/70 font-medium">{fmtDate(task.dueDate)}</p>
+                <p className="text-xs text-[var(--wl-text-secondary)] font-medium">{fmtDate(task.dueDate)}</p>
               </div>
             )}
             {task.priority && (

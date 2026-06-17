@@ -65,7 +65,7 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
           <div>
             <h3 className="text-[14px] font-semibold text-white/90 leading-tight">{project.name}</h3>
             {project.client && (
-              <p className="text-[11px] text-white/40 mt-0.5">{project.client.name}</p>
+              <p className="text-[11px] text-[var(--wl-text-muted)] mt-0.5">{project.client.name}</p>
             )}
           </div>
         </div>
@@ -78,13 +78,13 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
 
       {/* Description */}
       {project.description && (
-        <p className="text-[12px] text-white/40 mb-4 line-clamp-2">{project.description}</p>
+        <p className="text-[12px] text-[var(--wl-text-muted)] mb-4 line-clamp-2">{project.description}</p>
       )}
 
       {/* Progress */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-white/40">Progreso</span>
+          <span className="text-[11px] text-[var(--wl-text-muted)]">Progreso</span>
           <span className="text-[11px] font-medium" style={{ color: project.color }}>{progress}%</span>
         </div>
         <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
@@ -94,7 +94,7 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
       </div>
 
       {/* Stats */}
-      <div className="flex items-center gap-4 mb-4 text-[11px] text-white/40">
+      <div className="flex items-center gap-4 mb-4 text-[11px] text-[var(--wl-text-muted)]">
         <span className="flex items-center gap-1">
           <CheckCircle2 className="w-3 h-3" />
           {project._count.tasks} tareas
@@ -120,7 +120,7 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
             </div>
           ))}
           {project.assignedUsers.length > 4 && (
-            <div className="ring-2 ring-[#0F1117] rounded-full flex items-center justify-center bg-white/10 text-[9px] text-white/60"
+            <div className="ring-2 ring-[#0F1117] rounded-full flex items-center justify-center bg-white/10 text-[9px] text-[var(--wl-text-secondary)]"
               style={{ width: 22, height: 22 }}>
               +{project.assignedUsers.length - 4}
             </div>
@@ -128,7 +128,7 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
         </div>
         <div className="flex items-center gap-1">
           <button onClick={e => { e.stopPropagation(); onClick(); }}
-            className="w-6 h-6 rounded-lg flex items-center justify-center text-white/20 hover:text-white/60 hover:bg-white/[0.06] transition-colors">
+            className="w-6 h-6 rounded-lg flex items-center justify-center text-white/20 hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] transition-colors">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
           <ChevronRight className="w-4 h-4 text-white/20" />
@@ -205,9 +205,9 @@ function ProjectModal({ open, onClose, onSaved, project }: {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
       <div className="glass-card rounded-t-2xl sm:rounded-2xl w-full max-w-lg max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between p-5 border-b border-[var(--wl-border)]">
           <h2 className="text-[16px] font-semibold text-white">{project ? 'Editar proyecto' : 'Nuevo proyecto'}</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white/80 text-xl">×</button>
+          <button onClick={onClose} className="text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] text-xl">×</button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {/* Nombre */}
@@ -215,14 +215,14 @@ function ProjectModal({ open, onClose, onSaved, project }: {
             <label className="text-[12px] text-white/50 mb-1.5 block">Nombre *</label>
             <input value={name} onChange={e => setName(e.target.value)} required
               placeholder="Ej. Campaña Chamoy Fin de Año"
-              className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/50" />
+              className="w-full rounded-xl bg-white/[0.04] border border-[var(--wl-border)] px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/50" />
           </div>
           {/* Descripción */}
           <div>
             <label className="text-[12px] text-white/50 mb-1.5 block">Descripción</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2}
               placeholder="¿De qué trata este proyecto?"
-              className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/50 resize-none" />
+              className="w-full rounded-xl bg-white/[0.04] border border-[var(--wl-border)] px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/50 resize-none" />
           </div>
           {/* Color */}
           <div>
@@ -239,7 +239,7 @@ function ProjectModal({ open, onClose, onSaved, project }: {
           <div>
             <label className="text-[12px] text-white/50 mb-1.5 block">Cliente (opcional)</label>
             <select value={clientId} onChange={e => setClientId(e.target.value)}
-              className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50">
+              className="w-full rounded-xl bg-white/[0.04] border border-[var(--wl-border)] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50">
               <option value="">Sin cliente (proyecto interno)</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -249,12 +249,12 @@ function ProjectModal({ open, onClose, onSaved, project }: {
             <div>
               <label className="text-[12px] text-white/50 mb-1.5 block">Inicio</label>
               <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50" />
+                className="w-full rounded-xl bg-white/[0.04] border border-[var(--wl-border)] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50" />
             </div>
             <div>
               <label className="text-[12px] text-white/50 mb-1.5 block">Fin</label>
               <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50" />
+                className="w-full rounded-xl bg-white/[0.04] border border-[var(--wl-border)] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50" />
             </div>
           </div>
           {/* Presupuesto */}
@@ -262,14 +262,14 @@ function ProjectModal({ open, onClose, onSaved, project }: {
             <label className="text-[12px] text-white/50 mb-1.5 block">Presupuesto (opcional)</label>
             <input type="number" value={budget} onChange={e => setBudget(e.target.value)} min="0" step="0.01"
               placeholder="0.00"
-              className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/50" />
+              className="w-full rounded-xl bg-white/[0.04] border border-[var(--wl-border)] px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/50" />
           </div>
           {/* Equipo */}
           <div>
             <label className="text-[12px] text-white/50 mb-1.5 block">Equipo asignado</label>
-            <div className="max-h-40 overflow-y-auto space-y-1 rounded-xl bg-white/[0.02] border border-white/[0.06] p-2">
+            <div className="max-h-40 overflow-y-auto space-y-1 rounded-xl bg-white/[0.02] border border-[var(--wl-border)] p-2">
               {team.map(u => (
-                <label key={u.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-white/[0.04] cursor-pointer">
+                <label key={u.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-[var(--wl-hover)] cursor-pointer">
                   <input type="checkbox" checked={teamIds.includes(u.id)} onChange={e => {
                     setTeamIds(prev => e.target.checked ? [...prev, u.id] : prev.filter(id => id !== u.id));
                   }} className="rounded accent-violet-500" />
@@ -277,7 +277,7 @@ function ProjectModal({ open, onClose, onSaved, project }: {
                     style={{ background: u.color || '#8B5CF6' }}>
                     {u.name?.split(' ').map((w: string) => w[0]).join('').slice(0, 2)}
                   </div>
-                  <span className="text-[13px] text-white/70">{u.name}</span>
+                  <span className="text-[13px] text-[var(--wl-text-secondary)]">{u.name}</span>
                   <span className="ml-auto text-[10px] text-white/30">{u.role}</span>
                 </label>
               ))}
@@ -287,7 +287,7 @@ function ProjectModal({ open, onClose, onSaved, project }: {
           {/* Botones */}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="flex-1 rounded-xl border border-white/[0.08] py-2.5 text-sm text-white/60 hover:text-white/80 transition-colors">
+              className="flex-1 rounded-xl border border-[var(--wl-border)] py-2.5 text-sm text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-secondary)] transition-colors">
               Cancelar
             </button>
             <button type="submit" disabled={loading}
@@ -344,7 +344,7 @@ export default function ProjectsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[22px] font-bold text-white">Proyectos</h1>
-          <p className="text-[13px] text-white/40 mt-0.5">{stats.active} activos · {stats.completed} completados</p>
+          <p className="text-[13px] text-[var(--wl-text-muted)] mt-0.5">{stats.active} activos · {stats.completed} completados</p>
         </div>
         {isManager && (
           <button onClick={() => setCreating(true)}
@@ -365,7 +365,7 @@ export default function ProjectsPage() {
           { label: 'Completados', value: stats.completed, color: '#a78bfa' },
         ].map(s => (
           <div key={s.label} className="glass-card rounded-xl p-4">
-            <p className="text-[11px] text-white/40 uppercase tracking-wider mb-1">{s.label}</p>
+            <p className="text-[11px] text-[var(--wl-text-muted)] uppercase tracking-wider mb-1">{s.label}</p>
             <p className="text-[24px] font-bold" style={{ color: s.color }}>{s.value}</p>
           </div>
         ))}
@@ -377,22 +377,22 @@ export default function ProjectsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Buscar proyectos..."
-            className="w-full pl-8 pr-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/50" />
+            className="w-full pl-8 pr-3 py-2 rounded-xl bg-white/[0.04] border border-[var(--wl-border)] text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/50" />
         </div>
         <div className="flex gap-1.5">
           {['all','active','paused','completed','cancelled'].map(s => (
             <button key={s} onClick={() => setFilter(s)}
-              className={`px-3 py-2 rounded-xl text-[12px] font-medium transition-colors ${filter === s ? 'bg-violet-600 text-white' : 'bg-white/[0.04] text-white/50 hover:text-white/80'}`}>
+              className={`px-3 py-2 rounded-xl text-[12px] font-medium transition-colors ${filter === s ? 'bg-violet-600 text-white' : 'bg-white/[0.04] text-white/50 hover:text-[var(--wl-text-secondary)]'}`}>
               {s === 'all' ? 'Todos' : STATUS_CONFIG[s]?.label ?? s}
             </button>
           ))}
         </div>
         <div className="flex gap-1 bg-white/[0.04] rounded-xl p-1">
           <button onClick={() => setView('grid')} className={`p-1.5 rounded-lg ${view === 'grid' ? 'bg-white/10' : ''}`}>
-            <LayoutGrid className="w-3.5 h-3.5 text-white/60" />
+            <LayoutGrid className="w-3.5 h-3.5 text-[var(--wl-text-secondary)]" />
           </button>
           <button onClick={() => setView('list')} className={`p-1.5 rounded-lg ${view === 'list' ? 'bg-white/10' : ''}`}>
-            <List className="w-3.5 h-3.5 text-white/60" />
+            <List className="w-3.5 h-3.5 text-[var(--wl-text-secondary)]" />
           </button>
         </div>
       </div>

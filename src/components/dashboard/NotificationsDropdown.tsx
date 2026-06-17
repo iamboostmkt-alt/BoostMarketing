@@ -199,7 +199,7 @@ export function NotificationsDropdown() {
     <div ref={containerRef} className="relative">
       {/* Trigger */}
       <button type="button" onClick={() => setOpen(v => !v)}
-        className="relative flex items-center justify-center w-9 h-9 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] transition-colors">
+        className="relative flex items-center justify-center w-9 h-9 rounded-lg text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
         <Bell className={`w-5 h-5 transition-colors ${unreadCount > 0 && !open ? 'text-violet-400 animate-[bellshake_0.6s_ease-in-out]' : ''}`} />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-0.5 rounded-full text-[9px] font-bold text-white"
@@ -210,8 +210,8 @@ export function NotificationsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-[9999] rounded-2xl border border-white/[0.06] shadow-2xl notif-panel-enter"
-          style={{ width: 'min(380px, calc(100vw - 8px))', right: 'max(0px, -50vw + 50%)', maxHeight: 'calc(100dvh - 80px)', overflowY: 'auto', background: '#0F1117', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 20px 60px rgba(0,0,0,0.6)' }}>
+        <div className="absolute right-0 top-full mt-2 z-[9999] rounded-2xl border border-[var(--wl-border)] shadow-2xl notif-panel-enter"
+          style={{ width: 'min(380px, calc(100vw - 8px))', right: 'max(0px, -50vw + 50%)', maxHeight: 'calc(100dvh - 80px)', overflowY: 'auto', background: 'var(--wl-surface)', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 20px 60px rgba(0,0,0,0.6)' }}>
 
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4 pb-3">
@@ -219,7 +219,7 @@ export function NotificationsDropdown() {
             <div className="flex items-center gap-1">
               {unreadCount > 0 && (
                 <button type="button" onClick={markAllAsRead}
-                  className="p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.05] transition-colors" title="Marcar todo como leído">
+                  className="p-1.5 rounded-lg text-white/30 hover:text-[var(--wl-text-secondary)] hover:bg-white/[0.05] transition-colors" title="Marcar todo como leído">
                   <Check className="w-3.5 h-3.5" />
                 </button>
               )}
@@ -233,16 +233,16 @@ export function NotificationsDropdown() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 px-4 pb-3 border-b border-white/[0.05]">
+          <div className="flex gap-1 px-4 pb-3 border-b border-[var(--wl-border-subtle)]">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  activeTab === tab.id ? 'text-white' : 'text-white/40 hover:text-white/70'
+                  activeTab === tab.id ? 'text-white' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]'
                 }`}
                 style={activeTab === tab.id ? { background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)' } : { border: '1px solid transparent' }}>
                 {tab.label}
                 {tab.count > 0 && (
-                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${activeTab === tab.id ? 'bg-violet-500/30 text-violet-200' : 'bg-white/[0.08] text-white/40'}`}>
+                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${activeTab === tab.id ? 'bg-violet-500/30 text-violet-200' : 'bg-white/[0.08] text-[var(--wl-text-muted)]'}`}>
                     {tab.count}
                   </span>
                 )}
@@ -293,7 +293,7 @@ export function NotificationsDropdown() {
                             />
                             {/* Badge de tipo en la esquina */}
                             <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px]"
-                              style={{ background: '#07070A' }}>
+                              style={{ background: 'var(--wl-bg)' }}>
                               {emoji}
                             </span>
                           </>
@@ -305,7 +305,7 @@ export function NotificationsDropdown() {
                               {(n as any).actorName.split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()}
                             </div>
                             <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px]"
-                              style={{ background: '#07070A' }}>
+                              style={{ background: 'var(--wl-bg)' }}>
                               {emoji}
                             </span>
                           </>
@@ -332,7 +332,7 @@ export function NotificationsDropdown() {
                         {(n as any).fileUrl && (
                           <div className="mt-1.5 flex items-center gap-2 px-2.5 py-1.5 rounded-lg"
                             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <span className="text-[10px] font-bold px-1 rounded bg-white/10 text-white/40">
+                            <span className="text-[10px] font-bold px-1 rounded bg-white/10 text-[var(--wl-text-muted)]">
                               {((n as any).fileName || '').split('.').pop()?.toUpperCase() || 'FILE'}
                             </span>
                             <span className="text-[11px] text-white/50 truncate">{(n as any).fileName}</span>
@@ -370,7 +370,7 @@ export function NotificationsDropdown() {
           </ScrollArea>
 
           {/* Footer */}
-          <div className="px-4 py-3 border-t border-white/[0.05]">
+          <div className="px-4 py-3 border-t border-[var(--wl-border-subtle)]">
             <button type="button" onClick={() => { setOpen(false); router.push('/dashboard/notifications'); }}
               className="w-full text-[12px] text-white/30 hover:text-violet-400 transition-colors text-center">
               Ver todas las notificaciones →

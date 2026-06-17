@@ -135,33 +135,33 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
     <div className="space-y-4">
       {/* Título */}
       <div className="space-y-1.5">
-        <Label className="text-white/70 text-xs">Título *</Label>
+        <Label className="text-[var(--wl-text-secondary)] text-xs">Título *</Label>
         <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
           placeholder="ej. Reel de producto"
-          className="bg-white/[0.04] border-white/[0.08] text-white focus-visible:ring-brand" />
+          className="bg-white/[0.04] border-[var(--wl-border)] text-white focus-visible:ring-brand" />
       </div>
 
       {/* Descripción */}
       <div className="space-y-1.5">
-        <Label className="text-white/70 text-xs">Descripción</Label>
+        <Label className="text-[var(--wl-text-secondary)] text-xs">Descripción</Label>
         <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           rows={2} placeholder="Descripción del template..."
-          className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none placeholder:text-white/25" />
+          className="w-full rounded-md bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand resize-none placeholder:text-white/25" />
       </div>
 
       {/* Categoría + Prioridad */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Categoría</Label>
+          <Label className="text-[var(--wl-text-secondary)] text-xs">Categoría</Label>
           <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-            className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+            className="w-full rounded-md bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
             {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Prioridad</Label>
+          <Label className="text-[var(--wl-text-secondary)] text-xs">Prioridad</Label>
           <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-            className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+            className="w-full rounded-md bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
             {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
           </select>
         </div>
@@ -170,26 +170,26 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
       {/* Visibilidad + Días estimados */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Visibilidad</Label>
+          <Label className="text-[var(--wl-text-secondary)] text-xs">Visibilidad</Label>
           <select value={form.visibility} onChange={e => setForm(f => ({ ...f, visibility: e.target.value }))}
-            className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+            className="w-full rounded-md bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
             {VISIBILITIES.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
           </select>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Días estimados</Label>
+          <Label className="text-[var(--wl-text-secondary)] text-xs">Días estimados</Label>
           <Input type="number" min={0} value={form.estimatedDays}
             onChange={e => setForm(f => ({ ...f, estimatedDays: parseInt(e.target.value) || 0 }))}
-            className="bg-white/[0.04] border-white/[0.08] text-white focus-visible:ring-brand" />
+            className="bg-white/[0.04] border-[var(--wl-border)] text-white focus-visible:ring-brand" />
         </div>
       </div>
 
       {/* Subtareas */}
       <div className="space-y-2">
-        <Label className="text-white/70 text-xs">Subtareas del template</Label>
+        <Label className="text-[var(--wl-text-secondary)] text-xs">Subtareas del template</Label>
         {form.subtasks.map((sub, i) => (
           <div key={i} className="flex items-center gap-2 bg-white/[0.03] rounded-lg px-3 py-2">
-            <span className="text-xs text-white/70 flex-1">{sub.title}</span>
+            <span className="text-xs text-[var(--wl-text-secondary)] flex-1">{sub.title}</span>
             <button type="button" onClick={() => removeSubtask(i)}
               className="text-white/20 hover:text-red-400 transition-colors">
               <X className="w-3.5 h-3.5" />
@@ -200,9 +200,9 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
           <Input value={newSub} onChange={e => setNewSub(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); }}}
             placeholder="Nueva subtarea..."
-            className="bg-white/[0.04] border-white/[0.08] text-white text-sm focus-visible:ring-brand placeholder:text-white/25" />
+            className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm focus-visible:ring-brand placeholder:text-white/25" />
           <Button type="button" variant="outline" onClick={addSubtask} size="sm"
-            className="border-white/[0.08] text-white/60 hover:text-white shrink-0">
+            className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white shrink-0">
             <Plus className="w-3.5 h-3.5" />
           </Button>
         </div>
@@ -211,7 +211,7 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
       {/* Botones */}
       <div className="flex gap-2 pt-1">
         <Button type="button" variant="outline" onClick={onCancel}
-          className="flex-1 border-white/[0.08] text-white/60 hover:text-white">
+          className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white">
           Cancelar
         </Button>
         <Button type="button" disabled={saving} onClick={handleSave}
@@ -270,8 +270,8 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-xl max-h-[85vh] flex flex-col overflow-hidden p-0">
-        <DialogHeader className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-xl max-h-[85vh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-5 pt-5 pb-4 border-b border-[var(--wl-border)] shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2 text-white">
               <Sparkles className="w-4 h-4 text-brand-light" />
@@ -299,12 +299,12 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
               {/* Filtro categorías */}
               <div className="flex gap-1.5 flex-wrap">
                 <button onClick={() => setFilterCat('all')}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${filterCat === 'all' ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:text-white'}`}>
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${filterCat === 'all' ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-white/[0.04] border-[var(--wl-border)] text-white/50 hover:text-white'}`}>
                   Todos
                 </button>
                 {CATEGORIES.map(c => (
                   <button key={c.value} onClick={() => setFilterCat(c.value)}
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${filterCat === c.value ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:text-white'}`}>
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${filterCat === c.value ? 'bg-brand/20 border-brand/40 text-brand-light' : 'bg-white/[0.04] border-[var(--wl-border)] text-white/50 hover:text-white'}`}>
                     {c.label}
                   </button>
                 ))}
@@ -317,7 +317,7 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
               ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-12 text-center">
                   <LayoutGrid className="w-10 h-10 text-white/15" />
-                  <p className="text-white/40 text-sm">No hay templates aún.</p>
+                  <p className="text-[var(--wl-text-muted)] text-sm">No hay templates aún.</p>
                   <Button size="sm" onClick={() => setView('create')}
                     className="bg-brand hover:bg-brand-dark text-white gap-1.5 text-xs">
                     <Plus className="w-3.5 h-3.5" />
@@ -341,16 +341,16 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
                             )}
                           </div>
                           {tpl.description && (
-                            <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{tpl.description}</p>
+                            <p className="text-xs text-[var(--wl-text-muted)] mt-0.5 line-clamp-1">{tpl.description}</p>
                           )}
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           <button onClick={() => setExpandedId(expandedId === tpl.id ? null : tpl.id)}
-                            className="p-1.5 rounded-md text-white/20 hover:text-white hover:bg-white/[0.06] transition-colors">
+                            className="p-1.5 rounded-md text-white/20 hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
                             {expandedId === tpl.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                           </button>
                           <button onClick={() => { setEditing(tpl); setView('edit'); }}
-                            className="p-1.5 rounded-md text-white/20 hover:text-white hover:bg-white/[0.06] transition-colors">
+                            className="p-1.5 rounded-md text-white/20 hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                           <button onClick={() => handleDeactivate(tpl.id)}
@@ -362,10 +362,10 @@ export default function TemplateManagerModal({ open, onOpenChange }: TemplateMan
 
                       {/* Expandido — subtareas */}
                       {expandedId === tpl.id && (
-                        <div className="px-3.5 pb-3.5 border-t border-white/[0.06] pt-3 space-y-2">
+                        <div className="px-3.5 pb-3.5 border-t border-[var(--wl-border)] pt-3 space-y-2">
                           <div className="flex items-center gap-4 text-[11px] text-white/35 flex-wrap">
-                            <span>Prioridad: <span className="text-white/60">{PRIORITIES.find(p => p.value === tpl.priority)?.label}</span></span>
-                            <span>Visibilidad: <span className="text-white/60">{VISIBILITIES.find(v => v.value === tpl.visibility)?.label}</span></span>
+                            <span>Prioridad: <span className="text-[var(--wl-text-secondary)]">{PRIORITIES.find(p => p.value === tpl.priority)?.label}</span></span>
+                            <span>Visibilidad: <span className="text-[var(--wl-text-secondary)]">{VISIBILITIES.find(v => v.value === tpl.visibility)?.label}</span></span>
                           </div>
                           {(tpl.subtasks ?? []).length > 0 && (
                             <div className="space-y-1">

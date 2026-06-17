@@ -55,9 +55,9 @@ function CompletedTasksSection({ tasks }: { tasks: any[] }) {
   const [open, setOpen] = useState(false);
   if (tasks.length === 0) return null;
   return (
-    <div className="border border-white/[0.06] rounded-xl overflow-hidden">
+    <div className="border border-[var(--wl-border)] rounded-xl overflow-hidden">
       <button type="button" onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-3 py-2 text-[11px] text-white/40 hover:text-white/60 transition-colors">
+        className="w-full flex items-center justify-between px-3 py-2 text-[11px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] transition-colors">
         <span>Completadas ({tasks.length})</span>
         <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -294,13 +294,13 @@ export default function CalendarContent() {
             <Skeleton className="h-8 w-24 rounded-lg bg-white/[0.06]" />
           </div>
         </div>
-        <div className="flex gap-2 border-b border-white/[0.06]">
+        <div className="flex gap-2 border-b border-[var(--wl-border)]">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-9 w-24 rounded-t-lg bg-white/[0.04]" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6 space-y-4">
+          <div className="lg:col-span-2 bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-xl p-4 md:p-6 space-y-4">
             <div className="flex items-center justify-between">
               <Skeleton className="h-5 w-32 rounded bg-white/[0.06]" />
               <div className="flex gap-1">
@@ -324,8 +324,8 @@ export default function CalendarContent() {
               ))}
             </div>
           </div>
-          <div className="bg-[#15151c] border border-white/[0.06] rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-white/[0.06] space-y-1.5">
+          <div className="bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-[var(--wl-border)] space-y-1.5">
               <Skeleton className="h-4 w-24 rounded bg-white/[0.06]" />
               <Skeleton className="h-3 w-16 rounded bg-white/[0.04]" />
             </div>
@@ -351,17 +351,17 @@ export default function CalendarContent() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Calendario</p>
-          <p className="text-white/40 text-sm">Haz clic en un día para ver su detalle</p>
+          <p className="text-[var(--wl-text-muted)] text-sm">Haz clic en un día para ver su detalle</p>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap justify-end min-w-0 shrink-0">
           {/* Selector de cliente — solo en tabs clientes/entregas */}
           {!isClient && clientOptions.length > 0 && (calView === 'clients' || calView === 'deliveries') && (
             <div className="flex items-center gap-2">
               <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm h-9 w-auto min-w-[160px] max-w-[220px] focus:ring-brand">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm h-9 w-auto min-w-[160px] max-w-[220px] focus:ring-brand">
                   <SelectValue placeholder="Todos los clientes" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
                   {(isAdmin || isPM) && (
                     <SelectItem value="all" className="focus:bg-white/[0.06]">
                       {isAdmin ? 'Todos los clientes' : 'Todos mis clientes'}
@@ -376,7 +376,7 @@ export default function CalendarContent() {
               </Select>
               {selectedClientId !== 'all' && (
                 <button onClick={() => setSelectedClientId('all')}
-                  className="text-xs text-white/40 hover:text-white/70 transition-colors underline underline-offset-2">
+                  className="text-xs text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] transition-colors underline underline-offset-2">
                   Todos
                 </button>
               )}
@@ -400,13 +400,13 @@ export default function CalendarContent() {
 
       {/* Tabs de vista */}
       {calTabs.length > 1 && (
-        <div className="flex gap-1 border-b border-white/[0.06] pb-0 overflow-x-auto scrollbar-none flex-nowrap">
+        <div className="flex gap-1 border-b border-[var(--wl-border)] pb-0 overflow-x-auto scrollbar-none flex-nowrap">
           {calTabs.map((tab) => (
             <button key={tab.id} onClick={() => setCalView(tab.id)}
               className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
                 calView === tab.id
                   ? 'border-brand text-white'
-                  : 'border-transparent text-white/40 hover:text-white/70 hover:border-white/20'
+                  : 'border-transparent text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] hover:border-white/20'
               }`}>
               {tab.label}
             </button>
@@ -415,7 +415,7 @@ export default function CalendarContent() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-[#15151c] border border-white/[0.06] rounded-xl p-4 md:p-6">
+        <div className="lg:col-span-2 bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-xl p-4 md:p-6">
           <CalendarGrid
             tasks={calView === "meetings" ? [] : calView === "deliveries" ? filteredTasks.filter(t => !!t.dueDate) : filteredTasks}
             activities={calView === "meetings" ? [] : activities}
@@ -426,8 +426,8 @@ export default function CalendarContent() {
           />
         </div>
 
-        <div className="bg-[#15151c] border border-white/[0.06] rounded-xl overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between p-4 md:p-5 border-b border-white/[0.06] shrink-0">
+        <div className="bg-[var(--wl-surface)] border border-[var(--wl-border)] rounded-xl overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between p-4 md:p-5 border-b border-[var(--wl-border)] shrink-0">
             <div className="flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-brand-light" />
               <div>
@@ -449,7 +449,7 @@ export default function CalendarContent() {
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-5 space-y-4">
             {filteredDayTasks.length > 0 && (
               <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">
                   <CheckSquare className="w-3 h-3" />
                   Tareas ({filteredDayTasks.length})
                 </div>
@@ -479,7 +479,7 @@ export default function CalendarContent() {
                         <p className="text-xs text-white/35 mt-2 line-clamp-2 pl-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-3 mt-2.5 pl-1 flex-wrap">
-                        <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-white/40'}`}>
+                        <span className={`text-[10px] font-medium ${priorityColors[task.priority] || 'text-[var(--wl-text-muted)]'}`}>
                           {priorityLabels[task.priority] || task.priority}
                         </span>
                         {task.dueDate && (
@@ -517,7 +517,7 @@ export default function CalendarContent() {
 
             {dayAppointments.length > 0 && (
               <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 uppercase tracking-wider">
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">
                   <Video className="w-3 h-3" />
                   Videollamadas ({dayAppointments.length})
                 </div>
@@ -530,7 +530,7 @@ export default function CalendarContent() {
                         </span>
                         <button type="button"
                           onClick={() => { setEditingAppointment(apt); setApptEditOpen(true); }}
-                          className="text-xs font-medium text-white/80 hover:text-green-300 transition-colors truncate text-left">
+                          className="text-xs font-medium text-[var(--wl-text-secondary)] hover:text-green-300 transition-colors truncate text-left">
                           {apt.name}
                         </button>
                       </div>
@@ -570,14 +570,14 @@ export default function CalendarContent() {
                   <Sparkles className="w-5 h-5 text-white/20" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white/40">Sin elementos este dia</p>
+                  <p className="text-sm font-medium text-[var(--wl-text-muted)]">Sin elementos este dia</p>
                   <p className="text-xs text-white/25 mt-0.5">
                     {isToday(selectedDay) ? 'Todo en orden por hoy' : 'No hay nada programado'}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm"
-                    className="text-white/40 hover:text-white hover:bg-white/[0.06] text-xs gap-1"
+                    className="text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)] text-xs gap-1"
                     onClick={() => { setEditingTask(null); setTaskFormOpen(true); }}>
                     <Plus className="w-3.5 h-3.5" />
                     Tarea

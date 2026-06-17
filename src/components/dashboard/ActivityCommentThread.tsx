@@ -142,7 +142,7 @@ export default function ActivityCommentThread({
   return (
     <div className="flex flex-col" style={{ minHeight: 0 }}>
       {/* Section label */}
-      <div className="flex items-center gap-2 px-1 pb-2 border-b border-white/[0.06]">
+      <div className="flex items-center gap-2 px-1 pb-2 border-b border-[var(--wl-border)]">
         <MessageSquare className="w-3.5 h-3.5 text-brand-light shrink-0" />
         <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">
           Comentarios
@@ -195,7 +195,7 @@ export default function ActivityCommentThread({
                   <div className={`relative rounded-xl px-3 py-2 text-sm leading-relaxed ${
                     isOwn
                       ? 'bg-brand/25 text-white rounded-tr-sm'
-                      : 'bg-white/[0.06] text-white/80 rounded-tl-sm'
+                      : 'bg-white/[0.06] text-[var(--wl-text-secondary)] rounded-tl-sm'
                   }`}>
                     <p className="whitespace-pre-wrap break-words">{c.message}</p>
 
@@ -222,7 +222,7 @@ export default function ActivityCommentThread({
       </div>
 
       {/* Input */}
-      <div className="pt-3 border-t border-white/[0.06] flex gap-2 items-end">
+      <div className="pt-3 border-t border-[var(--wl-border)] flex gap-2 items-end">
         <textarea
           ref={inputRef}
           value={message}
@@ -232,7 +232,7 @@ export default function ActivityCommentThread({
           maxLength={MAX_LEN}
           rows={2}
           disabled={sending}
-          className="flex-1 resize-none rounded-lg bg-white/[0.04] border border-white/[0.08] text-white text-sm placeholder:text-white/20 px-3 py-2 focus:outline-none focus:border-brand/50 focus:bg-white/[0.06] transition-colors disabled:opacity-50"
+          className="flex-1 resize-none rounded-lg bg-white/[0.04] border border-[var(--wl-border)] text-white text-sm placeholder:text-white/20 px-3 py-2 focus:outline-none focus:border-brand/50 focus:bg-white/[0.06] transition-colors disabled:opacity-50"
         />
         <Button
           size="icon"

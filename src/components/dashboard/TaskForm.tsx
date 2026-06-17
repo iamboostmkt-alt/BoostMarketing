@@ -300,8 +300,8 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
 
   const dateBtn = (label: string, date: Date | undefined, onClick: () => void) => (
     <Button variant="outline" type="button" disabled={loading} onClick={onClick}
-      className={cn('w-full justify-start text-left font-normal bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:text-white text-sm', !date && 'text-white/30')}>
-      <CalendarIcon className="mr-2 h-4 w-4 text-white/40 shrink-0" />
+      className={cn('w-full justify-start text-left font-normal bg-white/[0.04] border-[var(--wl-border)] hover:bg-white/[0.08] hover:text-white text-sm', !date && 'text-white/30')}>
+      <CalendarIcon className="mr-2 h-4 w-4 text-[var(--wl-text-muted)] shrink-0" />
       {date ? format(date, "dd 'de' MMM yyyy", { locale: es }) : label}
     </Button>
   );
@@ -309,18 +309,18 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   return (
     <>
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="bg-[#15151c] border-l border-white/[0.06] text-white w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0">
-        <div className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
+      <SheetContent side="right" className="bg-[var(--wl-surface)] border-l border-[var(--wl-border)] text-white w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0">
+        <div className="px-5 pt-5 pb-4 border-b border-[var(--wl-border)] shrink-0">
           <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">
             {isEditing ? 'Editar Tarea' : isSubtask ? 'Nueva Subtarea' : isManager ? 'Nueva Tarea' : 'Solicitar Entrega'}
           </p>
           {isSubtask && isManager && parentTaskTitle && (
-            <p className="text-[11px] text-white/40 mt-0.5 flex items-center gap-1">
+            <p className="text-[11px] text-[var(--wl-text-muted)] mt-0.5 flex items-center gap-1">
               <span className="text-white/20">↳</span> Subtarea de: <span className="text-purple-400/70 font-medium truncate">{parentTaskTitle}</span>
             </p>
           )}
           {isManager && !isEditing && (
-            <div className="space-y-1.5 pt-2 pb-3 border-b border-white/[0.06]">
+            <div className="space-y-1.5 pt-2 pb-3 border-b border-[var(--wl-border)]">
               <div className="flex items-center justify-between">
                 <Label className="text-white/50 text-xs flex items-center gap-1.5">
                   <Sparkles className="w-3 h-3" />
@@ -335,14 +335,14 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 if (v === 'none') { setSelectedTemplateId(''); return; }
                 applyTemplate(v);
               }}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm h-9 focus:ring-brand">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm h-9 focus:ring-brand">
                   <SelectValue placeholder="Selecciona un template..." />
                 </SelectTrigger>
-                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
-                  <SelectItem value="none" className="text-white/40 focus:bg-white/[0.06]">Sin template</SelectItem>
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
+                  <SelectItem value="none" className="text-[var(--wl-text-muted)] focus:bg-white/[0.06]">Sin template</SelectItem>
                   {templates.map((tpl) => (
                     <SelectItem key={tpl.id} value={tpl.id} className="focus:bg-white/[0.06]">
-                      <span className="text-white/80">{tpl.title}</span>
+                      <span className="text-[var(--wl-text-secondary)]">{tpl.title}</span>
                       <span className="text-[10px] text-white/30 ml-2 capitalize">{tpl.category}</span>
                     </SelectItem>
                   ))}
@@ -350,46 +350,46 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               </Select>
             </div>
           )}
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-[var(--wl-text-muted)]">
             {isEditing ? 'Modifica los detalles de la tarea' : 'Completa los campos para crear una nueva tarea'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="task-title" className="text-white/70 text-sm">Titulo <span className="text-red-400">*</span></Label>
+            <Label htmlFor="task-title" className="text-[var(--wl-text-secondary)] text-sm">Titulo <span className="text-red-400">*</span></Label>
             <Input id="task-title" value={title} onChange={(e) => setTitle(e.target.value)}
               placeholder="Ej: Disenar landing page"
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:ring-brand" required />
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:ring-brand" required />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="task-desc" className="text-white/70 text-sm">Descripcion</Label>
+            <Label htmlFor="task-desc" className="text-[var(--wl-text-secondary)] text-sm">Descripcion</Label>
             <Textarea id="task-desc" value={description} onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe la tarea..." rows={3}
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:ring-brand resize-none" />
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:ring-brand resize-none" />
           </div>
 
           {isManager && (
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Estado</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-sm">Estado</Label>
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#1c1c27] border-white/[0.08]">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)]">
                   {taskStatuses.map((s) => (
-                    <SelectItem key={s.id} value={s.id} className="text-white/80 focus:text-white focus:bg-white/[0.06]">{s.label}</SelectItem>
+                    <SelectItem key={s.id} value={s.id} className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">{s.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Prioridad</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-sm">Prioridad</Label>
               <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#1c1c27] border-white/[0.08]">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)]">
                   {Object.entries(priorityLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key} className="text-white/80 focus:text-white focus:bg-white/[0.06]">{label}</SelectItem>
+                    <SelectItem key={key} value={key} className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">{label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -401,19 +401,19 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           {projects.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-white/70 text-sm">Proyecto</Label>
+                <Label className="text-[var(--wl-text-secondary)] text-sm">Proyecto</Label>
                 <select value={projectId} onChange={e => { setProjectId(e.target.value); setMilestoneId(''); }}
                   style={{ fontSize: '16px' }}
-                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[13px] text-white/70 focus:outline-none">
+                  className="w-full rounded-xl border border-[var(--wl-border)] bg-white/[0.04] px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] focus:outline-none">
                   <option value="">Sin proyecto</option>
                   {projects.map((p: {id: string; name: string}) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-white/70 text-sm">Milestone</Label>
+                <Label className="text-[var(--wl-text-secondary)] text-sm">Milestone</Label>
                 <select value={milestoneId} onChange={e => setMilestoneId(e.target.value)}
                   style={{ fontSize: '16px' }} disabled={!projectId}
-                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[13px] text-white/70 focus:outline-none disabled:opacity-40">
+                  className="w-full rounded-xl border border-[var(--wl-border)] bg-white/[0.04] px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] focus:outline-none disabled:opacity-40">
                   <option value="">Sin milestone</option>
                   {milestones.filter((m: {id: string; title: string; projectId: string}) => m.projectId === projectId).map(m => (
                     <option key={m.id} value={m.id}>{m.title}</option>
@@ -425,29 +425,29 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
 
           {isManager && !isSubtask && (
             <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Visibilidad</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-sm">Visibilidad</Label>
               <Select value={visibility} onValueChange={(v) => {
                 setVisibility(v);
                 if (v === 'internal') setClientId('');
               }}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#1c1c27] border-white/[0.08]">
-                  <SelectItem value="internal" className="text-white/80 focus:text-white focus:bg-white/[0.06]">Interno</SelectItem>
-                  <SelectItem value="client_visible" className="text-white/80 focus:text-white focus:bg-white/[0.06]">Visible al cliente</SelectItem>
-                  <SelectItem value="management" className="text-white/80 focus:text-white focus:bg-white/[0.06]">Solo gerencia</SelectItem>
-                  <SelectItem value="team_only" className="text-white/80 focus:text-white focus:bg-white/[0.06]">Solo equipo</SelectItem>
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)]">
+                  <SelectItem value="internal" className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">Interno</SelectItem>
+                  <SelectItem value="client_visible" className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">Visible al cliente</SelectItem>
+                  <SelectItem value="management" className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">Solo gerencia</SelectItem>
+                  <SelectItem value="team_only" className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">Solo equipo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label className="text-white/70 text-sm">Fecha inicio <span className="text-white/30 text-[10px]">(opcional)</span></Label>
+            <Label className="text-[var(--wl-text-secondary)] text-sm">Fecha inicio <span className="text-white/30 text-[10px]">(opcional)</span></Label>
             {dateBtn('Seleccionar fecha de inicio', startDate, toggleStart)}
             {startOpen && (
-              <div className="rounded-lg border border-white/[0.08] bg-[#0e0e14] shadow-2xl p-1">
+              <div className="rounded-lg border border-[var(--wl-border)] bg-[#0e0e14] shadow-2xl p-1">
                 <div className="flex justify-end px-2 pt-1">
-                  <button type="button" onClick={() => setStartOpen(false)} className="text-white/30 hover:text-white/70 p-1 rounded transition-colors">
+                  <button type="button" onClick={() => setStartOpen(false)} className="text-white/30 hover:text-[var(--wl-text-secondary)] p-1 rounded transition-colors">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -457,12 +457,12 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/70 text-sm">Fecha limite <span className="text-red-400">*</span></Label>
+            <Label className="text-[var(--wl-text-secondary)] text-sm">Fecha limite <span className="text-red-400">*</span></Label>
             {dateBtn('Seleccionar fecha limite', dueDate, toggleDue)}
             {dueOpen && (
-              <div className="rounded-lg border border-white/[0.08] bg-[#0e0e14] shadow-2xl p-1">
+              <div className="rounded-lg border border-[var(--wl-border)] bg-[#0e0e14] shadow-2xl p-1">
                 <div className="flex justify-end px-2 pt-1">
-                  <button type="button" onClick={() => setDueOpen(false)} className="text-white/30 hover:text-white/70 p-1 rounded transition-colors">
+                  <button type="button" onClick={() => setDueOpen(false)} className="text-white/30 hover:text-[var(--wl-text-secondary)] p-1 rounded transition-colors">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -486,12 +486,12 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               {pendingSubtasks.length > 0 && (
                 <ul className="space-y-1.5">
                   {pendingSubtasks.map((sub, idx) => (
-                    <li key={sub.id} className="rounded-lg border border-white/[0.08] overflow-hidden">
+                    <li key={sub.id} className="rounded-lg border border-[var(--wl-border)] overflow-hidden">
                       {/* Fila colapsable */}
                       <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] cursor-pointer hover:bg-white/[0.05] transition-colors"
                         onClick={() => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, expanded: !s.expanded } : s))}>
                         <span className="text-white/20 text-xs select-none">↳</span>
-                        <span className="flex-1 text-sm text-white/70 truncate">{sub.title}</span>
+                        <span className="flex-1 text-sm text-[var(--wl-text-secondary)] truncate">{sub.title}</span>
                         <span className="text-[10px] text-white/30 shrink-0">{sub.expanded ? '▲' : '▼'}</span>
                         <button type="button"
                           onClick={(e) => { e.stopPropagation(); setPendingSubtasks(prev => prev.filter((_, i) => i !== idx)); }}
@@ -500,7 +500,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
 
                       {/* Campos expandibles */}
                       {sub.expanded && (
-                        <div className="px-3 py-3 space-y-2.5 bg-white/[0.01] border-t border-white/[0.06]">
+                        <div className="px-3 py-3 space-y-2.5 bg-white/[0.01] border-t border-[var(--wl-border)]">
 
                           {/* Nombre */}
                           <div>
@@ -510,7 +510,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                               value={sub.title}
                               onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, title: e.target.value } : s))}
                               placeholder="Nombre de la subtarea"
-                              className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all"
+                              className="w-full rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-3 py-1.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all"
                             />
                           </div>
 
@@ -522,7 +522,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                               onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, description: e.target.value } : s))}
                               placeholder="Descripción opcional..."
                               rows={2}
-                              className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 text-xs text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all resize-none"
+                              className="w-full rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-3 py-1.5 text-xs text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 transition-all resize-none"
                             />
                           </div>
 
@@ -530,7 +530,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                           <div className="grid grid-cols-2 gap-2">
                             <select value={sub.status}
                               onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, status: e.target.value } : s))}
-                              className="rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40">
+                              className="rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40">
                               <option value="pending">Pendiente</option>
                               <option value="in_progress">En progreso</option>
                               <option value="internal_review">En revisión</option>
@@ -538,7 +538,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                             </select>
                             <select value={sub.priority}
                               onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, priority: e.target.value } : s))}
-                              className="rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40">
+                              className="rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40">
                               <option value="low">Baja</option>
                               <option value="medium">Media</option>
                               <option value="high">Alta</option>
@@ -551,13 +551,13 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                               <label className="text-[10px] text-white/30 mb-1 block">Inicio</label>
                               <input type="date" value={sub.startDate || ''}
                                 onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, startDate: e.target.value } : s))}
-                                className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
+                                className="w-full rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
                             </div>
                             <div>
                               <label className="text-[10px] text-white/30 mb-1 block">Límite</label>
                               <input type="date" value={sub.dueDate || ''}
                                 onChange={e => setPendingSubtasks(prev => prev.map((s, i) => i === idx ? { ...s, dueDate: e.target.value } : s))}
-                                className="w-full rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
+                                className="w-full rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500/40 [color-scheme:dark]" />
                             </div>
                           </div>
                           {/* Asignar a */}
@@ -575,7 +575,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                                           ? s.assignedUserIds.filter(id => id !== u.id)
                                           : [...s.assignedUserIds, u.id]
                                       } : s))}
-                                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${checked ? 'bg-brand/25 text-white border border-brand/40' : 'bg-white/[0.04] text-white/50 border border-white/[0.08] hover:text-white'}`}>
+                                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${checked ? 'bg-brand/25 text-white border border-brand/40' : 'bg-white/[0.04] text-white/50 border border-[var(--wl-border)] hover:text-white'}`}>
                                       <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: u.color || '#7c3aed' }} />
                                       {u.name || u.email}
                                     </button>
@@ -616,7 +616,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                       }
                     }}
                     placeholder="Agregar subtarea..."
-                    className="flex-1 rounded-lg bg-white/[0.04] border border-white/[0.08] px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all"
+                    className="flex-1 rounded-lg bg-white/[0.04] border border-[var(--wl-border)] px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all"
                   />
                   <button
                     type="button"
@@ -639,18 +639,18 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           {/* Asignar usuarios - solo managers */}
           {isManager && users.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-white/70 text-sm flex items-center justify-between">
+              <Label className="text-[var(--wl-text-secondary)] text-sm flex items-center justify-between">
                 <span>Asignar a {assignedUserIds.length > 0 && <span className="text-brand-light text-xs">({assignedUserIds.length})</span>}</span>
                 {assignedUserIds.length > 0 && (
-                  <button type="button" onClick={() => setAssigneeIds([])} className="text-[11px] text-white/30 hover:text-white/60 transition-colors">Limpiar</button>
+                  <button type="button" onClick={() => setAssigneeIds([])} className="text-[11px] text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors">Limpiar</button>
                 )}
               </Label>
-              <div className="bg-white/[0.04] border border-white/[0.08] rounded-lg p-1 max-h-44 overflow-y-auto">
+              <div className="bg-white/[0.04] border border-[var(--wl-border)] rounded-lg p-1 max-h-44 overflow-y-auto">
                 {users.map((u) => {
                   const checked = assignedUserIds.includes(u.id);
                   return (
                     <button key={u.id} type="button" onClick={() => toggleAssignee(u.id)}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md transition-colors text-left text-sm ${checked ? 'bg-brand/25 text-white' : 'text-white/70 hover:bg-white/[0.04] hover:text-white'}`}>
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md transition-colors text-left text-sm ${checked ? 'bg-brand/25 text-white' : 'text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white'}`}>
                       <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${checked ? 'border-brand bg-brand' : 'border-white/20 bg-white/[0.04]'}`}>
                         {checked && (
                           <svg viewBox="0 0 12 12" className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="2">
@@ -670,13 +670,13 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
 
           {isManager && clients.length > 0 && !isSubtask && (
             <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Cuenta de cliente</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-sm">Cuenta de cliente</Label>
               <Select value={clientId || 'none'} onValueChange={(v) => setClientId(v === 'none' ? '' : v)}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue placeholder="Sin cuenta asignada" /></SelectTrigger>
-                <SelectContent className="bg-[#1c1c27] border-white/[0.08] max-h-48">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue placeholder="Sin cuenta asignada" /></SelectTrigger>
+                <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)] max-h-48">
                   <SelectItem value="none" className="text-white/50 focus:text-white focus:bg-white/[0.06]">Sin cuenta asignada</SelectItem>
                   {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="text-white/80 focus:text-white focus:bg-white/[0.06]">
+                    <SelectItem key={c.id} value={c.id} className="text-[var(--wl-text-secondary)] focus:text-white focus:bg-white/[0.06]">
                       {c.name}{c.company ? ` - ${c.company}` : ''}
                     </SelectItem>
                   ))}
@@ -686,11 +686,11 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           )}
 
           {isManager && <div className="space-y-2">
-            <label className="text-white/70 text-sm">Referencias y archivos</label>
+            <label className="text-[var(--wl-text-secondary)] text-sm">Referencias y archivos</label>
             {refFiles.length > 0 && (
               <div className="space-y-1 mb-2">
                 {refFiles.map((f, i) => (
-                  <div key={i} className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-md px-3 py-2">
+                  <div key={i} className="flex items-center justify-between bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
                       {f.fileType.startsWith('image') ? <ImageIcon className="w-3.5 h-3.5 text-violet-400 shrink-0" /> : <FileText className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
                       <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:underline truncate">{f.name}</a>
@@ -700,7 +700,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
                 ))}
               </div>
             )}
-            <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md bg-white/[0.04] border border-dashed border-white/[0.12] hover:border-violet-500/40 hover:bg-white/[0.06] transition-colors">
+            <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md bg-white/[0.04] border border-dashed border-white/[0.12] hover:border-violet-500/40 hover:bg-[var(--wl-hover)] transition-colors">
               {uploadingRef ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white/50" /> : <Paperclip className="w-3.5 h-3.5 text-white/50" />}
               <span className="text-sm text-white/50">{uploadingRef ? 'Subiendo...' : 'Subir archivo de referencia'}</span>
               <input type="file" multiple accept="image/*,.pdf,.doc,.docx,.zip,.mp4,.mov,.png,.jpg" className="hidden"
@@ -715,9 +715,9 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
             {references.length > 0 && (
               <div className="space-y-1 mb-2">
                 {references.map((r, i) => (
-                  <div key={i} className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-md px-3 py-2">
+                  <div key={i} className="flex items-center justify-between bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-xs text-white/40 uppercase">{r.type}</span>
+                      <span className="text-xs text-[var(--wl-text-muted)] uppercase">{r.type}</span>
                       <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:underline truncate">{r.title || r.url}</a>
                     </div>
                     <button type="button" onClick={() => setReferences(references.filter((_,j)=>j!==i))} className="text-white/30 hover:text-red-400 ml-2 text-xs">x</button>
@@ -726,8 +726,8 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               </div>
             )}
             <div className="flex gap-2">
-              <input value={refTitle} onChange={e=>setRefTitle(e.target.value)} placeholder="Titulo" className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30" />
-              <select value={refType} onChange={e=>setRefType(e.target.value)} className="bg-white/[0.04] border border-white/[0.08] rounded-md px-2 py-2 text-sm text-white">
+              <input value={refTitle} onChange={e=>setRefTitle(e.target.value)} placeholder="Titulo" className="flex-1 bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30" />
+              <select value={refType} onChange={e=>setRefType(e.target.value)} className="bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-2 py-2 text-sm text-white">
                 <option value="generic">Link</option>
                 <option value="drive">Drive</option>
                 <option value="figma">Figma</option>
@@ -737,13 +737,13 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
               </select>
             </div>
             <div className="flex gap-2">
-              <input value={refUrl} onChange={e=>setRefUrl(e.target.value)} placeholder="URL" className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30" />
+              <input value={refUrl} onChange={e=>setRefUrl(e.target.value)} placeholder="URL" className="flex-1 bg-white/[0.04] border border-[var(--wl-border)] rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30" />
               <button type="button" onClick={()=>{ if(!refUrl.trim()) return; setReferences([...references,{title:refTitle.trim()||refUrl.trim(),url:refUrl.trim(),type:refType}]); setRefTitle(''); setRefUrl(''); setRefType('generic'); }} className="px-3 py-2 bg-white/[0.08] hover:bg-white/[0.12] text-white text-sm rounded-md">+ Agregar</button>
             </div>
           </div>}
 
-          <div className="pt-2 flex items-center justify-end gap-2 border-t border-white/[0.06] mt-2">
-            <Button variant="outline" type="button" onClick={() => onOpenChange(false)} className="border-white/[0.06]" disabled={loading}>Cancelar</Button>
+          <div className="pt-2 flex items-center justify-end gap-2 border-t border-[var(--wl-border)] mt-2">
+            <Button variant="outline" type="button" onClick={() => onOpenChange(false)} className="border-[var(--wl-border)]" disabled={loading}>Cancelar</Button>
             <Button type="submit" disabled={loading || !title.trim()} className="bg-brand hover:bg-brand-dark text-white gap-2">
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEditing ? 'Guardar Cambios' : 'Crear Tarea'}

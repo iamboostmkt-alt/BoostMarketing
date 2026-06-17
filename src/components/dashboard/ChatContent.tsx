@@ -58,7 +58,7 @@ function groupReactions(reactions: ChatReaction[] = []) {
 
 function EmojiPicker({ onSelect }: { onSelect: (e: string) => void }) {
   return (
-    <div className="absolute bottom-full right-0 mb-2 flex gap-1 bg-[#1c1c26] border border-white/[0.08] rounded-xl p-2 shadow-xl z-50">
+    <div className="absolute bottom-full right-0 mb-2 flex gap-1 bg-[#1c1c26] border border-[var(--wl-border)] rounded-xl p-2 shadow-xl z-50">
       {QUICK_EMOJIS.map((e) => (
         <button
           key={e}
@@ -99,7 +99,7 @@ function ReactionBar({
             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition-colors
               ${iMine
                 ? 'bg-brand/30 border border-brand/50 text-white'
-                : 'bg-white/[0.05] border border-white/[0.08] text-white/60 hover:bg-white/[0.08]'
+                : 'bg-white/[0.05] border border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:bg-white/[0.08]'
               }`}
           >
             {emoji}
@@ -146,7 +146,7 @@ function MentionDropdown({
             className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
               i === selectedIndex
                 ? 'bg-brand/25 text-white'
-                : 'text-white/70 hover:bg-white/[0.05] hover:text-white'
+                : 'text-[var(--wl-text-secondary)] hover:bg-white/[0.05] hover:text-white'
             }`}
           >
             {isSpecial ? (
@@ -467,24 +467,24 @@ export default function ChatContent({
   return (
     <div className="flex flex-col h-[calc(100dvh-8rem)] md:h-[calc(100vh-10rem)] md:max-h-[780px] w-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 pb-3 md:pb-4 border-b border-white/[0.06] mb-3 md:mb-4 shrink-0 px-1">
+      <div className="flex items-center gap-3 pb-3 md:pb-4 border-b border-[var(--wl-border)] mb-3 md:mb-4 shrink-0 px-1">
         <div className="w-9 h-9 rounded-xl bg-brand/20 flex items-center justify-center">
           <MessageSquare className="w-5 h-5 text-brand-light" />
         </div>
         <div>
           <h1 className="text-lg font-semibold text-white">{title}</h1>
-          <p className="text-xs text-white/40">{subtitle}</p>
+          <p className="text-xs text-[var(--wl-text-muted)]">{subtitle}</p>
         </div>
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar min-h-0 px-2 py-4" style={{ background: '#07070A' }}>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar min-h-0 px-2 py-4" style={{ background: 'var(--wl-bg)' }}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-12">
             <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center">
               <MessageSquare className="w-8 h-8 text-white/20" />
             </div>
-            <p className="text-white/40 text-sm">
+            <p className="text-[var(--wl-text-muted)] text-sm">
               No hay mensajes aún.<br />¡Sé el primero en escribir!
             </p>
           </div>
@@ -512,23 +512,23 @@ export default function ChatContent({
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 style={{ background: 'transparent' }}>
                 {/* Hover actions flotantes */}
-                <div className="absolute right-3 -top-3.5 opacity-0 group-hover:opacity-100 transition-all duration-150 z-10 flex items-center gap-0.5 rounded-lg border border-white/[0.08] px-1 py-0.5"
-                  style={{ background: '#141824', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+                <div className="absolute right-3 -top-3.5 opacity-0 group-hover:opacity-100 transition-all duration-150 z-10 flex items-center gap-0.5 rounded-lg border border-[var(--wl-border)] px-1 py-0.5"
+                  style={{ background: 'var(--wl-elevated)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
                   <button type="button" onClick={() => { const el = document.getElementById(`epicker-${msg.id}`); el?.click(); }}
-                    className="p-1.5 rounded-md text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Reaccionar">
+                    className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)] transition-colors" title="Reaccionar">
                     <Smile className="w-3.5 h-3.5" />
                   </button>
                   <button type="button" onClick={() => onOpenThread?.(msg)}
-                    className="p-1.5 rounded-md text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Ver hilo">
+                    className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)] transition-colors" title="Ver hilo">
                     <MessageSquare className="w-3.5 h-3.5" />
                   </button>
                   <button type="button" onClick={() => setTaskMsg(msg.message)}
-                    className="p-1.5 rounded-md text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Crear tarea">
+                    className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)] transition-colors" title="Crear tarea">
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                   {(isMe || isAdmin) && (
                     <button type="button" onClick={() => handleDelete(msg.id)}
-                      className="p-1.5 rounded-md text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Eliminar">
+                      className="p-1.5 rounded-md text-[var(--wl-text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Eliminar">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -559,7 +559,7 @@ export default function ChatContent({
                       </span>
                     </div>
                   )}
-                  <p className="text-[13.5px] text-white/80 break-words leading-[1.55] font-[400]">
+                  <p className="text-[13.5px] text-[var(--wl-text-secondary)] break-words leading-[1.55] font-[400]">
                     {renderMessage(msg.message)}
                   </p>
                 </div>
@@ -607,7 +607,7 @@ export default function ChatContent({
             <span className="text-xs font-medium text-violet-300 flex items-center gap-1.5">
               <CheckSquare className="w-3.5 h-3.5" />Crear tarea
             </span>
-            <button onClick={() => setTaskMsg(null)} className="text-white/30 hover:text-white/60 text-xs">✕</button>
+            <button onClick={() => setTaskMsg(null)} className="text-white/30 hover:text-[var(--wl-text-secondary)] text-xs">✕</button>
           </div>
           <p className="text-[11px] text-white/50 mb-2 line-clamp-2">"{taskMsg}"</p>
           <div className="flex gap-2">
@@ -624,7 +624,7 @@ export default function ChatContent({
             }} className="flex-1 py-1.5 rounded-lg text-white text-[11px] font-medium" style={{ background: '#7c3aed' }}>
               Crear tarea
             </button>
-            <button onClick={() => setTaskMsg(null)} className="px-3 py-1.5 rounded-lg text-white/40 text-[11px] border border-white/[0.08] hover:text-white">
+            <button onClick={() => setTaskMsg(null)} className="px-3 py-1.5 rounded-lg text-[var(--wl-text-muted)] text-[11px] border border-[var(--wl-border)] hover:text-white">
               Cancelar
             </button>
           </div>
@@ -632,7 +632,7 @@ export default function ChatContent({
       )}
 
       {/* Input + @mention dropdown */}
-          <form onSubmit={handleSend} className="shrink-0 pb-[env(safe-area-inset-bottom)] px-4 py-3 border-t border-white/[0.05]" style={{ background: '#0F1117' }}>
+          <form onSubmit={handleSend} className="shrink-0 pb-[env(safe-area-inset-bottom)] px-4 py-3 border-t border-[var(--wl-border-subtle)]" style={{ background: 'var(--wl-surface)' }}>
         <div className="relative">
           {/* @mention dropdown */}
           {mentionQuery !== null && filteredMentions.length > 0 && (
@@ -643,13 +643,13 @@ export default function ChatContent({
             />
           )}
 
-          <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 focus-within:border-brand/50 transition-colors">
+          <div className="flex items-center gap-2 bg-white/[0.04] border border-[var(--wl-border)] rounded-xl px-4 py-2 focus-within:border-brand/50 transition-colors">
             {/* Emoji insert button */}
             <div className="relative" ref={emojiRef}>
               <button
                 type="button"
                 onClick={() => setEmojiOpen((o) => !o)}
-                className="text-white/30 hover:text-white/70 transition-colors p-0.5"
+                className="text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors p-0.5"
                 title="Insertar emoji"
               >
                 <Smile className="w-4 h-4" />

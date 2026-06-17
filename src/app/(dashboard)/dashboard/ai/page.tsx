@@ -152,11 +152,11 @@ export default function AIAssistantPage() {
     <div className="flex bg-background overflow-hidden h-full">
       {/* Sidebar sesiones */}
       {showSidebar && (
-        <div className="w-[220px] shrink-0 border-r border-white/[0.05] flex flex-col bg-[#0F1117] overflow-hidden">
-          <div className="flex items-center justify-between px-3 py-3 border-b border-white/[0.05]">
-            <span className="text-[11px] font-medium uppercase tracking-wide text-white/40">Conversaciones</span>
+        <div className="w-[220px] shrink-0 border-r border-[var(--wl-border-subtle)] flex flex-col bg-[var(--wl-surface)] overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-3 border-b border-[var(--wl-border-subtle)]">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-[var(--wl-text-muted)]">Conversaciones</span>
             <button onClick={newConversation}
-              className="flex h-6 w-6 items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/[0.06] transition-colors">
+              className="flex h-6 w-6 items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
               <Plus className="h-3.5 w-3.5" strokeWidth={2} />
             </button>
           </div>
@@ -170,7 +170,7 @@ export default function AIAssistantPage() {
             ) : sessions.map(s => (
               <button key={s.id} onClick={() => loadSession(s)}
                 className={`group flex items-start gap-2 w-full rounded-xl px-2.5 py-2 text-left transition-colors ${
-                  currentSessionId === s.id ? 'bg-primary/[0.12] text-white' : 'text-white/50 hover:bg-white/[0.03] hover:text-white/80'
+                  currentSessionId === s.id ? 'bg-primary/[0.12] text-white' : 'text-white/50 hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]'
                 }`}>
                 <MessageSquare className="h-3.5 w-3.5 shrink-0 mt-0.5 text-white/30" strokeWidth={1.75} />
                 <div className="flex-1 min-w-0">
@@ -192,9 +192,9 @@ export default function AIAssistantPage() {
       {/* Main */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <div className="shrink-0 border-b border-white/[0.05] px-5 h-[52px] flex items-center gap-3 sticky top-0 z-10 bg-background">
+        <div className="shrink-0 border-b border-[var(--wl-border-subtle)] px-5 h-[52px] flex items-center gap-3 sticky top-0 z-10 bg-background">
           <button onClick={() => setShowSidebar(p => !p)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/[0.06] transition-colors">
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
             <ChevronLeft className={`h-4 w-4 transition-transform ${showSidebar ? '' : 'rotate-180'}`} strokeWidth={1.75} />
           </button>
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15">
@@ -205,7 +205,7 @@ export default function AIAssistantPage() {
             <span className="ml-2 text-[11px] text-white/30">Especialista en estrategia y contenido digital</span>
           </div>
           {/* Model selector */}
-          <div className="ml-auto flex items-center gap-1 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1">
+          <div className="ml-auto flex items-center gap-1 rounded-xl border border-[var(--wl-border)] bg-white/[0.02] p-1">
             {MODEL_OPTIONS.map(m => {
               const isLocked = !availableTiers.includes(m.tier);
               return (
@@ -218,7 +218,7 @@ export default function AIAssistantPage() {
                       ? 'opacity-40 cursor-not-allowed'
                       : selectedModel === m.tier
                       ? 'bg-white/[0.08] text-white'
-                      : 'text-white/30 hover:text-white/60'
+                      : 'text-white/30 hover:text-[var(--wl-text-secondary)]'
                   }`}>
                   <span className="text-[9px] font-bold px-1 py-px rounded"
                     style={{ background: selectedModel === m.tier ? m.color + '25' : 'transparent', color: m.color }}>
@@ -248,7 +248,7 @@ export default function AIAssistantPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
                 {SUGGESTIONS.map((s, i) => (
                   <button key={i} onClick={() => sendMessage(s)}
-                    className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-left text-[12px] text-white/45 hover:border-primary/25 hover:bg-primary/[0.03] hover:text-white/75 transition-all">
+                    className="rounded-xl border border-[var(--wl-border)] bg-white/[0.02] px-3 py-2.5 text-left text-[12px] text-white/45 hover:border-primary/25 hover:bg-primary/[0.03] hover:text-white/75 transition-all">
                     {s}
                   </button>
                 ))}
@@ -267,7 +267,7 @@ export default function AIAssistantPage() {
                     <div className={`rounded-2xl px-4 py-2.5 text-[13.5px] leading-[1.6] whitespace-pre-wrap ${
                       m.role === 'user'
                         ? 'bg-primary/[0.18] text-white rounded-tr-sm'
-                        : 'bg-white/[0.04] border border-white/[0.06] text-white/85 rounded-tl-sm'
+                        : 'bg-white/[0.04] border border-[var(--wl-border)] text-white/85 rounded-tl-sm'
                     }`}>
                       {m.content}
                     </div>
@@ -287,7 +287,7 @@ export default function AIAssistantPage() {
                   <div className="h-8 w-8 shrink-0 flex items-center justify-center rounded-xl bg-primary/15">
                     <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" strokeWidth={1.75} />
                   </div>
-                  <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl rounded-tl-sm px-4 py-3">
+                  <div className="bg-white/[0.04] border border-[var(--wl-border)] rounded-2xl rounded-tl-sm px-4 py-3">
                     <div className="flex gap-1.5 items-center">
                       {[0,1,2].map(i => (
                         <span key={i} className="block h-1.5 w-1.5 rounded-full bg-primary/60"
@@ -303,9 +303,9 @@ export default function AIAssistantPage() {
         </div>
 
         {/* Composer */}
-        <div className="shrink-0 border-t border-white/[0.05] px-5 py-3">
+        <div className="shrink-0 border-t border-[var(--wl-border-subtle)] px-5 py-3">
           <div className="max-w-3xl mx-auto">
-            <div className="flex gap-2 items-end rounded-[18px] border border-white/[0.06] bg-white/[0.03] px-3 py-2.5 focus-within:border-primary/40 transition-colors">
+            <div className="flex gap-2 items-end rounded-[18px] border border-[var(--wl-border)] bg-white/[0.03] px-3 py-2.5 focus-within:border-primary/40 transition-colors">
               <textarea ref={inputRef} value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}

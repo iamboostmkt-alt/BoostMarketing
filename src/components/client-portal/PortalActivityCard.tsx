@@ -44,7 +44,7 @@ export function PortalActivityCard({ activity }: { activity: Activity }) {
           </div>
         </div>
         {!expanded && activity.description && (
-          <p className="text-xs text-white/40 line-clamp-1 pl-6">{activity.description}</p>
+          <p className="text-xs text-[var(--wl-text-muted)] line-clamp-1 pl-6">{activity.description}</p>
         )}
         {!expanded && (
           <p className="text-[11px] text-white/30 pl-6">{fmtDate(activity.startDate)}</p>
@@ -52,19 +52,19 @@ export function PortalActivityCard({ activity }: { activity: Activity }) {
       </div>
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-[var(--wl-border)] pt-3">
           {activity.description && (
-            <p className="text-xs text-white/60 leading-relaxed">{activity.description}</p>
+            <p className="text-xs text-[var(--wl-text-secondary)] leading-relaxed">{activity.description}</p>
           )}
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-white/[0.03] rounded-lg p-2.5">
               <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Inicio</p>
-              <p className="text-xs text-white/70 font-medium">{fmtDate(activity.startDate)}</p>
+              <p className="text-xs text-[var(--wl-text-secondary)] font-medium">{fmtDate(activity.startDate)}</p>
             </div>
             {activity.endDate && (
               <div className="bg-white/[0.03] rounded-lg p-2.5">
                 <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Fin</p>
-                <p className="text-xs text-white/70 font-medium">{fmtDate(activity.endDate)}</p>
+                <p className="text-xs text-[var(--wl-text-secondary)] font-medium">{fmtDate(activity.endDate)}</p>
               </div>
             )}
           </div>
@@ -72,7 +72,7 @@ export function PortalActivityCard({ activity }: { activity: Activity }) {
             <div className="flex items-center gap-2 pt-1">
               <User className="h-3.5 w-3.5 text-white/30" />
               <span className="text-xs text-white/50">
-                Publicado por <span className="text-white/70 font-medium">{activity.createdBy.name || activity.createdBy.email}</span>
+                Publicado por <span className="text-[var(--wl-text-secondary)] font-medium">{activity.createdBy.name || activity.createdBy.email}</span>
               </span>
             </div>
           )}

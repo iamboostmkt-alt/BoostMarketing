@@ -153,12 +153,12 @@ export default function ContactForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#15151c] border-white/[0.06] text-white sm:max-w-md">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white">
             {isEditing ? 'Editar Contacto' : 'Nuevo Contacto'}
           </DialogTitle>
-          <DialogDescription className="text-white/40">
+          <DialogDescription className="text-[var(--wl-text-muted)]">
             {isEditing
               ? 'Modifica los datos del contacto.'
               : 'Agrega un nuevo contacto a tu pipeline.'}
@@ -168,7 +168,7 @@ export default function ContactForm({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Nombre */}
           <div className="space-y-1.5">
-            <Label htmlFor="contact-name" className="text-white/60 text-xs">
+            <Label htmlFor="contact-name" className="text-[var(--wl-text-secondary)] text-xs">
               Nombre <span className="text-red-400">*</span>
             </Label>
             <Input
@@ -177,13 +177,13 @@ export default function ContactForm({
               onChange={(e) => setName(e.target.value)}
               placeholder="Nombre del contacto"
               required
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
             />
           </div>
 
           {/* Email */}
           <div className="space-y-1.5">
-            <Label htmlFor="contact-email" className="text-white/60 text-xs">
+            <Label htmlFor="contact-email" className="text-[var(--wl-text-secondary)] text-xs">
               Email <span className="text-red-400">*</span>
             </Label>
             <Input
@@ -193,14 +193,14 @@ export default function ContactForm({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email@ejemplo.com"
               required
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
             />
           </div>
 
           {/* Empresa + Teléfono */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="contact-company" className="text-white/60 text-xs">
+              <Label htmlFor="contact-company" className="text-[var(--wl-text-secondary)] text-xs">
                 Empresa
               </Label>
               <Input
@@ -208,11 +208,11 @@ export default function ContactForm({
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="Nombre empresa"
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="contact-phone" className="text-white/60 text-xs">
+              <Label htmlFor="contact-phone" className="text-[var(--wl-text-secondary)] text-xs">
                 Teléfono
               </Label>
               <Input
@@ -220,7 +220,7 @@ export default function ContactForm({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+52 555 1234"
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
               />
             </div>
           </div>
@@ -228,17 +228,17 @@ export default function ContactForm({
           {/* Estado + Valor */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-white/60 text-xs">Estado</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-xs">Estado</Label>
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full h-9">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full h-9">
                   <SelectValue placeholder="Seleccionar" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1c1c27] border-white/[0.08]">
+                <SelectContent className="bg-[#1c1c27] border-[var(--wl-border)]">
                   {crmStages.map((stage) => (
                     <SelectItem
                       key={stage.id}
                       value={stage.id}
-                      className="text-white/80 focus:bg-white/[0.06] focus:text-white"
+                      className="text-[var(--wl-text-secondary)] focus:bg-white/[0.06] focus:text-white"
                     >
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${stage.color}`} />
@@ -250,7 +250,7 @@ export default function ContactForm({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="contact-value" className="text-white/60 text-xs">
+              <Label htmlFor="contact-value" className="text-[var(--wl-text-secondary)] text-xs">
                 Valor ($)
               </Label>
               <Input
@@ -261,14 +261,14 @@ export default function ContactForm({
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder="10,000"
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
+                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30"
               />
             </div>
           </div>
 
           {/* Notas */}
           <div className="space-y-1.5">
-            <Label htmlFor="contact-notes" className="text-white/60 text-xs">
+            <Label htmlFor="contact-notes" className="text-[var(--wl-text-secondary)] text-xs">
               Notas
             </Label>
             <Textarea
@@ -277,7 +277,7 @@ export default function ContactForm({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Notas adicionales..."
               rows={3}
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30 resize-none"
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/20 focus-visible:border-brand focus-visible:ring-brand/30 resize-none"
             />
           </div>
 
@@ -302,7 +302,7 @@ export default function ContactForm({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-white/50 hover:text-white hover:bg-white/[0.06]"
+              className="text-white/50 hover:text-white hover:bg-[var(--wl-hover)]"
               disabled={loading}
             >
               Cancelar

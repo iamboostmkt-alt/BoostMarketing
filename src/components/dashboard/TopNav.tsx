@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 // Destino de logout: app nativa Capacitor → /login, móvil browser → /login, desktop → /weeklink
 function getLogoutUrl(): string {
@@ -65,13 +66,13 @@ export default function TopNav() {
   };
 
   return (
-    <header className="border-b border-white/[0.05] sticky top-0 z-30" style={{ background: "linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%)", paddingTop: "max(env(safe-area-inset-top, 0px), 12px)", minHeight: "calc(48px + max(env(safe-area-inset-top, 0px), 0px))" }}>
+    <header className="border-b border-[var(--wl-border-subtle)] sticky top-0 z-30" style={{ background: "var(--wl-sidebar-bg)", borderBottom: "1px solid var(--wl-border-subtle)", paddingTop: "max(env(safe-area-inset-top, 0px), 12px)", minHeight: "calc(48px + max(env(safe-area-inset-top, 0px), 0px))" }}>
       <div className="flex items-center h-12 px-4 md:px-6 gap-3">
 
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden text-white/60 hover:text-white hover:bg-white/[0.06]"
+          className="md:hidden text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]"
           onClick={() => setMobileOpen(true)}
         >
           <Menu className="w-5 h-5" />
@@ -84,11 +85,11 @@ export default function TopNav() {
         <div className="flex-1 max-w-sm mx-auto hidden sm:block">
           <button
             onClick={() => setCommandOpen(true)}
-            className="w-full flex items-center gap-2 h-7 px-3 rounded-md border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-white/30 hover:text-white/50"
+            className="w-full flex items-center gap-2 h-7 px-3 rounded-md border border-[var(--wl-border)] bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-white/30 hover:text-white/50"
           >
             <Search className="w-3.5 h-3.5" />
             <span className="text-xs flex-1 text-left">Buscar...</span>
-            <kbd className="hidden md:inline-flex items-center gap-0.5 h-4 px-1.5 rounded border border-white/[0.08] bg-white/[0.04] text-[10px] text-white/25 font-mono">
+            <kbd className="hidden md:inline-flex items-center gap-0.5 h-4 px-1.5 rounded border border-[var(--wl-border)] bg-white/[0.04] text-[10px] text-white/25 font-mono">
               ⌘K
             </kbd>
           </button>
@@ -98,13 +99,14 @@ export default function TopNav() {
           <Button
             variant="ghost"
             size="icon"
-            className="sm:hidden text-white/60 hover:text-white hover:bg-white/[0.06]"
+            className="sm:hidden text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]"
             onClick={() => setCommandOpen(true)}
           >
             <Search className="w-5 h-5" />
           </Button>
 
-          <NotificationsDropdown />
+          <ThemeToggle variant="icon" />
+        <NotificationsDropdown />
 
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
@@ -121,7 +123,7 @@ export default function TopNav() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-56 border-white/[0.08] text-white p-0 overflow-hidden relative"
+              className="w-56 border-[var(--wl-border)] text-white p-0 overflow-hidden relative"
               style={{
                 background: 'rgba(10,10,14,0.85)',
                 backdropFilter: 'blur(24px)',
@@ -134,7 +136,7 @@ export default function TopNav() {
                 style={{ background: 'radial-gradient(ellipse at bottom right, rgba(88,28,220,0.12) 0%, transparent 70%)' }} />
 
               {/* Header: Avatar + nombre + rol */}
-              <div className="relative z-10 flex items-center gap-2.5 px-3 py-2.5 border-b border-white/[0.06]">
+              <div className="relative z-10 flex items-center gap-2.5 px-3 py-2.5 border-b border-[var(--wl-border)]">
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={userImage || undefined} alt={userName} />
                   <AvatarFallback

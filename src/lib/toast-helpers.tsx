@@ -17,7 +17,7 @@ export function toastRich({ title, message, icon = '✓', actions, duration = 45
   return toast.custom((toastId) => (
     <div
       style={{
-        background: '#0F1117',
+        background: 'var(--wl-surface)',
         border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: 14,
         padding: '12px 14px',

@@ -75,7 +75,7 @@ export default function SettingsContent() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <Loader2 className="w-6 h-6 animate-spin text-white/40" />
+      <Loader2 className="w-6 h-6 animate-spin text-[var(--wl-text-muted)]" />
     </div>
   );
 
@@ -87,7 +87,7 @@ export default function SettingsContent() {
       </div>
 
       {/* Logo */}
-      <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-6 space-y-4">
+      <div className="bg-white/[0.04] border border-[var(--wl-border)] rounded-xl p-6 space-y-4">
         <h2 className="text-white font-semibold">Logo de la empresa</h2>
         <p className="text-white/50 text-sm">Se usará en todos los emails y notificaciones</p>
 
@@ -106,7 +106,7 @@ export default function SettingsContent() {
               onChange={handleFileChange}
               disabled={isUploading}
             />
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.08] rounded-lg text-white text-sm transition-colors">
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-[var(--wl-border)] rounded-lg text-white text-sm transition-colors">
               {isUploading ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</>
               ) : (
@@ -115,36 +115,36 @@ export default function SettingsContent() {
             </div>
           </label>
           {logoUrl && (
-            <span className="text-white/40 text-xs truncate max-w-xs">{logoUrl}</span>
+            <span className="text-[var(--wl-text-muted)] text-xs truncate max-w-xs">{logoUrl}</span>
           )}
         </div>
       </div>
 
       {/* Brand Name */}
-      <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-6 space-y-4">
+      <div className="bg-white/[0.04] border border-[var(--wl-border)] rounded-xl p-6 space-y-4">
         <h2 className="text-white font-semibold">Nombre de la empresa</h2>
         <Input
           value={brandName}
           onChange={e => setBrandName(e.target.value)}
-          className="bg-white/[0.04] border-white/[0.08] text-white"
+          className="bg-white/[0.04] border-[var(--wl-border)] text-white"
           placeholder="BoostMarketing"
         />
       </div>
 
       {/* Brand Color */}
-      <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-6 space-y-4">
+      <div className="bg-white/[0.04] border border-[var(--wl-border)] rounded-xl p-6 space-y-4">
         <h2 className="text-white font-semibold">Color principal</h2>
         <div className="flex items-center gap-3">
           <input
             type="color"
             value={brandColor}
             onChange={e => setBrandColor(e.target.value)}
-            className="w-12 h-10 rounded cursor-pointer border border-white/[0.08] bg-transparent"
+            className="w-12 h-10 rounded cursor-pointer border border-[var(--wl-border)] bg-transparent"
           />
           <Input
             value={brandColor}
             onChange={e => setBrandColor(e.target.value)}
-            className="bg-white/[0.04] border-white/[0.08] text-white w-36"
+            className="bg-white/[0.04] border-[var(--wl-border)] text-white w-36"
             placeholder="#7c3aed"
           />
           <div className="w-8 h-8 rounded-full border border-white/20" style={{ background: brandColor }} />

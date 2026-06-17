@@ -110,7 +110,7 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
         {isAdmin && (
           <button
             onClick={() => onRoleChange(member.id, member.role)}
-            className="shrink-0 p-1.5 rounded-lg text-white/20 hover:text-white/60 hover:bg-white/[0.05] transition-colors"
+            className="shrink-0 p-1.5 rounded-lg text-white/20 hover:text-[var(--wl-text-secondary)] hover:bg-white/[0.05] transition-colors"
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
@@ -153,7 +153,7 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
       )}
 
       {showTasks && (
-        <div className="space-y-1.5 border-t border-white/[0.05] pt-2">
+        <div className="space-y-1.5 border-t border-[var(--wl-border-subtle)] pt-2">
           {member.activeTasks.slice(0, 4).map(task => (
             <div key={task.id} className="flex items-center gap-2">
               <span className={"w-1.5 h-1.5 rounded-full shrink-0 " + (STATUS_DOT[task.status] ?? 'bg-white/20')} />
@@ -242,7 +242,7 @@ export default function TeamPage() {
         <div>
           <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">Equipo</p>
           <h1 className="text-xl font-medium text-white">Equipo interno</h1>
-          <p className="text-white/40 text-sm mt-0.5">
+          <p className="text-[var(--wl-text-muted)] text-sm mt-0.5">
             {members.length} miembro{members.length !== 1 ? 's' : ''} · {totalActive} tareas activas
             {totalOverdue > 0 && <span className="text-red-400 ml-2">· {totalOverdue} vencidas</span>}
           </p>
@@ -278,7 +278,7 @@ export default function TeamPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar por nombre, email o rol…"
-          className="w-full pl-9 pr-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/20 transition-colors"
+          className="w-full pl-9 pr-4 py-2 rounded-lg bg-white/[0.04] border border-[var(--wl-border)] text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/20 transition-colors"
         />
       </div>
 
@@ -296,7 +296,7 @@ export default function TeamPage() {
       ) : groups.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Users className="w-12 h-12 text-white/10 mb-3" />
-          <p className="text-white/40 text-sm">
+          <p className="text-[var(--wl-text-muted)] text-sm">
             {search ? 'Sin resultados para esa búsqueda' : 'No hay miembros en el equipo'}
           </p>
         </div>
@@ -308,7 +308,7 @@ export default function TeamPage() {
               <div key={g.role}>
                 <div className="flex items-center gap-2 mb-3">
                   <Icon className="w-4 h-4" style={{ color: g.meta.color }} />
-                  <span className="text-sm font-medium text-white/60">{g.meta.label}</span>
+                  <span className="text-sm font-medium text-[var(--wl-text-secondary)]">{g.meta.label}</span>
                   <span className="text-xs text-white/20 bg-white/[0.05] px-2 py-0.5 rounded-full">{g.members.length}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

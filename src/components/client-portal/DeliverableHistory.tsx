@@ -37,17 +37,17 @@ export function DeliverableHistory({ taskId }: { taskId: string }) {
 
   return (
     <div className="space-y-2 mt-3">
-      <p className="text-[11px] font-medium text-white/40 uppercase tracking-wider">Historial</p>
+      <p className="text-[11px] font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Historial</p>
       <div className="relative">
         <div className="absolute left-2.5 top-2 bottom-2 w-px bg-white/[0.06]" />
         <div className="space-y-2">
           {logs.map((log) => {
-            const cfg = statusConfig[log.status] || { label: log.status, icon: Clock, color: 'text-white/40' };
+            const cfg = statusConfig[log.status] || { label: log.status, icon: Clock, color: 'text-[var(--wl-text-muted)]' };
             const Icon = cfg.icon;
             return (
               <div key={log.id} className="flex items-start gap-3 pl-1">
                 <div className="relative z-10 mt-0.5 shrink-0">
-                  <div className="w-4 h-4 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+                  <div className="w-4 h-4 rounded-full bg-white/[0.04] border border-[var(--wl-border)] flex items-center justify-center">
                     <Icon className={`w-2.5 h-2.5 ${cfg.color}`} />
                   </div>
                 </div>
@@ -58,7 +58,7 @@ export function DeliverableHistory({ taskId }: { taskId: string }) {
                       {new Date(log.createdAt).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
                     </span>
                   </div>
-                  {log.note && <p className="text-xs text-white/40 mt-0.5">{log.note}</p>}
+                  {log.note && <p className="text-xs text-[var(--wl-text-muted)] mt-0.5">{log.note}</p>}
                   {log.createdBy && <p className="text-[10px] text-white/25 mt-0.5">{log.createdBy}</p>}
                 </div>
               </div>

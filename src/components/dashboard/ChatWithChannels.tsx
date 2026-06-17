@@ -123,7 +123,7 @@ function renderMessage(text: string) {
         } else if (match[2]) {
           parts.push(<strong key={match.index} className="font-semibold text-white/90">{match[2]}</strong>);
         } else if (match[3]) {
-          parts.push(<em key={match.index} className="italic text-white/70">{match[3]}</em>);
+          parts.push(<em key={match.index} className="italic text-[var(--wl-text-secondary)]">{match[3]}</em>);
         } else if (match[4]) {
           parts.push(<code key={match.index} className="rounded px-1 py-px text-[12px] bg-white/[0.08] font-mono text-primary/90">{match[4]}</code>);
         }
@@ -185,57 +185,57 @@ function ChannelList({
   const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(role);
 
   return (
-    <div className="flex h-full shrink-0 flex-col border-r border-white/[0.05] bg-card" style={{ width: "clamp(180px, 22vw, 244px)" }}>
+    <div className="flex h-full shrink-0 flex-col border-r border-[var(--wl-border-subtle)] bg-card" style={{ width: "clamp(180px, 22vw, 244px)" }}>
       <div className="flex-1 overflow-y-auto scrollbar-thin px-2 pb-4">
         {/* Internal channels */}
         <div className="flex items-center justify-between px-2 pb-1 pt-4">
-          <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Canales</span>
+          <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--wl-text-muted)]">Canales</span>
           <div className="relative" ref={channelMenuRef}>
             <button onClick={(e) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenuPos({ top: r.bottom + 4, left: r.left }); setShowChannelMenu(!showChannelMenu); }}
-              className="flex h-5 w-5 items-center justify-center rounded text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-colors">
+              className="flex h-5 w-5 items-center justify-center rounded text-white/30 hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] transition-colors">
               <Plus className="h-3.5 w-3.5" strokeWidth={2} />
             </button>
             {showChannelMenu && (
-              <div className="fixed z-[9999] w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl" style={{ top: menuPos.top, left: menuPos.left }}>
+              <div className="fixed z-[9999] w-48 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] py-1 shadow-2xl" style={{ top: menuPos.top, left: menuPos.left }}>
                 <button onClick={() => { setShowChannelMenu(false); setIsPrivateGroup(false); setGroupMemberIds([]); setShowCreateChannel(true); }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-white">
                   <span className="text-[14px]">＃</span>Crear canal
                 </button>
                 {isManager && (
                   <button onClick={() => setShowChannelMenu(false)}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-white">
                     <span className="text-[14px]">◉</span>Crear espacio cliente
                   </button>
                 )}
                 <button onClick={() => { setShowChannelMenu(false); setIsPrivateGroup(true); setGroupMemberIds([]); setShowCreateChannel(true); }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-white">
                   <span className="text-[14px]">🔒</span>Grupo privado
                 </button>
                 {isManager && (
                   <button onClick={() => setShowChannelMenu(false)}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white">
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] transition-colors hover:bg-[var(--wl-hover)] hover:text-white">
                     <span className="text-[14px]">📢</span>Anuncio
                   </button>
                 )}
               </div>
             )}
             {showCreateChannel && (
-              <div ref={createChannelRef} className="fixed z-[9999] w-56 rounded-xl border border-white/[0.08] bg-[#141824] p-3 shadow-2xl" style={{ top: menuPos.top, left: menuPos.left }}>
-                <p className="text-[12px] font-medium text-white/70 mb-2">Nuevo canal</p>
+              <div ref={createChannelRef} className="fixed z-[9999] w-56 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] p-3 shadow-2xl" style={{ top: menuPos.top, left: menuPos.left }}>
+                <p className="text-[12px] font-medium text-[var(--wl-text-secondary)] mb-2">Nuevo canal</p>
                 <input autoFocus value={newChannelName} onChange={e => setNewChannelName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/\s+/g, '-'))}
                   placeholder={isPrivateGroup ? 'nombre-del-grupo' : 'nombre-del-canal'}
-                  className="w-full rounded-lg border border-white/[0.08] bg-[#0f1117] px-2.5 py-1.5 text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 mb-2" />
+                  className="w-full rounded-lg border border-[var(--wl-border)] bg-[var(--wl-surface)] px-2.5 py-1.5 text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 mb-2" />
                 {/* Miembros para grupo privado */}
                 {isPrivateGroup && (
                   <div className="mb-2">
-                    <p className="text-[11px] text-white/40 mb-1.5">Agregar miembros al grupo</p>
-                    <div className="max-h-28 overflow-y-auto space-y-0.5 bg-[#0f1117] rounded-lg p-1.5 border border-white/[0.06]">
+                    <p className="text-[11px] text-[var(--wl-text-muted)] mb-1.5">Agregar miembros al grupo</p>
+                    <div className="max-h-28 overflow-y-auto space-y-0.5 bg-[var(--wl-surface)] rounded-lg p-1.5 border border-[var(--wl-border)]">
                       {members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED').map(m => (
-                        <label key={m.id} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-white/[0.04] cursor-pointer">
+                        <label key={m.id} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-[var(--wl-hover)] cursor-pointer">
                           <input type="checkbox" checked={groupMemberIds.includes(m.id)}
                             onChange={e => setGroupMemberIds(prev => e.target.checked ? [...prev, m.id] : prev.filter(id => id !== m.id))}
                             className="rounded accent-violet-500 w-3 h-3" />
-                          <span className="text-[11px] text-white/60 truncate">{m.name || m.email}</span>
+                          <span className="text-[11px] text-[var(--wl-text-secondary)] truncate">{m.name || m.email}</span>
                         </label>
                       ))}
                     </div>
@@ -243,7 +243,7 @@ function ChannelList({
                 )}
                 <div className="flex gap-2">
                   <button onClick={() => { setShowCreateChannel(false); setNewChannelName(''); }}
-                    className="flex-1 rounded-lg border border-white/[0.08] py-1.5 text-[12px] text-white/50 hover:text-white transition-colors">
+                    className="flex-1 rounded-lg border border-[var(--wl-border)] py-1.5 text-[12px] text-white/50 hover:text-white transition-colors">
                     Cancelar
                   </button>
                   <button disabled={!newChannelName.trim()}
@@ -281,7 +281,7 @@ function ChannelList({
               <li key={r.id} className="group/ch relative">
                 <button onClick={() => setActiveId(r.id)}
                   className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2.5 text-[13px] transition-colors ${
-                    isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
+                    isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-[var(--wl-hover)] hover:text-white'
                   }`}>
                   {isActive && <span className="absolute left-[-8px] top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary shadow-[0_0_8px_rgba(139,92,246,0.8)]" />}
                   <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-white/35'}`} strokeWidth={1.75} />
@@ -315,7 +315,7 @@ function ChannelList({
         {/* Clients */}
         <div className="flex items-center justify-between px-2 pb-1 pt-4">
           <button onClick={() => setOpenClients(!openClients)}
-            className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 hover:text-white/60">
+            className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]">
             <ChevronDown className={`h-3 w-3 transition-transform ${openClients ? '' : '-rotate-90'}`} strokeWidth={2} />
             Cuentas ({clients.length})
           </button>
@@ -329,7 +329,7 @@ function ChannelList({
                 <li key={c.id}>
                   <button onClick={() => setActiveId(c.id)}
                     className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${
-                      isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
+                      isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-[var(--wl-hover)] hover:text-white'
                     }`}>
                     <Avatar initials={(c.name || 'C').slice(0,2).toUpperCase()} color={c.color || '#8b5cf6'} size={20} />
                     <span className="flex-1 truncate text-left">{c.name}</span>
@@ -348,23 +348,23 @@ function ChannelList({
         {/* Direct Messages */}
         <div className="flex items-center justify-between px-2 pb-1 pt-4">
           <button onClick={() => setOpenDMs(!openDMs)}
-            className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 hover:text-white/60">
+            className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]">
             <ChevronDown className={`h-3 w-3 transition-transform ${openDMs ? '' : '-rotate-90'}`} strokeWidth={2} />
             Mensajes directos
           </button>
           <button onClick={() => { setShowDMSearch(!showDMSearch); setDmSearchQuery(''); }}
-            className="flex h-5 w-5 items-center justify-center rounded text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-colors">
+            className="flex h-5 w-5 items-center justify-center rounded text-white/30 hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] transition-colors">
             <Plus className="h-3.5 w-3.5" strokeWidth={2} />
           </button>
         </div>
         {showDMSearch && (
-          <div className="mx-2 mb-2 rounded-xl border border-white/[0.08] bg-[#141824] overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.05]">
+          <div className="mx-2 mb-2 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--wl-border-subtle)]">
               <Search className="h-3.5 w-3.5 text-white/30 shrink-0" strokeWidth={1.75} />
               <input autoFocus value={dmSearchQuery} onChange={e => setDmSearchQuery(e.target.value)}
                 placeholder="Buscar persona..."
                 className="flex-1 bg-transparent text-[12px] text-white placeholder:text-white/25 focus:outline-none" />
-              <button onClick={() => setShowDMSearch(false)} className="text-white/25 hover:text-white/60">
+              <button onClick={() => setShowDMSearch(false)} className="text-white/25 hover:text-[var(--wl-text-secondary)]">
                 <X className="h-3.5 w-3.5" strokeWidth={1.75} />
               </button>
             </div>
@@ -376,13 +376,13 @@ function ChannelList({
                 const initials = ((m.name || m.email) || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase();
                 return (
                   <button key={m.id} onClick={() => { setActiveId(dmId); setShowDMSearch(false); setDmSearchQuery(''); }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white transition-colors">
                     <div className="relative shrink-0">
                       <Avatar initials={initials} color={m.color || '#8b5cf6'} size={22} image={m.image ?? undefined} />
                       <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-[#141824] bg-emerald-400" />
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <p className="truncate text-[12px] font-medium text-white/80">{m.name || m.email}</p>
+                      <p className="truncate text-[12px] font-medium text-[var(--wl-text-secondary)]">{m.name || m.email}</p>
                       <p className="truncate text-[10px] text-white/30">{m.role || 'Miembro'}</p>
                     </div>
                   </button>
@@ -403,7 +403,7 @@ function ChannelList({
               return (
                 <li key="weeklink-bot">
                   <button onClick={() => setActiveId(wkRoom)}
-                    className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${isActive ? 'bg-white/[0.06] text-white' : 'hover:bg-white/[0.03] text-white/50 hover:text-white/80'}`}>
+                    className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${isActive ? 'bg-white/[0.06] text-white' : 'hover:bg-[var(--wl-hover)] text-white/50 hover:text-[var(--wl-text-secondary)]'}`}>
                     <div className="relative shrink-0">
                       <div className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }}>W</div>
                       <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-[#07070a]" />
@@ -422,7 +422,7 @@ function ChannelList({
                 <li key={m.id}>
                   <button onClick={() => setActiveId(dmId)}
                     className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${
-                      isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
+                      isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-[var(--wl-hover)] hover:text-white'
                     }`}>
                     <div className="relative shrink-0">
                       <Avatar initials={initials} color={m.color || '#8b5cf6'} size={20} image={m.image ?? undefined} />
@@ -447,7 +447,7 @@ function ChannelList({
             <button onClick={() => setClientsOpen(v => !v)}
               className="flex w-full items-center gap-1 px-2 pb-1 pt-4 group">
               <span className={`text-[9px] text-white/30 transition-transform duration-150 ${clientsOpen ? 'rotate-90' : ''}`}>▶</span>
-              <span className="ml-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white/40 group-hover:text-white/60">Chats con cuentas</span>
+              <span className="ml-1 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--wl-text-muted)] group-hover:text-[var(--wl-text-secondary)]">Chats con cuentas</span>
               <span className="ml-1 text-[10px] text-white/25">({clients.length})</span>
             </button>
             {clientsOpen && (
@@ -469,7 +469,7 @@ function ChannelList({
                   <li key={c.id}>
                     <button onClick={() => setActiveId(clientRoomId)}
                       className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${
-                        isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white'
+                        isActive ? 'bg-primary/[0.12] font-medium text-white' : 'text-white/55 hover:bg-[var(--wl-hover)] hover:text-white'
                       }`}>
                       <div className="relative shrink-0">
                         <Avatar initials={initials} color={clientColor} size={20} />
@@ -578,7 +578,7 @@ function TasksTab({ roomTasks, room, onRefresh }: { roomTasks: any[]; room: stri
           const style = statusStyleMap[t.status] || statusStyleMap.pending;
           const due = t.dueDate ? new Date(t.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : 'Sin fecha';
           return (
-            <div key={t.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+            <div key={t.id} className="rounded-xl border border-[var(--wl-border)] bg-white/[0.02] overflow-hidden">
               <button onClick={() => setExpandedId(isExpanded ? null : t.id)}
                 className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-white/[0.02] transition-colors">
                 <ChevronDown className={`h-3.5 w-3.5 text-white/30 shrink-0 transition-transform ${isExpanded ? '' : '-rotate-90'}`} strokeWidth={2} />
@@ -593,7 +593,7 @@ function TasksTab({ roomTasks, room, onRefresh }: { roomTasks: any[]; room: stri
               {isExpanded && (
                 <div className="border-t border-white/[0.04] px-3 py-2.5 flex items-center gap-2">
                   <button onClick={() => { setUploadingTaskId(t.id); taskFileRef.current?.click(); }}
-                    className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-[12px] text-white/50 hover:text-white hover:border-white/20 transition-colors">
+                    className="flex items-center gap-1.5 rounded-lg border border-[var(--wl-border)] px-3 py-1.5 text-[12px] text-white/50 hover:text-white hover:border-white/20 transition-colors">
                     <Paperclip className="h-3.5 w-3.5" strokeWidth={1.75} />
                     {uploadingTaskId === t.id ? 'Subiendo...' : 'Subir archivo'}
                   </button>
@@ -613,7 +613,7 @@ function TasksTab({ roomTasks, room, onRefresh }: { roomTasks: any[]; room: stri
       {doneTasks.length > 0 && (
         <div className="mt-4">
           <button onClick={() => setShowDone(!showDone)}
-            className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-white/25 hover:text-white/40 transition-colors mb-2">
+            className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-white/25 hover:text-[var(--wl-text-muted)] transition-colors mb-2">
             <ChevronDown className={`h-3 w-3 transition-transform ${showDone ? '' : '-rotate-90'}`} strokeWidth={2} />
             Completadas / Aprobadas ({doneTasks.length})
           </button>
@@ -1411,7 +1411,7 @@ FORMATO:
       onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
       onDrop={handleDrop}>
       {/* Channel header */}
-      <header className="shrink-0 border-b border-white/[0.05]">
+      <header className="shrink-0 border-b border-[var(--wl-border-subtle)]">
         {dmUser && (
           <div className="flex items-center gap-3 px-5 py-3 border-b border-white/[0.04] bg-white/[0.01]">
             <div className="relative shrink-0">
@@ -1437,9 +1437,9 @@ FORMATO:
             {room.startsWith('weeklink_') ? (
               <div className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }}>W</div>
             ) : dmUser ? (
-              <span className="text-[13px] font-medium text-white/40">@</span>
+              <span className="text-[13px] font-medium text-[var(--wl-text-muted)]">@</span>
             ) : (
-              <Hash className="h-4 w-4 text-white/40" strokeWidth={1.75} />
+              <Hash className="h-4 w-4 text-[var(--wl-text-muted)]" strokeWidth={1.75} />
             )}
             <h1 className="text-[15px] font-semibold tracking-tight">{title}</h1>
             {/* Badge sesión IA activa */}
@@ -1463,7 +1463,7 @@ FORMATO:
               <button
                 onClick={() => onToggleRightPanel()}
                 title="Info del canal"
-                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] text-white/40 hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--wl-hover)] text-[var(--wl-text-muted)] hover:text-white"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                   <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
@@ -1473,38 +1473,38 @@ FORMATO:
             <div className="relative group/tip">
               <button
                 onClick={() => setShowMembersModal(p => !p)}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showMembersPanel ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--wl-hover)] ${showMembersPanel ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
                 <Users className="h-4 w-4" strokeWidth={1.75} />
               </button>
-              <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-300 group-hover/tip:opacity-100 z-30">
+              <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[var(--wl-elevated)] border border-[var(--wl-border)] px-2 py-1 text-[11px] text-[var(--wl-text-secondary)] opacity-0 transition-opacity delay-300 group-hover/tip:opacity-100 z-30">
                 Miembros
               </div>
             </div>
             <button
               onClick={() => handleTabChange('pinned')}
               title="Mensajes fijados"
-              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${activeTab === 'pinned' ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--wl-hover)] ${activeTab === 'pinned' ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
               <Pin className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </button>
             <div className="relative">
               <button
                 onClick={() => setShowChannelMore(p => !p)}
                 title="Más opciones del canal"
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.04] ${showChannelMore ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--wl-hover)] ${showChannelMore ? 'text-white bg-white/[0.06]' : 'text-white/35 hover:text-white'}`}>
                 <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.75} />
               </button>
               {showChannelMore && (
-                <div className="absolute right-0 top-9 z-50 w-48 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
+                <div className="absolute right-0 top-9 z-50 w-48 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] py-1 shadow-2xl">
                   <button onClick={() => { handleTabChange('pinned'); setShowChannelMore(false); }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white transition-colors">
                     📌 Ver mensajes fijados
                   </button>
                   <button onClick={() => { handleTabChange('files'); setShowChannelMore(false); }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white transition-colors">
                     📎 Ver archivos
                   </button>
                   <button onClick={() => { setShowMembersPanel(p => !p); setShowChannelMore(false); }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white transition-colors">
                     👥 Ver miembros
                   </button>
                 </div>
@@ -1523,7 +1523,7 @@ FORMATO:
             return (
               <button key={tab} onClick={() => handleTabChange(tab)}
                 className={`relative flex h-9 items-center gap-1.5 px-3 text-[13px] transition-colors ${
-                  isActive ? 'text-white' : 'text-white/35 hover:text-white/60'
+                  isActive ? 'text-white' : 'text-white/35 hover:text-[var(--wl-text-secondary)]'
                 }`}>
                 {labels[tab]}
                 {tab === 'tasks' && roomTasks.filter(t => !['completed','approved'].includes(t.status)).length > 0 && (
@@ -1553,7 +1553,7 @@ FORMATO:
           <div className="grid grid-cols-2 gap-3">
             {messages.filter(m => m.fileUrl).map(m => (
               <a key={m.id} href={m.fileUrl!} target="_blank" rel="noopener noreferrer"
-                className="flex flex-col gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 hover:border-white/10 transition-colors">
+                className="flex flex-col gap-2 rounded-xl border border-[var(--wl-border)] bg-white/[0.02] p-3 hover:border-white/10 transition-colors">
                 {m.fileType?.startsWith('image') ? (
                   <img src={m.fileUrl!} alt={m.fileName || 'imagen'} className="w-full h-24 object-cover rounded-lg" />
                 ) : (
@@ -1561,7 +1561,7 @@ FORMATO:
                     <Paperclip className="h-8 w-8 text-white/20" strokeWidth={1.5} />
                   </div>
                 )}
-                <p className="truncate text-[11px] text-white/60">{m.fileName || 'Archivo'}</p>
+                <p className="truncate text-[11px] text-[var(--wl-text-secondary)]">{m.fileName || 'Archivo'}</p>
                 <p className="text-[10px] text-white/25">{(m.user as any)?.name || ''} · {new Date(m.createdAt).toLocaleDateString('es-MX')}</p>
               </a>
             ))}
@@ -1586,7 +1586,7 @@ FORMATO:
           ) : (
             <div className="flex flex-col gap-2">
               {pinnedMessages.map(pm => (
-                <div key={pm.id} className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 group">
+                <div key={pm.id} className="rounded-xl border border-[var(--wl-border)] bg-white/[0.03] px-4 py-3 group">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 mb-1">
                       {pm.user?.image ? (
@@ -1597,7 +1597,7 @@ FORMATO:
                           {pm.user?.name?.[0]?.toUpperCase() ?? '?'}
                         </div>
                       )}
-                      <span className="text-[12px] font-medium text-white/70">{pm.user?.name ?? 'Usuario'}</span>
+                      <span className="text-[12px] font-medium text-[var(--wl-text-secondary)]">{pm.user?.name ?? 'Usuario'}</span>
                       <span className="text-[10px] text-white/30">
                         {new Date(pm.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
                       </span>
@@ -1609,7 +1609,7 @@ FORMATO:
                       <Pin className="h-3.5 w-3.5" strokeWidth={1.75} />
                     </button>
                   </div>
-                  <p className="text-[13px] text-white/60 leading-relaxed">{pm.message}</p>
+                  <p className="text-[13px] text-[var(--wl-text-secondary)] leading-relaxed">{pm.message}</p>
                 </div>
               ))}
             </div>
@@ -1716,7 +1716,7 @@ FORMATO:
               <div className={`group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02] ${isMe && !isSystemMsg ? 'flex flex-col items-end pr-3' : ''}`}
                 style={{ paddingTop: isSame ? '1px' : '8px', paddingBottom: '1px' }}>
                 {/* Hover actions */}
-                <div className={`absolute top-0 right-2 z-10 items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl ${showEmoji?.id === msg.id ? 'flex' : 'hidden group-hover:flex'}`}>
+                <div className={`absolute top-0 right-2 z-10 items-center rounded-lg border border-[var(--wl-border)] bg-[var(--wl-elevated)] p-0.5 shadow-xl ${showEmoji?.id === msg.id ? 'flex' : 'hidden group-hover:flex'}`}>
                   {[
                     { Icon: SmilePlus, fn: () => { setShowEmoji(showEmoji?.id === msg.id ? null : {id: msg.id, x: 0, y: 0}); }, tip: 'Reaccionar' },
                     { Icon: Reply,         fn: () => setReplyingTo(msg),                                                        tip: 'Responder' },
@@ -1727,10 +1727,10 @@ FORMATO:
                   ].map(({ Icon, fn, tip }, i) => (
                     <div key={i} className="relative group/tip">
                       <button onClick={() => fn()}
-                        className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white">
+                        className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--wl-text-muted)] transition-colors hover:bg-[var(--wl-hover)] hover:text-white">
                         <Icon className="h-4 w-4" strokeWidth={1.75} />
                       </button>
-                      <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
+                      <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[var(--wl-elevated)] border border-[var(--wl-border)] px-2 py-1 text-[11px] text-[var(--wl-text-secondary)] opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
                         {tip}
                       </div>
                     </div>
@@ -1739,11 +1739,11 @@ FORMATO:
 
                 {/* Emoji picker — absolute encima del hover bar */}
                 {showEmoji?.id === msg.id && (
-                  <div data-emoji-picker className={`absolute -top-11 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl ${isMe ? "right-0" : "left-0"}`}
+                  <div data-emoji-picker className={`absolute -top-11 z-20 flex gap-1 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] p-2 shadow-2xl ${isMe ? "right-0" : "left-0"}`}
                     onMouseLeave={() => setShowEmoji(null)}>
                     {QUICK_EMOJIS.map(e => (
                       <button key={e} onClick={() => handleReaction(msg.id, e)}
-                        className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
+                        className="text-lg p-1 rounded-lg hover:bg-[var(--wl-hover)] transition-all hover:scale-125">
                         {e}
                       </button>
                     ))}
@@ -1759,7 +1759,7 @@ FORMATO:
                       <p className="text-[10px] font-medium text-violet-400/80 mb-0.5 truncate">
                         {(msg as any).parent?.user?.name?.split(' ')[0] || 'Usuario'}
                       </p>
-                      <p className="text-[11px] text-white/40 truncate leading-tight">
+                      <p className="text-[11px] text-[var(--wl-text-muted)] truncate leading-tight">
                         {((msg as any).parent?.message || '').replace(/\*\*/g,'').slice(0,60)}
                       </p>
                     </div>
@@ -1828,7 +1828,7 @@ FORMATO:
                             }
                           }}
                           rows={2}
-                          className="w-full rounded-xl border border-primary/40 bg-[#141824] px-3 py-2 text-[13px] text-white focus:outline-none resize-none"
+                          className="w-full rounded-xl border border-primary/40 bg-[var(--wl-elevated)] px-3 py-2 text-[13px] text-white focus:outline-none resize-none"
                         />
                         <div className="flex gap-2 text-[11px]">
                           <button onClick={() => setEditingId(null)} className="text-white/30 hover:text-white transition-colors">Cancelar</button>
@@ -1839,7 +1839,7 @@ FORMATO:
                     ) : (
                       <div className={`text-[12.5px] leading-[1.45] break-words overflow-hidden ${
                         isSystemMsg
-                          ? 'text-white/70' // mensajes del bot — sin burbuja
+                          ? 'text-[var(--wl-text-secondary)]' // mensajes del bot — sin burbuja
                           : isMe
                             ? 'inline-block rounded-[18px] rounded-tr-[4px] px-3.5 py-2 text-white/95 max-w-full'  // burbuja propia — morada
                             : 'inline-block rounded-[18px] rounded-tl-[4px] px-3.5 py-2 text-white/85 max-w-full' // burbuja ajena — gris
@@ -1853,14 +1853,14 @@ FORMATO:
                     )}
                     {/* More options dropdown */}
                     {showMoreMenu === msg.id && (
-                      <div ref={moreMenuRef} className="absolute bottom-8 right-2 z-30 w-44 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl">
+                      <div ref={moreMenuRef} className="absolute bottom-8 right-2 z-30 w-44 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] py-1 shadow-2xl">
                         <button onClick={() => { navigator.clipboard.writeText(msg.message); setShowMoreMenu(null); }}
-                          className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                          className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white transition-colors">
                           Copiar texto
                         </button>
                         {(msg.userId === myId || role === 'ADMIN') && (
                           <button onClick={() => { setEditText(msg.message); setEditingId(msg.id); setShowMoreMenu(null); }}
-                            className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors">
+                            className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white transition-colors">
                             Editar mensaje
                           </button>
                         )}
@@ -1877,7 +1877,7 @@ FORMATO:
                             if (res.ok) setMessages(prev => prev.filter(m => m.id !== msg.id));
                             setShowMoreMenu(null);
                           }}
-                            className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-red-400/70 hover:bg-white/[0.04] hover:text-red-400 transition-colors">
+                            className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] text-red-400/70 hover:bg-[var(--wl-hover)] hover:text-red-400 transition-colors">
                             Eliminar mensaje
                           </button>
                         )}
@@ -1904,12 +1904,12 @@ FORMATO:
                         // Si el mensaje es solo la URL, no mostrar texto adicional (la card lo reemplaza)
                         return (
                           <a key={url} href={url} target="_blank" rel="noopener noreferrer"
-                            className="mt-1.5 flex items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-[12px] hover:bg-white/[0.06] transition-colors no-underline"
+                            className="mt-1.5 flex items-center gap-2.5 rounded-xl border border-[var(--wl-border)] bg-white/[0.03] px-3 py-2 text-[12px] hover:bg-[var(--wl-hover)] transition-colors no-underline"
                             style={{ borderLeft: `3px solid ${svc.color}40` }}>
                             <span className="text-lg shrink-0">{svc.icon}</span>
                             <div className="min-w-0 flex-1">
                               <p className="text-[11px] font-semibold" style={{ color: svc.color }}>{svc.label}</p>
-                              <p className="text-white/40 truncate text-[10px]">{url.replace(/^https?:\/\//, '').slice(0, 50)}{url.length > 60 ? '...' : ''}</p>
+                              <p className="text-[var(--wl-text-muted)] truncate text-[10px]">{url.replace(/^https?:\/\//, '').slice(0, 50)}{url.length > 60 ? '...' : ''}</p>
                             </div>
                             <span className="text-[10px] text-white/20 shrink-0">→</span>
                           </a>
@@ -1930,7 +1930,7 @@ FORMATO:
                         <div className="mt-2">
                           <img src={msg.fileUrl} alt={msg.fileName || 'imagen'}
                             referrerPolicy="no-referrer"
-                            className="max-w-[320px] w-full rounded-xl border border-white/[0.08] cursor-pointer"
+                            className="max-w-[320px] w-full rounded-xl border border-[var(--wl-border)] cursor-pointer"
                             onClick={() => window.open(msg.fileUrl!, '_blank')} />
                         </div>
                       );
@@ -1949,7 +1949,7 @@ FORMATO:
                         {reactions.map((r: any, i: number) => (
                           <button key={i} onClick={() => handleReaction(msg.id, r.emoji)}
                             className={`flex h-7 items-center gap-1.5 rounded-full border px-2 text-[12px] transition-colors ${
-                              r.mine ? 'border-primary/40 bg-primary/15 text-white' : 'border-white/[0.08] bg-white/[0.03] text-white/60 hover:border-white/10'
+                              r.mine ? 'border-primary/40 bg-primary/15 text-white' : 'border-[var(--wl-border)] bg-white/[0.03] text-[var(--wl-text-secondary)] hover:border-white/10'
                             }`}>
                             <span>{r.emoji}</span>
                             <span className="font-medium tabular-nums">{r.count}</span>
@@ -1969,7 +1969,7 @@ FORMATO:
                   onClick={() => setCollapsedBotGroups(prev => ({
                     ...prev, [String(idx)]: prev[String(idx)] === false ? undefined as any : false
                   }))}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-white/30 hover:text-white/60 hover:bg-white/[0.04] transition-colors border border-white/[0.06]">
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-white/30 hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] transition-colors border border-[var(--wl-border)]">
                   <span>{botGroupSizes[idx] - 1} mensajes más</span>
                   <span className="text-[9px] opacity-60">{collapsedBotGroups[String(idx)] === false ? '▲' : '▼'}</span>
                 </button>
@@ -2002,8 +2002,8 @@ FORMATO:
       {showSearch && (
         <div className="fixed inset-0 z-[300] flex items-start justify-center pt-[15vh] bg-black/60 backdrop-blur-sm"
           onClick={e => { if (e.target === e.currentTarget) setShowSearch(false); }}>
-          <div className="w-full max-w-lg rounded-2xl border border-white/[0.08] bg-[#0F1117] shadow-2xl mx-4 overflow-hidden">
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.05]">
+          <div className="w-full max-w-lg rounded-2xl border border-[var(--wl-border)] bg-[var(--wl-surface)] shadow-2xl mx-4 overflow-hidden">
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--wl-border-subtle)]">
               <Search className="h-4 w-4 text-white/30 shrink-0" strokeWidth={1.75} />
               <input
                 autoFocus
@@ -2018,7 +2018,7 @@ FORMATO:
                   <X className="h-4 w-4" strokeWidth={1.75} />
                 </button>
               )}
-              <kbd className="hidden sm:flex items-center gap-1 rounded-md border border-white/[0.08] px-1.5 py-0.5 text-[10px] text-white/30">Esc</kbd>
+              <kbd className="hidden sm:flex items-center gap-1 rounded-md border border-[var(--wl-border)] px-1.5 py-0.5 text-[10px] text-white/30">Esc</kbd>
             </div>
             <div className="max-h-[360px] overflow-y-auto scrollbar-thin">
               {searchLoading && (
@@ -2036,7 +2036,7 @@ FORMATO:
                   {searchResults.map((r: any) => (
                     <button key={r.id}
                       onClick={() => setShowSearch(false)}
-                      className="flex items-start gap-3 px-4 py-3 text-left hover:bg-white/[0.03] transition-colors w-full">
+                      className="flex items-start gap-3 px-4 py-3 text-left hover:bg-[var(--wl-hover)] transition-colors w-full">
                       {r.user?.image ? (
                         <img src={r.user.image} className="h-7 w-7 rounded-full object-cover shrink-0 mt-0.5" />
                       ) : (
@@ -2047,7 +2047,7 @@ FORMATO:
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline gap-2 mb-0.5">
-                          <span className="text-[12px] font-medium text-white/70">{r.user?.name || r.user?.email}</span>
+                          <span className="text-[12px] font-medium text-[var(--wl-text-secondary)]">{r.user?.name || r.user?.email}</span>
                           <span className="text-[10px] text-white/30">
                             {new Date(r.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
                           </span>
@@ -2086,26 +2086,26 @@ FORMATO:
       {/* Create Task Modal */}
       {taskModal && (
         <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl border border-white/[0.08] bg-[#0F1117] p-6 shadow-2xl sm:mx-4 max-h-[85dvh] overflow-y-auto">
+          <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl border border-[var(--wl-border)] bg-[var(--wl-surface)] p-6 shadow-2xl sm:mx-4 max-h-[85dvh] overflow-y-auto">
             <h3 className="text-[15px] font-semibold text-white mb-4">Crear tarea desde mensaje</h3>
             <div className="flex flex-col gap-3">
               <div>
-                <label className="text-[11px] text-white/40 uppercase tracking-wide mb-1 block">Título</label>
+                <label className="text-[11px] text-[var(--wl-text-muted)] uppercase tracking-wide mb-1 block">Título</label>
                 <input
                   value={taskModal.title}
                   onChange={e => setTaskModal(prev => prev ? { ...prev, title: e.target.value } : null)}
                   maxLength={120}
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#141824] px-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40"
+                  className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] px-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40"
                   placeholder="Título de la tarea"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-white/40 uppercase tracking-wide mb-1 block">Descripción</label>
+                <label className="text-[11px] text-[var(--wl-text-muted)] uppercase tracking-wide mb-1 block">Descripción</label>
                 <textarea
                   value={taskModal.description}
                   onChange={e => setTaskModal(prev => prev ? { ...prev, description: e.target.value } : null)}
                   rows={3}
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#141824] px-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 resize-none"
+                  className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] px-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 resize-none"
                   placeholder="Descripción opcional"
                 />
               </div>
@@ -2113,7 +2113,7 @@ FORMATO:
             <div className="flex gap-3 mt-5">
               <button
                 onClick={() => setTaskModal(null)}
-                className="flex-1 rounded-xl border border-white/[0.08] py-2 text-[13px] text-white/50 hover:text-white transition-colors">
+                className="flex-1 rounded-xl border border-[var(--wl-border)] py-2 text-[13px] text-white/50 hover:text-white transition-colors">
                 Cancelar
               </button>
               <button
@@ -2154,10 +2154,10 @@ FORMATO:
       {linkModal && (
         <div className="mx-4 mb-2 rounded-xl border border-primary/30 bg-primary/[0.06] p-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[12px] font-medium text-white/80">
+            <p className="text-[12px] font-medium text-[var(--wl-text-secondary)]">
               {linkModal.fileType.startsWith('video') ? '🎬 Video subido' : '📎 Archivo subido'} — ¿Vincular con tarea?
             </p>
-            <button onClick={() => setLinkModal(null)} className="text-white/30 hover:text-white/60">
+            <button onClick={() => setLinkModal(null)} className="text-white/30 hover:text-[var(--wl-text-secondary)]">
               <X className="h-3.5 w-3.5" strokeWidth={1.75} />
             </button>
           </div>
@@ -2165,7 +2165,7 @@ FORMATO:
             <p className="text-[11px] text-primary/70 mb-2">Al vincular un video la tarea pasará a <strong>En revisión</strong> automáticamente</p>
           )}
           <select value={linkTaskId} onChange={e => setLinkTaskId(e.target.value)}
-            className="w-full rounded-lg border border-white/[0.08] bg-[#141824] px-3 py-2 text-[12px] text-white/70 focus:outline-none focus:border-primary/40 mb-2">
+            className="w-full rounded-lg border border-[var(--wl-border)] bg-[var(--wl-elevated)] px-3 py-2 text-[12px] text-[var(--wl-text-secondary)] focus:outline-none focus:border-primary/40 mb-2">
             <option value="">Seleccionar tarea...</option>
             {linkableTasks.map((t: any) => (
               <option key={t.id} value={t.id}>{t.title}</option>
@@ -2177,7 +2177,7 @@ FORMATO:
               {linking ? 'Vinculando...' : 'Vincular'}
             </button>
             <button onClick={handleSkipLink}
-              className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-[12px] text-white/40 hover:text-white/70">
+              className="rounded-lg border border-[var(--wl-border)] px-3 py-1.5 text-[12px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)]">
               Omitir (enviar sin vincular)
             </button>
           </div>
@@ -2186,16 +2186,16 @@ FORMATO:
       {/* Pending files preview */}
       {/* ── Panel de confirmación batch upload ── */}
       {batchFiles.length > 0 && (
-        <div className="mx-4 mb-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
+        <div className="mx-4 mb-2 rounded-2xl border border-[var(--wl-border)] bg-white/[0.03] overflow-hidden">
           {/* Previews */}
           <div className="flex flex-wrap gap-2 p-3 pb-2">
             {batchFiles.map((b, i) => (
               <div key={i} className="relative group">
                 {b.preview ? (
                   <img src={b.preview} alt={b.file.name}
-                    className="h-16 w-16 rounded-xl object-cover border border-white/[0.08]" />
+                    className="h-16 w-16 rounded-xl object-cover border border-[var(--wl-border)]" />
                 ) : (
-                  <div className="h-16 w-16 rounded-xl bg-white/[0.05] border border-white/[0.08] flex flex-col items-center justify-center gap-1">
+                  <div className="h-16 w-16 rounded-xl bg-white/[0.05] border border-[var(--wl-border)] flex flex-col items-center justify-center gap-1">
                     <Paperclip className="h-5 w-5 text-white/30" />
                     <span className="text-[9px] text-white/30 truncate w-full px-1 text-center">
                       {b.file.name.slice(0, 10)}
@@ -2216,12 +2216,12 @@ FORMATO:
               onChange={e => setBatchCaption(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleBatchSend(); } }}
               placeholder={`Agregar descripción (opcional)… ${batchFiles.length > 1 ? `· ${batchFiles.length} archivos` : ''}`}
-              className="w-full bg-transparent text-[13px] text-white/70 placeholder-white/25 outline-none" />
+              className="w-full bg-transparent text-[13px] text-[var(--wl-text-secondary)] placeholder-white/25 outline-none" />
           </div>
           {/* Acciones */}
-          <div className="flex items-center justify-between px-3 py-2 border-t border-white/[0.05]">
+          <div className="flex items-center justify-between px-3 py-2 border-t border-[var(--wl-border-subtle)]">
             <button onClick={() => { setBatchFiles([]); setBatchCaption(''); }}
-              className="text-[12px] text-white/30 hover:text-white/60 transition-colors">
+              className="text-[12px] text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors">
               Cancelar
             </button>
             <button onClick={handleBatchSend} disabled={uploading}
@@ -2238,7 +2238,7 @@ FORMATO:
           {pendingFiles.map((f, i) => {
             const typeLabel = f.type.startsWith('image') ? '🖼 Imagen' : f.type.startsWith('video') ? '🎬 Video' : f.type === 'application/pdf' ? '📄 PDF' : '📎 Archivo';
             return (
-              <div key={i} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2">
+              <div key={i} className="flex items-center gap-3 rounded-xl border border-[var(--wl-border)] bg-white/[0.03] px-3 py-2">
                 {f.preview ? (
                   <img src={f.preview} alt="" className="h-9 w-9 rounded-lg object-cover shrink-0" />
                 ) : (
@@ -2248,7 +2248,7 @@ FORMATO:
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="truncate text-[12px] text-white/70">{f.name}</p>
+                    <p className="truncate text-[12px] text-[var(--wl-text-secondary)]">{f.name}</p>
                     <div className="flex items-center gap-1.5 ml-2 shrink-0">
                       <span className="text-[10px] text-white/30">{typeLabel}</span>
                       <button onClick={() => setPendingFiles(prev => prev.filter((_, idx) => idx !== i))}
@@ -2281,7 +2281,7 @@ FORMATO:
             </p>
           </div>
           <button onClick={() => setReplyingTo(null)}
-            className="text-white/25 hover:text-white/60 transition-colors p-1 shrink-0">
+            className="text-white/25 hover:text-[var(--wl-text-secondary)] transition-colors p-1 shrink-0">
             <X className="w-3.5 h-3.5" strokeWidth={1.5} />
           </button>
         </div>
@@ -2289,23 +2289,23 @@ FORMATO:
       {/* Composer */}
       <div className="px-4 pt-1" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom, 16px))" }}>
         <form onSubmit={handleSend}>
-          <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] px-2 py-2 transition-colors focus-within:border-primary/40">
+          <div className="rounded-[18px] border border-[var(--wl-border)] bg-white/[0.03] px-2 py-2 transition-colors focus-within:border-primary/40">
             <div className="flex items-center gap-1">
               <input ref={fileInputRef} type="file" multiple className="hidden" accept="image/*,video/*,.pdf,.zip,.doc,.docx" onChange={handleFileUpload} />
               {/* Emoji picker composer */}
               <div className="relative">
                 <button type="button" onClick={() => setShowComposerEmoji(p => !p)}
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] ${showComposerEmoji ? 'text-primary' : 'text-white/35 hover:text-white'}`}>
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--wl-hover)] ${showComposerEmoji ? 'text-primary' : 'text-white/35 hover:text-white'}`}>
                   <Smile className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
                 {showComposerEmoji && (
                   <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowComposerEmoji(false)} />
-                  <div className="absolute bottom-full mb-2 right-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl">
+                  <div className="absolute bottom-full mb-2 right-0 z-50 flex gap-1 flex-wrap w-48 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] p-2 shadow-2xl">
                     {['😀','😂','🥹','😍','🤔','😅','🙌','👍','🔥','❤️','✅','🎉','💪','🚀','👀','💡','⚡','🎯'].map(e => (
                       <button key={e} type="button"
                         onClick={() => { setInput(prev => prev + e); setShowComposerEmoji(false); }}
-                        className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
+                        className="text-lg p-1 rounded-lg hover:bg-[var(--wl-hover)] transition-all hover:scale-125">
                         {e}
                       </button>
                     ))}
@@ -2316,10 +2316,10 @@ FORMATO:
               {/* @ mencionar */}
               <div className="relative group/tip">
                 <button type="button" onClick={() => { setInput(prev => { const next = prev + '@'; return next; }); setMentionQuery(''); }}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-[var(--wl-hover)] hover:text-white">
                   <AtSign className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
-                <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
+                <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[var(--wl-elevated)] border border-[var(--wl-border)] px-2 py-1 text-[11px] text-[var(--wl-text-secondary)] opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
                   Mencionar
                 </div>
                 {/* Dropdown menciones — dentro del botón @ */}
@@ -2332,7 +2332,7 @@ FORMATO:
                   return (
                     <>
                     <div className="fixed inset-0 z-40" onClick={() => setMentionQuery(null)} />
-                    <div className="absolute bottom-16 left-0 z-50 w-56 rounded-xl border border-white/[0.08] bg-[#141824] py-1 shadow-2xl max-h-52 overflow-y-auto">
+                    <div className="absolute bottom-16 left-0 z-50 w-56 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] py-1 shadow-2xl max-h-52 overflow-y-auto">
                       {/* @ai opción especial */}
                       {(!mentionQuery || 'boosti'.includes(mentionQuery.toLowerCase()) || 'ai'.includes(mentionQuery.toLowerCase()) || 'ia'.includes(mentionQuery.toLowerCase()) || 'boostai'.includes(mentionQuery.toLowerCase())) && (
                         <button type="button"
@@ -2340,7 +2340,7 @@ FORMATO:
                             setInput(prev => prev.replace(/@\w*$/, '@boosti '));
                             setMentionQuery(null);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-white/[0.04] transition-colors border-b border-white/[0.05]">
+                          className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-[var(--wl-hover)] transition-colors border-b border-[var(--wl-border-subtle)]">
                           <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 bg-primary/30">
                             ✨
                           </div>
@@ -2357,7 +2357,7 @@ FORMATO:
                             setInput(prev => prev.replace(/@\w*$/, '@all '));
                             setMentionQuery(null);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-white/[0.04] transition-colors border-b border-white/[0.05]">
+                          className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-[var(--wl-hover)] transition-colors border-b border-[var(--wl-border-subtle)]">
                           <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 bg-primary/20">
                             ✦
                           </div>
@@ -2376,7 +2376,7 @@ FORMATO:
                             setInput(prev => prev.replace(/@\w*$/, `@${handle} `));
                             setMentionQuery(null);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-white/[0.04] transition-colors">
+                          className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-[var(--wl-hover)] transition-colors">
                           {m.image ? (
                             <img src={m.image} className="h-6 w-6 rounded-full object-cover shrink-0" />
                           ) : (
@@ -2399,13 +2399,13 @@ FORMATO:
               {/* Slash commands */}
               <div className="relative">
                 <button type="button" onClick={() => { setInput('/'); setShowSlashMenu(true); }}
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] ${showSlashMenu ? 'text-primary' : 'text-white/35 hover:text-white'}`}>
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--wl-hover)] ${showSlashMenu ? 'text-primary' : 'text-white/35 hover:text-white'}`}>
                   <Slash className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
                 {showSlashMenu && (
                   <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowSlashMenu(false)} />
-                  <div className="absolute bottom-14 left-0 z-50 w-52 rounded-xl border border-white/[0.08] bg-[#1a1d2e] py-1 shadow-2xl max-h-[40vh] overflow-y-auto">
+                  <div className="absolute bottom-14 left-0 z-50 w-52 rounded-xl border border-[var(--wl-border)] bg-[var(--wl-elevated)] py-1 shadow-2xl max-h-[40vh] overflow-y-auto">
                     <p className="px-3 py-1.5 text-[10px] text-white/30 uppercase tracking-wide">Comandos</p>
                     {[
                       { cmd: '/tarea', desc: 'Crear tarea rápida', icon: '📋' },
@@ -2433,10 +2433,10 @@ FORMATO:
                             setShowSlashMenu(false);
                           }
                         }}
-                        className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] hover:bg-white/[0.04] transition-colors">
+                        className="flex w-full items-center gap-2.5 px-3 py-2 text-[12px] hover:bg-[var(--wl-hover)] transition-colors">
                         <span className="text-base">{icon}</span>
                         <span className="font-mono text-primary">{cmd}</span>
-                        <span className="text-white/40">{desc}</span>
+                        <span className="text-[var(--wl-text-muted)]">{desc}</span>
                       </button>
                     ))}
                   </div>
@@ -2445,10 +2445,10 @@ FORMATO:
               </div>
               <div className="relative group/tip">
                 <button type="button" onClick={() => fileInputRef.current?.click()}
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${uploading ? 'text-primary animate-pulse' : 'text-white/35 hover:bg-white/[0.06] hover:text-white'}`}>
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${uploading ? 'text-primary animate-pulse' : 'text-white/35 hover:bg-[var(--wl-hover)] hover:text-white'}`}>
                   <Paperclip className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 </button>
-                <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a1d2e] border border-white/[0.08] px-2 py-1 text-[11px] text-white/70 opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
+                <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[var(--wl-elevated)] border border-[var(--wl-border)] px-2 py-1 text-[11px] text-[var(--wl-text-secondary)] opacity-0 transition-opacity delay-500 group-hover/tip:opacity-100 z-30">
                   Adjuntar archivo
                 </div>
               </div>
@@ -2474,7 +2474,7 @@ FORMATO:
                 <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.75} />
               </button>
               <button type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white">
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-[var(--wl-hover)] hover:text-white">
                 <Mic className="h-[18px] w-[18px]" strokeWidth={1.75} />
               </button>
               <button type="submit" disabled={(!input.trim() && !linkModal) || sending}
@@ -2491,10 +2491,10 @@ FORMATO:
       {/* Members Panel */}
       {/* Panel derecho deslizable — Miembros / Apps / Contexto */}
       {showMembersPanel && (
-        <div className="fixed inset-y-0 right-0 z-40 w-[85vw] max-w-[300px] lg:absolute lg:right-0 lg:top-[52px] lg:bottom-0 lg:w-72 border-l border-white/[0.05] bg-[#0D0F18] flex flex-col shadow-2xl"
+        <div className="fixed inset-y-0 right-0 z-40 w-[85vw] max-w-[300px] lg:absolute lg:right-0 lg:top-[52px] lg:bottom-0 lg:w-72 border-l border-[var(--wl-border-subtle)] bg-[var(--wl-surface)] flex flex-col shadow-2xl"
           style={{ animation: 'slideInRight 0.18s ease-out' }}>
           {/* Header del panel con tabs */}
-          <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/[0.05] shrink-0">
+          <div className="flex items-center justify-between px-3 py-2.5 border-b border-[var(--wl-border-subtle)] shrink-0">
             <div className="flex gap-0.5">
               {([
                 { id: 'members', label: 'Equipo' },
@@ -2505,7 +2505,7 @@ FORMATO:
                   className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
                     rightPanelTab === tab.id
                       ? 'bg-white/[0.08] text-white'
-                      : 'text-white/35 hover:text-white/60'
+                      : 'text-white/35 hover:text-[var(--wl-text-secondary)]'
                   }`}>
                   {tab.label}
                 </button>
@@ -2520,7 +2520,7 @@ FORMATO:
           {rightPanelTab === 'members' && (
             <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-3 flex flex-col gap-1">
               {members.filter(m => m.role !== 'CLIENT' && m.role !== 'GUEST').map(m => (
-                <div key={m.id} className="flex items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-white/[0.03] transition-colors">
+                <div key={m.id} className="flex items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-[var(--wl-hover)] transition-colors">
                   <div className="relative shrink-0">
                     <Avatar
                       initials={(m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()}
@@ -2533,7 +2533,7 @@ FORMATO:
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[12px] font-medium text-white/80 truncate">{m.name || m.email}</p>
+                    <p className="text-[12px] font-medium text-[var(--wl-text-secondary)] truncate">{m.name || m.email}</p>
                     <p className="text-[10px] text-white/30 truncate">
                       {(m as any).presence?.status === 'online'
                         ? <span className="text-emerald-400">En línea</span>
@@ -2560,7 +2560,7 @@ FORMATO:
                     <span className="text-base">🤖</span>
                     <div>
                       <p className="text-[12px] font-semibold text-white/90">Boosti AI</p>
-                      <p className="text-[10px] text-white/40">Asistente de marketing</p>
+                      <p className="text-[10px] text-[var(--wl-text-muted)]">Asistente de marketing</p>
                     </div>
                   </div>
                   <a href="/dashboard/ai" className="text-[10px] font-medium text-violet-400 hover:text-violet-300 transition-colors">
@@ -2589,29 +2589,29 @@ FORMATO:
                 app.action === 'meeting' ? (
                   <button key="meetings" type="button"
                     onClick={() => setShowMeetingModal(true)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group border border-transparent hover:border-white/[0.06] w-full text-left">
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--wl-hover)] transition-colors group border border-transparent hover:border-[var(--wl-border)] w-full text-left">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
                       style={{ background: 'rgba(139,92,246,0.1)' }}>
                       {app.icon}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[13px] font-medium text-white/80 group-hover:text-white transition-colors">{app.label}</p>
+                      <p className="text-[13px] font-medium text-[var(--wl-text-secondary)] group-hover:text-white transition-colors">{app.label}</p>
                       <p className="text-[11px] text-white/30 truncate">{app.sub}</p>
                     </div>
-                    <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/20 group-hover:text-white/40 shrink-0 transition-colors" />
+                    <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/20 group-hover:text-[var(--wl-text-muted)] shrink-0 transition-colors" />
                   </button>
                 ) : (
                   <a key={app.href} href={app.href}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group border border-transparent hover:border-white/[0.06]">
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--wl-hover)] transition-colors group border border-transparent hover:border-[var(--wl-border)]">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
                       style={{ background: 'rgba(139,92,246,0.1)' }}>
                       {app.icon}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[13px] font-medium text-white/80 group-hover:text-white transition-colors">{app.label}</p>
+                      <p className="text-[13px] font-medium text-[var(--wl-text-secondary)] group-hover:text-white transition-colors">{app.label}</p>
                       <p className="text-[11px] text-white/30 truncate">{app.sub}</p>
                     </div>
-                    <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/20 group-hover:text-white/40 shrink-0 transition-colors" />
+                    <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/20 group-hover:text-[var(--wl-text-muted)] shrink-0 transition-colors" />
                   </a>
                 )
               ))}
@@ -2625,9 +2625,9 @@ FORMATO:
                       const isPdf = (msg.fileName || '').toLowerCase().endsWith('.pdf');
                       const icon  = isImg ? '🖼' : isPdf ? '📄' : '📎';
                       return (
-                        <div key={i} className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-white/[0.04] transition-colors group">
+                        <div key={i} className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-[var(--wl-hover)] transition-colors group">
                           {isImg ? (
-                            <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-white/[0.06]">
+                            <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-[var(--wl-border)]">
                               <img src={msg.fileUrl} alt={msg.fileName || ''} className="w-full h-full object-cover" />
                             </div>
                           ) : (
@@ -2641,7 +2641,7 @@ FORMATO:
                             <button
                               title="Descargar"
                               onClick={() => downloadFile(msg.fileUrl, msg.fileName || 'archivo')}
-                              className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-white/70 transition-colors">
+                              className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                               </svg>
@@ -2660,7 +2660,7 @@ FORMATO:
                 <p className="text-[11px] font-medium uppercase tracking-widest text-white/25 mb-2">Boosti IA</p>
                 <div className="rounded-xl border border-violet-500/20 bg-violet-500/[0.06] p-3">
                   <p className="text-[12px] font-medium text-violet-300 mb-1">🤖 Asistente de marketing</p>
-                  <p className="text-[11px] text-white/40 mb-2.5">Activa Boosti para ayuda con scripts, ideas y más.</p>
+                  <p className="text-[11px] text-[var(--wl-text-muted)] mb-2.5">Activa Boosti para ayuda con scripts, ideas y más.</p>
                   <div className="flex gap-1.5">
                     <button
                       onClick={async () => {
@@ -2693,7 +2693,7 @@ FORMATO:
                 {roomTasks.filter(t => !['completed','approved','cancelled'].includes(t.status)).length > 0 ? (
                   <div className="flex flex-col gap-1.5">
                     {roomTasks.filter(t => !['completed','approved','cancelled'].includes(t.status)).slice(0,5).map(t => (
-                      <div key={t.id} className="flex items-start gap-2 rounded-xl px-2.5 py-2 bg-white/[0.03] border border-white/[0.05]">
+                      <div key={t.id} className="flex items-start gap-2 rounded-xl px-2.5 py-2 bg-white/[0.03] border border-[var(--wl-border-subtle)]">
                         <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
                           style={{ background: t.priority === 'high' ? '#f87171' : t.priority === 'medium' ? '#fbbf24' : '#4ade80' }} />
                         <div className="min-w-0">
@@ -2723,13 +2723,13 @@ FORMATO:
       {/* ── Modal independiente de Miembros ── */}
       {showMembersModal && (
         <div className="absolute inset-0 z-50 flex items-start justify-end pt-14 pr-3 pointer-events-none">
-          <div data-channel-more className="pointer-events-auto w-72 rounded-2xl border border-white/[0.07] bg-[#0F1117] shadow-2xl overflow-hidden"
+          <div data-channel-more className="pointer-events-auto w-72 rounded-2xl border border-[var(--wl-border)] bg-[var(--wl-surface)] shadow-2xl overflow-hidden"
             style={{ animation: 'slideInRight 0.15s ease-out' }}>
             {/* Header del modal */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]">
-              <span className="text-[13px] font-semibold text-white/80">Miembros del canal</span>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--wl-border-subtle)]">
+              <span className="text-[13px] font-semibold text-[var(--wl-text-secondary)]">Miembros del canal</span>
               <button onClick={() => setShowMembersModal(false)}
-                className="text-white/30 hover:text-white/70 transition-colors p-1">
+                className="text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors p-1">
                 <X className="w-4 h-4" strokeWidth={1.5} />
               </button>
             </div>
@@ -2739,13 +2739,13 @@ FORMATO:
                 const ini = (m.name || m.email || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
                 const isOnline = (m as any).presence?.status === 'online';
                 return (
-                  <div key={m.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors">
+                  <div key={m.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--wl-hover)] transition-colors">
                     <div className="relative shrink-0">
                       <Avatar initials={ini} color={m.color || '#8b5cf6'} size={32} image={m.image} />
                       <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#0F1117] ${isOnline ? 'bg-emerald-400' : 'bg-white/[0.15]'}`} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-medium text-white/80 truncate">{m.name || m.email}</p>
+                      <p className="text-[13px] font-medium text-[var(--wl-text-secondary)] truncate">{m.name || m.email}</p>
                       <p className="text-[11px] text-white/30 truncate">
                         {isOnline
                           ? <span className="text-emerald-400/80">En línea</span>
@@ -2891,7 +2891,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
   const teamMembers = members.filter(m => m.role !== 'CLIENT' && m.role !== 'UNASSIGNED' && m.id !== myId);
 
   return (
-    <div className="flex flex-col border-l border-white/[0.05] bg-[#0B0D12] shrink-0 h-full overflow-hidden"
+    <div className="flex flex-col border-l border-[var(--wl-border-subtle)] bg-[var(--wl-surface)] shrink-0 h-full overflow-hidden"
       style={{ width: 320, minHeight: 0 }}>
 
       {/* ── HEADER FIJO ── */}
@@ -2908,10 +2908,10 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
           </div>
           {/* Botones header */}
           <div className="flex items-center gap-0.5 ml-auto">
-            <button className="w-7 h-7 flex items-center justify-center rounded-lg text-white/25 hover:text-white/60 hover:bg-white/[0.05] transition-colors">
+            <button className="w-7 h-7 flex items-center justify-center rounded-lg text-white/25 hover:text-[var(--wl-text-secondary)] hover:bg-white/[0.05] transition-colors">
               <Search className="w-3.5 h-3.5" strokeWidth={1.5} />
             </button>
-            <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg text-white/25 hover:text-white/60 hover:bg-white/[0.05] transition-colors">
+            <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg text-white/25 hover:text-[var(--wl-text-secondary)] hover:bg-white/[0.05] transition-colors">
               <X className="w-3.5 h-3.5" strokeWidth={1.5} />
             </button>
           </div>
@@ -2959,7 +2959,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                 return (
                   <button key={m.id}
                     onClick={() => bus.emit('switch.room' as any, { room: dmRoomKey, dmUser: m })}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors group text-left">
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-[var(--wl-hover)] transition-colors group text-left">
                     <div className="relative shrink-0">
                       <Avatar initials={initials} color={m.color || '#8b5cf6'} size={32} image={m.image} />
                       <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#0B0D12] ${isOnline ? 'bg-emerald-400' : 'bg-white/[0.12]'}`} />
@@ -3008,10 +3008,10 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                         : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
                       return (
                         <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-150 shrink-0 group"
+                          className="flex items-center gap-2 rounded-xl border border-[var(--wl-border)] bg-white/[0.03] hover:bg-[var(--wl-hover)] hover:border-white/[0.12] transition-all duration-150 shrink-0 group"
                           style={{ height: 34, padding: '0 12px' }}>
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/90 shrink-0" />
-                          <span className="text-white/45 group-hover:text-white/70 transition-colors">{iconSvg}</span>
+                          <span className="text-white/45 group-hover:text-[var(--wl-text-secondary)] transition-colors">{iconSvg}</span>
                           <span className="text-[12px] text-white/65 group-hover:text-white/90 font-medium tracking-[-0.01em] transition-colors">{l.label}</span>
                         </a>
                       );
@@ -3042,17 +3042,17 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                     return (
                       <button key={m.id}
                         onClick={() => bus.emit('switch.room' as any, { room: dmRoomKey2, dmUser: m })}
-                        className="w-full flex items-start gap-2.5 px-3 py-2 hover:bg-white/[0.03] transition-colors cursor-pointer text-left">
+                        className="w-full flex items-start gap-2.5 px-3 py-2 hover:bg-[var(--wl-hover)] transition-colors cursor-pointer text-left">
                         <div className="relative shrink-0 mt-0.5">
                           <Avatar initials={ini2} color={m.color || '#8b5cf6'} size={24} image={m.image} />
                           {isOnline2 && <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#0B0D12]" />}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-baseline gap-2 mb-0.5">
-                            <span className="text-[11px] font-medium text-white/70 shrink-0">{m.name?.split(' ')[0] || m.email?.split('@')[0]}</span>
+                            <span className="text-[11px] font-medium text-[var(--wl-text-secondary)] shrink-0">{m.name?.split(' ')[0] || m.email?.split('@')[0]}</span>
                             <span className="text-[10px] text-white/20">{new Date(preview.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
-                          <p className="text-[11px] text-white/40 leading-snug truncate">
+                          <p className="text-[11px] text-[var(--wl-text-muted)] leading-snug truncate">
                             {cleanMsg2 ? cleanMsg2.slice(0, 55) + (cleanMsg2.length > 55 ? '…' : '') : 'Archivo adjunto'}
                           </p>
                         </div>
@@ -3070,7 +3070,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
               <div className="pt-3 pb-2 border-b border-white/[0.04]">
                 <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Detalles {channelClient?.name || ''}</p>
                 <div className="px-3">
-                  <div className="rounded-xl bg-white/[0.025] border border-white/[0.05] p-3 space-y-2">
+                  <div className="rounded-xl bg-white/[0.025] border border-[var(--wl-border-subtle)] p-3 space-y-2">
                     {[
                       { key: 'Cliente',     val: clientInfo?.name || channelClient?.name },
                       { key: 'Estado',      val: clientInfo?.status || 'Activo', dot: true },
@@ -3138,11 +3138,11 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                 <p className="text-[9px] font-medium uppercase tracking-widest text-white/20 px-4 mb-2">Tareas activas</p>
                 <div className="px-3 space-y-1.5">
                   {roomTasks.map((t: any) => (
-                    <div key={t.id} className="flex items-start gap-2 rounded-xl bg-white/[0.03] border border-white/[0.05] px-3 py-2.5 cursor-pointer hover:border-violet-500/25 transition-colors">
+                    <div key={t.id} className="flex items-start gap-2 rounded-xl bg-white/[0.03] border border-[var(--wl-border-subtle)] px-3 py-2.5 cursor-pointer hover:border-violet-500/25 transition-colors">
                       <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
                         style={{ background: t.priority === 'high' ? '#f87171' : t.priority === 'medium' ? '#fbbf24' : '#4ade80' }} />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-medium text-white/70 truncate">{t.title}</p>
+                        <p className="text-[11px] font-medium text-[var(--wl-text-secondary)] truncate">{t.title}</p>
                         {t.dueDate && <p className="text-[10px] text-white/25 mt-0.5">{new Date(t.dueDate).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</p>}
                       </div>
                     </div>
@@ -3163,8 +3163,8 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                   <button key={f} onClick={() => setFileFilter(f)}
                     className={`text-[10px] px-2 py-0.5 rounded-md border transition-colors ${
                       fileFilter === f
-                        ? 'border-violet-500/35 bg-violet-500/10 text-white/70'
-                        : 'border-white/[0.06] text-white/30 hover:text-white/55'
+                        ? 'border-violet-500/35 bg-violet-500/10 text-[var(--wl-text-secondary)]'
+                        : 'border-[var(--wl-border)] text-white/30 hover:text-white/55'
                     }`}>
                     {f === 'all' ? 'Todos' : f === 'image' ? 'Imágenes' : 'PDFs'}
                   </button>
@@ -3179,10 +3179,10 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                     const icon  = isImg ? '🖼' : isPdf ? '📄' : '📎';
                     const bg    = isImg ? 'rgba(239,68,68,0.1)' : isPdf ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.1)';
                     return (
-                      <div key={i} className="flex items-center gap-2.5 px-3 py-2 hover:bg-white/[0.04] transition-colors group">
+                      <div key={i} className="flex items-center gap-2.5 px-3 py-2 hover:bg-[var(--wl-hover)] transition-colors group">
                         {/* Preview de imagen o ícono */}
                         {isImg ? (
-                          <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 cursor-pointer border border-white/[0.06]"
+                          <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 cursor-pointer border border-[var(--wl-border)]"
                             onClick={() => window.open(msg.fileUrl, '_blank')}>
                             <img src={msg.fileUrl} alt={msg.fileName || ''} className="w-full h-full object-cover" />
                           </div>
@@ -3201,12 +3201,12 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                           <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer"
                             title="Abrir"
-                            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-white/70 transition-colors">
+                            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors">
                             <ChevronRight className="w-3.5 h-3.5" />
                           </a>
                           <button
                             title="Descargar"
-                            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-white/70 transition-colors"
+                            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/[0.08] text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors"
                             onClick={e => { e.stopPropagation(); downloadFile(msg.fileUrl!, msg.fileName || 'archivo'); }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -3230,7 +3230,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
             <div onClick={() => setShowAllFiles(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }} />
             <div style={{ position: 'relative', zIndex: 10000, width: '100%', maxWidth: '580px', maxHeight: '80vh', background: '#0f0f14', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               {/* Header modal */}
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06] shrink-0">
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--wl-border)] shrink-0">
                 <div>
                   <p className="text-[14px] font-semibold text-white">Archivos compartidos</p>
                   <p className="text-[11px] text-white/30">{roomFiles.length} {roomFiles.length === 1 ? 'archivo' : 'archivos'}</p>
@@ -3238,11 +3238,11 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                 <div className="flex items-center gap-2">
                   {(['all','image','pdf'] as const).map(f => (
                     <button key={f} onClick={() => setFileFilter(f)}
-                      className={`text-[11px] px-2.5 py-1 rounded-md border transition-colors ${fileFilter === f ? 'border-violet-500/35 bg-violet-500/10 text-white/80' : 'border-white/[0.06] text-white/30 hover:text-white/60'}`}>
+                      className={`text-[11px] px-2.5 py-1 rounded-md border transition-colors ${fileFilter === f ? 'border-violet-500/35 bg-violet-500/10 text-[var(--wl-text-secondary)]' : 'border-[var(--wl-border)] text-white/30 hover:text-[var(--wl-text-secondary)]'}`}>
                       {f === 'all' ? 'Todos' : f === 'image' ? 'Imágenes' : 'PDFs'}
                     </button>
                   ))}
-                  <button onClick={() => setShowAllFiles(false)} className="ml-1 h-7 w-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/[0.06]">
+                  <button onClick={() => setShowAllFiles(false)} className="ml-1 h-7 w-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-[var(--wl-hover)]">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
@@ -3272,7 +3272,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                           <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2 px-1">Imágenes ({imgs.length})</p>
                           <div className="grid grid-cols-3 gap-2">
                             {imgs.map((msg, i) => (
-                              <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-white/[0.08] cursor-pointer bg-white/[0.03]"
+                              <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-[var(--wl-border)] cursor-pointer bg-white/[0.03]"
                                 onClick={() => window.open(msg.fileUrl, '_blank')}>
                                 <img src={msg.fileUrl} alt={msg.fileName || ''} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-end justify-start p-1.5">
@@ -3293,19 +3293,19 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
                             {docs.map((msg, i) => {
                               const isPdf = (msg.fileName || '').toLowerCase().endsWith('.pdf');
                               return (
-                                <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-white/[0.06] hover:bg-white/[0.04] group">
+                                <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-[var(--wl-border)] hover:bg-[var(--wl-hover)] group">
                                   <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0" style={{ background: isPdf ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)' }}>
                                     {isPdf ? '📄' : '📎'}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-[12px] font-medium text-white/70 truncate">{msg.fileName || 'Archivo'}</p>
+                                    <p className="text-[12px] font-medium text-[var(--wl-text-secondary)] truncate">{msg.fileName || 'Archivo'}</p>
                                     <p className="text-[10px] text-white/30">{msg.user?.name?.split(' ')[0]} · {new Date(msg.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</p>
                                   </div>
                                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-white/[0.08] text-white/30 hover:text-white/70" title="Abrir">
+                                    <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-white/[0.08] text-white/30 hover:text-[var(--wl-text-secondary)]" title="Abrir">
                                       <ChevronRight className="w-3.5 h-3.5" />
                                     </a>
-                                    <button onClick={() => downloadFile(msg.fileUrl!, msg.fileName || 'archivo')} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-white/[0.08] text-white/30 hover:text-white/70" title="Descargar">
+                                    <button onClick={() => downloadFile(msg.fileUrl!, msg.fileName || 'archivo')} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-white/[0.08] text-white/30 hover:text-[var(--wl-text-secondary)]" title="Descargar">
                                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                     </button>
                                   </div>
@@ -3335,7 +3335,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
               ] as const).map(({ id, label, Icon, href }) => (
                 <li key={id}>
                   <a href={href}
-                    className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/40 transition-colors hover:bg-white/[0.03] hover:text-white/70">
+                    className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-[var(--wl-text-muted)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]">
                     <Icon className="h-4 w-4 text-white/30 shrink-0" strokeWidth={1.75} />
                     <span>{label}</span>
                   </a>
@@ -3344,7 +3344,7 @@ function RightPanel({ tab, onSetTab, onClose, members, room, accentColor, client
               <li>
                 <button type="button"
                   onClick={() => bus.emit('open.meeting.modal' as any, {})}
-                  className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/40 transition-colors hover:bg-white/[0.03] hover:text-white/70">
+                  className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-[var(--wl-text-muted)] transition-colors hover:bg-[var(--wl-hover)] hover:text-[var(--wl-text-secondary)]">
                   <Video className="h-4 w-4 text-white/30 shrink-0" strokeWidth={1.75} />
                   <span>Reuniones</span>
                 </button>
@@ -3408,19 +3408,19 @@ function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; on
   }
 
   return (
-    <aside className="flex h-full w-[320px] shrink-0 flex-col border-l border-white/[0.05] bg-[#11131a]">
-      <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-white/[0.05] px-5">
+    <aside className="flex h-full w-[320px] shrink-0 flex-col border-l border-[var(--wl-border-subtle)] bg-[#11131a]">
+      <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-[var(--wl-border-subtle)] px-5">
         <div>
           <h2 className="text-[15px] font-semibold tracking-tight">Hilo</h2>
           {replies.length > 0 && <p className="text-[11px] text-white/30">{replies.length} {replies.length === 1 ? 'respuesta' : 'respuestas'}</p>}
         </div>
-        <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-white/[0.04] hover:text-white">
+        <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition-colors hover:bg-[var(--wl-hover)] hover:text-white">
           <X className="h-[18px] w-[18px]" strokeWidth={1.75} />
         </button>
       </header>
       <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
         {/* Original message */}
-        <div className="flex gap-3 pb-4 border-b border-white/[0.05]">
+        <div className="flex gap-3 pb-4 border-b border-[var(--wl-border-subtle)]">
           <Avatar initials={initials} color={color} size={36} className="shrink-0 mt-0.5" image={(msg.user as any)?.image} />
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-0.5">
@@ -3450,7 +3450,7 @@ function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; on
                       {new Date(r.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <p className="text-[13px] leading-[1.5] text-white/70">{r.message}</p>
+                  <p className="text-[13px] leading-[1.5] text-[var(--wl-text-secondary)]">{r.message}</p>
                 </div>
               </div>
             );
@@ -3460,7 +3460,7 @@ function ThreadPanel({ msg, onClose, accentColor, room }: { msg: ChatMessage; on
       </div>
       <div className="px-4 pb-4 pt-1">
         <form onSubmit={handleReply}>
-          <div className="flex items-center gap-2 rounded-[14px] border border-white/[0.06] bg-white/[0.03] px-3 py-2 focus-within:border-primary/40 transition-colors">
+          <div className="flex items-center gap-2 rounded-[14px] border border-[var(--wl-border)] bg-white/[0.03] px-3 py-2 focus-within:border-primary/40 transition-colors">
             <input value={replyInput} onChange={e => setReplyInput(e.target.value)}
               placeholder="Responder en hilo…"
               className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder:text-white/25 focus:outline-none" />
@@ -3617,7 +3617,7 @@ export default function ChatWithChannels() {
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="absolute inset-0 bg-black/70" onClick={() => setMobileOpen(false)} />
           <div className="relative z-10 h-full flex flex-col" style={{ width: '244px', maxWidth: '85vw' }}>
-            <button className="absolute top-3 right-[-36px] text-white/60 hover:text-white z-10 bg-black/60 rounded-full p-1.5" onClick={() => setMobileOpen(false)}>
+            <button className="absolute top-3 right-[-36px] text-[var(--wl-text-secondary)] hover:text-white z-10 bg-black/60 rounded-full p-1.5" onClick={() => setMobileOpen(false)}>
               <X className="w-4 h-4" />
             </button>
             <div className="h-full overflow-y-auto">
@@ -3630,8 +3630,8 @@ export default function ChatWithChannels() {
       {/* Main area + panel derecho como flex row */}
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Mobile header */}
-        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.05] shrink-0 md:hidden bg-card">
-          <button onClick={() => setMobileOpen(true)} className="h-8 w-8 flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06]">
+        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-[var(--wl-border-subtle)] shrink-0 md:hidden bg-card">
+          <button onClick={() => setMobileOpen(true)} className="h-8 w-8 flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-[var(--wl-hover)]">
             <Menu className="w-4 h-4" />
           </button>
           <p className="text-sm font-semibold text-white flex-1 truncate">
@@ -3639,7 +3639,7 @@ export default function ChatWithChannels() {
           </p>
           <button
             onClick={() => setShowRightPanel(p => !p)}
-            className={`h-8 w-8 flex items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] ${showRightPanel ? 'text-white bg-white/[0.06]' : 'text-white/35'}`}
+            className={`h-8 w-8 flex items-center justify-center rounded-lg transition-colors hover:bg-[var(--wl-hover)] ${showRightPanel ? 'text-white bg-white/[0.06]' : 'text-white/35'}`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
           </button>

@@ -224,7 +224,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-md">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
             {isEdit ? <Pencil className="h-4 w-4 text-brand-light" /> : <UserPlus className="h-4 w-4 text-brand-light" />}
@@ -235,7 +235,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
           {/* Profile photo — edit mode only */}
           {isEdit && (
             <div className="space-y-2">
-              <Label className="text-white/70 text-xs">Foto de perfil</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-xs">Foto de perfil</Label>
               <div className="flex items-center gap-4">
                 <div className="relative shrink-0">
                   <Avatar className="h-16 w-16">
@@ -269,7 +269,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
                     size="sm"
                     disabled={uploading}
                     onClick={() => fileRef.current?.click()}
-                    className="border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] gap-2 text-xs">
+                    className="border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)] gap-2 text-xs">
                     <Upload className="h-3.5 w-3.5" />
                     {uploading ? 'Subiendo…' : image ? 'Cambiar foto' : 'Subir foto'}
                   </Button>
@@ -280,30 +280,30 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
           )}
 
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Nombre</Label>
+            <Label className="text-[var(--wl-text-secondary)] text-xs">Nombre</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre completo"
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Email *</Label>
+            <Label className="text-[var(--wl-text-secondary)] text-xs">Email *</Label>
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="usuario@email.com" required
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
           {!isEdit && (
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Contraseña *</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-xs">Contraseña *</Label>
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mín. 6 caracteres" required minLength={6}
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
             </div>
           )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Rol</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-xs">Rol</Label>
               <Select value={role} onValueChange={setRole}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm focus:ring-brand">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm focus:ring-brand">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
                   {ROLES.map((r) => (
                     <SelectItem key={r} value={r} className="focus:bg-white/[0.06]">{getRoleLabel(r)}</SelectItem>
                   ))}
@@ -311,7 +311,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Color</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-xs">Color</Label>
               <div className="flex flex-wrap gap-1.5">
                 {USER_COLORS.map((c) => (
                   <button
@@ -328,12 +328,12 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
           {/* Custom role — only shown when editing and custom roles exist */}
           {isEdit && miniRoles.length > 0 && (
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Rol Personalizado</Label>
+              <Label className="text-[var(--wl-text-secondary)] text-xs">Rol Personalizado</Label>
               <Select value={customRoleId} onValueChange={setCustomRoleId}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white text-sm focus:ring-brand">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white text-sm focus:ring-brand">
                   <SelectValue placeholder="Sin rol personalizado" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
                   <SelectItem value="none" className="focus:bg-white/[0.06]">
                     Sin rol personalizado
                   </SelectItem>
@@ -352,7 +352,7 @@ function UserDialog({ open, onOpenChange, user, onSaved }: UserDialogProps) {
 
           <div className="flex gap-3 pt-1">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
-              className="flex-1 border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06]">
+              className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]">
               Cancelar
             </Button>
             <Button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand-dark text-white">
@@ -409,12 +409,12 @@ function AuditLogsTab() {
           <p className="text-sm text-white/50">{total} registros totales</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => fetchLogs(page)}
-          className="text-white/40 hover:text-white gap-2">
+          className="text-[var(--wl-text-muted)] hover:text-white gap-2">
           <RefreshCw className="w-3.5 h-3.5" /> Actualizar
         </Button>
       </div>
-      <div className="rounded-xl border border-white/[0.06] overflow-hidden">
-        <div className="grid grid-cols-4 px-4 py-2 bg-white/[0.03] border-b border-white/[0.06]">
+      <div className="rounded-xl border border-[var(--wl-border)] overflow-hidden">
+        <div className="grid grid-cols-4 px-4 py-2 bg-white/[0.03] border-b border-[var(--wl-border)]">
           <span className="text-[11px] text-white/30 uppercase tracking-wider">Acción</span>
           <span className="text-[11px] text-white/30 uppercase tracking-wider">Usuario</span>
           <span className="text-[11px] text-white/30 uppercase tracking-wider">Entidad</span>
@@ -435,13 +435,13 @@ function AuditLogsTab() {
             <div className="divide-y divide-white/[0.04]">
               {logs.map((log) => (
                 <div key={log.id} className="grid grid-cols-4 px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
-                  <span className={`text-xs font-mono font-medium ${actionColors[log.action] ?? 'text-white/60'}`}>
+                  <span className={`text-xs font-mono font-medium ${actionColors[log.action] ?? 'text-[var(--wl-text-secondary)]'}`}>
                     {log.action}
                   </span>
                   <span className="text-xs text-white/50 truncate">
                     {log.user?.name ?? log.user?.email ?? 'Sistema'}
                   </span>
-                  <span className="text-xs text-white/40 truncate">
+                  <span className="text-xs text-[var(--wl-text-muted)] truncate">
                     {log.entity} · <span className="text-white/25">{log.entityId.slice(0, 8)}...</span>
                   </span>
                   <span className="text-xs text-white/30">
@@ -456,12 +456,12 @@ function AuditLogsTab() {
       {pages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button variant="ghost" size="sm" disabled={page <= 1}
-            onClick={() => fetchLogs(page - 1)} className="text-white/40 hover:text-white">
+            onClick={() => fetchLogs(page - 1)} className="text-[var(--wl-text-muted)] hover:text-white">
             Anterior
           </Button>
           <span className="text-xs text-white/30">{page} / {pages}</span>
           <Button variant="ghost" size="sm" disabled={page >= pages}
-            onClick={() => fetchLogs(page + 1)} className="text-white/40 hover:text-white">
+            onClick={() => fetchLogs(page + 1)} className="text-[var(--wl-text-muted)] hover:text-white">
             Siguiente
           </Button>
         </div>
@@ -724,7 +724,7 @@ export default function AdminDashboardPage() {
             {isAdmin ? 'Panel Administrador' : 'Panel Project Manager'}
           </h1>
           <p className="text-sm text-white/45">
-            Sesión: <span className="text-white/70 font-medium">{session?.user?.email}</span>
+            Sesión: <span className="text-[var(--wl-text-secondary)] font-medium">{session?.user?.email}</span>
           </p>
         </div>
       </div>
@@ -734,30 +734,30 @@ export default function AdminDashboardPage() {
         {isAdmin && (
           <>
             <div className="glass-card rounded-xl p-4">
-              <p className="text-xs text-white/40 mb-1">
+              <p className="text-xs text-[var(--wl-text-muted)] mb-1">
                 {userListView === 'prospects' ? 'Prospectos (videollamada)' : 'Total usuarios'}
               </p>
               <p className="text-2xl font-bold text-white">{loadingUsers ? '—' : users.length}</p>
             </div>
             <div className="glass-card rounded-xl p-4">
-              <p className="text-xs text-white/40 mb-1">Citas pendientes</p>
+              <p className="text-xs text-[var(--wl-text-muted)] mb-1">Citas pendientes</p>
               <p className="text-2xl font-bold text-amber-300">{loadingAppts ? '—' : pendingAppts}</p>
             </div>
           </>
         )}
         <div className="glass-card rounded-xl p-4">
-          <p className="text-xs text-white/40 mb-1">Tareas</p>
+          <p className="text-xs text-[var(--wl-text-muted)] mb-1">Tareas</p>
           <p className="text-2xl font-bold text-white">{loadingTasks ? '—' : tasks.length}</p>
         </div>
         <div className="glass-card rounded-xl p-4">
-          <p className="text-xs text-white/40 mb-1">Abiertas</p>
+          <p className="text-xs text-[var(--wl-text-muted)] mb-1">Abiertas</p>
           <p className="text-2xl font-bold text-brand-light">{loadingTasks ? '—' : openTasks}</p>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue={isAdmin ? 'users' : 'tasks'}>
-        <TabsList className="bg-white/[0.04] border border-white/[0.06] flex-wrap h-auto gap-1 p-1">
+        <TabsList className="bg-white/[0.04] border border-[var(--wl-border)] flex-wrap h-auto gap-1 p-1">
           {isAdmin && (
             <>
               <TabsTrigger value="users" className="data-[state=active]:bg-brand data-[state=active]:text-white text-white/50 gap-2">
@@ -812,11 +812,11 @@ export default function AdminDashboardPage() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Buscar por nombre o email…"
-                    className="pl-9 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25"
+                    className="pl-9 bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25"
                   />
                 </div>
                 <Button variant="outline" size="icon" onClick={() => void fetchUsers(search, userListView)}
-                  className="border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06] shrink-0">
+                  className="border-[var(--wl-border)] text-white/50 hover:text-white hover:bg-[var(--wl-hover)] shrink-0">
                   <RefreshCw className="h-4 w-4" />
                 </Button>
                 <Button onClick={() => { setEditingUser(null); setUserDialog(true); }}
@@ -827,12 +827,12 @@ export default function AdminDashboardPage() {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs text-white/35 hidden sm:inline">Vista</span>
-                <div className="flex rounded-lg border border-white/[0.08] p-0.5 bg-white/[0.02]">
+                <div className="flex rounded-lg border border-[var(--wl-border)] p-0.5 bg-white/[0.02]">
                   <button
                     type="button"
                     onClick={() => setUserListView('all')}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      userListView === 'all' ? 'bg-brand text-white' : 'text-white/50 hover:text-white/80'
+                      userListView === 'all' ? 'bg-brand text-white' : 'text-white/50 hover:text-[var(--wl-text-secondary)]'
                     }`}
                   >
                     Todos
@@ -841,7 +841,7 @@ export default function AdminDashboardPage() {
                     type="button"
                     onClick={() => setUserListView('prospects')}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      userListView === 'prospects' ? 'bg-amber-600 text-white' : 'text-white/50 hover:text-white/80'
+                      userListView === 'prospects' ? 'bg-amber-600 text-white' : 'text-white/50 hover:text-[var(--wl-text-secondary)]'
                     }`}
                   >
                     Prospectos
@@ -873,7 +873,7 @@ export default function AdminDashboardPage() {
                 <div className="flex flex-wrap gap-2">
                   {activeRoleFilter && (
                     <button onClick={() => setActiveRoleFilter(null)}
-                      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-xs text-white/50 hover:text-white/80">
+                      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-xs text-white/50 hover:text-[var(--wl-text-secondary)]">
                       ✕ Quitar filtro
                     </button>
                   )}
@@ -891,12 +891,12 @@ export default function AdminDashboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/[0.06]">
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Usuario</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Rol</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Cliente</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden md:table-cell">Registrado</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">Acciones</th>
+                    <tr className="border-b border-[var(--wl-border)]">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Usuario</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Rol</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Cliente</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider hidden md:table-cell">Registrado</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
@@ -936,7 +936,7 @@ export default function AdminDashboardPage() {
                                 </div>
                                 <div className="min-w-0">
                                   <p className="font-medium text-white truncate">{user.name || '—'}</p>
-                                  <p className="text-xs text-white/40 truncate">{user.email}</p>
+                                  <p className="text-xs text-[var(--wl-text-muted)] truncate">{user.email}</p>
                                 </div>
                               </div>
                             </td>
@@ -964,7 +964,7 @@ export default function AdminDashboardPage() {
                                 <span
                                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
                                     lifecycleBadgeMap[user.lifecycleStatus]?.className
-                                    ?? 'bg-white/[0.06] text-white/50 border border-white/[0.08]'
+                                    ?? 'bg-white/[0.06] text-white/50 border border-[var(--wl-border)]'
                                   }`}
                                 >
                                   {lifecycleBadgeMap[user.lifecycleStatus]?.label ?? user.lifecycleStatus}
@@ -974,7 +974,7 @@ export default function AdminDashboardPage() {
                               )}
                             </td>
                             <td className="px-4 py-3 hidden md:table-cell">
-                              <span className="text-xs text-white/40">{fmtDate(user.createdAt)}</span>
+                              <span className="text-xs text-[var(--wl-text-muted)]">{fmtDate(user.createdAt)}</span>
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center justify-end gap-1 flex-wrap">
@@ -991,7 +991,7 @@ export default function AdminDashboardPage() {
                                   </Button>
                                 )}
                                 <Button variant="ghost" size="icon"
-                                  className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]"
+                                  className="h-7 w-7 text-white/30 hover:text-white hover:bg-[var(--wl-hover)]"
                                   title={user.active ? 'Desactivar' : 'Activar'}
                                   disabled={togglingUser === user.id}
                                   onClick={() => handleToggleActive(user)}>
@@ -1000,7 +1000,7 @@ export default function AdminDashboardPage() {
                                     : <ToggleLeft  className="h-4 w-4 text-red-400" />}
                                 </Button>
                                 <Button variant="ghost" size="icon"
-                                  className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]"
+                                  className="h-7 w-7 text-white/30 hover:text-white hover:bg-[var(--wl-hover)]"
                                   onClick={() => { setEditingUser(user); setUserDialog(true); }}>
                                   <Pencil className="h-3.5 w-3.5" />
                                 </Button>
@@ -1034,7 +1034,7 @@ export default function AdminDashboardPage() {
                 </button>
               ))}
               <Button variant="outline" size="icon" onClick={() => fetchAppointments(apptFilter)}
-                className="ml-auto border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06] h-7 w-7">
+                className="ml-auto border-[var(--wl-border)] text-white/50 hover:text-white hover:bg-[var(--wl-hover)] h-7 w-7">
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
             </div>
@@ -1043,12 +1043,12 @@ export default function AdminDashboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/[0.06]">
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Contacto</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden lg:table-cell">Notas</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Estado</th>
-                       <th className="px-4 py-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">Acciones</th>
+                    <tr className="border-b border-[var(--wl-border)]">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Contacto</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider hidden sm:table-cell">Fecha</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider hidden lg:table-cell">Notas</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Estado</th>
+                       <th className="px-4 py-3 text-right text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
@@ -1075,27 +1075,27 @@ export default function AdminDashboardPage() {
                             <tr key={appt.id} className="hover:bg-white/[0.02] transition-colors">
                               <td className="px-4 py-3">
                                 <p className="font-medium text-white">{appt.name}</p>
-                                <p className="text-xs text-white/40">{appt.email}</p>
+                                <p className="text-xs text-[var(--wl-text-muted)]">{appt.email}</p>
                                 {appt.phone && <p className="text-xs text-white/30">{appt.phone}</p>}
                               </td>
                               <td className="px-4 py-3 hidden sm:table-cell">
-                                <span className="text-xs text-white/60">
+                                <span className="text-xs text-[var(--wl-text-secondary)]">
                                   {new Date(appt.date).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                                 </span>
                               </td>
                               <td className="px-4 py-3 hidden lg:table-cell">
-                                <p className="text-xs text-white/40 max-w-xs truncate">{appt.notes || '—'}</p>
+                                <p className="text-xs text-[var(--wl-text-muted)] max-w-xs truncate">{appt.notes || '—'}</p>
                               </td>
                               <td className="px-4 py-3">
                                 <Select value={appt.status} onValueChange={(val) => handleApptStatus(appt.id, val)} disabled={updatingAppt === appt.id}>
-                                  <SelectTrigger className="w-36 h-8 bg-white/[0.04] border-white/[0.08] text-white text-xs focus:ring-brand">
+                                  <SelectTrigger className="w-36 h-8 bg-white/[0.04] border-[var(--wl-border)] text-white text-xs focus:ring-brand">
                                     <div className="flex items-center gap-1.5">
                                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${st.color}`}>
                                         {st.icon}{st.label}
                                       </span>
                                     </div>
                                   </SelectTrigger>
-                                  <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                                  <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
                                     {Object.entries(apptStatusMap).map(([key, val]) => (
                                       <SelectItem key={key} value={key} className="text-sm focus:bg-white/[0.06]">
                                         <div className="flex items-center gap-1.5">{val.icon}{val.label}</div>
@@ -1145,10 +1145,10 @@ export default function AdminDashboardPage() {
             ))}
             <div className="ml-auto flex items-center gap-2">
               <Button variant="outline" size="icon" onClick={() => fetchTasks(taskFilter)}
-                className="border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06] h-7 w-7">
+                className="border-[var(--wl-border)] text-white/50 hover:text-white hover:bg-[var(--wl-hover)] h-7 w-7">
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setTemplateModalOpen(true)} className="border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.06] h-7 text-xs px-3 gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => setTemplateModalOpen(true)} className="border-[var(--wl-border)] text-white/50 hover:text-white hover:bg-[var(--wl-hover)] h-7 text-xs px-3 gap-1.5">
                   <Plus className="h-3.5 w-3.5" />Templates
                 </Button>
               <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white gap-1.5 h-7 text-xs px-3">
@@ -1163,11 +1163,11 @@ export default function AdminDashboardPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/[0.06]">
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Tarea</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden sm:table-cell">Vence</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider hidden md:table-cell">Asignado</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Estado</th>
+                  <tr className="border-b border-[var(--wl-border)]">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Tarea</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider hidden sm:table-cell">Vence</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider hidden md:table-cell">Asignado</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[var(--wl-text-muted)] uppercase tracking-wider">Estado</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.04]">
@@ -1195,7 +1195,7 @@ export default function AdminDashboardPage() {
                             {tk.description && (
                               <p className="text-xs text-white/35 truncate max-w-[200px]">{tk.description}</p>
                             )}
-                            <span className={`mt-1 inline-flex text-[10px] font-medium ${priorityColors[tk.priority] || 'text-white/40'}`}>
+                            <span className={`mt-1 inline-flex text-[10px] font-medium ${priorityColors[tk.priority] || 'text-[var(--wl-text-muted)]'}`}>
                               {priorityLabels[tk.priority] || tk.priority}
                             </span>
                           </td>
@@ -1214,7 +1214,7 @@ export default function AdminDashboardPage() {
                                     {initials(tk.assignedUser.name, tk.assignedUser.email)}
                                   </AvatarFallback>
                                 </Avatar>
-                                <p className="text-xs text-white/60 truncate max-w-[120px]">
+                                <p className="text-xs text-[var(--wl-text-secondary)] truncate max-w-[120px]">
                                   {tk.assignedUser.name || tk.assignedUser.email}
                                 </p>
                               </div>
@@ -1228,12 +1228,12 @@ export default function AdminDashboardPage() {
                               onValueChange={(val) => handleTaskStatusChange(tk.id, val)}
                               disabled={updatingTask === tk.id}
                             >
-                              <SelectTrigger className="w-40 h-8 bg-white/[0.04] border-white/[0.08] text-white text-xs focus:ring-brand">
+                              <SelectTrigger className="w-40 h-8 bg-white/[0.04] border-[var(--wl-border)] text-white text-xs focus:ring-brand">
                                 <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium" style={statusStyleMap[tk.status] ?? { background: 'rgba(226,232,240,0.12)', color: '#E2E8F0' }}>
                                   {statusLabels[tk.status] || tk.status}
                                 </span>
                               </SelectTrigger>
-                              <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                              <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
                                 {(['pending', 'in_progress', 'completed'] as const).map((s) => (
                                   <SelectItem key={s} value={s} className="text-sm focus:bg-white/[0.06]">
                                     {statusLabels[s]}
@@ -1290,7 +1290,7 @@ export default function AdminDashboardPage() {
                   <Tags className="w-6 h-6 text-brand-light/60" />
                 </div>
                 <div>
-                  <p className="text-white/60 font-medium">Sin roles personalizados</p>
+                  <p className="text-[var(--wl-text-secondary)] font-medium">Sin roles personalizados</p>
                   <p className="text-white/30 text-sm mt-1">Crea roles como Fotógrafo, Editor Video, Community Manager…</p>
                 </div>
                 <Button
@@ -1305,7 +1305,7 @@ export default function AdminDashboardPage() {
                 {customRoles.map((cr) => {
                   const activePerms = ALL_PERMISSIONS.filter(({ key }) => cr.permissions?.[key]);
                   return (
-                    <div key={cr.id} className="glass-card rounded-xl p-4 hover:bg-white/[0.03] transition-colors group">
+                    <div key={cr.id} className="glass-card rounded-xl p-4 hover:bg-[var(--wl-hover)] transition-colors group">
                       <div className="flex items-start gap-3 mb-3">
                         <div
                           className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
@@ -1326,7 +1326,7 @@ export default function AdminDashboardPage() {
                       </div>
 
                       {cr.description && (
-                        <p className="text-xs text-white/40 mb-3 line-clamp-2">{cr.description}</p>
+                        <p className="text-xs text-[var(--wl-text-muted)] mb-3 line-clamp-2">{cr.description}</p>
                       )}
 
                       {/* Permission chips */}
@@ -1354,7 +1354,7 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                           variant="ghost" size="icon"
-                          className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]"
+                          className="h-7 w-7 text-white/30 hover:text-white hover:bg-[var(--wl-hover)]"
                           onClick={() => { setEditingRole(cr); setRoleDialog(true); }}
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -1400,7 +1400,7 @@ export default function AdminDashboardPage() {
 
       {/* Delete user confirm */}
       <AlertDialog open={!!deleteUser} onOpenChange={(o) => !o && setDeleteUser(null)}>
-        <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
+        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center">
@@ -1409,12 +1409,12 @@ export default function AdminDashboardPage() {
               <AlertDialogTitle className="text-white">Eliminar Usuario</AlertDialogTitle>
             </div>
             <AlertDialogDescription className="text-white/50">
-              ¿Eliminar a <strong className="text-white/80">{deleteUser?.name || deleteUser?.email}</strong>?
+              ¿Eliminar a <strong className="text-[var(--wl-text-secondary)]">{deleteUser?.name || deleteUser?.email}</strong>?
               Todos sus datos serán eliminados. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.06]">
+            <AlertDialogCancel className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} disabled={deletingUser}
@@ -1435,7 +1435,7 @@ export default function AdminDashboardPage() {
 
       {/* Delete custom role confirm */}
       <AlertDialog open={!!deleteRole} onOpenChange={(o) => !o && setDeleteRole(null)}>
-        <AlertDialogContent className="bg-[#15151c] border-white/[0.06] text-white">
+        <AlertDialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center">
@@ -1448,7 +1448,7 @@ export default function AdminDashboardPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.06]">
+            <AlertDialogCancel className="bg-white/[0.04] border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteRole} disabled={deletingRole}

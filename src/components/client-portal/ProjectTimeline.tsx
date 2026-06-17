@@ -86,18 +86,18 @@ export function ProjectTimeline({ tasks, appointments, milestones = [], isManage
                 </div>
                 <div className={`flex-1 ${i === events.length - 1 ? 'pb-0' : 'pb-4'}`}>
                   <div className="flex items-start justify-between gap-2">
-                    <p className={`text-sm leading-tight ${isCompleted ? 'text-white/40 line-through' : isNext ? 'text-white font-medium' : 'text-white/70'}`}>
+                    <p className={`text-sm leading-tight ${isCompleted ? 'text-[var(--wl-text-muted)] line-through' : isNext ? 'text-white font-medium' : 'text-[var(--wl-text-secondary)]'}`}>
                       {event.title}
                     </p>
                     {isNext && <span className="text-[10px] bg-brand/20 text-brand-light px-2 py-0.5 rounded-full shrink-0">Siguiente</span>}
                   </div>
-                  <p className={`text-[11px] mt-0.5 ${isCompleted ? 'text-white/25' : 'text-white/40'}`}>
+                  <p className={`text-[11px] mt-0.5 ${isCompleted ? 'text-white/25' : 'text-[var(--wl-text-muted)]'}`}>
                     {format(event.date, "d 'de' MMM yyyy", { locale: es })}
                   </p>
                   {isManager && event.type === 'milestone' && (
                     <div className="flex gap-1.5 mt-1.5">
                       <button type="button" onClick={() => onEditMilestone?.(event.id)}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-white/40 hover:text-white transition-colors">
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-white/[0.04] hover:bg-white/[0.08] border border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-white transition-colors">
                         <Pencil className="w-2.5 h-2.5" /> Editar
                       </button>
                       <button type="button" onClick={() => onDeleteMilestone?.(event.id)}

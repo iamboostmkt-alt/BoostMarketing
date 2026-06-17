@@ -104,7 +104,7 @@ export default function PushNotificationManager() {
   if (showBanner && !subscribed) {
     return (
       <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:w-[340px] z-50
-                      rounded-[20px] border border-white/[0.08] bg-[#0F1117] shadow-2xl p-4"
+                      rounded-[20px] border border-[var(--wl-border)] bg-[var(--wl-surface)] shadow-2xl p-4"
         style={{ animation: 'slideUp 0.3s ease' }}>
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
@@ -125,7 +125,7 @@ export default function PushNotificationManager() {
                 {loading ? 'Activando...' : 'Activar'}
               </button>
               <button onClick={() => setShowBanner(false)}
-                className="rounded-[10px] px-3 py-2 text-[12px] font-medium text-white/40 hover:text-white/70 transition-colors border border-white/[0.08]">
+                className="rounded-[10px] px-3 py-2 text-[12px] font-medium text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] transition-colors border border-[var(--wl-border)]">
                 Ahora no
               </button>
             </div>

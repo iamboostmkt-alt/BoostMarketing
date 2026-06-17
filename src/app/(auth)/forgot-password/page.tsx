@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
     <div className="w-full max-w-md mx-auto px-4">
       <Link
         href="/login"
-        className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors mb-8"
+        className="inline-flex items-center gap-2 text-sm text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] transition-colors mb-8"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver al inicio de sesión
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
             <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-white mb-2">Revisa tu email</h2>
             <p className="text-sm text-white/50 mb-6">
-              Si existe una cuenta con <span className="text-white/70">{email}</span>,
+              Si existe una cuenta con <span className="text-[var(--wl-text-secondary)]">{email}</span>,
               recibirás un enlace para restablecer tu contraseña. El enlace es válido por 1 hora.
             </p>
             <p className="text-xs text-white/30">
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
         ) : (
           <>
             <h1 className="text-2xl font-bold text-white mb-1">¿Olvidaste tu contraseña?</h1>
-            <p className="text-sm text-white/40 mb-6">
+            <p className="text-sm text-[var(--wl-text-muted)] mb-6">
               Ingresa tu email y te enviaremos un enlace para restablecerla.
             </p>
 
@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-white/60">
+                <Label htmlFor="email" className="text-sm font-medium text-[var(--wl-text-secondary)]">
                   Email
                 </Label>
                 <div className="relative">
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
                     required
                     disabled={loading}
                     autoComplete="email"
-                    className="pl-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
+                    className="pl-10 bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
                   />
                 </div>
               </div>

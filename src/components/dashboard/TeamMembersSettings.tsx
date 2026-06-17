@@ -265,7 +265,7 @@ export default function TeamMembersSettings() {
     >
       <div className="mx-auto max-w-3xl space-y-4">
         {/* Section 1: Invite members */}
-        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#16161e] p-5 px-6">
+        <div className="rounded-xl border border-[var(--wl-border)] bg-[#16161e] p-5 px-6">
           <h2 className="text-[15px] font-medium text-[rgba(255,255,255,0.90)]">Invite members</h2>
           <p className="mt-1 text-[13px] text-[rgba(255,255,255,0.40)]">
             Add new members by entering their email address
@@ -293,7 +293,7 @@ export default function TeamMembersSettings() {
         </div>
 
         {/* Section 2: People with access */}
-        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#16161e] p-5 px-6">
+        <div className="rounded-xl border border-[var(--wl-border)] bg-[#16161e] p-5 px-6">
           <div className="flex items-center gap-3">
             <h2 className="text-[14px] font-medium text-[rgba(255,255,255,0.80)]">People with access</h2>
             <span className="rounded-full border border-[rgba(124,58,237,0.20)] bg-[rgba(124,58,237,0.12)] px-2.5 py-0.5 text-[11px] font-medium text-[#a78bfa]">
@@ -309,7 +309,7 @@ export default function TeamMembersSettings() {
               placeholder="Buscar miembros..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-[38px] w-full rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#1a1a1f] pl-10 pr-4 text-sm text-[rgba(255,255,255,0.70)] placeholder-[rgba(255,255,255,0.25)] outline-none transition-all focus:border-[rgba(124,58,237,0.5)] focus:ring-2 focus:ring-[rgba(124,58,237,0.15)]"
+              className="h-[38px] w-full rounded-lg border border-[var(--wl-border)] bg-[#1a1a1f] pl-10 pr-4 text-sm text-[rgba(255,255,255,0.70)] placeholder-[rgba(255,255,255,0.25)] outline-none transition-all focus:border-[rgba(124,58,237,0.5)] focus:ring-2 focus:ring-[rgba(124,58,237,0.15)]"
             />
           </div>
 

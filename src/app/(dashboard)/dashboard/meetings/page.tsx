@@ -44,7 +44,7 @@ export default function MeetingsPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-[22px] font-semibold tracking-tight">Reuniones</h1>
-          <p className="text-[13px] text-white/40 mt-0.5">{upcoming} próximas reuniones</p>
+          <p className="text-[13px] text-[var(--wl-text-muted)] mt-0.5">{upcoming} próximas reuniones</p>
         </div>
         <a href="/dashboard/calendar"
           className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-[13px] font-medium text-white hover:bg-primary/90 transition-colors">
@@ -58,7 +58,7 @@ export default function MeetingsPage() {
         {(['all','pending','confirmed','completed'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors ${
-              filter === f ? 'bg-primary/15 text-primary' : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+              filter === f ? 'bg-primary/15 text-primary' : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)]'
             }`}>
             {f === 'all' ? 'Todas' : STATUS_STYLE[f]?.label}
           </button>
@@ -86,11 +86,11 @@ export default function MeetingsPage() {
             const style = STATUS_STYLE[m.status] ?? STATUS_STYLE.pending;
             return (
               <div key={m.id}
-                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.03] transition-colors">
+                className="rounded-2xl border border-[var(--wl-border)] bg-white/[0.02] p-4 hover:bg-[var(--wl-hover)] transition-colors">
                 <div className="flex items-start gap-4">
                   {/* Fecha */}
-                  <div className="shrink-0 flex flex-col items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.06] w-14 h-14">
-                    <span className="text-[11px] font-medium text-white/40 uppercase">
+                  <div className="shrink-0 flex flex-col items-center justify-center rounded-xl bg-white/[0.04] border border-[var(--wl-border)] w-14 h-14">
+                    <span className="text-[11px] font-medium text-[var(--wl-text-muted)] uppercase">
                       {date.toLocaleDateString('es-MX', { month: 'short' })}
                     </span>
                     <span className="text-[20px] font-bold text-white/90 leading-none">
@@ -113,7 +113,7 @@ export default function MeetingsPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-4 text-[12px] text-white/40">
+                    <div className="flex items-center gap-4 text-[12px] text-[var(--wl-text-muted)]">
                       <span className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" strokeWidth={1.75} />
                         {date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
@@ -141,7 +141,7 @@ export default function MeetingsPage() {
                       </a>
                     )}
                     <a href="/dashboard/calendar"
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/[0.06] transition-colors">
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
                       <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.75} />
                     </a>
                   </div>

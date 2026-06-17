@@ -110,49 +110,49 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#15151c] border-white/[0.06] text-white sm:max-w-md max-h-[92vh] overflow-y-auto">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white sm:max-w-md max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">{isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
-          <DialogDescription className="text-white/40">
+          <DialogDescription className="text-[var(--wl-text-muted)]">
             {isEditing ? 'Modifica los datos del cliente.' : 'Completa los datos para crear un nuevo cliente.'}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="client-name" className="text-white/70">Nombre <span className="text-red-400">*</span></Label>
+            <Label htmlFor="client-name" className="text-[var(--wl-text-secondary)]">Nombre <span className="text-red-400">*</span></Label>
             <Input id="client-name" value={name} onChange={(e) => setName(e.target.value)}
               placeholder="Nombre del cliente" required
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client-email" className="text-white/70">Email <span className="text-red-400">*</span></Label>
+            <Label htmlFor="client-email" className="text-[var(--wl-text-secondary)]">Email <span className="text-red-400">*</span></Label>
             <Input id="client-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               placeholder="correo@ejemplo.com" required
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="client-company" className="text-white/70">Empresa</Label>
+              <Label htmlFor="client-company" className="text-[var(--wl-text-secondary)]">Empresa</Label>
               <Input id="client-company" value={company} onChange={(e) => setCompany(e.target.value)}
                 placeholder="Nombre de la empresa"
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="client-phone" className="text-white/70">Telefono</Label>
+              <Label htmlFor="client-phone" className="text-[var(--wl-text-secondary)]">Telefono</Label>
               <Input id="client-phone" value={phone} onChange={(e) => setPhone(e.target.value)}
                 placeholder="+52 555 123 4567"
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand" />
+                className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/70">Estado</Label>
+            <Label className="text-[var(--wl-text-secondary)]">Estado</Label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+              <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
                 <SelectItem value="active">Activo</SelectItem>
                 <SelectItem value="prospect">Prospecto</SelectItem>
                 <SelectItem value="inactive">Inactivo</SelectItem>
@@ -162,11 +162,11 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
 
           {isAdmin && (
             <div className="space-y-2">
-              <Label className="text-white/70">Project Manager responsable</Label>
+              <Label className="text-[var(--wl-text-secondary)]">Project Manager responsable</Label>
               <Select value={assignedManagerId || 'none'} onValueChange={(v) => setAssignedManagerId(v === 'none' ? '' : v)}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white w-full"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
-                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white max-h-48">
-                  <SelectItem value="none" className="text-white/40 focus:bg-white/[0.06]">Sin asignar</SelectItem>
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white w-full"><SelectValue placeholder="Sin asignar" /></SelectTrigger>
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-h-48">
+                  <SelectItem value="none" className="text-[var(--wl-text-muted)] focus:bg-white/[0.06]">Sin asignar</SelectItem>
                   {managers.map((m) => (
                     <SelectItem key={m.id} value={m.id} className="focus:bg-white/[0.06]">
                       <span className="flex items-center gap-2">
@@ -183,24 +183,24 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
           {teamMembers.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-white/70">
+                <Label className="text-[var(--wl-text-secondary)]">
                   Equipo asignado
                   {assignedUserIds.length > 0 && <span className="text-brand-light text-xs ml-1">({assignedUserIds.length})</span>}
                 </Label>
                 {assignedUserIds.length > 0 && (
                   <button type="button" onClick={() => setAssignedUserIds([])}
-                    className="text-[11px] text-white/30 hover:text-white/60 transition-colors">
+                    className="text-[11px] text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors">
                     Limpiar
                   </button>
                 )}
               </div>
-              <div className="bg-white/[0.04] border border-white/[0.08] rounded-lg p-1 max-h-44 overflow-y-auto">
+              <div className="bg-white/[0.04] border border-[var(--wl-border)] rounded-lg p-1 max-h-44 overflow-y-auto">
                 {teamMembers.map((u) => {
                   const checked = assignedUserIds.includes(u.id);
                   return (
                     <button key={u.id} type="button" onClick={() => toggleUser(u.id)}
                       className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md transition-colors text-left text-sm ${
-                        checked ? 'bg-brand/25 text-white' : 'text-white/70 hover:bg-white/[0.04] hover:text-white'
+                        checked ? 'bg-brand/25 text-white' : 'text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] hover:text-white'
                       }`}>
                       <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                         checked ? 'border-brand bg-brand' : 'border-white/20 bg-white/[0.04]'
@@ -232,7 +232,7 @@ export default function ClientForm({ open, onOpenChange, client, onSuccess, isAd
             )}
 
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
-              className="border-white/[0.1] text-white/70 hover:text-white hover:bg-white/[0.06]">
+              className="border-white/[0.1] text-[var(--wl-text-secondary)] hover:text-white hover:bg-[var(--wl-hover)]">
               Cancelar
             </Button>
             <Button type="submit" disabled={loading} className="bg-brand hover:bg-brand-dark text-white">

@@ -45,20 +45,20 @@ export function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEv
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-white/70">{monthLabel}</h2>
+        <h2 className="text-sm font-medium text-[var(--wl-text-secondary)]">{monthLabel}</h2>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm"
-            className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
+            className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-[var(--wl-hover)]"
             onClick={() => setCurrentMonth((m) => subMonths(m, 1))}>
             <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
           <Button variant="ghost" size="sm"
-            className="h-7 px-2 text-xs text-white/50 hover:text-white hover:bg-white/[0.06]"
+            className="h-7 px-2 text-xs text-white/50 hover:text-white hover:bg-[var(--wl-hover)]"
             onClick={() => setCurrentMonth(new Date())}>
             Hoy
           </Button>
           <Button variant="ghost" size="sm"
-            className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-white/[0.06]"
+            className="h-7 w-7 p-0 text-white/50 hover:text-white hover:bg-[var(--wl-hover)]"
             onClick={() => setCurrentMonth((m) => addMonths(m, 1))}>
             <ChevronRight className="w-3.5 h-3.5" />
           </Button>
@@ -89,9 +89,9 @@ export function PortalCalendar({ tasks, appointments = [], onSelectDay, getDayEv
                 relative flex flex-col items-center justify-start min-h-[56px] md:min-h-[64px]
                 border-b border-r border-white/[0.04] pt-1.5 pb-1 px-1
                 transition-colors duration-150
-                ${isCurrentMonth ? 'text-white/80' : 'text-white/15 cursor-default'}
+                ${isCurrentMonth ? 'text-[var(--wl-text-secondary)]' : 'text-white/15 cursor-default'}
                 ${today ? 'bg-brand/[0.06]' : ''}
-                ${isCurrentMonth && !today ? 'hover:bg-white/[0.03]' : ''}
+                ${isCurrentMonth && !today ? 'hover:bg-[var(--wl-hover)]' : ''}
               `}
             >
               <span className={`text-xs leading-none ${

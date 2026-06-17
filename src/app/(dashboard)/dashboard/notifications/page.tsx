@@ -96,26 +96,26 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <button onClick={() => router.back()}
-          className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/[0.06] text-white/40 hover:text-white hover:bg-white/[0.04] transition-colors">
+          className="flex items-center justify-center w-9 h-9 rounded-xl border border-[var(--wl-border)] text-[var(--wl-text-muted)] hover:text-white hover:bg-[var(--wl-hover)] transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1">
           <h1 className="text-[20px] font-semibold text-white">Notificaciones</h1>
           {unreadCount > 0 && (
-            <p className="text-[12px] text-white/40">{unreadCount} sin leer</p>
+            <p className="text-[12px] text-[var(--wl-text-muted)]">{unreadCount} sin leer</p>
           )}
         </div>
         <div className="flex items-center gap-2">
           {unreadCount > 0 && (
             <button onClick={markAllRead}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.06] text-[12px] text-white/40 hover:text-violet-400 hover:border-violet-500/20 transition-colors">
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--wl-border)] text-[12px] text-[var(--wl-text-muted)] hover:text-violet-400 hover:border-violet-500/20 transition-colors">
               <Check className="w-3.5 h-3.5" />
               Marcar todo leído
             </button>
           )}
           {notifications.some(n => n.read) && (
             <button onClick={deleteRead}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.06] text-[12px] text-white/40 hover:text-red-400 hover:border-red-500/20 transition-colors">
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--wl-border)] text-[12px] text-[var(--wl-text-muted)] hover:text-red-400 hover:border-red-500/20 transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
               Limpiar
             </button>
@@ -130,12 +130,12 @@ export default function NotificationsPage() {
             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all ${
               filter === f.id
                 ? 'text-white'
-                : 'text-white/40 hover:text-white/70 border border-white/[0.06]'
+                : 'text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] border border-[var(--wl-border)]'
             }`}
             style={filter === f.id ? { background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)', color: '#fff' } : {}}>
             {f.label}
             {f.count > 0 && (
-              <span className={`rounded-full px-1.5 text-[10px] font-bold ${filter === f.id ? 'bg-violet-500/30 text-violet-200' : 'bg-white/[0.08] text-white/40'}`}>
+              <span className={`rounded-full px-1.5 text-[10px] font-bold ${filter === f.id ? 'bg-violet-500/30 text-violet-200' : 'bg-white/[0.08] text-[var(--wl-text-muted)]'}`}>
                 {f.count}
               </span>
             )}
@@ -161,7 +161,7 @@ export default function NotificationsPage() {
           <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center">
             <Bell className="w-8 h-8 text-white/20" />
           </div>
-          <p className="text-[15px] font-medium text-white/40">Sin notificaciones</p>
+          <p className="text-[15px] font-medium text-[var(--wl-text-muted)]">Sin notificaciones</p>
           <p className="text-[13px] text-white/25">Las notificaciones aparecerán aquí</p>
         </div>
       ) : (
@@ -179,7 +179,7 @@ export default function NotificationsPage() {
                 className={`w-full flex items-start gap-3.5 p-4 rounded-2xl text-left transition-all border ${
                   !n.read
                     ? 'border-violet-500/15 bg-violet-500/[0.05] hover:bg-violet-500/[0.08]'
-                    : 'border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04] opacity-70'
+                    : 'border-white/[0.04] bg-white/[0.02] hover:bg-[var(--wl-hover)] opacity-70'
                 }`}>
                 {/* Avatar */}
                 <div className="relative w-10 h-10 shrink-0">
@@ -187,7 +187,7 @@ export default function NotificationsPage() {
                     <>
                       <img src={n.actorImage} alt={n.actorName || ''} className="w-10 h-10 rounded-full object-cover" />
                       <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[11px]"
-                        style={{ background: '#0F1117', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                        style={{ background: 'var(--wl-surface)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
                         {emoji}
                       </span>
                     </>
@@ -198,7 +198,7 @@ export default function NotificationsPage() {
                         {n.actorName.split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase()}
                       </div>
                       <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[11px]"
-                        style={{ background: '#0F1117', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                        style={{ background: 'var(--wl-surface)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
                         {emoji}
                       </span>
                     </>

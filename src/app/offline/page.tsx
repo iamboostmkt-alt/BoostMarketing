@@ -38,7 +38,7 @@ export default function OfflinePage() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-6"
-      style={{ background: '#07070A' }}
+      style={{ background: 'var(--wl-bg)' }}
     >
       <div className="flex flex-col items-center gap-6 text-center max-w-[300px]">
         {/* Logo con animación de pulso */}
@@ -48,7 +48,7 @@ export default function OfflinePage() {
 
         <div>
           <h1 className="text-[20px] font-bold text-white mb-2">Sin conexión</h1>
-          <p className="text-[14px] text-white/40 leading-relaxed">
+          <p className="text-[14px] text-[var(--wl-text-muted)] leading-relaxed">
             Weeklink necesita internet para funcionar. Verifica tu conexión y vuelve a intentarlo.
           </p>
         </div>

@@ -104,7 +104,7 @@ export function SectionWrapper({
     <motion.div
       ref={containerRef}
       className={`relative rounded-[14px] border p-4 h-full ${
-        editMode ? 'border-dashed border-violet-500/40' : 'border-white/[0.06]'
+        editMode ? 'border-dashed border-violet-500/40' : 'border-[var(--wl-border)]'
       } ${!isVisible ? 'opacity-60' : ''}`}
       style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0e14 60%, #0a0a0f 100%)' }}
       layout
@@ -118,7 +118,7 @@ export function SectionWrapper({
       <div className="relative z-10 mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {editMode && (
-            <span className="cursor-grab text-white/35 hover:text-white/60 active:cursor-grabbing">
+            <span className="cursor-grab text-white/35 hover:text-[var(--wl-text-secondary)] active:cursor-grabbing">
               <GripVertical className="h-4 w-4" />
             </span>
           )}
@@ -129,11 +129,11 @@ export function SectionWrapper({
         </div>
         <div className="flex items-center gap-2">
           {editMode && (
-            <button onClick={onToggleVisibility} className="text-white/35 hover:text-white/60 transition-colors">
+            <button onClick={onToggleVisibility} className="text-white/35 hover:text-[var(--wl-text-secondary)] transition-colors">
               {isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
             </button>
           )}
-          <button onClick={onToggleCollapse} className="text-white/35 hover:text-white/60 transition-colors">
+          <button onClick={onToggleCollapse} className="text-white/35 hover:text-[var(--wl-text-secondary)] transition-colors">
             {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
           </button>
         </div>

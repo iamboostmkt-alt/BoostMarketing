@@ -46,7 +46,7 @@ export default function CRMColumn({
             variant="ghost"
             size="icon"
             onClick={onAddClick}
-            className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/[0.06]"
+            className="h-7 w-7 text-white/30 hover:text-white hover:bg-[var(--wl-hover)]"
           >
             <Plus className="w-4 h-4" />
           </Button>
@@ -61,7 +61,7 @@ export default function CRMColumn({
       {/* Scrollable Card List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-2.5 max-h-[calc(100vh-220px)]">
         {contacts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 px-4 text-center border border-dashed border-white/[0.06] rounded-xl">
+          <div className="flex flex-col items-center justify-center py-10 px-4 text-center border border-dashed border-[var(--wl-border)] rounded-xl">
             <Inbox className="w-8 h-8 text-white/10 mb-2" />
             <p className="text-xs text-white/25">
               No hay contactos en esta etapa

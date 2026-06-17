@@ -13,9 +13,9 @@ export default function ProspectPendingPage() {
             Gracias por agendar una videollamada con nosotros. Pronto nos pondremos en contacto contigo.
           </p>
         </div>
-        <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-5 text-left space-y-2">
-          <p className="text-sm text-white/70 font-medium">Que sigue:</p>
-          <ul className="space-y-1.5 text-sm text-white/40">
+        <div className="bg-white/[0.04] border border-[var(--wl-border)] rounded-xl p-5 text-left space-y-2">
+          <p className="text-sm text-[var(--wl-text-secondary)] font-medium">Que sigue:</p>
+          <ul className="space-y-1.5 text-sm text-[var(--wl-text-muted)]">
             <li>1. Revisa tu email con los detalles de la cita</li>
             <li>2. Un asesor te contactara antes de la llamada</li>
             <li>3. Una vez aprobada tu cuenta podras acceder al portal</li>

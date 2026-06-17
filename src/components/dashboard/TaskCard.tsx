@@ -263,7 +263,7 @@ export default function TaskCard({
                 {(!canEdit || canEdit(task)) && (
                   <button
                     onClick={(e) => { e.stopPropagation(); onEdit(task); }}
-                    className="flex h-6 w-6 items-center justify-center rounded-md text-white/30 hover:text-white/70 hover:bg-white/[0.06] transition-colors"
+                    className="flex h-6 w-6 items-center justify-center rounded-md text-white/30 hover:text-[var(--wl-text-secondary)] hover:bg-[var(--wl-hover)] transition-colors"
                   >
                     <Pencil className="h-3 w-3" />
                   </button>
@@ -328,7 +328,7 @@ export default function TaskCard({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={(e) => { e.stopPropagation(); void onMarkPending(task); }}
-                  className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-white/40 hover:bg-white/[0.05] transition-colors"
+                  className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-[var(--wl-text-muted)] hover:bg-white/[0.05] transition-colors"
                 >
                   <RotateCcw className="h-3 w-3" />
                   Reabrir
@@ -357,14 +357,14 @@ export default function TaskCard({
               onClick={(e) => { e.stopPropagation(); setShowStatusPicker(false); }}
             >
               <div
-                className="w-full max-w-sm rounded-t-2xl bg-[#0F1117] border-t border-white/[0.08] pb-8"
+                className="w-full max-w-sm rounded-t-2xl bg-[var(--wl-surface)] border-t border-[var(--wl-border)] pb-8"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Handle */}
                 <div className="flex justify-center pt-3 pb-2">
                   <div className="w-10 h-1 rounded-full bg-white/20" />
                 </div>
-                <p className="text-[12px] font-medium text-white/40 text-center pb-3 truncate px-4">
+                <p className="text-[12px] font-medium text-[var(--wl-text-muted)] text-center pb-3 truncate px-4">
                   {task.title}
                 </p>
                 <div className="divide-y divide-white/[0.05]">
@@ -379,7 +379,7 @@ export default function TaskCard({
                       }}
                     >
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: opt.color }} />
-                      <span className={`text-[14px] ${task.status === opt.value ? 'text-white font-medium' : 'text-white/70'}`}>
+                      <span className={`text-[14px] ${task.status === opt.value ? 'text-white font-medium' : 'text-[var(--wl-text-secondary)]'}`}>
                         {opt.label}
                       </span>
                       {task.status === opt.value && (
@@ -472,7 +472,7 @@ export default function TaskCard({
           <div className="flex items-center justify-between">
             <button
               onClick={(e) => { e.stopPropagation(); setSubtasksOpen(!subtasksOpen); }}
-              className="flex items-center gap-1.5 text-[11px] text-white/35 hover:text-white/60 transition-colors"
+              className="flex items-center gap-1.5 text-[11px] text-white/35 hover:text-[var(--wl-text-secondary)] transition-colors"
             >
               {subtasksOpen
                 ? <ChevronDown className="h-3 w-3" />

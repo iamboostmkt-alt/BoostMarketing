@@ -63,13 +63,13 @@ export default function InvitePage() {
   // Guard: si el PM/ADMIN abre el link del cliente, mostrar advertencia
   if (!loading && invite && isLoggedInAsNonClient && isClient) {
     return (
-      <div className="min-h-screen bg-[#07070A] flex items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 text-center">
+      <div className="min-h-screen bg-[var(--wl-bg)] flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-2xl border border-[var(--wl-border)] bg-white/[0.03] p-8 text-center">
           <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4 text-2xl">⚠️</div>
           <h2 className="text-[18px] font-semibold text-white mb-2">Este link es para un cliente</h2>
           <p className="text-[13px] text-white/50 mb-6 leading-relaxed">
-            Este link de activación es para <strong className="text-white/80">{invite.email}</strong>.
-            Tú estás logueado como <strong className="text-white/80">{(currentSession?.user as any)?.name || (currentSession?.user as any)?.email}</strong>.
+            Este link de activación es para <strong className="text-[var(--wl-text-secondary)]">{invite.email}</strong>.
+            Tú estás logueado como <strong className="text-[var(--wl-text-secondary)]">{(currentSession?.user as any)?.name || (currentSession?.user as any)?.email}</strong>.
           </p>
           <p className="text-[12px] text-white/30 mb-6">
             Para activar el portal del cliente, este link debe abrirse en una sesión de incógnito o cuando el cliente no haya iniciado sesión.
@@ -84,13 +84,13 @@ export default function InvitePage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-[#07070A] flex items-center justify-center">
+    <div className="min-h-screen bg-[var(--wl-bg)] flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
 
   if (error) return (
-    <div className="min-h-screen bg-[#07070A] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--wl-bg)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm text-center space-y-4">
         <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
           <X className="h-6 w-6 text-red-400" />
@@ -103,7 +103,7 @@ export default function InvitePage() {
   );
 
   if (done) return (
-    <div className="min-h-screen bg-[#07070A] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--wl-bg)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm text-center space-y-4">
         <div className="mx-auto w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
           <Check className="h-6 w-6 text-green-400" />
@@ -118,7 +118,7 @@ export default function InvitePage() {
   const passwordsMatch = password === confirm;
 
   return (
-    <div className="min-h-screen bg-[#07070A] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--wl-bg)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
           <div className="flex justify-center"><LogoBrand /></div>
@@ -146,7 +146,7 @@ export default function InvitePage() {
             <label className="text-xs text-white/50">Tu nombre</label>
             <input value={name} onChange={e => setName(e.target.value)} required
               placeholder={invite.clientName || 'Tu nombre completo'}
-              className="w-full rounded-xl border border-white/[0.08] bg-[#0F1117] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50" />
+              className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-surface)] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50" />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-white/50">Nueva contraseña</label>
@@ -154,9 +154,9 @@ export default function InvitePage() {
               <input value={password} onChange={e => setPassword(e.target.value)} required
                 type={showPass ? 'text' : 'password'} minLength={8}
                 placeholder="Mínimo 8 caracteres"
-                className="w-full rounded-xl border border-white/[0.08] bg-[#0F1117] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50 pr-10" />
+                className="w-full rounded-xl border border-[var(--wl-border)] bg-[var(--wl-surface)] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50 pr-10" />
               <button type="button" onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-[var(--wl-text-secondary)]">
                 {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
@@ -166,8 +166,8 @@ export default function InvitePage() {
             <input value={confirm} onChange={e => setConfirm(e.target.value)} required
               type="password" minLength={8}
               placeholder="Repite tu contraseña"
-              className={`w-full rounded-xl border bg-[#0F1117] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50 ${
-                confirm && !passwordsMatch ? 'border-red-500/50' : 'border-white/[0.08]'
+              className={`w-full rounded-xl border bg-[var(--wl-surface)] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/50 ${
+                confirm && !passwordsMatch ? 'border-red-500/50' : 'border-[var(--wl-border)]'
               }`} />
             {confirm && !passwordsMatch && (
               <p className="text-red-400 text-[10px]">Las contraseñas no coinciden</p>

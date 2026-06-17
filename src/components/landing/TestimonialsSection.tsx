@@ -72,7 +72,7 @@ export default function TestimonialsSection({ items }: TestimonialsSectionProps)
                 &ldquo;{item.text}&rdquo;
               </p>
 
-              <div className="flex items-center gap-3 pt-2 border-t border-white/[0.06]">
+              <div className="flex items-center gap-3 pt-2 border-t border-[var(--wl-border)]">
                 {isImageSrc(item.imageUrl) ? (
                   <Image
                     src={item.imageUrl}

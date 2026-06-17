@@ -57,58 +57,82 @@
 
 :root {
   --radius: 0.625rem;
-  --background: #07070a;
-  --foreground: #f5f7fa;
-  --card: #0f1117;
-  --card-foreground: #f1f1f4;
-  --popover: #141414;
-  --popover-foreground: #f1f1f4;
-  --primary: #8b5cf6;
-  --primary-foreground: #ffffff;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #f1f1f4;
-  --muted: #1a1a1a;
-  --muted-foreground: #8b8b9e;
-  --accent: #1a1a1a;
-  --accent-foreground: #f1f1f4;
-  --destructive: #ef4444;
-  --border: rgba(255, 255, 255, 0.06);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #7c3aed;
+
+  /* ── Light Mode (default) ─────────────────────────────── */
+  --background:            #F6F7FB;
+  --foreground:            #111827;
+  --card:                  #FFFFFF;
+  --card-foreground:       #111827;
+  --popover:               #FFFFFF;
+  --popover-foreground:    #111827;
+  --primary:               #7C3AED;
+  --primary-foreground:    #FFFFFF;
+  --secondary:             #F3F4F6;
+  --secondary-foreground:  #374151;
+  --muted:                 #F3F4F6;
+  --muted-foreground:      #6B7280;
+  --accent:                #F3F4F6;
+  --accent-foreground:     #111827;
+  --destructive:           #EF4444;
+  --border:                rgba(17,24,39,0.10);
+  --input:                 rgba(17,24,39,0.08);
+  --ring:                  #7C3AED;
   --chart-1: #7c3aed;
   --chart-2: #06b6d4;
   --chart-3: #f59e0b;
   --chart-4: #10b981;
   --chart-5: #f43f5e;
-  --sidebar: #0e0e14;
-  --sidebar-foreground: #f1f1f4;
-  --sidebar-primary: #7c3aed;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #f1f1f4;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-ring: #7c3aed;
+  --sidebar:               #FFFFFF;
+  --sidebar-foreground:    #111827;
+  --sidebar-primary:       #7C3AED;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent:        #F3F4F6;
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border:        rgba(17,24,39,0.08);
+  --sidebar-ring:          #7C3AED;
+
+  /* ── Weeklink tokens — Light ──────────────────────────── */
+  --wl-bg:                 #F6F7FB;
+  --wl-surface:            #FFFFFF;
+  --wl-elevated:           #F3F4F6;
+  --wl-overlay:            #FFFFFF;
+  --wl-border:             rgba(17,24,39,0.10);
+  --wl-border-subtle:      rgba(17,24,39,0.06);
+  --wl-divider:            rgba(17,24,39,0.06);
+  --wl-text-primary:       #111827;
+  --wl-text-secondary:     #374151;
+  --wl-text-muted:         #6B7280;
+  --wl-text-placeholder:   #9CA3AF;
+  --wl-accent:             #7C3AED;
+  --wl-accent-subtle:      rgba(124,58,237,0.08);
+  --wl-shadow:             0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+  --wl-input-bg:           #FFFFFF;
+  --wl-sidebar-bg:         #FFFFFF;
+  --wl-modal-bg:           #FFFFFF;
+  --wl-hover:              rgba(17,24,39,0.04);
+  --wl-active:             rgba(124,58,237,0.08);
+  --wl-scrollbar:          rgba(17,24,39,0.15);
 }
 
 .dark {
-  --background: #07070a;
-  --foreground: #f5f7fa;
-  --card: #0f1117;
-  --card-foreground: #f1f1f4;
-  --popover: #141414;
-  --popover-foreground: #f1f1f4;
-  --primary: #8b5cf6;
-  --primary-foreground: #ffffff;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #f1f1f4;
-  --muted: #1a1a1a;
-  --muted-foreground: #8b8b9e;
-  --accent: #1a1a1a;
-  --accent-foreground: #f1f1f4;
-  --destructive: #ef4444;
-  --border: rgba(255, 255, 255, 0.06);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #7c3aed;
+  --background:            #07070A;
+  --foreground:            #F5F7FA;
+  --card:                  #0F1117;
+  --card-foreground:       #F1F1F4;
+  --popover:               #141824;
+  --popover-foreground:    #F1F1F4;
+  --primary:               #8B5CF6;
+  --primary-foreground:    #FFFFFF;
+  --secondary:             #1A1A2E;
+  --secondary-foreground:  #F1F1F4;
+  --muted:                 #1A1A2E;
+  --muted-foreground:      #8B8B9E;
+  --accent:                #1A1A2E;
+  --accent-foreground:     #F1F1F4;
+  --destructive:           #EF4444;
+  --border:                rgba(255,255,255,0.06);
+  --input:                 rgba(255,255,255,0.10);
+  --ring:                  #7C3AED;
   --chart-1: #7c3aed;
   --chart-2: #06b6d4;
   --chart-3: #f59e0b;
@@ -129,23 +153,28 @@
     @apply border-border outline-ring/50;
   }
   html {
-    background: #080808;
+    background: var(--wl-bg);
     overscroll-behavior: none;
   }
   body {
     @apply text-foreground;
-    background: linear-gradient(160deg, #080808 0%, #0c0a14 35%, #100d1c 65%, #080808 100%);
+    background-color: var(--wl-bg);
     background-attachment: fixed;
     min-height: 100vh;
     min-height: 100dvh;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
+    color: var(--wl-text-primary);
+    transition: background-color 0.2s ease, color 0.2s ease;
     /* Safe area para iPhone notch/Dynamic Island */
     padding-top: env(safe-area-inset-top, 0px);
     /* App nativa */
     -webkit-user-select: none;
     user-select: none;
     touch-action: manipulation;
+  }
+  .dark body {
+    background: linear-gradient(160deg, #080808 0%, #0c0a14 35%, #100d1c 65%, #080808 100%);
   }
   /* Permitir selección de texto en inputs y textareas */
   input, textarea, [contenteditable] {
@@ -245,22 +274,24 @@
 }
 
 .glass-card {
-  background: rgba(21, 21, 28, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--wl-surface);
+  border: 1px solid var(--wl-border);
+  box-shadow: var(--wl-shadow);
 }
 
 .glass-card-blur {
-  background: rgba(21, 21, 28, 0.6);
+  background: var(--wl-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--wl-border);
+  box-shadow: var(--wl-shadow);
 }
 
 .glass-nav {
-  background: rgba(11, 11, 15, 0.7);
+  background: var(--wl-sidebar-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--wl-border-subtle);
 }
 
 .glow-brand {
@@ -385,23 +416,18 @@ button, [role="button"], a {
 
 /* ── Weeklink v0 CSS variables ─────────────────────────── */
 :root {
-  --wl-background: #07070a;
-  --wl-foreground: #f5f7fa;
-  --wl-card: #0f1117;
-  --wl-popover: #141824;
+  --wl-background: var(--wl-bg);
+  --wl-foreground: var(--wl-text-primary);
+  --wl-card: var(--wl-surface);
+  --wl-popover: var(--wl-elevated);
   --wl-primary: #8b5cf6;
-  --wl-surface: #0f1117;
-  --wl-surface-elevated: #141824;
-  --wl-surface-hover: rgba(255,255,255,0.03);
-  --wl-divider: rgba(255,255,255,0.04);
-  --wl-border: rgba(255,255,255,0.06);
-  --wl-text-secondary: rgba(245,247,250,0.65);
-  --wl-text-muted: rgba(245,247,250,0.4);
+  --wl-surface-elevated: var(--wl-elevated);
+  --wl-surface-hover: var(--wl-hover);
   --wl-success: #10b981;
   --wl-warning: #f59e0b;
   --wl-cyan: #22d3ee;
-  --wl-sidebar: #0f1117;
-  --wl-sidebar-border: rgba(255,255,255,0.04);
+  --wl-sidebar: var(--wl-sidebar-bg);
+  --wl-sidebar-border: var(--wl-border-subtle);
 }
 
 /* ── Weeklink utility classes ───────────────────────────── */
@@ -441,3 +467,36 @@ button, [role="button"], a {
 .notif-panel-enter {
   animation: notif-slide-in 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
+
+/* ── Dark Mode Weeklink tokens ──────────────────────────── */
+.dark {
+  --wl-bg:                 #07070A;
+  --wl-surface:            #0F1117;
+  --wl-elevated:           #141824;
+  --wl-overlay:            #0F1117;
+  --wl-border:             rgba(255,255,255,0.06);
+  --wl-border-subtle:      rgba(255,255,255,0.04);
+  --wl-divider:            rgba(255,255,255,0.04);
+  --wl-text-primary:       #F5F7FA;
+  --wl-text-secondary:     rgba(245,247,250,0.65);
+  --wl-text-muted:         rgba(245,247,250,0.40);
+  --wl-text-placeholder:   rgba(245,247,250,0.30);
+  --wl-accent:             #8B5CF6;
+  --wl-accent-subtle:      rgba(139,92,246,0.12);
+  --wl-shadow:             0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+  --wl-input-bg:           rgba(255,255,255,0.04);
+  --wl-sidebar-bg:         #0F1117;
+  --wl-modal-bg:           #0F1117;
+  --wl-hover:              rgba(255,255,255,0.04);
+  --wl-active:             rgba(139,92,246,0.15);
+  --wl-scrollbar:          rgba(255,255,255,0.12);
+}
+
+/* ── Utility classes usando tokens ──────────────────────── */
+.wl-bg        { background-color: var(--wl-bg); }
+.wl-surface   { background-color: var(--wl-surface); }
+.wl-elevated  { background-color: var(--wl-elevated); }
+.wl-border    { border-color: var(--wl-border); }
+.wl-text      { color: var(--wl-text-primary); }
+.wl-text-sec  { color: var(--wl-text-secondary); }
+.wl-text-mute { color: var(--wl-text-muted); }

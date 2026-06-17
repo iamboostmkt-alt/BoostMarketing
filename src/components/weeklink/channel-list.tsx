@@ -38,9 +38,9 @@ const appIcons: Record<string, LucideIcon> = {
 function GroupLabel({ children, action }: { children: React.ReactNode; action?: boolean }) {
   return (
     <div className="flex items-center justify-between px-2 pb-1 pt-4">
-      <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">{children}</span>
+      <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--wl-text-muted)]">{children}</span>
       {action && (
-        <button aria-label="Añadir" className="text-white/40 transition-colors hover:text-white/90">
+        <button aria-label="Añadir" className="text-[var(--wl-text-muted)] transition-colors hover:text-white/90">
           <Plus className="h-3.5 w-3.5" strokeWidth={2} />
         </button>
       )}
@@ -58,7 +58,7 @@ function Badge({ count }: { count: number }) {
 
 export function ChannelList() {
   return (
-    <div className="flex h-full w-[244px] shrink-0 flex-col border-r border-white/[0.05] bg-[#0F1117]">
+    <div className="flex h-full w-[244px] shrink-0 flex-col border-r border-[var(--wl-border-subtle)] bg-[var(--wl-surface)]">
       <div className="flex-1 overflow-y-auto  px-2 pb-4">
         {/* Internal channels */}
         <GroupLabel action>Canales internos</GroupLabel>
@@ -70,10 +70,10 @@ export function ChannelList() {
                   'flex h-9 w-full items-center gap-2 rounded-[10px] px-2.5 text-[13px] transition-colors',
                   c.active
                     ? 'bg-violet-500/[0.12] font-medium text-white/90'
-                    : 'text-white/65 hover:bg-white/[0.03] hover:text-white/90',
+                    : 'text-white/65 hover:bg-[var(--wl-hover)] hover:text-white/90',
                 )}
               >
-                <Hash className={cn('h-4 w-4', c.active ? 'text-violet-400' : 'text-white/40')} strokeWidth={1.75} />
+                <Hash className={cn('h-4 w-4', c.active ? 'text-violet-400' : 'text-[var(--wl-text-muted)]')} strokeWidth={1.75} />
                 <span className="truncate">{c.name}</span>
                 {c.unread ? <Badge count={c.unread} /> : null}
               </button>
@@ -86,7 +86,7 @@ export function ChannelList() {
         <ul className="flex flex-col gap-0.5">
           {clientChannels.map((c) => (
             <li key={c.id}>
-              <button className="flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] text-white/65 transition-colors hover:bg-white/[0.03] hover:text-white/90">
+              <button className="flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] text-white/65 transition-colors hover:bg-[var(--wl-hover)] hover:text-white/90">
                 <Avatar initials={c.initials} color={c.color} size={20} />
                 <span className="truncate">{c.name}</span>
                 {c.unread ? <Badge count={c.unread} /> : null}
@@ -100,7 +100,7 @@ export function ChannelList() {
         <ul className="flex flex-col gap-0.5">
           {directMessages.map((d) => (
             <li key={d.id}>
-              <button className="flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] text-white/65 transition-colors hover:bg-white/[0.03] hover:text-white/90">
+              <button className="flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] text-white/65 transition-colors hover:bg-[var(--wl-hover)] hover:text-white/90">
                 <Avatar initials={d.person.initials} color={d.person.color} size={20} status={d.person.status} />
                 <span className="truncate">{d.person.name}</span>
                 {'unread' in d && d.unread ? <Badge count={d.unread} /> : null}
@@ -116,8 +116,8 @@ export function ChannelList() {
             const Icon = appIcons[a.icon]
             return (
               <li key={a.id}>
-                <button className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/65 transition-colors hover:bg-white/[0.03] hover:text-white/90">
-                  <Icon className={cn('h-4 w-4', a.id === 'ai' ? 'text-violet-400' : 'text-white/40')} strokeWidth={1.75} />
+                <button className="flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-white/65 transition-colors hover:bg-[var(--wl-hover)] hover:text-white/90">
+                  <Icon className={cn('h-4 w-4', a.id === 'ai' ? 'text-violet-400' : 'text-[var(--wl-text-muted)]')} strokeWidth={1.75} />
                   <span className="truncate">{a.label}</span>
                 </button>
               </li>

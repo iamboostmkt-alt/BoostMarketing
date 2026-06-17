@@ -152,7 +152,7 @@ export default function ActivityForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#15151c] border-white/[0.08] text-white max-w-lg w-full max-h-[92vh] overflow-y-auto">
+      <DialogContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-w-lg w-full max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-white">
             {activity ? 'Editar Actividad' : 'Nueva Actividad'}
@@ -162,26 +162,26 @@ export default function ActivityForm({
         <form onSubmit={handleSubmit} className="space-y-4 pt-1">
           {/* Title */}
           <div className="space-y-1.5">
-            <Label className="text-sm text-white/70">Título *</Label>
+            <Label className="text-sm text-[var(--wl-text-secondary)]">Título *</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Nombre de la actividad"
               required
               disabled={loading}
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand"
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand"
             />
           </div>
 
           {/* Status + Priority */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/70">Estado</Label>
+              <Label className="text-sm text-[var(--wl-text-secondary)]">Estado</Label>
               <Select value={status} onValueChange={setStatus} disabled={loading}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white focus:ring-brand">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white focus:ring-brand">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
                   <SelectItem value="pending">Pendiente</SelectItem>
                   <SelectItem value="in_progress">En Progreso</SelectItem>
                   <SelectItem value="completed">Completado</SelectItem>
@@ -189,12 +189,12 @@ export default function ActivityForm({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/70">Prioridad</Label>
+              <Label className="text-sm text-[var(--wl-text-secondary)]">Prioridad</Label>
               <Select value={priority} onValueChange={setPriority} disabled={loading}>
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white focus:ring-brand">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white focus:ring-brand">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white">
                   <SelectItem value="low">Baja</SelectItem>
                   <SelectItem value="medium">Media</SelectItem>
                   <SelectItem value="high">Alta</SelectItem>
@@ -205,24 +205,24 @@ export default function ActivityForm({
 
           {/* Start date */}
           <div className="space-y-1.5">
-            <Label className="text-sm text-white/70">Inicio *</Label>
+            <Label className="text-sm text-[var(--wl-text-secondary)]">Inicio *</Label>
             <Button
               variant="outline"
               type="button"
               disabled={loading}
               onClick={() => { setStartOpen((p) => !p); setEndOpen(false); }}
               className={cn(
-                'w-full justify-start text-left font-normal bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:text-white text-sm',
+                'w-full justify-start text-left font-normal bg-white/[0.04] border-[var(--wl-border)] hover:bg-white/[0.08] hover:text-white text-sm',
                 !startDate && 'text-white/30'
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4 text-white/40" />
+              <CalendarIcon className="mr-2 h-4 w-4 text-[var(--wl-text-muted)]" />
               {startDate ? format(startDate, "dd 'de' MMMM yyyy", { locale: es }) : 'Seleccionar fecha de inicio'}
             </Button>
             {startOpen && (
-              <div className="rounded-lg border border-white/[0.08] bg-[#0e0e14] shadow-2xl p-1">
+              <div className="rounded-lg border border-[var(--wl-border)] bg-[#0e0e14] shadow-2xl p-1">
                 <div className="flex justify-end p-1">
-                  <button type="button" onClick={() => setStartOpen(false)} className="text-white/30 hover:text-white/70 p-1 rounded">
+                  <button type="button" onClick={() => setStartOpen(false)} className="text-white/30 hover:text-[var(--wl-text-secondary)] p-1 rounded">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -238,24 +238,24 @@ export default function ActivityForm({
 
           {/* End date */}
           <div className="space-y-1.5">
-            <Label className="text-sm text-white/70">Fin (opcional)</Label>
+            <Label className="text-sm text-[var(--wl-text-secondary)]">Fin (opcional)</Label>
             <Button
               variant="outline"
               type="button"
               disabled={loading}
               onClick={() => { setEndOpen((p) => !p); setStartOpen(false); }}
               className={cn(
-                'w-full justify-start text-left font-normal bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:text-white text-sm',
+                'w-full justify-start text-left font-normal bg-white/[0.04] border-[var(--wl-border)] hover:bg-white/[0.08] hover:text-white text-sm',
                 !endDate && 'text-white/30'
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4 text-white/40" />
+              <CalendarIcon className="mr-2 h-4 w-4 text-[var(--wl-text-muted)]" />
               {endDate ? format(endDate, "dd 'de' MMMM yyyy", { locale: es }) : 'Seleccionar fecha de fin'}
             </Button>
             {endOpen && (
-              <div className="rounded-lg border border-white/[0.08] bg-[#0e0e14] shadow-2xl p-1">
+              <div className="rounded-lg border border-[var(--wl-border)] bg-[#0e0e14] shadow-2xl p-1">
                 <div className="flex justify-end p-1">
-                  <button type="button" onClick={() => setEndOpen(false)} className="text-white/30 hover:text-white/70 p-1 rounded">
+                  <button type="button" onClick={() => setEndOpen(false)} className="text-white/30 hover:text-[var(--wl-text-secondary)] p-1 rounded">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -273,13 +273,13 @@ export default function ActivityForm({
           {/* Multi-assignee — manager only */}
           {isManager && users.length > 0 && (
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/70">
+              <Label className="text-sm text-[var(--wl-text-secondary)]">
                 Asignar a
                 {assignedUserIds.length > 0 && (
                   <span className="ml-1.5 text-brand-light">({assignedUserIds.length})</span>
                 )}
               </Label>
-              <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] max-h-40 overflow-y-auto">
+              <div className="rounded-lg border border-[var(--wl-border)] bg-white/[0.02] max-h-40 overflow-y-auto">
                 {users.map((u) => {
                   const selected = assignedUserIds.includes(u.id);
                   return (
@@ -289,7 +289,7 @@ export default function ActivityForm({
                       disabled={loading}
                       onClick={() => toggleAssignee(u.id)}
                       className={cn(
-                        'w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-white/[0.04] transition-colors',
+                        'w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-[var(--wl-hover)] transition-colors',
                         selected && 'bg-brand/[0.08]'
                       )}
                     >
@@ -297,7 +297,7 @@ export default function ActivityForm({
                         className="inline-block w-2 h-2 rounded-full shrink-0"
                         style={{ backgroundColor: u.color || '#7c3aed' }}
                       />
-                      <span className="flex-1 text-left text-white/80">{u.name || u.email}</span>
+                      <span className="flex-1 text-left text-[var(--wl-text-secondary)]">{u.name || u.email}</span>
                       {selected && <Check className="w-3.5 h-3.5 text-brand-light shrink-0" />}
                     </button>
                   );
@@ -307,7 +307,7 @@ export default function ActivityForm({
                 <button
                   type="button"
                   onClick={() => setAssignees([])}
-                  className="text-xs text-white/30 hover:text-white/60 transition-colors"
+                  className="text-xs text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors"
                 >
                   Limpiar selección
                 </button>
@@ -318,16 +318,16 @@ export default function ActivityForm({
           {/* Client — manager only */}
           {isManager && clients.length > 0 && (
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/70">Cuenta de cliente</Label>
+              <Label className="text-sm text-[var(--wl-text-secondary)]">Cuenta de cliente</Label>
               <Select
                 value={clientId || 'none'}
                 onValueChange={(v) => setClientId(v === 'none' ? '' : v)}
                 disabled={loading}
               >
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-white focus:ring-brand">
+                <SelectTrigger className="bg-white/[0.04] border-[var(--wl-border)] text-white focus:ring-brand">
                   <SelectValue placeholder="Sin cuenta asignada" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#15151c] border-white/[0.08] text-white max-h-48">
+                <SelectContent className="bg-[var(--wl-surface)] border-[var(--wl-border)] text-white max-h-48">
                   <SelectItem value="none" className="text-white/50 focus:bg-white/[0.06]">
                     Sin cuenta asignada
                   </SelectItem>
@@ -343,9 +343,9 @@ export default function ActivityForm({
 
           {/* Visible to client toggle */}
           {isManager && clientId && (
-            <div className="flex items-center justify-between bg-white/[0.03] border border-white/[0.05] rounded-lg px-3 py-2.5">
+            <div className="flex items-center justify-between bg-white/[0.03] border border-[var(--wl-border-subtle)] rounded-lg px-3 py-2.5">
               <div>
-                <p className="text-sm text-white/70">Visible para el cliente</p>
+                <p className="text-sm text-[var(--wl-text-secondary)]">Visible para el cliente</p>
                 <p className="text-[11px] text-white/30">El cliente puede ver esta actividad en su portal</p>
               </div>
               <button type="button" onClick={() => setVisibleToClient(v => !v)}
@@ -357,14 +357,14 @@ export default function ActivityForm({
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label className="text-sm text-white/70">Descripción</Label>
+            <Label className="text-sm text-[var(--wl-text-secondary)]">Descripción</Label>
             <Textarea
               value={description}
               onChange={(e) => setDesc(e.target.value)}
               placeholder="Descripción de la actividad..."
               rows={3}
               disabled={loading}
-              className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-brand resize-none"
+              className="bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus-visible:ring-brand resize-none"
             />
           </div>
 
@@ -374,7 +374,7 @@ export default function ActivityForm({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="flex-1 border-white/[0.08] text-white/70 hover:text-white"
+              className="flex-1 border-[var(--wl-border)] text-[var(--wl-text-secondary)] hover:text-white"
             >
               Cancelar
             </Button>

@@ -20,8 +20,8 @@ export function ActivityToastListener() {
       // Solo mostrar si soy asignado o PM
       if (t.status === 'completed' || t.status === 'approved') {
         toast.custom((toastId) => (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] shadow-2xl"
-            style={{ background: '#0F1117', minWidth: 320, maxWidth: 400 }}>
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--wl-border)] shadow-2xl"
+            style={{ background: 'var(--wl-surface)', minWidth: 320, maxWidth: 400 }}>
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0"
               style={{ background: 'rgba(34,197,94,0.12)' }}>
               ✅
@@ -37,8 +37,8 @@ export function ActivityToastListener() {
       }
       if (t.status === 'changes_requested') {
         toast.custom((toastId) => (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] shadow-2xl"
-            style={{ background: '#0F1117', minWidth: 320, maxWidth: 400 }}>
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--wl-border)] shadow-2xl"
+            style={{ background: 'var(--wl-surface)', minWidth: 320, maxWidth: 400 }}>
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0"
               style={{ background: 'rgba(234,179,8,0.12)' }}>
               💬
@@ -60,8 +60,8 @@ export function ActivityToastListener() {
       const t = payload.task;
       if (t.assignedUserId !== myId) return;
       toast.custom((toastId) => (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] shadow-2xl"
-          style={{ background: '#0F1117', minWidth: 320, maxWidth: 400 }}>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--wl-border)] shadow-2xl"
+          style={{ background: 'var(--wl-surface)', minWidth: 320, maxWidth: 400 }}>
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0"
             style={{ background: 'rgba(139,92,246,0.12)' }}>
             📌
@@ -86,8 +86,8 @@ export function ActivityToastListener() {
       const mentioned = myName && msg.message.toLowerCase().includes(`@${myName.split(' ')[0]}`);
       if (!mentioned) return;
       toast.custom((toastId) => (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] shadow-2xl"
-          style={{ background: '#0F1117', minWidth: 320, maxWidth: 400 }}>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--wl-border)] shadow-2xl"
+          style={{ background: 'var(--wl-surface)', minWidth: 320, maxWidth: 400 }}>
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
             style={{ background: (msg.user?.color || '#8B5CF6') + '22', color: msg.user?.color || '#8B5CF6' }}>
             {(msg.user?.name || '?')[0].toUpperCase()}
@@ -120,14 +120,14 @@ export function ActivityToastListener() {
       };
       const bg = colorMap[n.type] || 'rgba(255,255,255,0.06)';
       toast.custom((toastId) => (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] shadow-2xl"
-          style={{ background: '#0F1117', minWidth: 320, maxWidth: 400 }}>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--wl-border)] shadow-2xl"
+          style={{ background: 'var(--wl-surface)', minWidth: 320, maxWidth: 400 }}>
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0" style={{ background: bg }}>
             {emoji}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-white/90 truncate">{n.message}</p>
-            <p className="text-[11px] text-white/40 mt-0.5">Ahora</p>
+            <p className="text-[11px] text-[var(--wl-text-muted)] mt-0.5">Ahora</p>
           </div>
           <button onClick={() => toast.dismiss(toastId)}
             className="text-white/20 hover:text-white/50 transition-colors text-lg leading-none">×</button>
@@ -140,8 +140,8 @@ export function ActivityToastListener() {
       if (!payload?.file) return;
       const f = payload.file;
       toast.custom((toastId) => (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] shadow-2xl"
-          style={{ background: '#0F1117', minWidth: 320, maxWidth: 400 }}>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--wl-border)] shadow-2xl"
+          style={{ background: 'var(--wl-surface)', minWidth: 320, maxWidth: 400 }}>
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0"
             style={{ background: 'rgba(249,115,22,0.12)' }}>📎</div>
           <div className="flex-1 min-w-0">
@@ -159,8 +159,8 @@ export function ActivityToastListener() {
       if (!payload?.meeting) return;
       const m = payload.meeting;
       toast.custom((toastId) => (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] shadow-2xl"
-          style={{ background: '#0F1117', minWidth: 320, maxWidth: 400 }}>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--wl-border)] shadow-2xl"
+          style={{ background: 'var(--wl-surface)', minWidth: 320, maxWidth: 400 }}>
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0"
             style={{ background: 'rgba(56,189,248,0.12)' }}>📅</div>
           <div className="flex-1 min-w-0">

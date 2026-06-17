@@ -33,7 +33,7 @@ function MemberCard({
       className={`group relative rounded-3xl overflow-hidden bg-surface-elevated border transition-all duration-500 cursor-pointer ${
         isActive
           ? 'border-brand/50 shadow-2xl shadow-brand/15 scale-[1.02]'
-          : 'border-white/[0.06] hover:border-white/[0.12] hover:scale-[1.01]'
+          : 'border-[var(--wl-border)] hover:border-white/[0.12] hover:scale-[1.01]'
       }`}
     >
       {/* Image */}

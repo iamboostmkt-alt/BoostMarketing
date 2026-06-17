@@ -18,7 +18,7 @@ export default function WaitingAssignmentPage() {
       </div>
 
       <div className="flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2 text-sm text-white/40">
+        <div className="flex items-center gap-2 text-sm text-[var(--wl-text-muted)]">
           <UserCheck className="w-4 h-4" />
           <span>Esperando asignación de Project Manager</span>
         </div>

@@ -260,7 +260,7 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
             <div
               className="rounded-2xl p-4 shadow-2xl"
               style={{
-                background: '#141824',
+                background: 'var(--wl-elevated)',
                 border: '1px solid rgba(139,92,246,0.25)',
                 boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 20px 40px rgba(0,0,0,0.6)',
               }}
@@ -272,7 +272,7 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
                 </span>
                 <button
                   onClick={handleComplete}
-                  className="text-white/30 hover:text-white/60 transition-colors p-0.5"
+                  className="text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors p-0.5"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -341,7 +341,7 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
       <div
         className="w-full max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden"
         style={{
-          background: '#0F1117',
+          background: 'var(--wl-surface)',
           border: '1px solid rgba(255,255,255,0.07)',
           boxShadow: '0 0 0 1px rgba(255,255,255,0.03), 0 30px 80px rgba(0,0,0,0.7)',
         }}
@@ -364,10 +364,10 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
               </div>
               <div>
                 <p className="text-[15px] font-semibold text-white">¡Ya estás listo!</p>
-                <p className="text-[11px] text-white/40">Completa estos pasos para empezar</p>
+                <p className="text-[11px] text-[var(--wl-text-muted)]">Completa estos pasos para empezar</p>
               </div>
             </div>
-            <button onClick={handleComplete} className="text-white/30 hover:text-white/60 transition-colors mt-0.5">
+            <button onClick={handleComplete} className="text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors mt-0.5">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -375,7 +375,7 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
           {/* Progress bar */}
           <div className="mt-4">
             <div className="flex justify-between items-center mb-1.5">
-              <span className="text-[11px] text-white/40">Progreso</span>
+              <span className="text-[11px] text-[var(--wl-text-muted)]">Progreso</span>
               <span className="text-[11px] font-medium text-violet-400">
                 {completedCount}/{items.length}
               </span>
@@ -425,7 +425,7 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-white/[0.05]">
+        <div className="px-5 py-4 border-t border-[var(--wl-border-subtle)]">
           <button
             onClick={handleComplete}
             className="w-full py-3 rounded-xl text-[13px] font-medium text-white transition-all active:scale-[0.98]"

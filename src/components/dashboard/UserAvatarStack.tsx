@@ -43,7 +43,7 @@ export default function UserAvatarStack({ users, max = 4, size = 'xs' }: UserAva
       ))}
       {overflow > 0 && (
         <div
-          className={`${dim} ${textSize} font-semibold rounded-full ring-1 ring-[#15151c] bg-white/[0.08] text-white/60 flex items-center justify-center shrink-0`}
+          className={`${dim} ${textSize} font-semibold rounded-full ring-1 ring-[#15151c] bg-white/[0.08] text-[var(--wl-text-secondary)] flex items-center justify-center shrink-0`}
         >
           +{overflow}
         </div>

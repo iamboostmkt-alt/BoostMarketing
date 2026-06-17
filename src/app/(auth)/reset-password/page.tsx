@@ -96,7 +96,7 @@ function ResetPasswordForm() {
   return (
     <>
       <h1 className="text-2xl font-bold text-white mb-1">Nueva contraseña</h1>
-      <p className="text-sm text-white/40 mb-6">
+      <p className="text-sm text-[var(--wl-text-muted)] mb-6">
         Elige una contraseña segura para tu cuenta.
       </p>
 
@@ -113,7 +113,7 @@ function ResetPasswordForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-sm font-medium text-white/60">
+          <Label htmlFor="password" className="text-sm font-medium text-[var(--wl-text-secondary)]">
             Nueva contraseña
           </Label>
           <div className="relative">
@@ -127,12 +127,12 @@ function ResetPasswordForm() {
               required
               disabled={loading}
               autoComplete="new-password"
-              className="pl-10 pr-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
+              className="pl-10 pr-10 bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-[var(--wl-text-secondary)] transition-colors"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -140,7 +140,7 @@ function ResetPasswordForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirm" className="text-sm font-medium text-white/60">
+          <Label htmlFor="confirm" className="text-sm font-medium text-[var(--wl-text-secondary)]">
             Confirmar contraseña
           </Label>
           <div className="relative">
@@ -154,7 +154,7 @@ function ResetPasswordForm() {
               required
               disabled={loading}
               autoComplete="new-password"
-              className="pl-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
+              className="pl-10 bg-white/[0.04] border-[var(--wl-border)] text-white placeholder:text-white/25 focus:border-brand focus:ring-brand/20"
             />
           </div>
         </div>
@@ -176,7 +176,7 @@ export default function ResetPasswordPage() {
     <div className="w-full max-w-md mx-auto px-4">
       <Link
         href="/login"
-        className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors mb-8"
+        className="inline-flex items-center gap-2 text-sm text-[var(--wl-text-muted)] hover:text-[var(--wl-text-secondary)] transition-colors mb-8"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver al inicio de sesión
@@ -187,7 +187,7 @@ export default function ResetPasswordPage() {
         </div>
 
       <div className="glass-card rounded-xl p-6 md:p-8">
-        <Suspense fallback={<div className="text-white/40 text-sm">Cargando…</div>}>
+        <Suspense fallback={<div className="text-[var(--wl-text-muted)] text-sm">Cargando…</div>}>
           <ResetPasswordForm />
         </Suspense>
       </div>
