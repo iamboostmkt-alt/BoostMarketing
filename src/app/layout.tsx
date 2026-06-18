@@ -18,11 +18,19 @@ const mono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Weeklink — CRM para Agencias",
-  description:
-    "CRM, tareas, chat y portal cliente para agencias de marketing modernas.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { headers } = await import('next/headers');
+  const host = headers().get('host') || '';
+  const isBoost = host.includes('boostmarketing') || host.includes('boost-marketing');
+  return {
+    title: isBoost
+      ? 'BoostMarketing — Agencia de Marketing Digital'
+      : 'Weeklink — Gestión para Agencias',
+    description: isBoost
+      ? 'Estrategia, contenido y resultados para tu marca.'
+      : 'Tareas, chat, proyectos y portal cliente para agencias de marketing.',
+  };
+}
 
 async function getSettings() {
   try {
