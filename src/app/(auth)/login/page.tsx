@@ -142,7 +142,7 @@ export default function LoginPage() {
         <div className="w-full max-w-[420px]">
           {/* Back link */}
           <Link
-            href="/weeklink"
+            href={brand.isBoost ? "/" : "/weeklink"}
             className="inline-flex items-center gap-1.5 text-[13px] text-[#6B7280] hover:text-[#111827] transition-colors mb-8"
           >
             <ArrowLeft className="w-3.5 h-3.5" />

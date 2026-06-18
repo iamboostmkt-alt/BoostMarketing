@@ -2,23 +2,32 @@
 import { useState, useEffect } from 'react';
 
 interface HostBranding {
-  isBoost: boolean;    // true = boostmarketingboost.com
-  isWeeklink: boolean; // true = weeklink.com.mx
+  isBoost: boolean;
+  isWeeklink: boolean;
   name: string;
   color: string;
   logo: string | null;
-  loginBg: string;
+  backHref: string;
 }
 
 export function useHostBranding(): HostBranding {
   const [host, setHost] = useState('');
+  const [boostLogo, setBoostLogo] = useState<string | null>(null);
 
   useEffect(() => {
     setHost(window.location.hostname);
   }, []);
 
+  // Intentar cargar logo del CMS si es Boost
+  useEffect(() => {
+    if (!host.includes('boostmarketing') && !host.includes('boost-marketing')) return;
+    fetch('/api/branding/public')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.logoUrl) setBoostLogo(d.logoUrl); })
+      .catch(() => {});
+  }, [host]);
+
   const isBoost = host.includes('boostmarketing') || host.includes('boost-marketing');
-  const isWeeklink = host.includes('weeklink') || host === 'localhost';
 
   if (isBoost) {
     return {
@@ -26,18 +35,17 @@ export function useHostBranding(): HostBranding {
       isWeeklink: false,
       name: 'BoostMarketing',
       color: '#7C3AED',
-      logo: null, // puede poner URL del logo de boost aquí
-      loginBg: 'linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%)',
+      logo: boostLogo,
+      backHref: '/',
     };
   }
 
-  // Default: Weeklink
   return {
     isBoost: false,
     isWeeklink: true,
     name: 'Weeklink',
     color: '#7C3AED',
     logo: null,
-    loginBg: 'linear-gradient(135deg, #07070A 0%, #160528 50%, #07070A 100%)',
+    backHref: '/weeklink',
   };
 }
