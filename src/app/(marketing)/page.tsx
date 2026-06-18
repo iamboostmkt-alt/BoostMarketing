@@ -1,4 +1,6 @@
 import { db } from '@/lib/db'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import Hero from '@/components/landing/Hero'
 import Services from '@/components/landing/Services'
 import Workflow from '@/components/landing/Workflow'
@@ -33,6 +35,13 @@ async function getCMSData() {
 }
 
 export default async function LandingPage() {
+  // Si el dominio es weeklink.com.mx → mostrar landing de Weeklink
+  const headersList = headers()
+  const host = headersList.get('host') || ''
+  if (host.includes('weeklink')) {
+    redirect('/weeklink')
+  }
+
   const { settings, portfolio, testimonials, team } = await getCMSData()
 
   return (
