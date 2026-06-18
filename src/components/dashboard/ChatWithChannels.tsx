@@ -3614,13 +3614,10 @@ export default function ChatWithChannels() {
 
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
+        <div className="fixed inset-0 z-50 flex md:hidden" style={{ top: 'calc(56px + env(safe-area-inset-top, 0px))' }}>
           <div className="absolute inset-0 bg-black/70" onClick={() => setMobileOpen(false)} />
-          <div className="relative z-10 h-full flex flex-col" style={{ width: '244px', maxWidth: '85vw' }}>
-            <button className="absolute top-3 right-[-36px] text-white/60 hover:text-white z-10 bg-black/60 rounded-full p-1.5" onClick={() => setMobileOpen(false)}>
-              <X className="w-4 h-4" />
-            </button>
-            <div className="h-full overflow-y-auto">
+          <div className="relative z-10 flex flex-col" style={{ width: '244px', maxWidth: '85vw', height: '100%' }}>
+            <div className="h-full overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
               {channelList}
             </div>
           </div>
