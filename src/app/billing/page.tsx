@@ -634,12 +634,19 @@ export default function BillingPage() {
               </div>
 
               {/* Total */}
-              <div className="flex items-baseline justify-between border-t border-[rgba(17,24,39,0.06)] pt-4 mb-5">
+              <div className="flex items-start justify-between border-t border-[rgba(17,24,39,0.06)] pt-4 mb-5">
                 <span className="text-[13px] text-[#6B7280]">Total</span>
                 <div className="text-right">
-                  <p className="text-[24px] font-bold text-[#111827]">{fmt(total)} <span className="text-[12px] font-normal text-[#9CA3AF]">MXN / mes</span></p>
-                  {selCycle === 'annual' && <p className="text-[11px] text-[#9CA3AF]">{fmt(totalAnual)} MXN / año · <span className="text-[#16A34A] font-medium">Ahorra {fmt(savings)}</span></p>}
-                  <p className="text-[10px] text-[#9CA3AF] mt-0.5">IVA no incluido</p>
+                  {selCycle === 'annual' ? (
+                    <>
+                      <p className="text-[24px] font-bold text-[#111827]">{fmt(totalAnual)} <span className="text-[12px] font-normal text-[#9CA3AF]">MXN / año</span></p>
+                      <p className="text-[12px] text-[#6B7280] mt-0.5">{fmt(total)} MXN / mes <span className="text-[#9CA3AF]">· con descuento 20%</span></p>
+                      <p className="text-[11px] text-[#16A34A] font-medium mt-0.5">Ahorra {fmt(savings)} vs pago mensual</p>
+                    </>
+                  ) : (
+                    <p className="text-[24px] font-bold text-[#111827]">{fmt(total)} <span className="text-[12px] font-normal text-[#9CA3AF]">MXN / mes</span></p>
+                  )}
+                  <p className="text-[10px] text-[#9CA3AF] mt-1">IVA no incluido</p>
                 </div>
               </div>
 
