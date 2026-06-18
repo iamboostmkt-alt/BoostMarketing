@@ -83,7 +83,7 @@ export default async function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
-      <body className={`${inter.variable} ${mono.variable} antialiased bg-background text-foreground`}>
+      <body className={`${inter.variable} ${mono.variable} antialiased text-foreground`} style={{ background: "#080808" }}>
         <ThemeProvider>
         <SplashScreen />
         {/* Inject branding into localStorage before React hydrates — eliminates logo flash */}

@@ -18,14 +18,25 @@ export default async function BillingLayout({ children }: { children: React.Reac
         (function(){
           var el = document.documentElement;
           var bod = document.body;
+          // Poner fondo claro inmediatamente
           el.style.background = '#F6F7FB';
           bod.style.background = '#F6F7FB';
-          // Observer: cuando .auth-bg se desmonte, restaurar oscuro
-          var obs = new MutationObserver(function() {
-            if (!document.querySelector('.auth-bg')) {
-              el.style.background = '#080808';
-              bod.style.background = '';
-              obs.disconnect();
+          // Cuando se desmonte .auth-bg, restaurar fondo oscuro INMEDIATAMENTE
+          var obs = new MutationObserver(function(mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+              if (!document.querySelector('.auth-bg')) {
+                el.style.background = '#080808';
+                bod.style.background = '#080808';
+                // Quitar después de la transición
+                setTimeout(function() {
+                  if (!document.querySelector('.auth-bg')) {
+                    el.style.removeProperty('background');
+                    bod.style.removeProperty('background');
+                  }
+                }, 500);
+                obs.disconnect();
+                break;
+              }
             }
           });
           obs.observe(document.body, { childList: true, subtree: true });
