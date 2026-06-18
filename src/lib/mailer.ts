@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 export async function sendMail(to: string, subject: string, html: string): Promise<void> {
   try {
     await transporter.sendMail({
-      from: `"${process.env.BRAND_NAME || 'BoostMarketing'}" <${process.env.SMTP_USER}>`,
+      from: `"${process.env.BRAND_NAME || 'Weeklink'}" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,
@@ -46,7 +46,7 @@ function statusBadge(status: string, color: string) {
   return `<span style="display:inline-block;background:${color}22;color:${color};padding:3px 12px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid ${color}44;">${status}</span>`;
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://boostmarketingboost.com";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "https://weeklink.com.mx";
 
 // ─── TEMPLATES ──────────────────────────────────────────────
 
@@ -166,7 +166,7 @@ export function templateRecordatorio(title: string, dueDate: string, horasRestan
 
 export function templateBienvenida(name: string, b?: Branding) {
   const color = b?.brandColor || '#7c3aed';
-  const brandName = b?.brandName || 'BoostMarketing';
+  const brandName = b?.brandName || 'Weeklink';
   const content = `
     <h2 style="color:#18181b;margin:0 0 8px;font-size:22px;">👋 Bienvenido, ${name}!</h2>
     <p style="color:#6b7280;margin:0 0 24px;">Tu cuenta en ${brandName} ha sido creada exitosamente.</p>
@@ -436,7 +436,7 @@ export function templateNuevoClienteAsignado(pmName: string, clientName: string,
 export function templateBienvenidaCliente(clientName: string, pmName: string, pmEmail: string, portalUrl: string, _tempPassword?: string, b?: Branding) {
   // _tempPassword ignorado — flujo nuevo usa link mágico de activación
   const color = b?.brandColor || '#7c3aed';
-  const brandName = b?.brandName || 'BoostMarketing';
+  const brandName = b?.brandName || 'Weeklink';
   const content = `
     <h2 style="color:#18181b;margin:0 0 8px;font-size:22px;">👋 Bienvenido/a, ${clientName}!</h2>
     <p style="color:#6b7280;margin:0 0 20px;">

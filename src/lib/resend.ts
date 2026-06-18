@@ -14,7 +14,7 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions): Promis
     return true;
   } catch {
     const apiKey = process.env.RESEND_API_KEY;
-    const from = process.env.EMAIL_FROM ?? "BoostMarketing <onboarding@resend.dev>";
+    const from = process.env.EMAIL_FROM ?? "Weeklink <onboarding@resend.dev>";
 
     if (!apiKey) {
       if (isDev) {

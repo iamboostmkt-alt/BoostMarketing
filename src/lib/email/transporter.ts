@@ -37,11 +37,12 @@ function resolvePassword(): string | null {
   );
 }
 
-export function resolveFrom(): string {
+export function resolveFrom(brandName?: string): string {
   const branded = process.env.EMAIL_FROM;
   if (branded) return branded;
   const user = resolveUser();
-  return user ? `Boost Marketing <${user}>` : 'Boost Marketing <no-reply@boostmarketing.app>';
+  const name = brandName || process.env.BRAND_NAME || 'Weeklink';
+  return user ? `${name} <${user}>` : `${name} <no-reply@weeklink.com.mx>`;
 }
 
 let cached: Transporter | null = null;

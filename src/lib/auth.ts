@@ -56,7 +56,7 @@ export const authOptions: NextAuthOptions = {
       : []),
 
     EmailProvider({
-      from: process.env.EMAIL_FROM ?? "BoostMarketing <noreply@localhost>",
+      from: process.env.EMAIL_FROM ?? "Weeklink <noreply@weeklink.com.mx>",
       maxAge: 24 * 60 * 60,
       normalizeIdentifier(identifier: string) {
         return identifier.trim().toLowerCase();
