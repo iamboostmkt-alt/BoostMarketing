@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Loader2, Mail, Lock, Eye, EyeOff, ArrowLeft, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { useHostBranding } from '@/hooks/useHostBranding';
 
 function WeeklinkMark({ size = 32 }: { size?: number }) {
   return (
@@ -17,6 +18,7 @@ function WeeklinkMark({ size = 32 }: { size?: number }) {
 
 export default function LoginPage() {
   const router = useRouter();
+  const brand = useHostBranding();
   const [email, setEmail]             = useState('');
   const [password, setPassword]       = useState('');
   const [showPass, setShowPass]       = useState(false);
@@ -102,7 +104,7 @@ export default function LoginPage() {
       >
         <div className="flex items-center gap-3">
           <WeeklinkMark size={36} />
-          <span className="text-[20px] font-bold text-[var(--wl-text-primary)] tracking-tight">Weeklink</span>
+          <span className="text-[20px] font-bold text-[var(--wl-text-primary)] tracking-tight">{brand.name}</span>
         </div>
         <div>
           <h2 className="text-[32px] font-bold text-[var(--wl-text-primary)] leading-tight mb-4">
@@ -126,7 +128,7 @@ export default function LoginPage() {
             ))}
           </div>
         </div>
-        <p className="text-[12px] text-violet-300/60">© 2026 Weeklink · Hecho en México 💜</p>
+        <p className="text-[12px] text-violet-300/60">© 2026 {brand.name} · Hecho en México 💜</p>
       </div>
 
       {/* Panel derecho — formulario */}
@@ -134,7 +136,7 @@ export default function LoginPage() {
         {/* Mobile logo */}
         <div className="flex items-center gap-2.5 mb-8 lg:hidden">
           <WeeklinkMark size={32} />
-          <span className="text-[18px] font-bold text-[#111827]">Weeklink</span>
+          <span className="text-[18px] font-bold text-[#111827]">{brand.name}</span>
         </div>
 
         <div className="w-full max-w-[420px]">
@@ -144,7 +146,7 @@ export default function LoginPage() {
             className="inline-flex items-center gap-1.5 text-[13px] text-[#6B7280] hover:text-[#111827] transition-colors mb-8"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Volver a Weeklink
+            Volver a {brand.name}
           </Link>
 
           <h1 className="text-[28px] font-bold text-[#111827] mb-1">Bienvenido de vuelta</h1>
