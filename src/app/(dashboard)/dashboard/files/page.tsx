@@ -7,7 +7,7 @@ interface FileItem {
   id: string; fileName: string; fileUrl: string; fileType: string;
   fileSize?: number; createdAt: string; isInternal: boolean;
   task: { id: string; title: string; client?: { id: string; name: string } | null; project?: { id: string; name: string } | null };
-  uploader?: { id: string; name: string; image: string | null } | null;
+  user?: { id: string; name: string; image: string | null } | null;
 }
 
 type FilterType = 'all' | 'imagen' | 'video' | 'pdf' | 'archivo';
@@ -147,14 +147,14 @@ export default function FilesPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
-                    {f.uploader && (
+                    {f.user && (
                       <Avatar className="h-4 w-4 rounded-full overflow-hidden">
-                        <AvatarImage src={f.uploader.image || undefined} />
-                        <AvatarFallback className="text-[8px]">{ini(f.uploader.name)}</AvatarFallback>
+                        <AvatarImage src={f.user.image || undefined} />
+                        <AvatarFallback className="text-[8px]">{ini(f.user.name)}</AvatarFallback>
                       </Avatar>
                     )}
                     <span className="text-[10px]" style={{ color: 'var(--wl-text-placeholder)' }}>
-                      {f.uploader?.name?.split(' ')[0]} · {new Date(f.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                      {f.user?.name?.split(' ')[0]} · {new Date(f.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                     </span>
                     {f.isInternal && (
                       <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444' }}>Interno</span>
