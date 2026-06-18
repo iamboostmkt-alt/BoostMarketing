@@ -522,6 +522,15 @@ export async function PUT(req: NextRequest) {
   });
   if (!existing) return NextResponse.json({ error: "Tarea no encontrada" }, { status: 404 });
 
+  // IDEMPOTENTE: si el único cambio es el status y ya es el mismo, devolver sin procesar
+  const { status: newStatus } = body as { status?: string };
+  if (newStatus && Object.keys(body as object).length <= 3) {
+    const normalized = normalizeTaskStatus(newStatus);
+    if (existing.status === normalized) {
+      return NextResponse.json({ task: existing });
+    }
+  }
+
   // ROL-03: control de acceso al editar tareas
   const role = result.ctx.role as string;
 

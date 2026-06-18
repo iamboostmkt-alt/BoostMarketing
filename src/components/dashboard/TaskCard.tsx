@@ -112,6 +112,7 @@ export default function TaskCard({
   const [subtasksOpen,   setSubtasksOpen]   = React.useState(false);
   const [subtasks,       setSubtasks]       = React.useState<Task[]>([]);
   const [loadingSubtasks,setLoadingSubtasks]= React.useState(false);
+  const [approvingId, setApprovingId] = React.useState<string | null>(null);
   const [showStatusPicker, setShowStatusPicker] = React.useState(false);
 
   // Status options para el picker mobile
@@ -285,15 +286,29 @@ export default function TaskCard({
           {task.status === "internal_review" && isManager && onStatusChange && (
             <>
               <button
-                onClick={(e) => { e.stopPropagation(); void onStatusChange(task.id, "completed"); }}
-                className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-[#22C55E] hover:bg-[#22C55E]/10 transition-colors"
+                disabled={approvingId === task.id}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (approvingId === task.id) return;
+                  setApprovingId(task.id);
+                  try { await onStatusChange(task.id, "completed"); }
+                  finally { setApprovingId(null); }
+                }}
+                className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-[#22C55E] hover:bg-[#22C55E]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CheckCircle2 className="h-3 w-3" />
-                Aprobar
+                {approvingId === task.id ? "..." : "Aprobar"}
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); void onStatusChange(task.id, "changes_requested"); }}
-                className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-[#EAB308] hover:bg-[#EAB308]/10 transition-colors"
+                disabled={approvingId === task.id}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (approvingId === task.id) return;
+                  setApprovingId(task.id);
+                  try { await onStatusChange(task.id, "changes_requested"); }
+                  finally { setApprovingId(null); }
+                }}
+                className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-[#EAB308] hover:bg-[#EAB308]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RotateCcw className="h-3 w-3" />
                 Cambios
