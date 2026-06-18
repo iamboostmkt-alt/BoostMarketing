@@ -50,9 +50,12 @@ export default async function RootLayout({
     var cl = document.documentElement.classList;
     cl.remove('dark','light');
     cl.add(t);
-    // El fondo del html lo controla CSS :has(.auth-bg)
-    // Solo establecer el default oscuro aquí
-    document.documentElement.style.background = '#080808';
+    // Solo poner fondo oscuro si NO estamos en una página clara (billing/login)
+    var path = window.location.pathname;
+    var isLight = path.startsWith('/billing') || path.startsWith('/login') ||
+                  path.startsWith('/register') || path.startsWith('/weeklink') ||
+                  path.startsWith('/p/');
+    document.documentElement.style.background = isLight ? '#F6F7FB' : '#080808';
   } catch(e) {
     document.documentElement.classList.add('dark');
     document.documentElement.style.background = '#080808';
