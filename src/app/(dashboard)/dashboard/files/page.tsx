@@ -1,154 +1,185 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Paperclip, Image, Video, FileText, Archive, Search, Download, ExternalLink } from 'lucide-react';
+import { FileText, Image, Video, File, Download, ExternalLink, Search, Loader2, FolderOpen } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-interface FileMsg {
-  id: string;
-  message: string;
-  fileUrl: string;
-  fileName: string;
-  fileType: string;
-  createdAt: string;
-  room: string;
-  user: { name: string; email: string; color: string; image?: string };
+interface FileItem {
+  id: string; fileName: string; fileUrl: string; fileType: string;
+  fileSize?: number; createdAt: string; isInternal: boolean;
+  task: { id: string; title: string; client?: { id: string; name: string } | null; project?: { id: string; name: string } | null };
+  uploader?: { id: string; name: string; image: string | null } | null;
 }
 
-function getFileIcon(type: string) {
-  if (type?.startsWith('image')) return Image;
-  if (type?.startsWith('video')) return Video;
-  if (type === 'application/pdf') return FileText;
-  if (type?.includes('zip') || type?.includes('rar')) return Archive;
-  return Paperclip;
+type FilterType = 'all' | 'imagen' | 'video' | 'pdf' | 'archivo';
+
+function fileIcon(type: string) {
+  if (type?.startsWith('image/')) return <Image className="w-5 h-5 text-blue-400" />;
+  if (type?.startsWith('video/')) return <Video className="w-5 h-5 text-purple-400" />;
+  if (type === 'application/pdf') return <FileText className="w-5 h-5 text-red-400" />;
+  return <File className="w-5 h-5 text-white/40" />;
 }
 
-function getFileCategory(type: string) {
-  if (type?.startsWith('image')) return 'imagen';
-  if (type?.startsWith('video')) return 'video';
+function fileTypeBadge(type: string): FilterType {
+  if (type?.startsWith('image/')) return 'imagen';
+  if (type?.startsWith('video/')) return 'video';
   if (type === 'application/pdf') return 'pdf';
   return 'archivo';
 }
 
+function fmtSize(bytes?: number) {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function ini(name: string) {
+  return (name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+}
+
 export default function FilesPage() {
-  const [files, setFiles] = useState<FileMsg[]>([]);
+  const [files,   setFiles]   = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all'|'imagen'|'video'|'pdf'|'archivo'>('all');
+  const [search,  setSearch]  = useState('');
+  const [filter,  setFilter]  = useState<FilterType>('all');
 
   useEffect(() => {
-    // Obtener mensajes con archivos de todos los rooms
-    fetch('/api/chat?room=TEAM&limit=200')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        const msgs = d?.messages || [];
-        const withFiles = msgs.filter((m: any) => m.fileUrl);
-        setFiles(withFiles);
-      })
-      .catch(() => {})
+    setLoading(true);
+    const params = new URLSearchParams({ limit: '200' });
+    if (filter !== 'all') params.set('type', filter);
+    if (search) params.set('search', search);
+
+    fetch(`/api/files?${params}`)
+      .then(r => r.ok ? r.json() : { files: [] })
+      .then(d => setFiles(d.files || []))
+      .catch(() => setFiles([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [filter, search]);
 
-  const filtered = files
-    .filter(f => filter === 'all' || getFileCategory(f.fileType) === filter)
-    .filter(f => !search || (f.fileName || f.message || '').toLowerCase().includes(search.toLowerCase()));
-
-  const images = filtered.filter(f => f.fileType?.startsWith('image'));
-  const others = filtered.filter(f => !f.fileType?.startsWith('image'));
+  const FILTERS: { id: FilterType; label: string; icon: React.ReactNode }[] = [
+    { id: 'all',    label: 'Todos',    icon: <FolderOpen className="w-3.5 h-3.5" /> },
+    { id: 'imagen', label: 'Imágenes', icon: <Image className="w-3.5 h-3.5" /> },
+    { id: 'video',  label: 'Videos',   icon: <Video className="w-3.5 h-3.5" /> },
+    { id: 'pdf',    label: 'PDFs',     icon: <FileText className="w-3.5 h-3.5" /> },
+    { id: 'archivo',label: 'Archivos', icon: <File className="w-3.5 h-3.5" /> },
+  ];
 
   return (
-    <div className="min-h-full p-6 md:p-8">
+    <div className="flex flex-col h-full" style={{ background: 'var(--wl-bg)' }}>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-[22px] font-semibold tracking-tight">Archivos</h1>
-        <p className="text-[13px] text-white/40 mt-0.5">{files.length} archivos compartidos en el workspace</p>
-      </div>
+      <div className="px-4 sm:px-6 pt-5 pb-4 shrink-0">
+        <h1 className="text-[22px] font-bold mb-0.5" style={{ color: 'var(--wl-text-primary)' }}>Archivos</h1>
+        <p className="text-[13px]" style={{ color: 'var(--wl-text-muted)' }}>
+          {loading ? 'Cargando…' : `${files.length} archivo${files.length !== 1 ? 's' : ''} en el workspace`}
+        </p>
 
-      {/* Búsqueda + filtros */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" strokeWidth={1.75} />
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar archivos..."
-            className="w-full rounded-xl border border-white/[0.06] bg-white/[0.03] pl-9 pr-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40" />
+        {/* Buscador */}
+        <div className="relative mt-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--wl-text-placeholder)' }} />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar archivo..."
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-[13px] outline-none"
+            style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', color: 'var(--wl-text-primary)' }}
+          />
         </div>
-        <div className="flex items-center gap-1.5">
-          {(['all','imagen','video','pdf','archivo'] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors capitalize ${
-                filter === f ? 'bg-primary/15 text-primary' : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
-              }`}>
-              {f === 'all' ? 'Todos' : f}
+
+        {/* Filtros */}
+        <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          {FILTERS.map(f => (
+            <button key={f.id} onClick={() => setFilter(f.id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium shrink-0 transition-all"
+              style={{
+                background: filter === f.id ? '#7C3AED' : 'var(--wl-surface)',
+                color: filter === f.id ? '#fff' : 'var(--wl-text-muted)',
+                border: `1px solid ${filter === f.id ? '#7C3AED' : 'var(--wl-border)'}`,
+              }}>
+              {f.icon} {f.label}
             </button>
           ))}
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-primary" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Paperclip className="h-10 w-10 text-white/10" strokeWidth={1.5} />
-          <p className="text-[13px] text-white/30">No hay archivos compartidos</p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {/* Grid de imágenes */}
-          {images.length > 0 && (
-            <div>
-              <h2 className="text-[11px] font-medium uppercase tracking-wide text-white/30 mb-3">
-                Imágenes ({images.length})
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {images.map(f => (
-                  <a key={f.id} href={f.fileUrl} target="_blank" rel="noopener noreferrer"
-                    className="group relative aspect-square rounded-xl overflow-hidden border border-white/[0.06] bg-white/[0.03]">
-                    <img src={f.fileUrl} alt={f.fileName} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <ExternalLink className="h-5 w-5 text-white" strokeWidth={1.75} />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-[10px] text-white/70 truncate">{f.fileName || 'imagen'}</p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+      {/* Lista */}
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 animate-spin text-[#7C3AED]" />
+          </div>
+        ) : files.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <FolderOpen className="w-12 h-12 mb-3" style={{ color: 'var(--wl-text-placeholder)' }} />
+            <p className="text-[15px] font-medium" style={{ color: 'var(--wl-text-primary)' }}>Sin archivos</p>
+            <p className="text-[13px] mt-1" style={{ color: 'var(--wl-text-muted)' }}>
+              {search ? 'No se encontraron archivos con ese nombre' : 'Los archivos subidos a tareas aparecerán aquí'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {files.map(f => (
+              <div key={f.id} className="flex items-center gap-3 p-3 rounded-[14px] group transition-all"
+                style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)' }}>
 
-          {/* Lista de otros archivos */}
-          {others.length > 0 && (
-            <div>
-              <h2 className="text-[11px] font-medium uppercase tracking-wide text-white/30 mb-3">
-                Otros archivos ({others.length})
-              </h2>
-              <div className="flex flex-col gap-2">
-                {others.map(f => {
-                  const Icon = getFileIcon(f.fileType);
-                  return (
-                    <div key={f.id}
-                      className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 hover:bg-white/[0.04] transition-colors">
-                      <div className="h-9 w-9 shrink-0 flex items-center justify-center rounded-lg bg-primary/10">
-                        <Icon className="h-4 w-4 text-primary" strokeWidth={1.75} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] text-white/80 truncate">{f.fileName || f.message}</p>
-                        <p className="text-[11px] text-white/30">
-                          {f.user?.name || f.user?.email} · {new Date(f.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </p>
-                      </div>
-                      <a href={f.fileUrl} target="_blank" rel="noopener noreferrer"
-                        className="shrink-0 flex h-8 w-8 items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/[0.06] transition-colors">
-                        <ExternalLink className="h-4 w-4" strokeWidth={1.75} />
-                      </a>
-                    </div>
-                  );
-                })}
+                {/* Ícono tipo */}
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: 'var(--wl-elevated)' }}>
+                  {fileIcon(f.fileType)}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>
+                    {f.fileName}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    {f.task?.client && (
+                      <span className="text-[11px]" style={{ color: '#8B5CF6' }}>{f.task.client.name}</span>
+                    )}
+                    {f.task?.client && f.task?.title && (
+                      <span className="text-[11px]" style={{ color: 'var(--wl-text-placeholder)' }}>·</span>
+                    )}
+                    {f.task?.title && (
+                      <span className="text-[11px] truncate max-w-[140px]" style={{ color: 'var(--wl-text-muted)' }}>{f.task.title}</span>
+                    )}
+                    {f.fileSize && (
+                      <span className="text-[10px]" style={{ color: 'var(--wl-text-placeholder)' }}>{fmtSize(f.fileSize)}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {f.uploader && (
+                      <Avatar className="h-4 w-4 rounded-full overflow-hidden">
+                        <AvatarImage src={f.uploader.image || undefined} />
+                        <AvatarFallback className="text-[8px]">{ini(f.uploader.name)}</AvatarFallback>
+                      </Avatar>
+                    )}
+                    <span className="text-[10px]" style={{ color: 'var(--wl-text-placeholder)' }}>
+                      {f.uploader?.name?.split(' ')[0]} · {new Date(f.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                    </span>
+                    {f.isInternal && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444' }}>Interno</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Acciones */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <a href={f.fileUrl} target="_blank" rel="noopener noreferrer"
+                    className="p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                    style={{ color: 'var(--wl-text-muted)' }} title="Abrir">
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                  <a href={f.fileUrl} download={f.fileName}
+                    className="p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                    style={{ color: 'var(--wl-text-muted)' }} title="Descargar">
+                    <Download className="w-4 h-4" />
+                  </a>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

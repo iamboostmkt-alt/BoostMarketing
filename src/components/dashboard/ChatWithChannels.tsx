@@ -186,7 +186,7 @@ function ChannelList({
 
   return (
     <div className="flex h-full shrink-0 flex-col border-r border-white/[0.05] bg-card" style={{ width: "clamp(180px, 22vw, 244px)" }}>
-      <div className="flex-1 overflow-y-auto scrollbar-thin px-2 pb-4">
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-2 pb-4" style={{ overscrollBehavior: "contain" }}>
         {/* Internal channels */}
         <div className="flex items-center justify-between px-2 pb-1 pt-4">
           <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/40">Canales</span>

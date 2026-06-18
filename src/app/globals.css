@@ -779,3 +779,18 @@ html:has(.auth-bg) body {
     height: calc(56px + env(safe-area-inset-top, 0px));
   }
 }
+
+/* ── Chat panel: compensar TopNav fixed ─────────────────── */
+/* El panel de canales empieza desde el top del contenedor
+   que ya tiene el spacer, así que no necesita padding extra.
+   El problema es el scroll que va hasta top=0 */
+.wl-channel-panel {
+  scroll-padding-top: 0;
+}
+/* Fijar el header del canal para que no se mueva al scrollear */
+.wl-chat-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
