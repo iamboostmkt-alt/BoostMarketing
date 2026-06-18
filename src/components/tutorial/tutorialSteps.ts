@@ -54,10 +54,10 @@ export const ADMIN_STEPS: TutorialStep[] = [
     placement: 'right',
   },
   {
-    id: 'billing',
-    target: 'nav-billing',
-    title: 'Facturación',
-    description: 'Gestiona tu plan, actualiza o cancela tu suscripción. Todo con Stripe.',
+    id: 'settings',
+    target: 'nav-settings',
+    title: 'Configuración',
+    description: 'Personaliza tu workspace, gestiona tu suscripción y configura el branding de tu agencia.',
     placement: 'right',
   },
 ];
@@ -67,7 +67,7 @@ export const ADMIN_CHECKLIST: ChecklistItem[] = [
   { id: 'invite_team',    label: 'Invitar a tu equipo',       description: 'Agrega miembros y asigna roles.',           icon: '👥', path: '/dashboard/team' },
   { id: 'create_task',    label: 'Crear una tarea',           description: 'Asigna trabajo a tu equipo.',              icon: '✅', path: '/dashboard/tasks' },
   { id: 'send_portal',    label: 'Activar portal de cliente', description: 'Invita a un cliente a ver su portal.',     icon: '🔗', path: '/dashboard/clients' },
-  { id: 'setup_billing',  label: 'Configurar plan de pago',   description: 'Activa tu suscripción para acceso completo.', icon: '💳', path: '/billing' },
+  { id: 'setup_billing',  label: 'Ver mi suscripción',        description: 'Revisa tu plan en Ajustes → Empresa.', icon: '💳', path: '/dashboard/settings' },
 ];
 
 // ─── PROJECT MANAGER ──────────────────────────────────────

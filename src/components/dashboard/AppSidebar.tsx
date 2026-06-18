@@ -288,7 +288,7 @@ function WorkspaceSwitcher({
                 <span className="text-xs text-white/60 group-hover:text-white/80">Nueva tarea</span>
               </Link>
             )}
-            <Link href="/dashboard/settings" onClick={() => setOpen(false)} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
+            <Link href="/dashboard/settings" onClick={() => setOpen(false)} data-tutorial="nav-settings" className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors group">
               <span className="text-white/40 group-hover:text-white/60 text-sm">⚙</span>
               <span className="text-xs text-white/60 group-hover:text-white/80">Ajustes</span>
             </Link>
