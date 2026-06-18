@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
           project: { select: { id: true, name: true } },
         },
       },
-      uploader: { select: { id: true, name: true, image: true } },
+      user: { select: { id: true, name: true, image: true } },
     },
     orderBy: { createdAt: 'desc' },
     take: limit,
