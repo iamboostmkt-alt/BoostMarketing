@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   const project = await db.project.findFirst({
     where: { id: tokenRecord.projectId },
     include: {
-      client:  { select: { id: true, name: true, company: true, logoUrl: true } },
+      client:  { select: { id: true, name: true, company: true } },
       milestones: {
         where: { visibleToClient: true },
         orderBy: { date: 'asc' },
