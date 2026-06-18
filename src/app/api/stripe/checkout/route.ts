@@ -81,8 +81,8 @@ export async function POST(req: NextRequest) {
         },
         quantity: 1,
       }],
-      success_url: 'https://boostmarketingboost.com/billing?success=1',
-      cancel_url:  'https://boostmarketingboost.com/billing?canceled=1',
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://weeklink.com.mx'}/billing?success=1`,
+      cancel_url:  `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://weeklink.com.mx'}/billing?canceled=1`,
       subscription_data: {
         ...(trialEnd ? { trial_end: trialEnd } : {}),
         metadata: { workspaceId: ws.id, plan, billingCycle, aiTier, extraClients: String(extraClients) },

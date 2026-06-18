@@ -134,7 +134,7 @@ export default function TrustPage() {
                 <span className="text-[14px] font-semibold text-[#111827]">Todos los sistemas operativos</span>
               </div>
             </div>
-            <a href="https://boostmarketingboost.com" target="_blank"
+            <a href="https://weeklink.com.mx" target="_blank"
               className="text-[13px] text-[#7C3AED] hover:underline">
               Ver estado del sistema →
             </a>

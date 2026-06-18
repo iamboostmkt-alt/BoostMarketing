@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     // Crear sesión del Customer Portal de Stripe
     const portalSession = await stripe.billingPortal.sessions.create({
       customer:   ws.stripeCustomerId,
-      return_url: 'https://boostmarketingboost.com/billing',
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://weeklink.com.mx'}/billing`,
     });
 
     return NextResponse.json({ url: portalSession.url });
