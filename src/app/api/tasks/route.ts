@@ -792,7 +792,7 @@ export async function PUT(req: NextRequest) {
     if (newAssignee && newAssignee.id !== userId) {
       await createNotification({ userId: newAssignee.id, workspaceId, message: `${userName} te asignó la tarea: "${task.title}"`, type: "task", actorId: userId, actorName: userName, actorImage: userImage ?? undefined });
       if (newAssignee.email) {
-        getBranding().then(b => sendMail(newAssignee.email!, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b, newAssignee.name || newAssignee.email?.split("@")[0] || undefined))).catch(console.error);
+        getBranding(workspaceId).then(b => sendMail(newAssignee.email!, "Nueva tarea asignada", templateNuevaTarea(task.title, task.description ?? "", task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined, b, newAssignee.name || newAssignee.email?.split("@")[0] || undefined), workspaceId)).catch(console.error);
       }
     }
   }
@@ -816,7 +816,7 @@ export async function PUT(req: NextRequest) {
     }
     const emails = await getAssignedEmails(task.id);
     for (const email of emails) {
-      getBranding().then(b => sendMail(email, "Tu tarea fue editada", templateTareaEditada(task.title, cambios, b))).catch(console.error);
+      getBranding(workspaceId).then(b => sendMail(email, "Tu tarea fue editada", templateTareaEditada(task.title, cambios, b), workspaceId)).catch(console.error);
     }
   }
 

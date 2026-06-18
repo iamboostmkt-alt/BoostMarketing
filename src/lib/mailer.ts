@@ -11,10 +11,34 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendMail(to: string, subject: string, html: string): Promise<void> {
+// ── BoostMarketing transporter (workspace específico) ────
+const boostTransporter = process.env.SMTP_BOOST_USER && process.env.SMTP_BOOST_PASS
+  ? nodemailer.createTransport({
+      host: "smtp.gmail.com", port: 587, secure: false,
+      auth: { user: process.env.SMTP_BOOST_USER, pass: process.env.SMTP_BOOST_PASS },
+    })
+  : null;
+
+const BOOST_WS_ID = process.env.NEXT_PUBLIC_BOOST_WORKSPACE_ID || process.env.BOOST_WORKSPACE_ID || '';
+
+function pickTransporter(workspaceId?: string) {
+  if (workspaceId && BOOST_WS_ID && workspaceId === BOOST_WS_ID && boostTransporter) {
+    return {
+      t: boostTransporter,
+      from: process.env.SMTP_BOOST_FROM || `"BoostMarketing" <${process.env.SMTP_BOOST_USER}>`,
+    };
+  }
+  return {
+    t: transporter,
+    from: `"${process.env.BRAND_NAME || 'Weeklink'}" <${process.env.SMTP_USER}>`,
+  };
+}
+
+export async function sendMail(to: string, subject: string, html: string, workspaceId?: string): Promise<void> {
   try {
-    await transporter.sendMail({
-      from: `"${process.env.BRAND_NAME || 'Weeklink'}" <${process.env.SMTP_USER}>`,
+    const { t, from } = pickTransporter(workspaceId);
+    await t.sendMail({
+      from,
       to,
       subject,
       html,
@@ -26,7 +50,10 @@ export async function sendMail(to: string, subject: string, html: string): Promi
   }
 }
 
-export function isSmtpConfigured(): boolean {
+export function isSmtpConfigured(workspaceId?: string): boolean {
+  if (workspaceId && BOOST_WS_ID && workspaceId === BOOST_WS_ID) {
+    return !!(process.env.SMTP_BOOST_USER && process.env.SMTP_BOOST_PASS);
+  }
   return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
