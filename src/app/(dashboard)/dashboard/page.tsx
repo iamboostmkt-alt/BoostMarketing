@@ -18,6 +18,7 @@ import { statusLabels } from '@/lib/theme-maps';
 import TaskForm from '@/components/dashboard/TaskForm';
 import ClientForm from '@/components/dashboard/ClientForm';
 import { InviteModal } from '@/components/dashboard/InviteModal';
+import AppointmentEditModal from '@/components/calendar/AppointmentEditModal';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -452,6 +453,7 @@ export default function DashboardHome() {
   const [taskFormOpen, setTaskFormOpen] = useState(false);
   const [clientFormOpen, setClientFormOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [meetingOpen, setMeetingOpen] = useState(false);
   const [tips, setTips] = useState<any[]>([]);
   const [tipsLoading, setTipsLoading] = useState(false);
   const [tipsClient, setTipsClient] = useState<string>('');
@@ -625,18 +627,17 @@ export default function DashboardHome() {
         </div>
 
         {/* ── BARRA DE ACCIONES RÁPIDAS ── */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {[
-            { icon: Plus,        label: 'Nueva tarea',    fn: () => setTaskFormOpen(true),  always: true },
-            { icon: CalendarPlus,label: 'Nueva reunión',  fn: () => router.push('/dashboard/calendar'), always: true },
-            { icon: Building2,   label: 'Nuevo cliente',  fn: () => setClientFormOpen(true), roles: ['ADMIN','PROJECT_MANAGER'] },
-            { icon: UserPlus,    label: 'Invitar',         fn: () => setInviteOpen(true),    roles: ['ADMIN','PROJECT_MANAGER'] },
-            { icon: Pencil,      label: 'Editar',          fn: () => router.push('/dashboard/settings'), roles: ['ADMIN'] },
+            { icon: Plus,         label: 'Nueva tarea',   fn: () => setTaskFormOpen(true),   always: true },
+            { icon: CalendarPlus, label: 'Nueva reunión', fn: () => setMeetingOpen(true),     always: true },
+            { icon: Building2,    label: 'Nuevo cliente', fn: () => setClientFormOpen(true),  roles: ['ADMIN','PROJECT_MANAGER'] },
+            { icon: UserPlus,     label: 'Invitar',       fn: () => setInviteOpen(true),      roles: ['ADMIN','PROJECT_MANAGER'] },
           ]
             .filter(a => a.always || (a.roles && a.roles.includes(userRole || '')))
             .map((a, i) => (
               <motion.button key={i} onClick={a.fn} whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-1.5 h-8 px-3.5 rounded-[10px] text-[12px] font-medium transition-all"
+                className="flex items-center gap-1.5 h-8 px-3.5 rounded-[10px] text-[12px] font-medium transition-all shrink-0"
                 style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', color: 'var(--wl-text-secondary)' }}>
                 <a.icon className="w-3.5 h-3.5" style={{ color: '#8B5CF6' }} />
                 {a.label}
@@ -918,6 +919,7 @@ export default function DashboardHome() {
 
       {/* Modals */}
       <TaskForm open={taskFormOpen} onOpenChange={setTaskFormOpen} onSuccess={() => { fetchAll(); setTaskFormOpen(false); }} isManager={isManager} />
+      <AppointmentEditModal open={meetingOpen} onOpenChange={setMeetingOpen} appointment={null} onSaved={() => { fetchAll(); setMeetingOpen(false); }} />
       <ClientForm open={clientFormOpen} onOpenChange={setClientFormOpen} onSuccess={() => { fetchAll(); setClientFormOpen(false); }} isAdmin={userRole === 'ADMIN'} />
       <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </>
