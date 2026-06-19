@@ -329,6 +329,20 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     return () => document.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
+  // Bloquear scroll del body cuando el modal está abierto
+  React.useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      const prevTouch = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      return () => {
+        document.body.style.overflow = prev;
+        document.body.style.touchAction = prevTouch;
+      };
+    }
+  }, [open]);
+
   const filteredMembers = members.filter(m =>
     m.name.toLowerCase().includes(search.toLowerCase()) || m.email.toLowerCase().includes(search.toLowerCase())
   );
@@ -394,8 +408,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
     <>
       {open && (
         <div
-          style={{ position: "fixed", inset: 0, zIndex: 9990, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
-          className="sm:items-center"
+          style={{ position: "fixed", inset: 0, zIndex: 9990, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 12px" }}
         >
           {/* Overlay — cierra al click */}
           <div
@@ -409,8 +422,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
             onClick={e => e.stopPropagation()}
-            style={{ position: "relative", zIndex: 9991, width: "100%", maxWidth: 680, padding: "0 8px" }}
-            className="sm:px-3"
+            style={{ position: "relative", zIndex: 9991, width: "100%", maxWidth: 520 }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3 px-1">

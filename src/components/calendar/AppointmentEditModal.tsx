@@ -61,6 +61,19 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
   const [deleting,        setDeleting]       = useState(false);
 
   useEffect(() => {
+  // Bloquear scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      return () => {
+        document.body.style.overflow = prev;
+        document.body.style.touchAction = '';
+      };
+    }
+  }, [open]);
+
     if (open) {
       fetch('/api/team-members')
         .then((r) => r.json())

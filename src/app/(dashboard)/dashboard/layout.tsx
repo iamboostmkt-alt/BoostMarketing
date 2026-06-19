@@ -87,7 +87,7 @@ export default function DashboardLayout({
       <TooltipProvider delayDuration={0}>
         <SidebarProvider>
           <UnassignedGuard>
-          <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)", minHeight: "100dvh" }}>
+          <div className="flex h-screen overflow-hidden" style={{ background: "#07070A", minHeight: "100dvh" }}>
             {/* Sidebar */}
             <AppSidebar />
 
@@ -98,7 +98,7 @@ export default function DashboardLayout({
 
               {/* Main content — paddingTop compensa el TopNav fixed */}
               <main className="flex-1 min-h-0 overflow-hidden flex flex-col wl-main-content"
-                style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}>
+                style={{ background: "#07070A" }}>
                 <Suspense fallback={null}>
                   <ForbiddenBanner />
                 </Suspense>
