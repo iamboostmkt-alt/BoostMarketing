@@ -738,11 +738,9 @@ html:has(> body > div[style*="F6F7FB"]),
   }
 }
 
-.wl-topnav-spacer { background: transparent !important; border: none !important; box-shadow: none !important; flex-shrink: 0; }
-@supports (padding-top: env(safe-area-inset-top)) { .wl-topnav-spacer { height: calc(56px + env(safe-area-inset-top, 0px)); background: transparent !important; } }
+@supports (padding-top: env(safe-area-inset-top)) {  }
 
 /* ── Spacer del TopNav fixed — transparente ─────────────── */
-.wl-topnav-spacer { background: transparent !important; border: none !important; box-shadow: none !important; flex-shrink: 0; }
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -764,8 +762,7 @@ html:has(.auth-bg) body {
 }
 
 /* TopNav fixed spacer */
-.wl-topnav-spacer { background: transparent !important; border: none !important; box-shadow: none !important; flex-shrink: 0; }
-@supports (padding-top: env(safe-area-inset-top)) { .wl-topnav-spacer { height: calc(56px + env(safe-area-inset-top, 0px)); background: transparent !important; } }
+@supports (padding-top: env(safe-area-inset-top)) {  }
 
 /* ── Chat panel: compensar TopNav fixed ─────────────────── */
 /* El panel de canales empieza desde el top del contenedor
@@ -799,13 +796,4 @@ html:has(.auth-bg) {
   background: #F6F7FB !important;
 }
 
-/* TopNav cubre el safe area completamente */
-.wl-topnav {
-  background: linear-gradient(90deg,#0a0a0a 0%,#0a0a0a 15%,#0e0618 40%,#160528 50%,#0e0618 60%,#0a0a0a 85%,#0a0a0a 100%) !important;
-  /* Extender hacia arriba cubriendo el safe area */
-  padding-top: env(safe-area-inset-top, 0px);
-  top: 0 !important;
-  height: calc(56px + env(safe-area-inset-top, 0px)) !important;
-  min-height: calc(56px + env(safe-area-inset-top, 0px)) !important;
-}
-.wl-topnav-spacer { background: transparent !important; border: none !important; box-shadow: none !important; flex-shrink: 0; }
+/* wl-topnav duplicado eliminado */

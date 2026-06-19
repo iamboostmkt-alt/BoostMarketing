@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Hash, Lock, LifeBuoy, Briefcase, ChevronDown, Plus,
@@ -665,6 +665,11 @@ function ChatMain({
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [showEmoji, setShowEmoji] = useState<{id: string, x: number, y: number} | null>(null);
+  const [activeMsg, setActiveMsg] = useState<string | null>(null); // mensaje activo en móvil (tap)
+  const [swipeState, setSwipeState] = useState<{id: string, x: number} | null>(null);
+  const longPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartX = React.useRef<number>(0);
+  const touchStartY = React.useRef<number>(0);
   const [activeTab, setActiveTab] = useState<'messages'|'files'|'pinned'|'tasks'>('messages');
 
   const fetchPinned = async () => {
@@ -1713,10 +1718,45 @@ FORMATO:
                 </div>
               )}
             <div className={isSame ? 'mt-0.5' : 'mt-2'}>
-              <div className={`group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02] ${isMe && !isSystemMsg ? 'flex flex-col items-end pr-3' : ''}`}
-                style={{ paddingTop: isSame ? '1px' : '8px', paddingBottom: '1px' }}>
+              <div className={`group relative -mx-2 rounded-xl px-2 transition-colors hover:bg-white/[0.02] ${isMe && !isSystemMsg ? 'flex flex-col items-end pr-3' : ''} ${swipeState?.id === msg.id ? '' : ''}`}
+                style={{
+                  paddingTop: isSame ? '1px' : '8px',
+                  paddingBottom: '1px',
+                  transform: swipeState?.id === msg.id ? `translateX(${Math.min(swipeState.x, 72)}px)` : 'translateX(0)',
+                  transition: swipeState?.id === msg.id ? 'none' : 'transform 0.2s ease',
+                }}
+                onTouchStart={(e) => {
+                  touchStartX.current = e.touches[0].clientX;
+                  touchStartY.current = e.touches[0].clientY;
+                  // Long press: 500ms
+                  longPressTimer.current = setTimeout(() => {
+                    setActiveMsg(activeMsg === msg.id ? null : msg.id);
+                  }, 500);
+                }}
+                onTouchMove={(e) => {
+                  // Cancelar long press si se mueve
+                  if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+                  const dx = e.touches[0].clientX - touchStartX.current;
+                  const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
+                  // Swipe derecha para responder (solo si movimiento horizontal)
+                  if (dx > 10 && dy < 30) {
+                    setSwipeState({ id: msg.id, x: dx });
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+                  // Si había swipe suficiente → responder
+                  if (swipeState?.id === msg.id && swipeState.x > 50) {
+                    setReplyingTo(msg);
+                  }
+                  setSwipeState(null);
+                  // Cerrar activeMsg si tap fuera
+                }}
+                onClick={() => {
+                  if (activeMsg === msg.id) setActiveMsg(null);
+                }}>
                 {/* Hover actions */}
-                <div className={`absolute top-0 right-2 z-10 items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl ${showEmoji?.id === msg.id ? 'flex' : 'hidden group-hover:flex'}`}>
+                <div className={`absolute top-0 right-2 z-10 items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl ${(showEmoji?.id === msg.id || activeMsg === msg.id) ? 'flex' : 'hidden group-hover:flex'}`}>
                   {[
                     { Icon: SmilePlus, fn: (e?: React.MouseEvent) => {
                         if (showEmoji?.id === msg.id) { setShowEmoji(null); return; }

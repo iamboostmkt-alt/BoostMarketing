@@ -430,7 +430,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
 
             <div className="space-y-3">
               {/* Container 1: Invite */}
-              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: '0 0 14px 14px', position: "relative", maxHeight: "calc(75dvh)", overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }} className="p-4 rounded-t-2xl sm:rounded-2xl">
+              <div style={{ background: "#080808", border: "1px solid rgba(255,255,255,0.06)", borderRadius: '14px', position: "relative", display: "flex", flexDirection: "column", maxHeight: "calc(72dvh)" }} className="p-4 rounded-2xl">
                 <div style={{ position: "absolute", bottom: -20, right: -20, width: 200, height: 140, background: "radial-gradient(ellipse at center, rgba(88,28,220,0.10) 0%, transparent 70%)", pointerEvents: "none", borderRadius: "50%", zIndex: 0 }} />
                 {/* Tabs */}
                 <div className="flex gap-1 mb-4 p-1 rounded-lg bg-white/[0.03] w-fit">
@@ -503,7 +503,7 @@ export function InviteModal({ open, onClose }: InviteModalProps) {
                   />
                 </div>
                 <div className="h-px bg-white/[0.05] mb-1 relative z-10" />
-                <div className="max-h-48 overflow-y-auto overflow-x-hidden relative z-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="overflow-y-auto overflow-x-hidden relative z-10 flex-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full" style={{ maxHeight: "180px", overscrollBehavior: "contain" }}>
                   {loadingMembers ? (
                     <div className="py-6 text-center text-[12px] text-white/25">Cargando...</div>
                   ) : (
