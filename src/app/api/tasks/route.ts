@@ -756,6 +756,17 @@ export async function PUT(req: NextRequest) {
         await createNotification({
           userId: pm.id, workspaceId, message: `⏳ ${userName} terminó: "${task.title}" — lista para revisar`, type: "task", actorId: userId, actorName: userName, actorImage: userImage ?? undefined,
         });
+        // Mensaje en chat del canal del cliente
+        if (task.clientId) {
+          sendChatBotMessage({
+            workspaceId,
+            message: `✋ **${userName}** envió a revisión: **"${task.title}"**\n👀 PM, por favor revisa y aprueba o solicita cambios`,
+            clientId: task.clientId,
+            assignedUserIds: pm ? [pm.id] : [],
+            senderId: userId,
+            isInternal: false,
+          }).catch(() => {});
+        }
         if (pm.email) {
           // Correo específico al PM con plantilla de "lista para revisar"
           getBranding().then(b => sendMail(
@@ -792,6 +803,18 @@ export async function PUT(req: NextRequest) {
 
       for (const uid of asignados) {
         await createNotification({ userId: uid, workspaceId, message: mensaje, type: "task" });
+      }
+
+      // Mensaje en chat al pedir cambios
+      if (task.status === "changes_requested" && task.clientId) {
+        sendChatBotMessage({
+          workspaceId,
+          message: `🔄 **PM solicitó cambios** en: **"${task.title}"**\n✏️ Equipo, por favor revisa los comentarios y vuelve a subir`,
+          clientId: task.clientId,
+          assignedUserIds: Array.from(asignados),
+          senderId: userId,
+          isInternal: false,
+        }).catch(() => {});
       }
       for (const u of _assignedUsers) {
         if (!u.email) continue;

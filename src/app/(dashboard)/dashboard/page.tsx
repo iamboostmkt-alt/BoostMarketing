@@ -468,10 +468,10 @@ export default function DashboardHome() {
       // Fetches comunes a todos los roles
       const basePromises = [
         fetch('/api/stats').then(r => r.json()).catch(() => null),
-        fetch('/api/tasks?scope=mine&limit=8').then(r => r.json()).catch(() => ({ tasks: [] })),
-        fetch('/api/meetings?limit=4').then(r => r.json()).catch(() => ({ meetings: [] })),
+        fetch('/api/tasks?scope=mine&limit=5').then(r => r.json()).catch(() => ({ tasks: [] })),
+        fetch('/api/meetings?limit=3').then(r => r.json()).catch(() => ({ meetings: [] })),
         fetch('/api/chat/inbox').then(r => r.json()).catch(() => ({ inbox: [] })),
-        fetch('/api/projects?limit=5').then(r => r.json()).catch(() => ({ projects: [] })),
+        fetch('/api/projects?limit=4').then(r => r.json()).catch(() => ({ projects: [] })),
       ];
 
       const [statsR, tasksR, meetsR, msgsR, projectsR] = await Promise.all(basePromises);
@@ -483,30 +483,14 @@ export default function DashboardHome() {
 
       // Admin: clientes + workload + actividad de clientes
       if (isAdmin) {
-        const [clientsR, workloadR, activityR] = await Promise.all([
-          fetch('/api/clients?limit=6').then(r => r.json()).catch(() => ({ clients: [] })),
+        // Paralelo: clientes + workload (sin activity que es lenta)
+        const [clientsR, workloadR] = await Promise.all([
+          fetch('/api/clients?limit=5').then(r => r.json()).catch(() => ({ clients: [] })),
           fetch('/api/team/workload').then(r => r.json()).catch(() => ({ members: [] })),
-          fetch('/api/activity?limit=20').then(r => r.json()).catch(() => ({ activities: [] })),
         ]);
         setClients(clientsR?.clients || []);
         setTeamLoad(workloadR?.users || workloadR?.members || []);
-        // Transformar actividad en formato de clientes
-        const acts = (activityR?.activities || []).filter((a: any) =>
-          ['task_created','task_completed','file_uploaded','meeting_scheduled','task_approved'].includes(a.action)
-        );
-        // Agrupar por clientId desde details
-        const clientActs = acts.map((a: any) => {
-          let details: any = {};
-          try { details = JSON.parse(a.details || '{}'); } catch {}
-          return {
-            action: a.action,
-            clientName: details.clientName || details.client?.name || 'Sin cliente',
-            description: details.description || details.taskTitle || a.action,
-            createdAt: a.createdAt,
-            href: details.clientId ? `/dashboard/clients` : '/dashboard/tasks',
-          };
-        }).filter((a: any) => a.clientName !== 'Sin cliente');
-        setClientActivity(clientActs);
+        setClientActivity([]); // Se carga de forma diferida
       }
 
       // PM: sus clientes + su equipo

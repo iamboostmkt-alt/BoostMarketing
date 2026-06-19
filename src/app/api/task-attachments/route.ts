@@ -6,6 +6,7 @@ import { sendMail, templateArchivoSubido } from '@/lib/mailer';
 import { getBranding } from '@/lib/branding';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { broadcastRealtime } from '@/lib/realtime-server';
+import { sendChatBotMessage } from '@/lib/chat-bot';
 
 
 
@@ -132,6 +133,30 @@ export async function POST(req: NextRequest) {
           );
         }
       }).catch(console.error);
+    }
+
+    // Mensaje en chat del cliente con el archivo adjunto
+    if (task.clientId) {
+      const uploaderName = result.ctx.name || 'Un miembro del equipo';
+      const isImage = fileType?.startsWith('image/');
+      const isVideo = fileType?.startsWith('video/');
+      const typeLabel = isImage ? '🖼️' : isVideo ? '🎬' : '📎';
+      const allAssignedIds = [
+        task.userId,
+        ...(task.assignedUsers?.map((au: any) => au.userId) || []),
+      ].filter((id: string) => id !== result.ctx.userId);
+
+      sendChatBotMessage({
+        workspaceId: result.ctx.workspaceId,
+        message: `${typeLabel} **${uploaderName}** subió entrega en **"${task.title}"**:\n👉 Por favor revísala y aprueba o solicita cambios`,
+        clientId: task.clientId,
+        assignedUserIds: allAssignedIds,
+        senderId: result.ctx.userId,
+        fileUrl,
+        fileName,
+        fileType,
+        isInternal: false,
+      }).catch(() => {});
     }
 
     // Broadcast FILE_UPLOADED para toasts en tiempo real (non-blocking)
