@@ -410,24 +410,7 @@ export default function DashboardHome() {
         setTeamLoad(workloadR?.users || workloadR?.members || []);
       }
 
-      // Team: actividad relacionada con ellos
-      if (isTeam && !isAdmin && !isPM) {
-        const actR = await fetch('/api/activity?limit=15&myActivity=true').then(r => r.json()).catch(() => ({ activities: [] }));
-        const relActs = (actR?.activities || []).map((a: any) => {
-          let details: any = {};
-          try { details = JSON.parse(a.details || '{}'); } catch {}
-          return {
-            actorName: details.actorName || 'Alguien',
-            actorImage: details.actorImage || null,
-            actorColor: details.actorColor || '#7c3aed',
-            description: details.description || a.action,
-            context: details.taskTitle || details.clientName || '',
-            createdAt: a.createdAt,
-            href: details.taskId ? '/dashboard/tasks' : '/dashboard/chat',
-          };
-        });
-        setRelatedActivity(relActs);
-      }
+      // Team: sin fetch de actividad (datos no útiles)
 
     } finally {
       setLoading(false);
@@ -767,16 +750,38 @@ export default function DashboardHome() {
           </div>
         )}
 
-        {/* TEAM MEMBER: Mensajes + Actividad relacionada */}
+        {/* TEAM MEMBER: Mensajes + Tareas completadas recientemente */}
         {isTeam && !isAdmin && !isPM && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <SectionCard title="💬 Mensajes recientes" action="Ver todo" actionHref="/dashboard/chat">
               <MsgList messages={messages} />
             </SectionCard>
-            <SectionCard title="⚡ Actividad relacionada" action="Ver tareas" actionHref="/dashboard/tasks">
-              {relatedActivity.length > 0
-                ? <RelatedActivityList items={relatedActivity} />
-                : <Empty msg="Sin actividad reciente relacionada contigo" />
+            <SectionCard title="✅ Mis tareas completadas" action="Ver todas" actionHref="/dashboard/tasks">
+              {tasks.filter(t => t.status === 'completed' || t.status === 'approved').length === 0
+                ? <Empty msg="Sin tareas completadas recientemente" />
+                : (
+                  <div className="space-y-2">
+                    {tasks.filter(t => t.status === 'completed' || t.status === 'approved').slice(0, 5).map(t => (
+                      <Link key={t.id} href="/dashboard/tasks"
+                        className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                          style={{ background: '#10B98115' }}>
+                          <span className="text-[12px]">✓</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{t.title}</p>
+                          {(t as any).client?.name && (
+                            <p className="text-[11px]" style={{ color: 'var(--wl-text-muted)' }}>{(t as any).client.name}</p>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                          style={{ background: '#10B98115', color: '#10B981' }}>
+                          {t.status === 'approved' ? 'Aprobada' : 'Completada'}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )
               }
             </SectionCard>
           </div>

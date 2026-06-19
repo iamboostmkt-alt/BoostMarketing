@@ -1739,11 +1739,13 @@ FORMATO:
 
                 {/* Emoji picker — absolute encima del hover bar */}
                 {showEmoji?.id === msg.id && (
-                  <div data-emoji-picker className={`absolute -top-11 z-20 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl ${isMe ? "right-0" : "left-0"}`}
+                  <div data-emoji-picker
+                    className={`absolute z-50 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl ${isMe ? "right-0" : "left-0"}`}
+                    style={{ bottom: 'calc(100% + 4px)', maxWidth: '90vw' }}
                     onMouseLeave={() => setShowEmoji(null)}>
                     {QUICK_EMOJIS.map(e => (
                       <button key={e} onClick={() => handleReaction(msg.id, e)}
-                        className="text-lg p-1 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125">
+                        className="text-lg p-1.5 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125 touch-manipulation">
                         {e}
                       </button>
                     ))}

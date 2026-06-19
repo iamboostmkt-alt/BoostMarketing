@@ -712,12 +712,12 @@ html:has(> body > div[style*="F6F7FB"]),
 /* ── wl-topnav: TopNav siempre estable, no se mueve ────────── */
 .wl-topnav {
   background: linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%);
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: none;
   height: 56px;
-  /* Safe area del notch — fijo, no dinámico */
   padding-top: 0px;
   min-height: 56px;
   max-height: 56px;
+  box-shadow: none;
 }
 /* En web PWA con notch, agregar el padding arriba */
 @supports (padding-top: env(safe-area-inset-top)) {
@@ -729,13 +729,10 @@ html:has(> body > div[style*="F6F7FB"]),
   }
 }
 
-/* Cuando billing layout monta, el html debe ser claro inmediatamente */
-/* Esto se logra con :has() que es síncrono en CSS */
-/* El dashboard siempre oscuro */
-
 .wl-topnav-spacer {
   height: 56px;
   flex-shrink: 0;
+  background: transparent !important;
 }
 @supports (padding-top: env(safe-area-inset-top)) {
   .wl-topnav-spacer {

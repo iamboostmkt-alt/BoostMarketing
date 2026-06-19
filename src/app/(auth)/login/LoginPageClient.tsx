@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -21,7 +22,20 @@ interface Props {
   brandLogo: string | null;
 }
 
-export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props) {
+export default function LoginPageClient({ isBoost: isBoostProp, brandName: brandNameProp, brandLogo }: Props) {
+  // En app nativa (PWA standalone o Capacitor) siempre mostrar Weeklink
+  const [isBoost, setIsBoost] = React.useState(isBoostProp);
+  const [brandName, setBrandName] = React.useState(brandNameProp);
+
+  React.useEffect(() => {
+    const isNative = (window as any).Capacitor?.isNativePlatform?.();
+    const isPwa = window.matchMedia('(display-mode: standalone)').matches;
+    if (isNative || isPwa) {
+      // App instalada → siempre Weeklink
+      setIsBoost(false);
+      setBrandName('Weeklink');
+    }
+  }, []);
   const router = useRouter();
   const [email, setEmail]           = useState('');
   const [password, setPassword]     = useState('');
