@@ -326,13 +326,15 @@ function WorkloadList({ members, onClick }: { members: any[]; onClick?: (id: str
 }
 
 // ─── Panel de Consejos IA (Admin/PM) ───────────────────────
-function TipsPanel({ clients, isManager, onCreateTask }: {
-  clients: any[]; isManager: boolean; onCreateTask: (title: string) => void;
+function TipsPanel({ clients, isManager, onCreateTask, show }: {
+  clients: any[]; isManager: boolean; onCreateTask: (title: string) => void; show: boolean;
 }) {
   const [tips, setTips] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [clientId, setClientId] = useState('');
   const [created, setCreated] = useState<string[]>([]);
+
+  if (!show) return null;
 
   const generate = async () => {
     setLoading(true); setTips([]);
@@ -836,13 +838,12 @@ export default function DashboardHome() {
         </div>
 
         {/* ── PANEL CONSEJOS IA — solo Admin/PM ── */}
-        {isManager && clients.length > 0 && (
-          <TipsPanel
-            clients={clients}
-            isManager={isManager}
-            onCreateTask={(title) => setTaskFormOpen(true)}
-          />
-        )}
+        <TipsPanel
+          clients={clients}
+          isManager={isManager}
+          onCreateTask={(title) => setTaskFormOpen(true)}
+          show={isManager && clients.length > 0}
+        />
 
         {/* ─────────────────────────────────────── */}
         {/* FILA 2: diferenciada por rol */}

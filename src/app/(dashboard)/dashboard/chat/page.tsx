@@ -17,8 +17,16 @@ export default function ChatPage() {
       >
         <ChatWithChannels />
       </div>
-      {/* Mobile: flujo normal, ocupa h-full del main */}
-      <div className="flex md:hidden h-full flex-col overflow-hidden">
+      {/* Mobile: altura fija = 100dvh menos topnav, sin scroll externo */}
+      <div className="flex md:hidden flex-col overflow-hidden"
+        style={{
+          position: 'fixed',
+          top: 'calc(56px + env(safe-area-inset-top, 0px))',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 10,
+        }}>
         <ChatWithChannels />
       </div>
     </>

@@ -1636,7 +1636,7 @@ FORMATO:
       )}
 
       {/* Messages */}
-      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto px-5 py-3 pb-6" style={{scrollbarWidth:'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
+      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto px-5 py-3 pb-6" style={{scrollbarWidth:'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', touchAction: 'pan-y', isolation: 'isolate'}}>
         {loading && (
           <div className="space-y-4">
             {[1,2,3].map(i => (
@@ -3669,7 +3669,7 @@ export default function ChatWithChannels() {
   );
 
   return (
-    <div className="flex h-full min-h-0 overflow-hidden">
+    <div className="flex h-full min-h-0 overflow-hidden" style={{ touchAction: 'none' }}>
       <style>{slideInRightStyle}</style>
       {/* Channel list desktop */}
       <div className="hidden md:flex">{channelList}</div>
