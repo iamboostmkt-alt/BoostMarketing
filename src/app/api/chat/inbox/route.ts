@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
           // Buscar info del cliente
           const client = await db.client.findFirst({
             where: { id: msg.room, workspaceId },
-            select: { id: true, name: true, color: true },
+            select: { id: true, name: true },
           });
           if (client) {
             channelEntries.push({
