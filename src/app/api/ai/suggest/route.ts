@@ -142,21 +142,53 @@ Genera sugerencias generales de marketing digital pero útiles y accionables.`;
 
     // Intentar Gemini primero, fallback a Groq
     let raw = '';
+    let providerUsed = 'gemini';
     try {
       raw = await callGemini(prompt);
-    } catch {
-      raw = await callGroq(prompt);
+      if (!raw || raw.length < 50) throw new Error('Respuesta vacía de Gemini');
+    } catch (e1) {
+      console.error('Gemini failed, trying Groq:', e1);
+      providerUsed = 'groq';
+      try {
+        raw = await callGroq(prompt);
+      } catch (e2) {
+        console.error('Groq also failed:', e2);
+        throw new Error('Ambos proveedores de IA fallaron');
+      }
     }
 
-    // Limpiar y parsear JSON
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('No JSON en respuesta');
-    const parsed = JSON.parse(jsonMatch[0]);
+    console.log('AI raw response preview:', raw?.slice(0, 200));
 
-    return NextResponse.json({ suggestions: parsed.suggestions || [], clientId });
-  } catch (error) {
-    console.error('AI suggest error:', error);
-    return NextResponse.json({ error: 'Error al generar sugerencias' }, { status: 500 });
+    // Limpiar markdown fences si los hay
+    let cleaned = raw
+      .replace(/```json\s*/gi, '')
+      .replace(/```\s*/g, '')
+      .trim();
+
+    // Extraer el objeto JSON
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error('No JSON found in:', cleaned.slice(0, 500));
+      throw new Error('La IA no devolvió JSON válido');
+    }
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      console.error('JSON parse error:', parseErr, 'Raw:', jsonMatch[0].slice(0, 300));
+      throw new Error('Error al parsear respuesta de la IA');
+    }
+
+    const suggestions = parsed.suggestions || [];
+    if (!Array.isArray(suggestions) || suggestions.length === 0) {
+      throw new Error('La IA no generó sugerencias');
+    }
+
+    return NextResponse.json({ suggestions, clientId, provider: providerUsed });
+  } catch (error: any) {
+    console.error('AI suggest error:', error?.message || error);
+    return NextResponse.json({ error: error?.message || 'Error al generar sugerencias' }, { status: 500 });
   }
 }
 

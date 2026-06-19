@@ -300,7 +300,10 @@ export default function AiStudioPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al generar');
+      if (!res.ok) throw new Error(data.error || `Error ${res.status} al generar sugerencias`);
+      if (!data.suggestions || data.suggestions.length === 0) {
+        throw new Error('La IA no devolvió sugerencias. Intenta de nuevo.');
+      }
       setSuggestions(data.suggestions || []);
     } catch (e: any) {
       setError(e.message || 'Error al conectar con la IA');
