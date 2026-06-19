@@ -123,18 +123,22 @@ export async function GET(req: NextRequest) {
       const hoursSinceLast = lastReminder ? (now.getTime() - lastReminder.getTime()) / 3600000 : 999;
 
       if (!task.overdueEscalated && task.overdueCount < 4 && hoursSinceLast >= 4) {
-        for (const u of users.filter(u => !u.email.endsWith("@boostmkt.com"))) {
+        const eligibleUsers = users.filter(u => !u.email.endsWith("@boostmkt.com"));
+        // Notificaciones y correos por usuario
+        for (const u of eligibleUsers) {
           await db.notification.create({
             data: { userId: u.id, workspaceId: task.workspaceId, message: `🚨 Tu tarea "${task.title}" está vencida`, type: "task", read: false, link: "/dashboard/tasks" },
           }).catch(() => {});
           await sendMail(u.email, `🚨 Tarea vencida: ${task.title}`, templateTareaVencida(task.title, dueStr, branding, u.name ?? undefined));
-          // DM urgente en chat
+        }
+        // UN SOLO mensaje al chat con todos los asignados — evita duplicados
+        if (eligibleUsers.length > 0) {
           sendChatBotMessage({
             workspaceId: task.workspaceId,
             message: `🚨 **Tarea vencida:** **"${task.title}"**\n📅 Venció el ${dueStr} — por favor complétala o actualiza su estado`,
             clientId: task.clientId ?? null,
-            assignedUserIds: [u.id],
-            senderId: u.id,
+            assignedUserIds: eligibleUsers.map(u => u.id),
+            senderId: eligibleUsers[0].id,
             isInternal: true,
           }).catch(() => {});
         }

@@ -448,8 +448,27 @@ export async function POST(req: NextRequest) {
     ...(task.assignedUser ? [{ email: task.assignedUser.email, name: task.assignedUser.name }] : []),
     ...(task.assignedUsers?.map((au: any) => ({ email: au.user?.email, name: au.user?.name })) ?? []),
   ].filter((u, i, arr) => u.email && arr.findIndex(x => x.email === u.email) === i);
+  // Asignados con IDs para el DM de Weeklink
+  const newTaskAssigneeIds = [
+    ...(task.assignedUser ? [task.assignedUser.id] : []),
+    ...(task.assignedUsers?.map((au: any) => au.user?.id).filter(Boolean) ?? []),
+  ].filter((id: string, i: number, arr: string[]) => arr.indexOf(id) === i);
+
   for (const u of assignedWithNames) {
     if (u.email) await sendMail(u.email, "Nueva tarea asignada - BoostMarketing", templateNuevaTarea(task.title, task.description ?? "", dueDateStr, branding, u.name || u.email?.split("@")[0] || undefined));
+  }
+
+  // DM en Weeklink bot a cada asignado
+  if (newTaskAssigneeIds.length > 0) {
+    sendChatBotMessage({
+      workspaceId,
+      message: `📋 Se te asignó una nueva tarea: **"${task.title}"**${dueDateStr ? `\n📅 Fecha límite: ${dueDateStr}` : ''}`,
+      clientId: task.clientId ?? null,
+      assignedUserIds: newTaskAssigneeIds,
+      senderId: userId,
+      isInternal: true,
+      sendDmToAssignees: true,
+    }).catch(() => {});
   }
 
   await logAction({

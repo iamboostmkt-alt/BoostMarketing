@@ -370,9 +370,9 @@ export function NotificationsDropdown() {
           </ScrollArea>
 
           {/* Footer */}
-          <div className="px-4 py-3 border-t border-white/[0.05]">
+          <div className="px-4 py-3 border-t border-white/[0.05] shrink-0">
             <button type="button" onClick={() => { setOpen(false); router.push('/dashboard/notifications'); }}
-              className="w-full text-[12px] text-white/30 hover:text-violet-400 transition-colors text-center">
+              className="w-full py-2 rounded-[10px] text-[12px] font-semibold text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.08)] transition-colors text-center">
               Ver todas las notificaciones →
             </button>
           </div>
