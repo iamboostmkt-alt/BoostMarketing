@@ -93,8 +93,8 @@ export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props
 
   // ── Features por dominio ──────────────────────────────────
   const panelBg = isBoost
-    ? 'linear-gradient(160deg, #6D28D9 0%, #7C3AED 50%, #4C1D95 100%)'
-    : 'linear-gradient(135deg, #07070A 0%, #0e0b1a 40%, #160528 60%, #07070A 100%)';
+    ? 'linear-gradient(135deg, #07070A 0%, #0e0b1a 40%, #160528 60%, #07070A 100%)'
+    : 'linear-gradient(160deg, #6D28D9 0%, #7C3AED 50%, #4C1D95 100%)';
 
   const panelTitle = isBoost
     ? 'Tu agencia, organizada y lista para crecer'
