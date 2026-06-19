@@ -26,6 +26,7 @@ import {
   MessageSquare,
   UserCircle,
   BarChart3,
+  Sparkles,
   Shield,
   Mail,
   Settings,
@@ -69,6 +70,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard/client-portal", label: "Mi Portal",  icon: Briefcase, roles: ["CLIENT", "ADMIN", "PROJECT_MANAGER"] },
   { href: "/dashboard/crm",           label: "Leads",      icon: Users,      roles: ["ADMIN", "PROJECT_MANAGER", "SALES_REP"] },
   { href: "/dashboard/analytics",     label: "Analytics",  icon: BarChart3,  roles: ["ADMIN"] },
+  { href: "/dashboard/ai-studio",     label: "AI Studio",  icon: Sparkles,   roles: ["ADMIN", "PROJECT_MANAGER"] },
   { href: "/dashboard/admin",         label: "Admin",      icon: Shield,     roles: ["ADMIN"] },
 ];
 
