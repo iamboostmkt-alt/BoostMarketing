@@ -2,6 +2,9 @@ import { headers } from 'next/headers';
 import { db } from '@/lib/db';
 import LoginPageClient from './LoginPageClient';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getBrandForHost(host: string) {
   const isBoost = host.includes('boostmarketing') || host.includes('boost-marketing');
   if (!isBoost) return { isBoost: false, brandName: 'Weeklink', brandLogo: null };

@@ -94,7 +94,7 @@ export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props
   // ── Features por dominio ──────────────────────────────────
   const panelBg = isBoost
     ? 'linear-gradient(160deg, #6D28D9 0%, #7C3AED 50%, #4C1D95 100%)'
-    : 'linear-gradient(135deg, #07070A 0%, #160528 50%, #07070A 100%)';
+    : 'linear-gradient(135deg, #07070A 0%, #0e0b1a 40%, #160528 60%, #07070A 100%)';
 
   const panelTitle = isBoost
     ? 'Tu agencia, organizada y lista para crecer'
@@ -117,7 +117,7 @@ export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props
           {brandLogo
             ? <img src={brandLogo} alt={brandName} className="h-9 w-auto" />
             : <WeeklinkMark size={36} />}
-          <span className="text-[20px] font-bold text-white tracking-tight">{brandName}</span>
+          <span className="text-[20px] font-bold tracking-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>{brandName}</span>
         </div>
         <div>
           <h2 className="text-[32px] font-bold text-white leading-tight mb-4">{panelTitle}</h2>
