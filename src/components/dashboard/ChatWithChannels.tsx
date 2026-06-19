@@ -1718,7 +1718,11 @@ FORMATO:
                 {/* Hover actions */}
                 <div className={`absolute top-0 right-2 z-10 items-center rounded-lg border border-white/[0.08] bg-[#1a1d2e] p-0.5 shadow-xl ${showEmoji?.id === msg.id ? 'flex' : 'hidden group-hover:flex'}`}>
                   {[
-                    { Icon: SmilePlus, fn: () => { setShowEmoji(showEmoji?.id === msg.id ? null : {id: msg.id, x: 0, y: 0}); }, tip: 'Reaccionar' },
+                    { Icon: SmilePlus, fn: (e?: React.MouseEvent) => {
+                        if (showEmoji?.id === msg.id) { setShowEmoji(null); return; }
+                        const rect = (e?.currentTarget as HTMLElement)?.getBoundingClientRect();
+                        setShowEmoji({ id: msg.id, x: rect?.left ?? 0, y: rect?.top ?? 0 });
+                      }, tip: 'Reaccionar' },
                     { Icon: Reply,         fn: () => setReplyingTo(msg),                                                        tip: 'Responder' },
                     { Icon: MessageSquare, fn: () => onOpenThread(msg),                                                            tip: 'Ver hilo' },
                     { Icon: ListPlus,      fn: () => setTaskModal({ title: msg.message.slice(0, 80), description: msg.message }),  tip: 'Crear tarea' },
@@ -1726,7 +1730,7 @@ FORMATO:
                     { Icon: MoreHorizontal, fn: () => setShowMoreMenu(showMoreMenu === msg.id ? null : msg.id), tip: 'Más opciones' },
                   ].map(({ Icon, fn, tip }, i) => (
                     <div key={i} className="relative group/tip">
-                      <button onClick={() => fn()}
+                      <button onClick={(e) => fn(e)}
                         className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white">
                         <Icon className="h-4 w-4" strokeWidth={1.75} />
                       </button>
@@ -1740,12 +1744,23 @@ FORMATO:
                 {/* Emoji picker — absolute encima del hover bar */}
                 {showEmoji?.id === msg.id && (
                   <div data-emoji-picker
-                    className={`absolute z-50 flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl ${isMe ? "right-0" : "left-0"}`}
-                    style={{ bottom: 'calc(100% + 4px)', maxWidth: '90vw' }}
-                    onMouseLeave={() => setShowEmoji(null)}>
+                    className={`fixed z-[200] flex gap-1 rounded-xl border border-white/[0.08] bg-[#1a1d2e] p-2 shadow-2xl`}
+                    style={{
+                      top: (showEmoji.y ?? 0) > 200
+                        ? `${(showEmoji.y ?? 0) - 56}px`
+                        : `${(showEmoji.y ?? 0) + 36}px`,
+                      left: isMe ? 'auto' : Math.max(8, (showEmoji.x ?? 16)) + 'px',
+                      right: isMe
+                        ? Math.max(8, window.innerWidth - (showEmoji.x ?? window.innerWidth) - 8) + 'px'
+                        : 'auto',
+                      maxWidth: 'calc(100vw - 24px)',
+                    }}
+                    onMouseLeave={() => setShowEmoji(null)}
+                    onTouchEnd={e => { e.stopPropagation(); }}>
                     {QUICK_EMOJIS.map(e => (
-                      <button key={e} onClick={() => handleReaction(msg.id, e)}
-                        className="text-lg p-1.5 rounded-lg hover:bg-white/[0.06] transition-all hover:scale-125 touch-manipulation">
+                      <button key={e}
+                        onClick={() => { handleReaction(msg.id, e); setShowEmoji(null); }}
+                        className="text-xl p-2 rounded-lg hover:bg-white/[0.06] transition-all active:scale-110 touch-manipulation select-none">
                         {e}
                       </button>
                     ))}

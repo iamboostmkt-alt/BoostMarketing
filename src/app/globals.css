@@ -729,22 +729,11 @@ html:has(> body > div[style*="F6F7FB"]),
   }
 }
 
-.wl-topnav-spacer {
-  height: 56px;
-  flex-shrink: 0;
-  background: transparent !important;
-}
-@supports (padding-top: env(safe-area-inset-top)) {
-  .wl-topnav-spacer {
-    height: calc(56px + env(safe-area-inset-top, 0px));
-  }
-}
+.wl-topnav-spacer { background: transparent !important; border: none !important; box-shadow: none !important; flex-shrink: 0; }
+@supports (padding-top: env(safe-area-inset-top)) { .wl-topnav-spacer { height: calc(56px + env(safe-area-inset-top, 0px)); background: transparent !important; } }
 
 /* ── Spacer del TopNav fixed — transparente ─────────────── */
-.wl-topnav-spacer {
-  background: transparent !important;
-  flex-shrink: 0;
-}
+.wl-topnav-spacer { background: transparent !important; border: none !important; box-shadow: none !important; flex-shrink: 0; }
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -766,16 +755,8 @@ html:has(.auth-bg) body {
 }
 
 /* TopNav fixed spacer */
-.wl-topnav-spacer {
-  background: transparent !important;
-  flex-shrink: 0;
-  height: 56px;
-}
-@supports (padding-top: env(safe-area-inset-top)) {
-  .wl-topnav-spacer {
-    height: calc(56px + env(safe-area-inset-top, 0px));
-  }
-}
+.wl-topnav-spacer { background: transparent !important; border: none !important; box-shadow: none !important; flex-shrink: 0; }
+@supports (padding-top: env(safe-area-inset-top)) { .wl-topnav-spacer { height: calc(56px + env(safe-area-inset-top, 0px)); background: transparent !important; } }
 
 /* ── Chat panel: compensar TopNav fixed ─────────────────── */
 /* El panel de canales empieza desde el top del contenedor
@@ -818,8 +799,4 @@ html:has(.auth-bg) {
   height: calc(56px + env(safe-area-inset-top, 0px)) !important;
   min-height: calc(56px + env(safe-area-inset-top, 0px)) !important;
 }
-.wl-topnav-spacer {
-  height: calc(56px + env(safe-area-inset-top, 0px));
-  flex-shrink: 0;
-  background: transparent;
-}
+.wl-topnav-spacer { background: transparent !important; border: none !important; box-shadow: none !important; flex-shrink: 0; }
