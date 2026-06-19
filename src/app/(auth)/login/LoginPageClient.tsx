@@ -121,8 +121,8 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
   const backHref = isBoost ? '/' : '/weeklink';
 
   return (
-    <div className="auth-bg min-h-[100dvh] max-h-[100dvh] overflow-hidden flex"
-      style={{ background: isBoost ? '#07070A' : '#F6F7FB', fontFamily: 'var(--font-inter, system-ui, sans-serif)' }}>
+    <div className="auth-bg flex"
+      style={{ height: '100dvh', maxHeight: '100dvh', overflow: 'hidden', background: isBoost ? '#07070A' : '#F6F7FB', fontFamily: 'var(--font-inter, system-ui, sans-serif)' }}>
 
       {/* Panel izquierdo — solo desktop */}
       <div className="hidden lg:flex flex-col justify-between w-[420px] shrink-0 p-10"
@@ -152,9 +152,9 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
       </div>
 
       {/* Panel derecho — formulario */}
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
+      <div className="flex flex-1 flex-col items-center justify-start px-6 overflow-y-auto" style={{ paddingTop: 'max(24px, env(safe-area-inset-top, 24px))', paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
         {/* Mobile logo */}
-        <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+        <div className="flex items-center gap-2.5 mb-4 lg:hidden">
           {brandLogo
             ? <img src={brandLogo} alt={brandName} className="h-8 w-auto" />
             : <WeeklinkMark size={32} />}
@@ -163,7 +163,7 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
 
         <div className="w-full max-w-[420px]">
           <Link href={backHref}
-            className="inline-flex items-center gap-1.5 text-[13px] transition-colors mb-8"
+            className="inline-flex items-center gap-1.5 text-[13px] transition-colors mb-4"
             style={{ color: isBoost ? 'rgba(255,255,255,0.5)' : '#6B7280' }}
             onMouseEnter={e => (e.currentTarget.style.color = isBoost ? 'rgba(255,255,255,0.9)' : '#111827')}
             onMouseLeave={e => (e.currentTarget.style.color = isBoost ? 'rgba(255,255,255,0.5)' : '#6B7280')}>
@@ -172,7 +172,7 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
           </Link>
 
           <h1 className="text-[28px] font-bold mb-1" style={{ color: isBoost ? '#FFFFFF' : '#111827' }}>Bienvenido de vuelta</h1>
-          <p className="text-[14px] mb-8" style={{ color: isBoost ? 'rgba(255,255,255,0.5)' : '#6B7280' }}>
+          <p className="text-[14px] mb-5" style={{ color: isBoost ? 'rgba(255,255,255,0.5)' : '#6B7280' }}>
             ¿No tienes cuenta?{' '}
             <Link href="/register" className="font-medium hover:underline" style={{ color: isBoost ? '#A78BFA' : '#7C3AED' }}>Regístrate</Link>
           </p>
@@ -180,7 +180,7 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
           {/* Google */}
           {hasGoogle && (
             <button onClick={handleGoogle} disabled={googleLoading}
-              className="w-full flex items-center justify-center gap-2.5 rounded-xl border py-3 text-[14px] font-medium transition-colors mb-4 disabled:opacity-60"
+              className="w-full flex items-center justify-center gap-2.5 rounded-xl border py-3 text-[14px] font-medium transition-colors mb-3 disabled:opacity-60"
               style={isBoost
                 ? { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.9)' }
                 : { border: '1px solid rgba(17,24,39,0.12)', background: '#fff', color: '#111827' }}>
@@ -205,7 +205,7 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
           )}
 
           {/* Tabs */}
-          <div className="flex gap-1 p-1 rounded-xl mb-5" style={{ background: isBoost ? 'rgba(255,255,255,0.06)' : 'rgba(17,24,39,0.04)' }}>
+          <div className="flex gap-1 p-1 rounded-xl mb-3" style={{ background: isBoost ? 'rgba(255,255,255,0.06)' : 'rgba(17,24,39,0.04)' }}>
             {(['password', 'magic'] as const).map(t => (
               <button key={t} onClick={() => setTab(t)}
                 className="flex-1 py-2 rounded-lg text-[13px] font-medium transition-all"

@@ -97,8 +97,8 @@ export default function DashboardLayout({
               <TopNav />
 
               {/* Main content — paddingTop compensa el TopNav fixed */}
-              <main className="flex-1 min-h-0 overflow-hidden flex flex-col"
-                style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)", paddingTop: "calc(56px + env(safe-area-inset-top, 0px))" }}>
+              <main className="flex-1 min-h-0 overflow-hidden flex flex-col wl-main-content"
+                style={{ background: "linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 50%, #0a0a0a 100%)" }}>
                 <Suspense fallback={null}>
                   <ForbiddenBanner />
                 </Suspense>

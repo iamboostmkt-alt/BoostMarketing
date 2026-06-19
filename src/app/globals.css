@@ -709,6 +709,16 @@ html:has(> body > div[style*="F6F7FB"]),
 /* ── Fix barra blanca en TopNav al navegar ─────────────── */
 /* Asegurar que el contenedor del dashboard sea siempre oscuro */
 
+/* ── Main content: paddingTop estático para evitar flash de barra ── */
+.wl-main-content {
+  padding-top: 56px;
+}
+@supports (padding-top: env(safe-area-inset-top)) {
+  .wl-main-content {
+    padding-top: calc(56px + env(safe-area-inset-top, 0px));
+  }
+}
+
 /* ── wl-topnav: TopNav siempre estable, no se mueve ────────── */
 .wl-topnav {
   background: linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%);
