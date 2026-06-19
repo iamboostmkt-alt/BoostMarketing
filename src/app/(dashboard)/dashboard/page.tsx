@@ -7,13 +7,13 @@ import { motion } from 'framer-motion';
 import {
   ListTodo, Users, BadgeCheck, Clock, Video,
   Plus, ArrowUpRight, ArrowDownRight, BrainCircuit,
-  UserCircle, MessageSquare, X, ChevronRight,
-  CalendarDays, UsersRound, Target, Pencil,
+  MessageSquare, X, ChevronRight,
+  CalendarDays, UsersRound, Target, Zap, Bell,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { DashboardStats, Task, Appointment } from '@/lib/types';
-import { statusLabels, priorityLabels } from '@/lib/theme-maps';
+import { statusLabels } from '@/lib/theme-maps';
 import TaskForm from '@/components/dashboard/TaskForm';
 import ClientForm from '@/components/dashboard/ClientForm';
 import { InviteModal } from '@/components/dashboard/InviteModal';
@@ -23,16 +23,21 @@ const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 function userInitials(name: string | null, email: string) {
   return (name || email).split(/[\s@]/).map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
-
 function greeting() {
   const h = new Date().getHours();
   if (h < 12) return 'Buenos días';
   if (h < 19) return 'Buenas tardes';
   return 'Buenas noches';
 }
-
 function fmtDate() {
   return new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+function timeAgo(date: string | Date) {
+  const diff = (Date.now() - new Date(date).getTime()) / 1000;
+  if (diff < 60) return 'Ahora';
+  if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
+  return `Hace ${Math.floor(diff / 86400)} días`;
 }
 
 const roleBadge: Record<string, string> = {
@@ -71,12 +76,12 @@ function KpiCard({ label, value, icon: Icon, color, change, up, onClick }: {
 }
 
 // ─── Section Card ───────────────────────────────────────────
-function SectionCard({ title, action, actionHref, children }: {
-  title: string; action?: string; actionHref?: string; children: React.ReactNode;
+function SectionCard({ title, action, actionHref, children, minH }: {
+  title: string; action?: string; actionHref?: string; children: React.ReactNode; minH?: number;
 }) {
   return (
-    <div className="wl-kpi-card rounded-[20px] p-5 flex flex-col gap-0">
-      <div className="flex items-center justify-between mb-4">
+    <div className="wl-kpi-card rounded-[20px] p-5 flex flex-col" style={{ minHeight: minH }}>
+      <div className="flex items-center justify-between mb-4 shrink-0">
         <h3 className="text-[15px] font-semibold" style={{ color: 'var(--wl-text-primary)' }}>{title}</h3>
         {action && actionHref && (
           <Link href={actionHref} className="text-[12px] font-medium text-[#8B5CF6] hover:text-[#7C3AED] transition-colors flex items-center gap-1">
@@ -84,12 +89,11 @@ function SectionCard({ title, action, actionHref, children }: {
           </Link>
         )}
       </div>
-      {children}
+      <div className="flex-1">{children}</div>
     </div>
   );
 }
 
-// ─── Empty State ────────────────────────────────────────────
 function Empty({ msg }: { msg: string }) {
   return (
     <div className="py-8 text-center">
@@ -98,95 +102,344 @@ function Empty({ msg }: { msg: string }) {
   );
 }
 
+// ─── Mensajes recientes con avatar ─────────────────────────
+function MsgList({ messages }: { messages: any[] }) {
+  if (!messages.length) return <Empty msg="Sin mensajes recientes" />;
+  return (
+    <div className="space-y-2">
+      {messages.slice(0, 5).map((msg: any) => (
+        <Link key={msg.id} href="/dashboard/chat"
+          className="flex items-start gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
+          <Avatar className="h-7 w-7 shrink-0 rounded-full overflow-hidden mt-0.5">
+            <AvatarImage src={msg.user?.image || undefined} />
+            <AvatarFallback className="text-[9px] font-semibold"
+              style={{ background: (msg.user?.color || '#7c3aed') + '20', color: msg.user?.color || '#7c3aed' }}>
+              {userInitials(msg.user?.name || null, msg.user?.email || 'U')}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="text-[11px] font-semibold" style={{ color: 'var(--wl-text-primary)' }}>
+                {msg.user?.name?.split(' ')[0] || 'Usuario'}
+              </span>
+              <span className="text-[10px]" style={{ color: 'var(--wl-text-muted)' }}>
+                #{msg.room?.replace('TEAM_', '').toLowerCase() || 'general'}
+              </span>
+            </div>
+            <p className="text-[12px] truncate" style={{ color: 'var(--wl-text-secondary)' }}>
+              {msg.message?.slice(0, 55)}{(msg.message?.length || 0) > 55 ? '…' : ''}
+            </p>
+          </div>
+          <span className="text-[10px] shrink-0 mt-0.5" style={{ color: 'var(--wl-text-placeholder)' }}>
+            {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// ─── Actividad de Clientes (Admin) ──────────────────────────
+function ClientActivityList({ items }: { items: any[] }) {
+  if (!items.length) return <Empty msg="Sin actividad reciente de clientes" />;
+  const actionIcon: Record<string, string> = {
+    task_created: '📝', task_completed: '✅', file_uploaded: '📎',
+    meeting_scheduled: '📅', message_sent: '💬', task_approved: '✅',
+    client_commented: '💬', task_updated: '🔄',
+  };
+  return (
+    <div className="space-y-2">
+      {items.slice(0, 6).map((item: any, i: number) => (
+        <Link key={i} href={item.href || '/dashboard/clients'}
+          className="flex items-start gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
+          <div className="w-7 h-7 rounded-[8px] flex items-center justify-center text-[13px] shrink-0 mt-0.5"
+            style={{ background: 'rgba(139,92,246,0.10)' }}>
+            {actionIcon[item.action] || '📌'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[12px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>
+              {item.clientName}
+            </p>
+            <p className="text-[11px] truncate" style={{ color: 'var(--wl-text-muted)' }}>
+              {item.description}
+            </p>
+          </div>
+          <span className="text-[10px] shrink-0 mt-0.5" style={{ color: 'var(--wl-text-placeholder)' }}>
+            {timeAgo(item.createdAt)}
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// ─── Actividad Relacionada (Team Member) ───────────────────
+function RelatedActivityList({ items }: { items: any[] }) {
+  if (!items.length) return <Empty msg="Sin actividad reciente relacionada contigo" />;
+  return (
+    <div className="space-y-2">
+      {items.slice(0, 6).map((item: any, i: number) => (
+        <Link key={i} href={item.href || '/dashboard/tasks'}
+          className="flex items-start gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+            style={{ background: (item.actorColor || '#7c3aed') + '20' }}>
+            <Avatar className="h-7 w-7">
+              <AvatarImage src={item.actorImage || undefined} />
+              <AvatarFallback className="text-[9px] font-semibold"
+                style={{ background: (item.actorColor || '#7c3aed') + '20', color: item.actorColor || '#7c3aed' }}>
+                {userInitials(item.actorName || null, 'U')}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[12px] font-medium" style={{ color: 'var(--wl-text-primary)' }}>
+              <span style={{ color: '#7C3AED' }}>{item.actorName?.split(' ')[0]}</span>{' '}
+              <span style={{ color: 'var(--wl-text-secondary)' }}>{item.description}</span>
+            </p>
+            {item.context && (
+              <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--wl-text-muted)' }}>{item.context}</p>
+            )}
+          </div>
+          <span className="text-[10px] shrink-0 mt-0.5" style={{ color: 'var(--wl-text-placeholder)' }}>
+            {timeAgo(item.createdAt)}
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// ─── Clientes activos card ──────────────────────────────────
+function ClientsGrid({ clients, myClientsOnly }: { clients: any[]; myClientsOnly?: boolean }) {
+  if (!clients.length) return <Empty msg="Sin clientes activos" />;
+  return (
+    <div className="space-y-2.5">
+      {clients.slice(0, 5).map((c: any) => {
+        const totalC = (c.activeTasks || 0) + (c.completedTasks || 0) + (c.taskCount || 0);
+        const doneC = c.completedTasks || c.completedTaskCount || 0;
+        const progress = totalC > 0 ? Math.round((doneC / totalC) * 100) : 0;
+        const progressColor = progress > 75 ? '#10B981' : progress > 40 ? '#F59E0B' : '#EF4444';
+        const pm = c.assignedManager || c.manager;
+        const lastActivity = c.lastActivity || c.updatedAt;
+        return (
+          <Link key={c.id} href={`/dashboard/clients`}
+            className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all group">
+            <div className="w-9 h-9 rounded-[10px] flex items-center justify-center text-[12px] font-bold text-white shrink-0"
+              style={{ background: c.color || '#7C3AED' }}>
+              {(c.name || 'C')[0].toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1 mb-1">
+                <p className="text-[13px] font-semibold truncate group-hover:text-[#7C3AED] transition-colors" style={{ color: 'var(--wl-text-primary)' }}>{c.name}</p>
+                <span className="text-[10px] shrink-0" style={{ color: 'var(--wl-text-muted)' }}>{progress}%</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden mb-1" style={{ background: 'var(--wl-elevated)' }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: progressColor }} />
+              </div>
+              <div className="flex items-center gap-2">
+                {pm && <span className="text-[10px]" style={{ color: 'var(--wl-text-muted)' }}>PM: {pm.name?.split(' ')[0]}</span>}
+                {(c.activeTasks || 0) > 0 && <span className="text-[10px]" style={{ color: 'var(--wl-text-muted)' }}>{c.activeTasks} pendientes</span>}
+                {lastActivity && <span className="text-[10px]" style={{ color: 'var(--wl-text-placeholder)' }}>{timeAgo(lastActivity)}</span>}
+              </div>
+            </div>
+            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: '#10B981' }} />
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Team Workload ──────────────────────────────────────────
+function WorkloadList({ members, onClick }: { members: any[]; onClick?: (id: string) => void }) {
+  if (!members.length) return <Empty msg="Sin datos de equipo" />;
+  const col = (pct: number) => pct > 80 ? '#EF4444' : pct > 60 ? '#F59E0B' : '#10B981';
+  return (
+    <div className="space-y-3">
+      {members.slice(0, 6).map((m: any) => {
+        const activeArr = Array.isArray(m.activeTasks) ? m.activeTasks : [];
+        const activeCnt = activeArr.filter((t: any) => t.status !== 'completed' && t.status !== 'approved').length;
+        const totalCnt = activeArr.length || m.totalTasks || 0;
+        const pct = totalCnt > 0 ? Math.min(Math.round((activeCnt / totalCnt) * 100), 100) : 0;
+        const c = col(pct);
+        return (
+          <div key={m.id} className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => onClick?.(m.id)}>
+            <Avatar className="h-7 w-7 shrink-0 rounded-full overflow-hidden">
+              <AvatarImage src={m.image || undefined} />
+              <AvatarFallback className="text-[9px] font-semibold"
+                style={{ background: (m.color || '#7c3aed') + '20', color: m.color || '#7c3aed' }}>
+                {userInitials(m.name, m.email)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[12px] font-medium truncate group-hover:text-[#7C3AED] transition-colors" style={{ color: 'var(--wl-text-primary)' }}>
+                  {m.name?.split(' ')[0]}
+                </p>
+                <span className="text-[11px] font-bold ml-2 shrink-0" style={{ color: c }}>{pct}%</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--wl-elevated)' }}>
+                <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.6, delay: 0.1 }} style={{ background: c }} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function DashboardHome() {
   const { data: session } = useSession();
   const router = useRouter();
-  const userName   = session?.user?.name || session?.user?.email || 'Usuario';
-  const userImage  = (session?.user as any)?.image || null;
-  const userColor  = (session?.user as any)?.color || '#7c3aed';
-  const userRole   = (session?.user as any)?.role as string | undefined;
-  const isManager  = MANAGER_ROLES.includes(userRole || '');
+  const userName  = session?.user?.name || session?.user?.email || 'Usuario';
+  const userImage = (session?.user as any)?.image || null;
+  const userColor = (session?.user as any)?.color || '#7c3aed';
+  const userRole  = (session?.user as any)?.role as string | undefined;
+  const userId    = (session?.user as any)?.id as string | undefined;
+  const isAdmin   = userRole === 'ADMIN';
+  const isPM      = userRole === 'PROJECT_MANAGER';
+  const isManager = MANAGER_ROLES.includes(userRole || '');
+  const isTeam    = !isManager && userRole !== 'CLIENT';
 
   // ── State ──────────────────────────────────────────────
-  const [stats, setStats]             = useState<DashboardStats | null>(null);
-  const [tasks, setTasks]             = useState<Task[]>([]);
-  const [meetings, setMeetings]       = useState<Appointment[]>([]);
-  const [messages, setMessages]       = useState<any[]>([]);
-  const [clients, setClients]         = useState<any[]>([]);
-  const [teamLoad, setTeamLoad]       = useState<any[]>([]);
-  const [projects,    setProjects]    = useState<any[]>([]);
-  const [briefOpen, setBriefOpen]     = useState(true);
-  const [taskFormOpen, setTaskFormOpen]   = useState(false);
+  const [stats, setStats]           = useState<DashboardStats | null>(null);
+  const [tasks, setTasks]           = useState<Task[]>([]);
+  const [meetings, setMeetings]     = useState<Appointment[]>([]);
+  const [messages, setMessages]     = useState<any[]>([]);
+  const [clients, setClients]       = useState<any[]>([]);
+  const [teamLoad, setTeamLoad]     = useState<any[]>([]);
+  const [projects, setProjects]     = useState<any[]>([]);
+  const [clientActivity, setClientActivity] = useState<any[]>([]);
+  const [relatedActivity, setRelatedActivity] = useState<any[]>([]);
+  const [briefOpen, setBriefOpen]   = useState(true);
+  const [taskFormOpen, setTaskFormOpen] = useState(false);
   const [clientFormOpen, setClientFormOpen] = useState(false);
-  const [inviteOpen, setInviteOpen]   = useState(false);
-  const [loading, setLoading]         = useState(true);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [loading, setLoading]       = useState(true);
 
   // ── Fetch ───────────────────────────────────────────────
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsR, tasksR, meetsR, msgsR, clientsR, workloadR, projectsR] = await Promise.all([
+      // Fetches comunes a todos los roles
+      const basePromises = [
         fetch('/api/stats').then(r => r.json()).catch(() => null),
         fetch('/api/tasks?scope=mine&limit=8').then(r => r.json()).catch(() => ({ tasks: [] })),
         fetch('/api/meetings?limit=4').then(r => r.json()).catch(() => ({ meetings: [] })),
         fetch('/api/chat?room=TEAM&limit=6').then(r => r.json()).catch(() => ({ messages: [] })),
-        fetch('/api/clients?limit=4').then(r => r.json()).catch(() => ({ clients: [] })),
-        fetch('/api/team/workload').then(r => r.json()).catch(() => ({ members: [] })),
         fetch('/api/projects?limit=5').then(r => r.json()).catch(() => ({ projects: [] })),
-      ]);
+      ];
+
+      const [statsR, tasksR, meetsR, msgsR, projectsR] = await Promise.all(basePromises);
       if (statsR) setStats(statsR);
       setTasks(tasksR?.tasks || []);
       setMeetings(meetsR?.meetings || []);
       setMessages(msgsR?.messages || []);
-      setClients(clientsR?.clients || []);
-      setTeamLoad(workloadR?.users || workloadR?.members || []);
       setProjects(projectsR?.projects || []);
+
+      // Admin: clientes + workload + actividad de clientes
+      if (isAdmin) {
+        const [clientsR, workloadR, activityR] = await Promise.all([
+          fetch('/api/clients?limit=6').then(r => r.json()).catch(() => ({ clients: [] })),
+          fetch('/api/team/workload').then(r => r.json()).catch(() => ({ members: [] })),
+          fetch('/api/activity?limit=20').then(r => r.json()).catch(() => ({ activities: [] })),
+        ]);
+        setClients(clientsR?.clients || []);
+        setTeamLoad(workloadR?.users || workloadR?.members || []);
+        // Transformar actividad en formato de clientes
+        const acts = (activityR?.activities || []).filter((a: any) =>
+          ['task_created','task_completed','file_uploaded','meeting_scheduled','task_approved'].includes(a.action)
+        );
+        // Agrupar por clientId desde details
+        const clientActs = acts.map((a: any) => {
+          let details: any = {};
+          try { details = JSON.parse(a.details || '{}'); } catch {}
+          return {
+            action: a.action,
+            clientName: details.clientName || details.client?.name || 'Sin cliente',
+            description: details.description || details.taskTitle || a.action,
+            createdAt: a.createdAt,
+            href: details.clientId ? `/dashboard/clients` : '/dashboard/tasks',
+          };
+        }).filter((a: any) => a.clientName !== 'Sin cliente');
+        setClientActivity(clientActs);
+      }
+
+      // PM: sus clientes + su equipo
+      if (isPM) {
+        const [clientsR, workloadR] = await Promise.all([
+          fetch('/api/clients?limit=8&myClients=true').then(r => r.json()).catch(() => ({ clients: [] })),
+          fetch('/api/team/workload?myTeam=true').then(r => r.json()).catch(() => ({ members: [] })),
+        ]);
+        setClients(clientsR?.clients || []);
+        setTeamLoad(workloadR?.users || workloadR?.members || []);
+      }
+
+      // Team: actividad relacionada con ellos
+      if (isTeam && !isAdmin && !isPM) {
+        const actR = await fetch('/api/activity?limit=15&myActivity=true').then(r => r.json()).catch(() => ({ activities: [] }));
+        const relActs = (actR?.activities || []).map((a: any) => {
+          let details: any = {};
+          try { details = JSON.parse(a.details || '{}'); } catch {}
+          return {
+            actorName: details.actorName || 'Alguien',
+            actorImage: details.actorImage || null,
+            actorColor: details.actorColor || '#7c3aed',
+            description: details.description || a.action,
+            context: details.taskTitle || details.clientName || '',
+            createdAt: a.createdAt,
+            href: details.taskId ? '/dashboard/tasks' : '/dashboard/chat',
+          };
+        });
+        setRelatedActivity(relActs);
+      }
+
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAdmin, isPM, isTeam]);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => { if (userRole) fetchAll(); }, [fetchAll, userRole]);
 
   // ── Computed ────────────────────────────────────────────
-  const overdue   = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed' && t.status !== 'approved');
-  // Reuniones de hoy y próximos 7 días
+  const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed' && t.status !== 'approved');
   const now = new Date();
   const endOfWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const meetingsThisWeek = meetings.filter(m => {
-    const d = new Date((m as any).date);
-    return d >= now && d <= endOfWeek;
-  });
-  const meetingsToday = meetings.filter(m => {
-    const d = new Date((m as any).date);
-    return d.toDateString() === now.toDateString();
-  });
+  const meetingsThisWeek = meetings.filter(m => { const d = new Date((m as any).date); return d >= now && d <= endOfWeek; });
+  const meetingsToday = meetings.filter(m => { const d = new Date((m as any).date); return d.toDateString() === now.toDateString(); });
   const todayTasks = tasks.filter(t => t.dueDate && new Date(t.dueDate).toDateString() === new Date().toDateString());
   const nextMeeting = meetings[0] || null;
-  const pending   = tasks.filter(t => t.status !== 'completed' && t.status !== 'approved' && t.status !== 'cancelled');
+  const pending = tasks.filter(t => t.status !== 'completed' && t.status !== 'approved' && t.status !== 'cancelled');
 
-  const kpis = isManager ? [
-    { label: 'Tareas pendientes',     value: pending.length,                       icon: ListTodo,   color: '#3B82F6', change: '+12%', up: true,  href: '/dashboard/tasks'    },
-    { label: 'Clientes activos',      value: stats?.activeClients ?? 0,            icon: UsersRound, color: '#10B981', change: '+8%',  up: true,  href: '/dashboard/clients'  },
-    { label: 'Aprobaciones pendientes', value: stats?.pendingDeals ?? 0,           icon: BadgeCheck, color: '#F59E0B', change: '',     up: false, href: '/dashboard/files'    },
-    { label: meetingsToday.length > 0 ? 'Reuniones hoy' : 'Esta semana', value: meetingsToday.length > 0 ? meetingsToday.length : meetingsThisWeek.length, icon: Video, color: '#8B5CF6', change: '', up: true, href: '/dashboard/calendar' },
-  ] : [
-    { label: 'Tareas hoy',            value: todayTasks.length,                    icon: ListTodo,   color: '#3B82F6', change: '', up: true,  href: '/dashboard/tasks'   },
-    { label: 'Vencidas',              value: overdue.length,                       icon: Clock,      color: overdue.length > 0 ? '#EF4444' : '#94A3B8', change: '', up: false, href: '/dashboard/tasks' },
-    { label: 'Completadas esta semana', value: tasks.filter(t => t.status === 'completed').length, icon: BadgeCheck, color: '#10B981', change: '', up: true, href: '/dashboard/tasks' },
-    { label: 'Próxima reunión',       value: nextMeeting ? new Date(nextMeeting.date).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'Sin reunión', icon: Video, color: '#F59E0B', change: '', up: true, href: '/dashboard/calendar' },
+  // KPIs por rol
+  const adminKpis = [
+    { label: 'Tareas activas',       value: pending.length,                  icon: ListTodo,   color: '#3B82F6', change: '+12%', up: true,  href: '/dashboard/tasks'   },
+    { label: 'Clientes activos',     value: stats?.activeClients ?? clients.length, icon: UsersRound, color: '#10B981', change: '+8%', up: true, href: '/dashboard/clients' },
+    { label: 'Aprobaciones pendientes', value: stats?.pendingDeals ?? 0,     icon: BadgeCheck, color: '#F59E0B', href: '/dashboard/tasks' },
+    { label: meetingsToday.length > 0 ? 'Reuniones hoy' : 'Esta semana', value: meetingsToday.length > 0 ? meetingsToday.length : meetingsThisWeek.length, icon: Video, color: '#8B5CF6', href: '/dashboard/calendar' },
   ];
+  const pmKpis = [
+    { label: 'Mis tareas activas',   value: pending.length,                  icon: Target,     color: '#3B82F6', href: '/dashboard/tasks'   },
+    { label: 'Mis clientes',         value: clients.length,                  icon: UsersRound, color: '#10B981', href: '/dashboard/clients' },
+    { label: 'Por aprobar',          value: stats?.pendingDeals ?? 0,        icon: BadgeCheck, color: '#F59E0B', href: '/dashboard/tasks'   },
+    { label: 'Reuniones esta semana',value: meetingsThisWeek.length,         icon: Video,      color: '#8B5CF6', href: '/dashboard/calendar' },
+  ];
+  const teamKpis = [
+    { label: 'Tareas hoy',           value: todayTasks.length,               icon: ListTodo,   color: '#3B82F6', href: '/dashboard/tasks'   },
+    { label: 'Vencidas',             value: overdue.length,                  icon: Clock,      color: overdue.length > 0 ? '#EF4444' : '#94A3B8', href: '/dashboard/tasks' },
+    { label: 'Completadas esta semana', value: tasks.filter(t => t.status === 'completed').length, icon: BadgeCheck, color: '#10B981', href: '/dashboard/tasks' },
+    { label: 'Próxima reunión',      value: nextMeeting ? new Date((nextMeeting as any).date).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '—', icon: Video, color: '#F59E0B', href: '/dashboard/calendar' },
+  ];
+  const kpis = isAdmin ? adminKpis : isPM ? pmKpis : teamKpis;
 
   const priorityColor: Record<string, string> = { urgent: '#EF4444', high: '#F97316', medium: '#F59E0B', low: '#94A3B8' };
   const statusColor: Record<string, { bg: string; text: string }> = {
-    pending: { bg: '#F3F4F6', text: '#6B7280' },
-    in_progress: { bg: '#DBEAFE', text: '#2563EB' },
-    review: { bg: '#FEF3C7', text: '#D97706' },
-    completed: { bg: '#D1FAE5', text: '#059669' },
-    approved: { bg: '#D1FAE5', text: '#059669' },
+    pending: { bg: '#F3F4F6', text: '#6B7280' }, in_progress: { bg: '#DBEAFE', text: '#2563EB' },
+    review: { bg: '#FEF3C7', text: '#D97706' }, completed: { bg: '#D1FAE5', text: '#059669' }, approved: { bg: '#D1FAE5', text: '#059669' },
   };
-
-  const workloadColor = (pct: number) => pct > 80 ? '#EF4444' : pct > 60 ? '#F59E0B' : '#10B981';
 
   // ── Skeleton ─────────────────────────────────────────────
   if (loading) {
@@ -214,7 +467,7 @@ export default function DashboardHome() {
     <>
       <div className="wl-dashboard-bg flex flex-col px-4 sm:px-6 lg:px-8 py-5 gap-5" style={{ minHeight: '100%' }}>
 
-        {/* ── HEADER ───────────────────────────────────────── */}
+        {/* ── HEADER ── */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0 flex-1 overflow-hidden">
             <Avatar className="h-10 w-10 shrink-0 rounded-[12px] overflow-hidden ring-1 ring-black/[0.06]">
@@ -228,9 +481,7 @@ export default function DashboardHome() {
               <h1 className="text-[15px] sm:text-[19px] font-bold leading-snug" style={{ color: 'var(--wl-text-primary)' }}>
                 {greeting()},{' '}
                 <span className="text-[#7C3AED]">
-                  {userName.split(' ')[0].length > 10
-                    ? userName.split(' ')[0].slice(0, 10) + '…'
-                    : userName.split(' ')[0]}
+                  {userName.split(' ')[0].length > 10 ? userName.split(' ')[0].slice(0, 10) + '…' : userName.split(' ')[0]}
                 </span>{' '}👋
               </h1>
               <div className="flex items-center gap-2 mt-0.5">
@@ -244,15 +495,10 @@ export default function DashboardHome() {
               </div>
             </div>
           </div>
-
-          {/* Quick actions */}
           <div className="flex items-center gap-2 shrink-0">
-            <motion.button
-              onClick={() => setTaskFormOpen(true)}
-              whileTap={{ scale: 0.97 }}
+            <motion.button onClick={() => setTaskFormOpen(true)} whileTap={{ scale: 0.97 }}
               className="flex h-9 w-9 sm:w-auto items-center justify-center sm:gap-1.5 rounded-[12px] sm:px-4 text-[13px] font-semibold text-white transition-all"
-              style={{ background: '#7C3AED', boxShadow: '0 4px 12px rgba(124,58,237,0.25)' }}
-            >
+              style={{ background: '#7C3AED', boxShadow: '0 4px 12px rgba(124,58,237,0.25)' }}>
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Nueva tarea</span>
             </motion.button>
@@ -266,15 +512,12 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* ── AI DAILY BRIEF ───────────────────────────────── */}
+        {/* ── DAILY BRIEF ── */}
         {briefOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
             className="relative rounded-[20px] p-5 flex items-start gap-4"
-            style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(124,58,237,0.10) 100%)', border: '1px solid rgba(139,92,246,0.12)' }}
-          >
-            <div className="w-10 h-10 rounded-[12px] flex items-center justify-center shrink-0"
-              style={{ background: 'rgba(139,92,246,0.12)' }}>
+            style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(124,58,237,0.10) 100%)', border: '1px solid rgba(139,92,246,0.12)' }}>
+            <div className="w-10 h-10 rounded-[12px] flex items-center justify-center shrink-0" style={{ background: 'rgba(139,92,246,0.12)' }}>
               <BrainCircuit className="w-5 h-5 text-[#8B5CF6]" />
             </div>
             <div className="flex-1 min-w-0">
@@ -284,26 +527,28 @@ export default function DashboardHome() {
                   style={{ background: 'rgba(139,92,246,0.10)' }}>IA</span>
               </div>
               <p className="text-[13px] leading-relaxed" style={{ color: 'var(--wl-text-secondary)' }}>
-                {pending.length > 0
-                  ? `Tienes ${pending.length} tarea${pending.length > 1 ? 's' : ''} pendiente${pending.length > 1 ? 's' : ''}.${overdue.length > 0 ? ` ${overdue.length} vencida${overdue.length > 1 ? 's' : ''} — atención inmediata.` : ''}${nextMeeting ? ` Reunión próxima: ${nextMeeting.name}.` : ''}`
+                {isAdmin && clients.length > 0
+                  ? `Tienes ${clients.length} cliente${clients.length > 1 ? 's' : ''} activo${clients.length > 1 ? 's' : ''}. ${pending.length > 0 ? `${pending.length} tarea${pending.length > 1 ? 's' : ''} pendiente${pending.length > 1 ? 's' : ''} en el equipo.` : 'Todo al día.'} ${overdue.length > 0 ? `${overdue.length} vencida${overdue.length > 1 ? 's' : ''} — atención inmediata.` : ''}`
+                  : pending.length > 0
+                  ? `Tienes ${pending.length} tarea${pending.length > 1 ? 's' : ''} pendiente${pending.length > 1 ? 's' : ''}.${overdue.length > 0 ? ` ${overdue.length} vencida${overdue.length > 1 ? 's' : ''} — atención inmediata.` : ''}${nextMeeting ? ` Próxima reunión: ${(nextMeeting as any).name}.` : ''}`
                   : 'Todo al día. Sin tareas pendientes por ahora.'}
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <Link href="/dashboard/tasks" className="text-[12px] font-medium text-[#7C3AED] flex items-center gap-1 hover:underline">
-                  Ver mis tareas <ChevronRight className="w-3.5 h-3.5" />
+                  {isAdmin ? 'Ver tareas del equipo' : 'Ver mis tareas'} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
-                <Link href="/dashboard/calendar" className="text-[12px] font-medium text-[var(--wl-text-muted)] flex items-center gap-1 hover:text-[var(--wl-text-primary)] transition-colors">
+                <Link href="/dashboard/calendar" className="text-[12px] font-medium flex items-center gap-1 hover:text-[var(--wl-text-primary)] transition-colors" style={{ color: 'var(--wl-text-muted)' }}>
                   Abrir calendario <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
-            <button onClick={() => setBriefOpen(false)} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-muted)] transition-colors shrink-0">
+            <button onClick={() => setBriefOpen(false)} className="hover:text-[var(--wl-text-muted)] transition-colors shrink-0" style={{ color: 'var(--wl-text-placeholder)' }}>
               <X className="w-4 h-4" />
             </button>
           </motion.div>
         )}
 
-        {/* ── KPI CARDS ─────────────────────────────────────── */}
+        {/* ── KPIs ── */}
         <div className="grid grid-cols-4 gap-2.5">
           {kpis.map((k, i) => (
             <motion.div key={k.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
@@ -312,23 +557,25 @@ export default function DashboardHome() {
           ))}
         </div>
 
-        {/* ── FILA 1: Focus Today + Actividad + Producción ─── */}
+        {/* ─────────────────────────────────────── */}
+        {/* FILA 1: Focus Today + columna central + Reuniones */}
+        {/* ─────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-          {/* Focus Today */}
+          {/* Focus Today — igual para todos los roles */}
           <SectionCard title="🎯 Focus Today" action="Ver todas" actionHref="/dashboard/tasks">
             {pending.length === 0 ? (
               <Empty msg="Sin tareas pendientes. ¡Todo al día! ✓" />
             ) : (
               <div className="space-y-2">
                 {pending.slice(0, 5).map(t => (
-                  <Link key={t.id} href={`/dashboard/tasks`}
+                  <Link key={t.id} href="/dashboard/tasks"
                     className="flex items-center gap-3 p-3 rounded-[14px] group transition-all hover:bg-[var(--wl-hover)]">
                     <div className="w-1.5 h-8 rounded-full shrink-0" style={{ background: priorityColor[t.priority] || '#94A3B8' }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-medium truncate group-hover:text-[#7C3AED] transition-colors" style={{ color: 'var(--wl-text-primary)' }}>{t.title}</p>
-                      <p className="text-[11px] text-[var(--wl-text-muted)] mt-0.5">
-                        {t.client?.name && <span className="mr-2">{t.client.name}</span>}
+                      <p className="text-[11px] mt-0.5" style={{ color: 'var(--wl-text-muted)' }}>
+                        {(t as any).client?.name && <span className="mr-2">{(t as any).client.name}</span>}
                         {t.dueDate && <span className={new Date(t.dueDate) < new Date() ? 'text-red-500' : ''}>{new Date(t.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>}
                       </p>
                     </div>
@@ -342,61 +589,92 @@ export default function DashboardHome() {
             )}
           </SectionCard>
 
-          {/* Producción activa — proyectos en curso */}
-          <SectionCard title="🚀 Producción activa" action="Ver todos" actionHref="/dashboard/projects">
-            {projects.length === 0 ? (
-              <Empty msg="Sin proyectos activos" />
-            ) : (
-              <div className="space-y-2">
-                {projects.slice(0, 5).map((p: any) => {
-                  const total = p._count?.tasks || 0;
-                  const done  = p.tasks?.filter((t: any) => t.status === 'completed' || t.status === 'approved').length || 0;
-                  const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
-                  const statusLabel: Record<string, string> = { active: 'En curso', completed: 'Completado', paused: 'Pausado', cancelled: 'Cancelado' };
-                  const statusCol: Record<string, string>   = { active: '#3B82F6', completed: '#10B981', paused: '#F59E0B', cancelled: '#EF4444' };
-                  return (
-                    <Link key={p.id} href={`/dashboard/projects/${p.id}`}
-                      className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
-                      <div className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                        style={{ background: p.color || '#7C3AED' }}>
-                        {(p.name || 'P')[0].toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <p className="text-[12px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{p.name}</p>
-                          <span className="text-[10px] font-semibold shrink-0 px-1.5 py-0.5 rounded-full"
-                            style={{ color: statusCol[p.status] || '#6B7280', background: (statusCol[p.status] || '#6B7280') + '18' }}>
-                            {statusLabel[p.status] || p.status}
-                          </span>
-                        </div>
-                        {total > 0 && (
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'var(--wl-elevated)' }}>
-                              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: p.color || '#7C3AED' }} />
+          {/* Columna central: Actividad de Clientes (Admin/PM) | Producción Activa (Team) */}
+          {(isAdmin || isPM) ? (
+            <SectionCard
+              title={isAdmin ? '📢 Actividad de Clientes' : '📢 Actividad de Mis Clientes'}
+              action="Ver clientes" actionHref="/dashboard/clients">
+              {clientActivity.length > 0
+                ? <ClientActivityList items={clientActivity} />
+                : (
+                  // Si no hay actividad del log, mostrar proyectos en curso como fallback
+                  projects.length === 0 ? <Empty msg="Sin actividad reciente" /> : (
+                    <div className="space-y-2">
+                      {projects.slice(0, 4).map((p: any) => {
+                        const total = p._count?.tasks || 0;
+                        const done = p.tasks?.filter((t: any) => t.status === 'completed' || t.status === 'approved').length || 0;
+                        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                        return (
+                          <Link key={p.id} href={`/dashboard/projects/${p.id}`}
+                            className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
+                            <div className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                              style={{ background: p.color || '#7C3AED' }}>
+                              {(p.name || 'P')[0].toUpperCase()}
                             </div>
-                            <span className="text-[9px] shrink-0" style={{ color: 'var(--wl-text-muted)' }}>{pct}%</span>
-                          </div>
-                        )}
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </SectionCard>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[12px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{p.name}</p>
+                              {total > 0 && (
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'var(--wl-elevated)' }}>
+                                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: p.color || '#7C3AED' }} />
+                                  </div>
+                                  <span className="text-[9px] shrink-0" style={{ color: 'var(--wl-text-muted)' }}>{pct}%</span>
+                                </div>
+                              )}
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )
+                )
+              }
+            </SectionCard>
+          ) : (
+            // Team Member: Producción activa de su equipo
+            <SectionCard title="🚀 Producción activa" action="Ver todos" actionHref="/dashboard/projects">
+              {projects.length === 0 ? <Empty msg="Sin proyectos activos" /> : (
+                <div className="space-y-2">
+                  {projects.slice(0, 4).map((p: any) => {
+                    const total = p._count?.tasks || 0;
+                    const done = p.tasks?.filter((t: any) => t.status === 'completed' || t.status === 'approved').length || 0;
+                    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                    return (
+                      <Link key={p.id} href={`/dashboard/projects/${p.id}`}
+                        className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
+                        <div className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                          style={{ background: p.color || '#7C3AED' }}>
+                          {(p.name || 'P')[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{p.name}</p>
+                          {total > 0 && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'var(--wl-elevated)' }}>
+                                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: p.color || '#7C3AED' }} />
+                              </div>
+                              <span className="text-[9px] shrink-0" style={{ color: 'var(--wl-text-muted)' }}>{pct}%</span>
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </SectionCard>
+          )}
 
-          {/* Próximas reuniones */}
+          {/* Próximas Reuniones — todos los roles */}
           <SectionCard title="📅 Próximas reuniones" action="Ver calendario" actionHref="/dashboard/calendar">
-            {meetings.length === 0 ? (
-              <Empty msg="Sin reuniones próximas" />
-            ) : (
+            {meetings.length === 0 ? <Empty msg="Sin reuniones próximas" /> : (
               <div className="space-y-3">
                 {meetings.slice(0, 4).map((m: any) => {
                   const d = new Date(m.date);
-                  const isToday = d.toDateString() === new Date().toDateString();
+                  const isToday = d.toDateString() === now.toDateString();
                   const minsLeft = (d.getTime() - Date.now()) / 60000;
                   return (
-                    <div key={m.id} className="flex items-center gap-3 p-3 rounded-[14px] transition-all hover:bg-[var(--wl-hover)]">
+                    <div key={m.id} className="flex items-center gap-3 p-3 rounded-[14px] hover:bg-[var(--wl-hover)] transition-all">
                       <div className="w-10 h-10 rounded-[10px] flex flex-col items-center justify-center shrink-0"
                         style={{ background: 'rgba(16,185,129,0.08)' }}>
                         <p className="text-[10px] font-bold text-emerald-600 leading-none">{d.getDate()}</p>
@@ -404,7 +682,7 @@ export default function DashboardHome() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{m.name}</p>
-                        <p className="text-[11px] text-[var(--wl-text-muted)] mt-0.5">
+                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--wl-text-muted)' }}>
                           {isToday ? 'Hoy' : d.toLocaleDateString('es-ES', { weekday: 'short' })}, {d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
@@ -423,111 +701,58 @@ export default function DashboardHome() {
           </SectionCard>
         </div>
 
-        {/* ── FILA 2: Mensajes + Clientes + Team Workload ───── */}
-        {isManager && (
+        {/* ─────────────────────────────────────── */}
+        {/* FILA 2: diferenciada por rol */}
+        {/* ─────────────────────────────────────── */}
+
+        {/* ADMIN: Mensajes + Clientes Activos + Carga del Equipo */}
+        {isAdmin && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-            {/* Mensajes recientes */}
             <SectionCard title="💬 Mensajes recientes" action="Ver todo" actionHref="/dashboard/chat">
-              {messages.length === 0 ? (
-                <Empty msg="Sin mensajes recientes" />
-              ) : (
-                <div className="space-y-3">
-                  {messages.slice(0, 4).map((msg: any) => (
-                    <Link key={msg.id} href="/dashboard/chat"
-                      className="flex items-start gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
-                      <div className="text-[13px] font-semibold text-[#8B5CF6]">#</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-semibold text-[#7C3AED] mb-0.5">{msg.room?.replace('TEAM_', '').toLowerCase() || 'general'}</p>
-                        <p className="text-[12px] text-[var(--wl-text-primary)] font-medium">{msg.user?.name?.split(' ')[0]}: <span className="font-normal text-[var(--wl-text-secondary)]">{msg.message?.slice(0, 50)}{msg.message?.length > 50 ? '…' : ''}</span></p>
-                      </div>
-                      <span className="text-[10px] text-[var(--wl-text-placeholder)] shrink-0">
-                        {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <MsgList messages={messages} />
             </SectionCard>
-
-            {/* Clientes activos */}
             <SectionCard title="🏢 Clientes activos" action="Ver todos" actionHref="/dashboard/clients">
-              {clients.length === 0 ? (
-                <Empty msg="Sin clientes activos" />
-              ) : (
-                <div className="space-y-3">
-                  {clients.slice(0, 4).map((c: any) => {
-                    const totalC = (c.activeTasks || 0) + (c.completedTasks || 0) + (c.taskCount || 0);
-                    const doneC  = c.completedTasks || c.completedTaskCount || 0;
-                    const progress = totalC > 0 ? Math.round((doneC / totalC) * 100) : 0;
-                    const progressColor = progress > 75 ? '#10B981' : progress > 40 ? '#F59E0B' : '#EF4444';
-                    return (
-                      <Link key={c.id} href={`/dashboard/clients`}
-                        className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
-                        <div className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-                          style={{ background: c.color || '#7C3AED' }}>
-                          {(c.name || 'C')[0].toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{c.name}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--wl-elevated)' }}>
-                              <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: progressColor }} />
-                            </div>
-                            <span className="text-[10px] font-medium shrink-0" style={{ color: progressColor }}>{progress}%</span>
-                          </div>
-                        </div>
-                        <div className="w-2 h-2 rounded-full shrink-0" style={{ background: '#10B981' }} title="Activo" />
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+              <ClientsGrid clients={clients} />
             </SectionCard>
-
-            {/* Team Workload */}
             <SectionCard title="👥 Carga del equipo" action="Ver todo" actionHref="/dashboard/tasks">
-              {teamLoad.length === 0 ? (
-                <Empty msg="Sin datos de equipo" />
-              ) : (
-                <div className="space-y-3">
-                  {teamLoad.slice(0, 5).map((member: any) => {
-                    const activeArr = Array.isArray(member.activeTasks) ? member.activeTasks : [];
-                    const activeCnt = activeArr.filter((t: any) => t.status !== 'completed' && t.status !== 'approved').length;
-                    const totalCnt  = activeArr.length || member.totalTasks || 0;
-                    const pct = totalCnt > 0 ? Math.min(Math.round((activeCnt / totalCnt) * 100), 100) : 0;
-                    const col = workloadColor(pct);
-                    return (
-                      <div key={member.id} className="flex items-center gap-3">
-                        <Avatar className="h-7 w-7 shrink-0 rounded-full overflow-hidden">
-                          <AvatarImage src={member.image || undefined} />
-                          <AvatarFallback className="text-[9px] font-semibold"
-                            style={{ background: (member.color || '#7c3aed') + '20', color: member.color || '#7c3aed' }}>
-                            {userInitials(member.name, member.email)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <p className="text-[12px] font-medium truncate" style={{ color: 'var(--wl-text-primary)' }}>{member.name?.split(' ')[0]}</p>
-                            <span className="text-[11px] font-semibold ml-2 shrink-0" style={{ color: col }}>{pct}%</span>
-                          </div>
-                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--wl-elevated)' }}>
-                            <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }}
-                              transition={{ duration: 0.6, delay: 0.1 }} style={{ background: col }} />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <WorkloadList members={teamLoad} onClick={(id) => router.push(`/dashboard/tasks?assignee=${id}`)} />
+            </SectionCard>
+          </div>
+        )}
+
+        {/* PM: Mensajes + Mis Clientes + Carga de Mi Equipo */}
+        {isPM && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <SectionCard title="💬 Mensajes recientes" action="Ver todo" actionHref="/dashboard/chat">
+              <MsgList messages={messages} />
+            </SectionCard>
+            <SectionCard title="👤 Mis clientes" action="Ver todos" actionHref="/dashboard/clients">
+              <ClientsGrid clients={clients} myClientsOnly />
+            </SectionCard>
+            <SectionCard title="👥 Carga de mi equipo" action="Ver todo" actionHref="/dashboard/tasks">
+              <WorkloadList members={teamLoad} />
+            </SectionCard>
+          </div>
+        )}
+
+        {/* TEAM MEMBER: Mensajes + Actividad relacionada */}
+        {isTeam && !isAdmin && !isPM && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SectionCard title="💬 Mensajes recientes" action="Ver todo" actionHref="/dashboard/chat">
+              <MsgList messages={messages} />
+            </SectionCard>
+            <SectionCard title="⚡ Actividad relacionada" action="Ver tareas" actionHref="/dashboard/tasks">
+              {relatedActivity.length > 0
+                ? <RelatedActivityList items={relatedActivity} />
+                : <Empty msg="Sin actividad reciente relacionada contigo" />
+              }
             </SectionCard>
           </div>
         )}
 
       </div>
 
-      {/* ── Modals ─────────────────────────────────────────── */}
+      {/* Modals */}
       <TaskForm open={taskFormOpen} onOpenChange={setTaskFormOpen} onSuccess={() => { fetchAll(); setTaskFormOpen(false); }} isManager={isManager} />
       <ClientForm open={clientFormOpen} onOpenChange={setClientFormOpen} onSuccess={() => { fetchAll(); setClientFormOpen(false); }} isAdmin={userRole === 'ADMIN'} />
       <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
