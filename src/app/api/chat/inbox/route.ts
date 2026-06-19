@@ -53,12 +53,13 @@ export async function GET(req: NextRequest) {
       Array.from(dmByRoom.values()).map(async (msg) => {
         const parts = msg.room.split('_DM_');
         const otherId = parts.find((p) => p !== userId) || '';
-        let otherUser = null;
+        let otherUser: { id: string; name: string | null; email: string; color: string; image: string | null; role: string } | null = null;
         if (otherId && otherId !== 'weeklink') {
-          otherUser = await db.user.findFirst({
+          const found = await db.user.findFirst({
             where: { id: otherId, workspaceId },
             select: { id: true, name: true, email: true, color: true, image: true, role: true },
           });
+          if (found) otherUser = { ...found, role: found.role as string };
         }
         const isMine = msg.userId === userId;
         return {
