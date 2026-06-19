@@ -108,7 +108,7 @@ export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props
 
   return (
     <div className="auth-bg min-h-[100dvh] max-h-[100dvh] overflow-hidden flex"
-      style={{ background: '#F6F7FB', fontFamily: 'var(--font-inter, system-ui, sans-serif)' }}>
+      style={{ background: isBoost ? '#07070A' : '#F6F7FB', fontFamily: 'var(--font-inter, system-ui, sans-serif)' }}>
 
       {/* Panel izquierdo — solo desktop */}
       <div className="hidden lg:flex flex-col justify-between w-[420px] shrink-0 p-10"
@@ -144,26 +144,32 @@ export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props
           {brandLogo
             ? <img src={brandLogo} alt={brandName} className="h-8 w-auto" />
             : <WeeklinkMark size={32} />}
-          <span className="text-[18px] font-bold text-[#111827]">{brandName}</span>
+          <span className="text-[18px] font-bold" style={{ color: isBoost ? 'rgba(255,255,255,0.9)' : '#111827' }}>{brandName}</span>
         </div>
 
         <div className="w-full max-w-[420px]">
           <Link href={backHref}
-            className="inline-flex items-center gap-1.5 text-[13px] text-[#6B7280] hover:text-[#111827] transition-colors mb-8">
+            className="inline-flex items-center gap-1.5 text-[13px] transition-colors mb-8"
+            style={{ color: isBoost ? 'rgba(255,255,255,0.5)' : '#6B7280' }}
+            onMouseEnter={e => (e.currentTarget.style.color = isBoost ? 'rgba(255,255,255,0.9)' : '#111827')}
+            onMouseLeave={e => (e.currentTarget.style.color = isBoost ? 'rgba(255,255,255,0.5)' : '#6B7280')}>
             <ArrowLeft className="w-3.5 h-3.5" />
             Volver a {brandName}
           </Link>
 
-          <h1 className="text-[28px] font-bold text-[#111827] mb-1">Bienvenido de vuelta</h1>
-          <p className="text-[14px] text-[#6B7280] mb-8">
+          <h1 className="text-[28px] font-bold mb-1" style={{ color: isBoost ? '#FFFFFF' : '#111827' }}>Bienvenido de vuelta</h1>
+          <p className="text-[14px] mb-8" style={{ color: isBoost ? 'rgba(255,255,255,0.5)' : '#6B7280' }}>
             ¿No tienes cuenta?{' '}
-            <Link href="/register" className="text-[#7C3AED] font-medium hover:underline">Regístrate</Link>
+            <Link href="/register" className="font-medium hover:underline" style={{ color: isBoost ? '#A78BFA' : '#7C3AED' }}>Regístrate</Link>
           </p>
 
           {/* Google */}
           {hasGoogle && (
             <button onClick={handleGoogle} disabled={googleLoading}
-              className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-[rgba(17,24,39,0.12)] bg-white py-3 text-[14px] font-medium text-[#111827] hover:bg-[#F9FAFB] transition-colors mb-4 disabled:opacity-60">
+              className="w-full flex items-center justify-center gap-2.5 rounded-xl border py-3 text-[14px] font-medium transition-colors mb-4 disabled:opacity-60"
+              style={isBoost
+                ? { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.9)' }
+                : { border: '1px solid rgba(17,24,39,0.12)', background: '#fff', color: '#111827' }}>
               {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -180,16 +186,18 @@ export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props
           {hasGoogle && (
             <div className="relative mb-4">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[rgba(17,24,39,0.08)]" /></div>
-              <div className="relative flex justify-center"><span className="bg-[#F6F7FB] px-3 text-[12px] text-[#9CA3AF]">o continúa con email</span></div>
+              <div className="relative flex justify-center"><span className="px-3 text-[12px]" style={{ background: isBoost ? '#07070A' : '#F6F7FB', color: isBoost ? 'rgba(255,255,255,0.35)' : '#9CA3AF' }}>o continúa con email</span></div>
             </div>
           )}
 
           {/* Tabs */}
-          <div className="flex gap-1 p-1 rounded-xl bg-[rgba(17,24,39,0.04)] mb-5">
+          <div className="flex gap-1 p-1 rounded-xl mb-5" style={{ background: isBoost ? 'rgba(255,255,255,0.06)' : 'rgba(17,24,39,0.04)' }}>
             {(['password', 'magic'] as const).map(t => (
               <button key={t} onClick={() => setTab(t)}
                 className="flex-1 py-2 rounded-lg text-[13px] font-medium transition-all"
-                style={{ background: tab === t ? '#fff' : 'transparent', color: tab === t ? '#111827' : '#6B7280', boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }}>
+                style={isBoost
+                  ? { background: tab === t ? 'rgba(124,58,237,0.7)' : 'transparent', color: tab === t ? '#FFFFFF' : 'rgba(255,255,255,0.45)', boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.3)' : 'none' }
+                  : { background: tab === t ? '#fff' : 'transparent', color: tab === t ? '#111827' : '#6B7280', boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }}>
                 {t === 'password' ? '🔒 Contraseña' : '✨ Magic Link'}
               </button>
             ))}
@@ -201,28 +209,34 @@ export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props
           {tab === 'password' ? (
             <form onSubmit={handleCredentials} className="space-y-4">
               <div>
-                <label className="block text-[13px] font-medium text-[#374151] mb-1.5">Email</label>
+                <label className="block text-[13px] font-medium mb-1.5" style={{ color: isBoost ? 'rgba(255,255,255,0.7)' : '#374151' }}>Email</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                   <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
                     placeholder="tu@email.com" autoComplete="email"
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[rgba(17,24,39,0.12)] bg-white text-[14px] text-[#111827] placeholder-[#9CA3AF] outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/10 transition-all" />
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-[14px] outline-none transition-all"
+                    style={isBoost
+                      ? { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: '#FFFFFF' }
+                      : { border: '1px solid rgba(17,24,39,0.12)', background: '#fff', color: '#111827' }} />
                 </div>
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-[#374151] mb-1.5">Contraseña</label>
+                <label className="block text-[13px] font-medium mb-1.5" style={{ color: isBoost ? 'rgba(255,255,255,0.7)' : '#374151' }}>Contraseña</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                   <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
                     placeholder="••••••••" autoComplete="current-password"
-                    className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-[rgba(17,24,39,0.12)] bg-white text-[14px] text-[#111827] placeholder-[#9CA3AF] outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/10 transition-all" />
+                    className="w-full pl-9 pr-10 py-2.5 rounded-xl border text-[14px] outline-none transition-all"
+                    style={isBoost
+                      ? { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: '#FFFFFF' }
+                      : { border: '1px solid rgba(17,24,39,0.12)', background: '#fff', color: '#111827' }} />
                   <button type="button" onClick={() => setShowPass(!showPass)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#374151]">
                     {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 <div className="mt-1.5 text-right">
-                  <Link href="/forgot-password" className="text-[12px] text-[#7C3AED] hover:underline">¿Olvidaste tu contraseña?</Link>
+                  <Link href="/forgot-password" className="text-[12px] hover:underline" style={{ color: isBoost ? '#A78BFA' : '#7C3AED' }}>¿Olvidaste tu contraseña?</Link>
                 </div>
               </div>
               <button type="submit" disabled={loading}
@@ -234,12 +248,15 @@ export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props
           ) : (
             <form onSubmit={handleMagicLink} className="space-y-4">
               <div>
-                <label className="block text-[13px] font-medium text-[#374151] mb-1.5">Tu email</label>
+                <label className="block text-[13px] font-medium mb-1.5" style={{ color: isBoost ? 'rgba(255,255,255,0.7)' : '#374151' }}>Tu email</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                   <input type="email" value={magicEmail} onChange={e => setMagicEmail(e.target.value)} required
                     placeholder="tu@email.com"
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[rgba(17,24,39,0.12)] bg-white text-[14px] text-[#111827] placeholder-[#9CA3AF] outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/10 transition-all" />
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-[14px] outline-none transition-all"
+                    style={isBoost
+                      ? { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: '#FFFFFF' }
+                      : { border: '1px solid rgba(17,24,39,0.12)', background: '#fff', color: '#111827' }} />
                 </div>
               </div>
               <button type="submit" disabled={magicLoading}
@@ -247,7 +264,7 @@ export default function LoginPageClient({ isBoost, brandName, brandLogo }: Props
                 style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)', boxShadow: '0 4px 12px rgba(124,58,237,0.25)' }}>
                 {magicLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : <><Sparkles className="inline w-4 h-4 mr-1.5" />Enviar magic link</>}
               </button>
-              <p className="text-center text-[12px] text-[#9CA3AF]">Te enviaremos un enlace seguro a tu correo.</p>
+              <p className="text-center text-[12px]" style={{ color: isBoost ? 'rgba(255,255,255,0.35)' : '#9CA3AF' }}>Te enviaremos un enlace seguro a tu correo.</p>
             </form>
           )}
         </div>
