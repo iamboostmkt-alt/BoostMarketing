@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { Bell, BellOff, X } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 
 const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
 
@@ -15,23 +15,22 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 export default function PushNotificationManager() {
   const { data: session } = useSession();
-  const [permission, setPermission]   = useState<NotificationPermission>('default');
-  const [subscribed, setSubscribed]   = useState(false);
-  const [showBanner, setShowBanner]   = useState(false);
-  const [loading, setLoading]         = useState(false);
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [subscribed, setSubscribed] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+  const [loading, setLoading]       = useState(false);
+
+  const isIOS = typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isPWA = typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches;
+  const isIOSSafariNotInstalled = isIOS && !isPWA;
 
   useEffect(() => {
     if (!session || !('Notification' in window) || !VAPID_PUBLIC) return;
-
     setPermission(Notification.permission);
-
-    // Verificar si ya está suscrito
     navigator.serviceWorker?.ready.then(reg => {
       reg.pushManager.getSubscription().then(sub => {
         setSubscribed(!!sub);
-        // Mostrar banner solo si no ha dado permiso y no ha negado
         if (Notification.permission === 'default' && !sub) {
-          // Esperar 3 segundos antes de mostrar
           setTimeout(() => setShowBanner(true), 3000);
         }
       });
@@ -39,38 +38,27 @@ export default function PushNotificationManager() {
   }, [session]);
 
   const subscribe = useCallback(async () => {
-    if (!VAPID_PUBLIC) {
-      console.warn('[Push] VAPID key no configurada');
-      return;
-    }
+    if (!VAPID_PUBLIC) return;
     setLoading(true);
     try {
       const perm = await Notification.requestPermission();
       setPermission(perm);
       if (perm !== 'granted') { setShowBanner(false); setLoading(false); return; }
-
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly:      true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC) as unknown as BufferSource,
       });
-
-      // Guardar suscripción en DB
       const subJson = sub.toJSON();
       await fetch('/api/push/subscribe', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          endpoint:  subJson.endpoint,
-          keys:      subJson.keys,
-          userAgent: navigator.userAgent,
-        }),
+        body:    JSON.stringify({ endpoint: subJson.endpoint, keys: subJson.keys, userAgent: navigator.userAgent }),
       });
-
       setSubscribed(true);
       setShowBanner(false);
     } catch (err) {
-      console.error('[Push] Error al suscribir:', err);
+      console.error('[Push] Error:', err);
     } finally {
       setLoading(false);
     }
@@ -83,15 +71,14 @@ export default function PushNotificationManager() {
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
         await fetch('/api/push/subscribe', {
-          method:  'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ endpoint: sub.endpoint }),
+          method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: sub.endpoint }),
         });
         await sub.unsubscribe();
       }
       setSubscribed(false);
     } catch (err) {
-      console.error('[Push] Error al desuscribir:', err);
+      console.error('[Push] Error:', err);
     } finally {
       setLoading(false);
     }
@@ -100,45 +87,51 @@ export default function PushNotificationManager() {
   if (!session || !('Notification' in window) || !VAPID_PUBLIC) return null;
   if (permission === 'denied') return null;
 
-  // Banner de solicitud de notificaciones
-  if (showBanner && !subscribed) {
-    return (
-      <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:w-[340px] z-50
-                      rounded-[20px] border border-white/[0.08] bg-[#0F1117] shadow-2xl p-4"
-        style={{ animation: 'slideUp 0.3s ease' }}>
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
-            style={{ background: 'rgba(124,58,237,0.15)' }}>
-            <Bell className="w-5 h-5 text-violet-400" strokeWidth={1.75} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white mb-0.5">
-              Activa las notificaciones
-            </p>
-            <p className="text-[11px] text-white/45 leading-relaxed">
-              Recibe alertas de tareas, mensajes y reuniones en tiempo real.
-            </p>
-            <div className="flex gap-2 mt-3">
-              <button onClick={subscribe} disabled={loading}
-                className="flex-1 rounded-[10px] py-2 text-[12px] font-semibold text-white transition-all disabled:opacity-60"
-                style={{ background: '#7C3AED' }}>
-                {loading ? 'Activando...' : 'Activar'}
-              </button>
-              <button onClick={() => setShowBanner(false)}
-                className="rounded-[10px] px-3 py-2 text-[12px] font-medium text-white/40 hover:text-white/70 transition-colors border border-white/[0.08]">
-                Ahora no
-              </button>
-            </div>
-          </div>
-          <button onClick={() => setShowBanner(false)}
-            className="text-white/20 hover:text-white/50 transition-colors shrink-0 mt-0.5">
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-        <style>{`@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
-      </div>
-    );
-  }
+  if (!showBanner || subscribed) return null;
 
-  return null;
+  return (
+    <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:w-[340px] z-50 rounded-[20px] border border-white/[0.08] bg-[#0F1117] shadow-2xl p-4"
+      style={{ animation: 'slideUp 0.3s ease' }}>
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
+          style={{ background: 'rgba(124,58,237,0.15)' }}>
+          <Bell className="w-5 h-5 text-violet-400" strokeWidth={1.75} />
+        </div>
+        <div className="flex-1 min-w-0">
+          {isIOSSafariNotInstalled ? (
+            <>
+              <p className="text-[13px] font-semibold text-white mb-0.5">Instala la app para notificaciones</p>
+              <p className="text-[11px] text-white/45 leading-relaxed">
+                En iPhone: toca <strong className="text-white/70">Compartir</strong> (□↑) → <strong className="text-white/70">"Agregar a pantalla de inicio"</strong> → Abre la app instalada y activa notificaciones.
+              </p>
+              <button onClick={() => setShowBanner(false)}
+                className="mt-3 w-full rounded-[10px] py-2 text-[12px] font-medium text-white/50 border border-white/[0.08]">
+                Entendido
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-[13px] font-semibold text-white mb-0.5">Activa las notificaciones</p>
+              <p className="text-[11px] text-white/45 leading-relaxed">Recibe alertas de tareas, mensajes y reuniones en tiempo real.</p>
+              <div className="flex gap-2 mt-3">
+                <button onClick={subscribe} disabled={loading}
+                  className="flex-1 rounded-[10px] py-2 text-[12px] font-semibold text-white disabled:opacity-60"
+                  style={{ background: '#7C3AED' }}>
+                  {loading ? 'Activando...' : 'Activar'}
+                </button>
+                <button onClick={() => setShowBanner(false)}
+                  className="rounded-[10px] px-3 py-2 text-[12px] font-medium text-white/40 border border-white/[0.08]">
+                  Ahora no
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+        <button onClick={() => setShowBanner(false)} className="text-white/20 hover:text-white/50 shrink-0 mt-0.5">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      <style>{`@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+    </div>
+  );
 }

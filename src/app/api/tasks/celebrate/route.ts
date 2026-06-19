@@ -28,6 +28,12 @@ export async function POST(req: NextRequest) {
       title: true, userId: true, clientId: true,
       assignedUsers: { include: { user: { select: { id: true, name: true, email: true, role: true } } } },
       parentTask: { select: { id: true, title: true } },
+      attachments: {
+        where: { reviewStatus: 'approved' },
+        orderBy: { reviewedAt: 'desc' },
+        take: 1,
+        select: { fileUrl: true, fileName: true, fileType: true },
+      },
     },
   });
   if (!task) return NextResponse.json({ ok: true });
@@ -119,14 +125,20 @@ export async function POST(req: NextRequest) {
     chatMsg = `✅ Tarea aprobada: "${task.title}"`;
   }
 
+  const approvedAttachment = (task as any).attachments?.[0];
   sendChatBotMessage({
     workspaceId,
     message: chatMsg,
     clientId: task.clientId ?? null,
     assignedUserIds: teamMembers.map((u: any) => u.id),
     senderId: actorId,
-    isInternal: !task.clientId, // sin cliente → interno en NOTIFICATIONS
-    sendDmToAssignees: !task.clientId, // DM solo cuando no hay cliente
+    isInternal: !task.clientId,
+    sendDmToAssignees: !task.clientId,
+    ...(approvedAttachment ? {
+      fileUrl: approvedAttachment.fileUrl,
+      fileName: approvedAttachment.fileName,
+      fileType: approvedAttachment.fileType,
+    } : {}),
   }).catch(() => {});
 
   return NextResponse.json({ ok: true });

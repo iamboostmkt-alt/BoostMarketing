@@ -670,6 +670,7 @@ function ChatMain({
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStartXRef = useRef<number>(0);
   const touchStartYRef = useRef<number>(0);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const [activeTab, setActiveTab] = useState<'messages'|'files'|'pinned'|'tasks'>('messages');
 
   const fetchPinned = async () => {
@@ -958,12 +959,12 @@ function ChatMain({
     };
   }, [showEmoji]);
 
-  // Auto-scroll solo si el usuario está en el fondo (< 150px del final)
+  // Auto-scroll solo si el usuario está cerca del fondo (< 200px)
   useEffect(() => {
-    const el = bottomRef.current?.parentElement?.parentElement;
-    if (!el) { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); return; }
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-    if (nearBottom) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200;
+    if (nearBottom) el.scrollTop = el.scrollHeight;
   }, [messages]);
 
   // Cargar sesión IA activa al cambiar de room
@@ -1636,7 +1637,7 @@ FORMATO:
       )}
 
       {/* Messages */}
-      {activeTab === 'messages' && <div className="flex-1 overflow-y-auto px-5 py-3 pb-6" style={{scrollbarWidth:'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', touchAction: 'pan-y', isolation: 'isolate'}}>
+      {activeTab === 'messages' && <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-3 pb-6" style={{scrollbarWidth:'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', touchAction: 'pan-y', isolation: 'isolate'}}>
         {loading && (
           <div className="space-y-4">
             {[1,2,3].map(i => (
