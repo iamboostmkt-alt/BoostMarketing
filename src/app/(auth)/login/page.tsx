@@ -108,15 +108,22 @@ export default function LoginPage() {
         </div>
         <div>
           <h2 className="text-[32px] font-bold text-[var(--wl-text-primary)] leading-tight mb-4">
-            La plataforma para agencias que entrega resultados
+            {brand.isBoost
+              ? 'Tu agencia, organizada y lista para crecer'
+              : 'La plataforma para agencias que entrega resultados'}
           </h2>
           <div className="space-y-3">
-            {[
+            {(brand.isBoost ? [
+              'Estrategia y contenido para tu marca',
+              'Gestión de campañas y entregables',
+              'Comunicación directa con tu equipo',
+              'Resultados medibles y transparentes',
+            ] : [
               'Chat tipo Slack con tus clientes',
               'Tareas, entregables y aprobaciones',
               'Portal privado para cada cliente',
               'IA integrada para tu equipo',
-            ].map(f => (
+            ]).map(f => (
               <div key={f} className="flex items-center gap-3">
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20">
                   <svg className="w-3 h-3 text-[var(--wl-text-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
