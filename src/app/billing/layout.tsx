@@ -1,4 +1,5 @@
 import { getServerSession } from 'next-auth';
+import BillingCleanup from './BillingCleanup';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -13,36 +14,17 @@ export default async function BillingLayout({ children }: { children: React.Reac
 
   return (
     <>
-      {/* Al entrar: poner fondo claro. Al salir: restaurar oscuro */}
+      {/* Fondo claro solo mientras billing está montado */}
       <script dangerouslySetInnerHTML={{ __html: `
         (function(){
-          var el = document.documentElement;
-          var bod = document.body;
-          // Poner fondo claro inmediatamente
-          el.style.background = '#F6F7FB';
-          bod.style.background = '#F6F7FB';
-          // Cuando se desmonte .auth-bg, restaurar fondo oscuro INMEDIATAMENTE
-          var obs = new MutationObserver(function(mutations) {
-            for (var i = 0; i < mutations.length; i++) {
-              if (!document.querySelector('.auth-bg')) {
-                el.style.background = '#080808';
-                bod.style.background = '#080808';
-                // Quitar después de la transición
-                setTimeout(function() {
-                  if (!document.querySelector('.auth-bg')) {
-                    el.style.removeProperty('background');
-                    bod.style.removeProperty('background');
-                  }
-                }, 500);
-                obs.disconnect();
-                break;
-              }
-            }
-          });
-          obs.observe(document.body, { childList: true, subtree: true });
+          document.documentElement.setAttribute('data-billing', '1');
+          document.documentElement.style.background = '#F6F7FB';
+          document.body.style.background = '#F6F7FB';
+          document.body.style.overflow = '';
         })();
       ` }} />
       <div className="auth-bg" style={{ background: '#F6F7FB', minHeight: '100dvh', fontFamily: 'var(--font-inter, system-ui, sans-serif)', position: 'relative' }}>
+        <BillingCleanup />
         {children}
       </div>
     </>

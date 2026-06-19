@@ -667,9 +667,9 @@ function ChatMain({
   const [showEmoji, setShowEmoji] = useState<{id: string, x: number, y: number} | null>(null);
   const [activeMsg, setActiveMsg] = useState<string | null>(null); // mensaje activo en móvil (tap)
   const [swipeState, setSwipeState] = useState<{id: string, x: number} | null>(null);
-  const longPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const touchStartX = React.useRef<number>(0);
-  const touchStartY = React.useRef<number>(0);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartXRef = useRef<number>(0);
+  const touchStartYRef = useRef<number>(0);
   const [activeTab, setActiveTab] = useState<'messages'|'files'|'pinned'|'tasks'>('messages');
 
   const fetchPinned = async () => {
@@ -1722,29 +1722,34 @@ FORMATO:
                 style={{
                   paddingTop: isSame ? '1px' : '8px',
                   paddingBottom: '1px',
-                  transform: swipeState?.id === msg.id ? `translateX(${Math.min(swipeState.x, 72)}px)` : 'translateX(0)',
+                  transform: swipeState?.id === msg.id ? `translateX(${swipeState.x}px)` : 'translateX(0)',
                   transition: swipeState?.id === msg.id ? 'none' : 'transform 0.2s ease',
+                  userSelect: 'none',
                 }}
                 onTouchStart={(e) => {
-                  touchStartX.current = e.touches[0].clientX;
-                  touchStartY.current = e.touches[0].clientY;
+                  touchStartXRef.current = e.touches[0].clientX;
+                  touchStartYRef.current = e.touches[0].clientY;
                   // Long press: 500ms
-                  longPressTimer.current = setTimeout(() => {
+                  longPressTimerRef.current = setTimeout(() => {
                     setActiveMsg(activeMsg === msg.id ? null : msg.id);
                   }, 500);
                 }}
                 onTouchMove={(e) => {
                   // Cancelar long press si se mueve
-                  if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
-                  const dx = e.touches[0].clientX - touchStartX.current;
-                  const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
-                  // Swipe derecha para responder (solo si movimiento horizontal)
-                  if (dx > 10 && dy < 30) {
-                    setSwipeState({ id: msg.id, x: dx });
+                  if (longPressTimerRef.current) { clearTimeout(longPressTimerRef.current); longPressTimerRef.current = null; }
+                  const dx = e.touches[0].clientX - touchStartXRef.current;
+                  const dy = Math.abs(e.touches[0].clientY - touchStartYRef.current);
+                  // Swipe derecha SOLO si es más horizontal que vertical
+                  if (dx > 10 && dy < 30 && dx > dy * 1.5) {
+                    e.stopPropagation(); // no propagar al scroll container
+                    setSwipeState({ id: msg.id, x: Math.min(dx, 80) });
+                  } else {
+                    // Movimiento vertical → cancelar swipe
+                    if (swipeState?.id === msg.id) setSwipeState(null);
                   }
                 }}
                 onTouchEnd={(e) => {
-                  if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+                  if (longPressTimerRef.current) { clearTimeout(longPressTimerRef.current); longPressTimerRef.current = null; }
                   // Si había swipe suficiente → responder
                   if (swipeState?.id === msg.id && swipeState.x > 50) {
                     setReplyingTo(msg);
