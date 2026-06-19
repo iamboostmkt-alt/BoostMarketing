@@ -60,7 +60,6 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
   const [calOpen,setCalOpen]= useState(false);
   const [deleting,        setDeleting]       = useState(false);
 
-  useEffect(() => {
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
     if (open) {
@@ -74,6 +73,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
     }
   }, [open]);
 
+  useEffect(() => {
     if (open) {
       fetch('/api/team-members')
         .then((r) => r.json())

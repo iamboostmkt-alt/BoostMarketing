@@ -360,9 +360,9 @@ export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayPro
   const completedCount = items.filter(i => checklist[i.id]).length;
 
   return (
-    <div className="fixed inset-0 z-[99998] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div
-        className="w-full max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden"
+        className="w-full max-w-sm rounded-3xl overflow-hidden"
         style={{
           background: 'var(--wl-surface)',
           border: '1px solid rgba(255,255,255,0.07)',
