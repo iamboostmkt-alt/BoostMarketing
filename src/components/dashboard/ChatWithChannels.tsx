@@ -1751,7 +1751,7 @@ FORMATO:
                         : `${(showEmoji.y ?? 0) + 36}px`,
                       left: isMe ? 'auto' : Math.max(8, (showEmoji.x ?? 16)) + 'px',
                       right: isMe
-                        ? Math.max(8, window.innerWidth - (showEmoji.x ?? window.innerWidth) - 8) + 'px'
+                        ? Math.max(8, (typeof window !== 'undefined' ? window.innerWidth : 400) - (showEmoji.x ?? 400) - 8) + 'px'
                         : 'auto',
                       maxWidth: 'calc(100vw - 24px)',
                     }}

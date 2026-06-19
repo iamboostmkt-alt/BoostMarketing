@@ -9,6 +9,7 @@ import {
   Plus, ArrowUpRight, ArrowDownRight, BrainCircuit,
   MessageSquare, X, ChevronRight,
   CalendarDays, UsersRound, Target, Zap, Bell,
+  CalendarPlus, UserPlus, Building2, Pencil, Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -323,6 +324,107 @@ function WorkloadList({ members, onClick }: { members: any[]; onClick?: (id: str
   );
 }
 
+// ─── Panel de Consejos IA (Admin/PM) ───────────────────────
+function TipsPanel({ clients, isManager, onCreateTask }: {
+  clients: any[]; isManager: boolean; onCreateTask: (title: string) => void;
+}) {
+  const [tips, setTips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [clientId, setClientId] = useState('');
+  const [created, setCreated] = useState<string[]>([]);
+
+  const generate = async () => {
+    setLoading(true); setTips([]);
+    try {
+      const res = await fetch('/api/ai/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: clientId || null, freeContext: null }),
+      });
+      const d = await res.json();
+      setTips(d.suggestions || []);
+    } catch {}
+    finally { setLoading(false); }
+  };
+
+  const typeEmoji: Record<string, string> = {
+    reel: '🎬', post: '📸', story: '📖', email: '✉️',
+    campaign: '📣', copy: '✏️', strategy: '🎯',
+  };
+
+  return (
+    <div className="rounded-[20px] p-4" style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)' }}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[#8B5CF6]" />
+          <span className="text-[14px] font-semibold" style={{ color: 'var(--wl-text-primary)' }}>Consejos IA</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+            style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6' }}>BETA</span>
+        </div>
+        <Link href="/dashboard/ai-studio" className="text-[11px] text-[#8B5CF6] hover:underline flex items-center gap-1">
+          AI Studio <ChevronRight className="w-3 h-3" />
+        </Link>
+      </div>
+
+      {/* Selector de cliente + botón generar */}
+      <div className="flex gap-2 mb-3">
+        <select
+          value={clientId}
+          onChange={e => setClientId(e.target.value)}
+          className="flex-1 rounded-[10px] px-3 py-2 text-[12px] outline-none"
+          style={{ background: 'var(--wl-elevated)', border: '1px solid var(--wl-border)', color: 'var(--wl-text-primary)' }}
+        >
+          <option value="">Seleccionar cuenta...</option>
+          {clients.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <button onClick={generate} disabled={loading || !clientId}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-[10px] text-[12px] font-semibold text-white disabled:opacity-50 transition-all"
+          style={{ background: '#7C3AED', whiteSpace: 'nowrap' }}>
+          {loading
+            ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            : <Sparkles className="w-3.5 h-3.5" />}
+          Generar
+        </button>
+      </div>
+
+      {/* Tips */}
+      {!loading && tips.length === 0 && (
+        <p className="text-[12px] text-center py-3" style={{ color: 'var(--wl-text-muted)' }}>
+          Selecciona una cuenta y genera consejos de contenido
+        </p>
+      )}
+      {loading && (
+        <div className="space-y-2">
+          {[1,2,3].map(i => (
+            <div key={i} className="h-12 rounded-[10px] animate-pulse" style={{ background: 'var(--wl-elevated)' }} />
+          ))}
+        </div>
+      )}
+      <div className="space-y-2">
+        {tips.slice(0, 4).map((t: any, i: number) => (
+          <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-[12px]"
+            style={{ background: 'var(--wl-elevated)', border: '1px solid var(--wl-border)' }}>
+            <span className="text-base shrink-0 mt-0.5">{typeEmoji[t.type] || '💡'}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-semibold truncate" style={{ color: 'var(--wl-text-primary)' }}>{t.title}</p>
+              <p className="text-[11px] line-clamp-2 mt-0.5" style={{ color: 'var(--wl-text-muted)' }}>{t.description}</p>
+            </div>
+            <button
+              onClick={() => { onCreateTask(t.title); setCreated(prev => [...prev, t.id || String(i)]); }}
+              disabled={created.includes(t.id || String(i))}
+              className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-[7px] text-[10px] font-semibold transition-all disabled:opacity-50"
+              style={{ background: created.includes(t.id || String(i)) ? '#10B98115' : 'rgba(124,58,237,0.12)', color: created.includes(t.id || String(i)) ? '#10B981' : '#7C3AED' }}
+              title="Crear tarea desde este consejo"
+            >
+              {created.includes(t.id || String(i)) ? '✓' : <Plus className="w-3 h-3" />}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardHome() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -350,6 +452,9 @@ export default function DashboardHome() {
   const [taskFormOpen, setTaskFormOpen] = useState(false);
   const [clientFormOpen, setClientFormOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [tips, setTips] = useState<any[]>([]);
+  const [tipsLoading, setTipsLoading] = useState(false);
+  const [tipsClient, setTipsClient] = useState<string>('');
   const [loading, setLoading]       = useState(true);
 
   // ── Fetch ───────────────────────────────────────────────
@@ -510,21 +615,34 @@ export default function DashboardHome() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <motion.button onClick={() => setTaskFormOpen(true)} whileTap={{ scale: 0.97 }}
-              className="flex h-9 w-9 sm:w-auto items-center justify-center sm:gap-1.5 rounded-[12px] sm:px-4 text-[13px] font-semibold text-white transition-all"
-              style={{ background: '#7C3AED', boxShadow: '0 4px 12px rgba(124,58,237,0.25)' }}>
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Nueva tarea</span>
-            </motion.button>
-            {isManager && (
-              <motion.button onClick={() => setInviteOpen(true)} whileTap={{ scale: 0.97 }}
-                className="flex h-9 w-9 items-center justify-center rounded-[12px] transition-all"
-                style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', boxShadow: 'var(--wl-shadow)' }}>
-                <Users className="h-4 w-4" style={{ color: 'var(--wl-text-muted)' }} />
+          {/* Botón principal nuevo */}
+          <motion.button onClick={() => setTaskFormOpen(true)} whileTap={{ scale: 0.97 }}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-[12px] px-4 text-[13px] font-semibold text-white transition-all"
+            style={{ background: '#7C3AED', boxShadow: '0 4px 12px rgba(124,58,237,0.25)' }}>
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Nueva tarea</span>
+          </motion.button>
+        </div>
+
+        {/* ── BARRA DE ACCIONES RÁPIDAS ── */}
+        <div className="flex flex-wrap gap-2">
+          {[
+            { icon: Plus,        label: 'Nueva tarea',    fn: () => setTaskFormOpen(true),  always: true },
+            { icon: CalendarPlus,label: 'Nueva reunión',  fn: () => router.push('/dashboard/calendar'), always: true },
+            { icon: Building2,   label: 'Nuevo cliente',  fn: () => setClientFormOpen(true), roles: ['ADMIN','PROJECT_MANAGER'] },
+            { icon: UserPlus,    label: 'Invitar',         fn: () => setInviteOpen(true),    roles: ['ADMIN','PROJECT_MANAGER'] },
+            { icon: Pencil,      label: 'Editar',          fn: () => router.push('/dashboard/settings'), roles: ['ADMIN'] },
+          ]
+            .filter(a => a.always || (a.roles && a.roles.includes(userRole || '')))
+            .map((a, i) => (
+              <motion.button key={i} onClick={a.fn} whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-1.5 h-8 px-3.5 rounded-[10px] text-[12px] font-medium transition-all"
+                style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', color: 'var(--wl-text-secondary)' }}>
+                <a.icon className="w-3.5 h-3.5" style={{ color: '#8B5CF6' }} />
+                {a.label}
               </motion.button>
-            )}
-          </div>
+            ))
+          }
         </div>
 
         {/* ── DAILY BRIEF ── */}
@@ -715,6 +833,15 @@ export default function DashboardHome() {
             )}
           </SectionCard>
         </div>
+
+        {/* ── PANEL CONSEJOS IA — solo Admin/PM ── */}
+        {isManager && clients.length > 0 && (
+          <TipsPanel
+            clients={clients}
+            isManager={isManager}
+            onCreateTask={(title) => setTaskFormOpen(true)}
+          />
+        )}
 
         {/* ─────────────────────────────────────── */}
         {/* FILA 2: diferenciada por rol */}
