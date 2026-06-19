@@ -102,39 +102,71 @@ function Empty({ msg }: { msg: string }) {
   );
 }
 
-// ─── Mensajes recientes con avatar ─────────────────────────
+// ─── Inbox: DMs + canales de clientes, con avatar ──────────
 function MsgList({ messages }: { messages: any[] }) {
   if (!messages.length) return <Empty msg="Sin mensajes recientes" />;
   return (
-    <div className="space-y-2">
-      {messages.slice(0, 5).map((msg: any) => (
-        <Link key={msg.id} href="/dashboard/chat"
-          className="flex items-start gap-3 p-2.5 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all">
-          <Avatar className="h-7 w-7 shrink-0 rounded-full overflow-hidden mt-0.5">
-            <AvatarImage src={msg.user?.image || undefined} />
-            <AvatarFallback className="text-[9px] font-semibold"
-              style={{ background: (msg.user?.color || '#7c3aed') + '20', color: msg.user?.color || '#7c3aed' }}>
-              {userInitials(msg.user?.name || null, msg.user?.email || 'U')}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="text-[11px] font-semibold" style={{ color: 'var(--wl-text-primary)' }}>
-                {msg.user?.name?.split(' ')[0] || 'Usuario'}
-              </span>
-              <span className="text-[10px]" style={{ color: 'var(--wl-text-muted)' }}>
-                #{msg.room?.replace('TEAM_', '').toLowerCase() || 'general'}
-              </span>
+    <div className="space-y-1">
+      {messages.map((item: any) => {
+        const isDM = item.type === 'dm';
+        const isChannel = item.type === 'channel';
+
+        // Avatar: DM → foto del otro participante; canal → inicial del cliente
+        const avatarUser = isDM ? item.participant : item.sender;
+        const avatarColor = isDM
+          ? (item.participant?.color || '#7c3aed')
+          : (item.client?.color || '#7c3aed');
+        const avatarName = isDM
+          ? (item.participant?.name || item.participant?.email || 'U')
+          : (item.client?.name || 'C');
+        const avatarImage = isDM ? (item.participant?.image || null) : null;
+
+        // Nombre a mostrar
+        const displayName = isDM
+          ? (item.participant?.name?.split(' ')[0] || 'Usuario')
+          : (item.client?.name || 'Canal');
+
+        // Sub-label: DM = "Mensaje directo"; canal = "#clientname"
+        const subLabel = isDM ? 'Mensaje directo' : `#${(item.client?.name || '').toLowerCase().replace(/\s+/g, '')}`;
+
+        return (
+          <Link key={item.id} href={item.href || '/dashboard/chat'}
+            className="flex items-center gap-3 px-2.5 py-2 rounded-[12px] hover:bg-[var(--wl-hover)] transition-all group">
+
+            {/* Avatar */}
+            {isDM ? (
+              <Avatar className="h-8 w-8 shrink-0 rounded-full overflow-hidden">
+                <AvatarImage src={avatarImage || undefined} />
+                <AvatarFallback className="text-[10px] font-bold"
+                  style={{ background: avatarColor + '25', color: avatarColor }}>
+                  {userInitials(avatarName, '')}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="h-8 w-8 shrink-0 rounded-[8px] flex items-center justify-center text-[11px] font-bold text-white"
+                style={{ background: avatarColor }}>
+                {avatarName[0]?.toUpperCase() || '#'}
+              </div>
+            )}
+
+            {/* Contenido */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[12px] font-semibold truncate group-hover:text-[#7C3AED] transition-colors"
+                  style={{ color: 'var(--wl-text-primary)' }}>
+                  {displayName}
+                </span>
+                <span className="text-[10px] shrink-0" style={{ color: 'var(--wl-text-placeholder)' }}>
+                  {new Date(item.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <p className="text-[11px] truncate" style={{ color: 'var(--wl-text-muted)' }}>
+                {item.preview || '—'}
+              </p>
             </div>
-            <p className="text-[12px] truncate" style={{ color: 'var(--wl-text-secondary)' }}>
-              {msg.message?.slice(0, 55)}{(msg.message?.length || 0) > 55 ? '…' : ''}
-            </p>
-          </div>
-          <span className="text-[10px] shrink-0 mt-0.5" style={{ color: 'var(--wl-text-placeholder)' }}>
-            {new Date(msg.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-          </span>
-        </Link>
-      ))}
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -329,7 +361,7 @@ export default function DashboardHome() {
         fetch('/api/stats').then(r => r.json()).catch(() => null),
         fetch('/api/tasks?scope=mine&limit=8').then(r => r.json()).catch(() => ({ tasks: [] })),
         fetch('/api/meetings?limit=4').then(r => r.json()).catch(() => ({ meetings: [] })),
-        fetch('/api/chat?room=TEAM&limit=6').then(r => r.json()).catch(() => ({ messages: [] })),
+        fetch('/api/chat/inbox').then(r => r.json()).catch(() => ({ inbox: [] })),
         fetch('/api/projects?limit=5').then(r => r.json()).catch(() => ({ projects: [] })),
       ];
 
@@ -337,7 +369,7 @@ export default function DashboardHome() {
       if (statsR) setStats(statsR);
       setTasks(tasksR?.tasks || []);
       setMeetings(meetsR?.meetings || []);
-      setMessages(msgsR?.messages || []);
+      setMessages(msgsR?.inbox || []);
       setProjects(projectsR?.projects || []);
 
       // Admin: clientes + workload + actividad de clientes
