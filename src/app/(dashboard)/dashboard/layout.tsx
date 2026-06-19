@@ -8,6 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { SidebarProvider } from '@/components/dashboard/SidebarContext';
 import AppSidebar from '@/components/dashboard/AppSidebar';
 import TopNav from '@/components/dashboard/TopNav';
+import DashboardBgFix from '@/components/dashboard/DashboardBgFix';
 import CommandPalette from '@/components/dashboard/CommandPalette';
 import ErrorBoundary from '@/components/dashboard/ErrorBoundary';
 import { AuthProvider } from '@/context/AuthContext';
@@ -94,6 +95,7 @@ export default function DashboardLayout({
             {/* Main area */}
             <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
               {/* Top navigation — fixed, necesita spacer */}
+              <DashboardBgFix />
               <TopNav />
 
               {/* Main content — paddingTop compensa el TopNav fixed */}

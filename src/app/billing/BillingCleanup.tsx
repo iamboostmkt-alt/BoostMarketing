@@ -3,23 +3,28 @@ import { useEffect } from 'react';
 
 export default function BillingCleanup() {
   useEffect(() => {
-    // Al montar: fondo claro
-    document.documentElement.style.background = '#F6F7FB';
-    document.body.style.background = '#F6F7FB';
-    document.body.style.overflow = '';
+    // Al montar billing: fondo claro
+    document.documentElement.style.setProperty('background', '#F6F7FB', 'important');
+    document.body.style.setProperty('background', '#F6F7FB', 'important');
+    document.documentElement.setAttribute('data-page', 'billing');
 
     return () => {
-      // Al desmontar (navegar fuera): restaurar oscuro INMEDIATAMENTE
-      document.documentElement.style.background = '#07070A';
-      document.body.style.background = '#07070A';
-      document.documentElement.removeAttribute('data-billing');
-      // Limpiar después de transición
-      setTimeout(() => {
-        if (!document.documentElement.hasAttribute('data-billing')) {
+      // Al desmontar: restaurar oscuro INMEDIATAMENTE y con !important
+      document.documentElement.removeAttribute('data-page');
+      document.documentElement.style.setProperty('background', '#07070A', 'important');
+      document.body.style.setProperty('background', '#07070A', 'important');
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      
+      // Después de la transición CSS, quitar los estilos inline
+      // para que el CSS normal tome control
+      const timer = setTimeout(() => {
+        if (document.documentElement.getAttribute('data-page') !== 'billing') {
           document.documentElement.style.removeProperty('background');
           document.body.style.removeProperty('background');
         }
-      }, 300);
+      }, 100);
+      return () => clearTimeout(timer);
     };
   }, []);
 
