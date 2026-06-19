@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   const validation = validateBody(MeetingCreateSchema, rawBody);
   if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
   const { name, date, notes, meetUrl, assignedUserIds, status } = validation.data;
-  const guestEmails: string[] = (await req.clone().json().catch(() => ({}))).guestEmails ?? [];
+  const guestEmails: string[] = Array.isArray((rawBody as any).guestEmails) ? (rawBody as any).guestEmails : [];
   const clientId = (rawBody as any).clientId as string | null ?? null;
   const parsed = new Date(date);
   const allMeetingIds = [...new Set([userId, ...(assignedUserIds ?? [])])] as string[];

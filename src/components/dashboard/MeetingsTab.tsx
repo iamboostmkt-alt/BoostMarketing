@@ -1,3 +1,4 @@
+import React from 'react';
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -40,6 +41,13 @@ interface MeetDialogProps {
 }
 
 export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved, clients = [], initialClientEmail, initialDate, userRole = '' }: MeetDialogProps) {
+  // Lock scroll cuando está abierto
+  React.useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [open]);
   const isManager = ['ADMIN', 'PROJECT_MANAGER'].includes(userRole);
   const isEdit    = !!meeting;
 
@@ -159,7 +167,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   if (!open) return null;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0' }} className="sm:items-center sm:p-4">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
       {/* Overlay */}
       <div onClick={() => onOpenChange(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(3px)' }} />
 
