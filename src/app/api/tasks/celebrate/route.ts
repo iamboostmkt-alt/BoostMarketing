@@ -3,6 +3,7 @@ import { requireWorkspace } from "@/core/auth/require-workspace";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { db } from "@/lib/db";
 import { sendChatBotMessage, buildMentions } from "@/lib/chat-bot";
+import { sendPushToUsers } from "@/lib/push-notifications";
 import { sendMail, templateFelicitacion, templateCambioEstado } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
 
@@ -126,6 +127,21 @@ export async function POST(req: NextRequest) {
   }
 
   const approvedAttachment = (task as any).attachments?.[0];
+  // Push notification a los asignados
+  const allNotifyIds = [...new Set([
+    ...teamMembers.map((u: any) => u.id),
+    ...(resolvedPmId ? [resolvedPmId] : []),
+  ])];
+  if (allNotifyIds.length > 0) {
+    sendPushToUsers(allNotifyIds, {
+      title: parentCompleted ? '🏆 ¡Proyecto completado!' : '✅ Tarea aprobada',
+      body: chatMsg.replace(/\*\*/g, '').slice(0, 100),
+      url: '/dashboard/tasks',
+      tag: 'task-approved',
+      icon: '/icons/icon-192.png',
+    }).catch(() => {});
+  }
+
   sendChatBotMessage({
     workspaceId,
     message: chatMsg,

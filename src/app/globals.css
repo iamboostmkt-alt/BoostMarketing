@@ -718,6 +718,13 @@ html:has(> body > div[style*="F6F7FB"]),
   }
 }
 
+/* ── Safe area background: mismo color que el TopNav ── */
+@media (display-mode: standalone) {
+  html, body {
+    background-color: #0a0a0a !important;
+  }
+}
+
 /* ── wl-topnav: TopNav siempre estable, no se mueve ────────── */
 .wl-topnav {
   background: linear-gradient(90deg, #0a0a0a 0%, #0a0a0a 15%, #0e0618 40%, #160528 50%, #0e0618 60%, #0a0a0a 85%, #0a0a0a 100%);
