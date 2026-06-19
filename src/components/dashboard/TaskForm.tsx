@@ -309,7 +309,15 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
   return (
     <>
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="bg-[#15151c] border-l border-white/[0.06] text-white w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0" style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}>
+      <SheetContent side="right" className="bg-[#15151c] border-l border-white/[0.06] text-white w-full sm:max-w-lg flex flex-col gap-0 p-0"
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          height: '100dvh',
+          maxHeight: '100dvh',
+          overflow: 'hidden',
+          top: 0,
+        }}>
         <div className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
           <p className="text-xs font-medium text-white/30 uppercase tracking-widest mb-1">
             {isEditing ? 'Editar Tarea' : isSubtask ? 'Nueva Subtarea' : isManager ? 'Nueva Tarea' : 'Solicitar Entrega'}
@@ -355,7 +363,7 @@ export default function TaskForm({ open, onOpenChange, task, isManager = false, 
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4" style={{ minHeight: 0 }}>
           <div className="space-y-2">
             <Label htmlFor="task-title" className="text-white/70 text-sm">Titulo <span className="text-red-400">*</span></Label>
             <Input id="task-title" value={title} onChange={(e) => setTitle(e.target.value)}

@@ -627,7 +627,7 @@ export default function DashboardHome() {
         </div>
 
         {/* ── BARRA DE ACCIONES RÁPIDAS ── */}
-        <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))' }}>
           {[
             { icon: Plus,         label: 'Nueva tarea',   fn: () => setTaskFormOpen(true),   always: true },
             { icon: CalendarPlus, label: 'Nueva reunión', fn: () => setMeetingOpen(true),     always: true },
@@ -637,10 +637,10 @@ export default function DashboardHome() {
             .filter(a => a.always || (a.roles && a.roles.includes(userRole || '')))
             .map((a, i) => (
               <motion.button key={i} onClick={a.fn} whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-1.5 h-8 px-3.5 rounded-[10px] text-[12px] font-medium transition-all shrink-0"
+                className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-[10px] text-[12px] font-medium transition-all w-full"
                 style={{ background: 'var(--wl-surface)', border: '1px solid var(--wl-border)', color: 'var(--wl-text-secondary)' }}>
-                <a.icon className="w-3.5 h-3.5" style={{ color: '#8B5CF6' }} />
-                {a.label}
+                <a.icon className="w-3.5 h-3.5 shrink-0" style={{ color: '#8B5CF6' }} />
+                <span className="truncate">{a.label}</span>
               </motion.button>
             ))
           }
