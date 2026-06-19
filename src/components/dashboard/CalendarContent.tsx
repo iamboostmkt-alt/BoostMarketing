@@ -1,6 +1,6 @@
 'use client';
  
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { MANAGER_ROLES } from '@/core/constants/roles';
 import { useSession } from 'next-auth/react';
 import {
@@ -100,6 +100,99 @@ function MeetingDialogWrapper({ open, onOpenChange, onSaved, initialDate }: {
       initialDate={initialDate ?? undefined}
       onSaved={onSaved}
     />
+  );
+}
+
+
+// ─── Panel de Tips IA para Calendario ───────────────────────
+function CalendarTipsPanel({ isManager }: { isManager: boolean }) {
+  const [tips, setTips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [clientId, setClientId] = useState('');
+  const [open, setOpen] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!isManager) return;
+    fetch('/api/clients?limit=20').then(r => r.json())
+      .then(d => setClients(d.clients || [])).catch(() => {});
+  }, [isManager]);
+
+  if (!isManager) return null;
+
+  const generate = async () => {
+    if (!clientId) return;
+    setLoading(true); setTips([]);
+    try {
+      const res = await fetch('/api/ai/suggest', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId, freeContext: 'enfocado en reuniones y calendario de actividades' }),
+      });
+      const d = await res.json();
+      setTips(d.suggestions?.slice(0, 3) || []);
+    } catch {}
+    finally { setLoading(false); }
+  };
+
+  const typeEmoji: Record<string, string> = {
+    reel: '🎬', post: '📸', story: '📖', email: '✉️',
+    campaign: '📣', copy: '✏️', strategy: '🎯',
+  };
+
+  return (
+    <div className="rounded-[16px] overflow-hidden" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[#8B5CF6]" />
+          <span className="text-[13px] font-semibold text-white">Consejos IA para este mes</span>
+        </div>
+        <span className="text-[11px] text-[#8B5CF6]">{open ? 'Cerrar' : 'Abrir'}</span>
+      </button>
+
+      {open && (
+        <div className="px-4 pb-4 space-y-3" style={{ borderTop: '1px solid rgba(139,92,246,0.12)' }}>
+          <div className="flex gap-2 pt-3">
+            <select
+              value={clientId} onChange={e => setClientId(e.target.value)}
+              className="flex-1 rounded-[8px] px-2 py-1.5 text-[12px] text-white outline-none"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <option value="">Seleccionar cuenta...</option>
+              {clients.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <button
+              onClick={generate}
+              disabled={loading || !clientId}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-[8px] text-[12px] font-semibold text-white disabled:opacity-50"
+              style={{ background: '#7C3AED' }}>
+              {loading
+                ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                : <Sparkles className="w-3 h-3" />}
+              {loading ? '...' : 'Generar'}
+            </button>
+          </div>
+
+          {tips.length > 0 && (
+            <div className="space-y-2">
+              {tips.map((t, i) => (
+                <div key={i} className="flex items-start gap-2 p-2.5 rounded-[10px]"
+                  style={{ background: 'rgba(255,255,255,0.04)' }}>
+                  <span className="text-base shrink-0">{typeEmoji[t.type] || '💡'}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-white truncate">{t.title}</p>
+                    <p className="text-[11px] text-white/50 line-clamp-2 mt-0.5">{t.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {!loading && tips.length === 0 && clientId && (
+            <p className="text-[11px] text-white/40 text-center py-2">Pulsa Generar para ver sugerencias</p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -398,9 +491,14 @@ export default function CalendarContent() {
         </div>
       </div>
 
+      {/* Tips IA */}
+      {isManager && (
+        <CalendarTipsPanel isManager={isManager} />
+      )}
+
       {/* Tabs de vista */}
       {calTabs.length > 1 && (
-        <div className="flex gap-1 border-b border-white/[0.06] pb-0 overflow-x-auto scrollbar-none flex-nowrap">
+        <div className="flex gap-1 border-b border-white/[0.06] pb-0 overflow-x-auto scrollbar-none flex-nowrap" style={{ touchAction: "pan-x", overscrollBehavior: "contain" }}>
           {calTabs.map((tab) => (
             <button key={tab.id} onClick={() => setCalView(tab.id)}
               className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${

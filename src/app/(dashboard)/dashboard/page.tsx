@@ -524,7 +524,7 @@ export default function DashboardHome() {
     } finally {
       setLoading(false);
     }
-  }, [isAdmin, isPM, isTeam]);
+  }, [userRole]);
 
   useEffect(() => { if (userRole) fetchAll(); }, [fetchAll, userRole]);
 
