@@ -162,6 +162,20 @@ export const authOptions: NextAuthOptions = {
                   session_state: account.session_state,
                 },
               });
+            } else {
+              // Actualizar tokens siempre que el usuario re-conecte Google
+              // Crítico para que Google Calendar funcione con refresh_token nuevo
+              await db.account.update({
+                where: { id: googleAccount.id },
+                data: {
+                  access_token: account.access_token,
+                  // Solo actualizar refresh_token si viene uno nuevo (prompt:consent lo provee)
+                  ...(account.refresh_token ? { refresh_token: account.refresh_token } : {}),
+                  expires_at: account.expires_at,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                },
+              });
             }
             // Actualizar imagen de perfil desde Google solo si no tiene una propia
             if (!existing.image && (profile as any)?.picture) {

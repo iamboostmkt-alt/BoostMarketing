@@ -59,6 +59,15 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   const [notes,       setNotes]       = useState('');
   const [meetUrl,     setMeetUrl]     = useState('');
   const [gcalLoading, setGcalLoading] = useState(false);
+  const [clientDropOpen, setClientDropOpen] = useState(false);
+
+  // Cerrar dropdown de cliente al hacer click fuera
+  React.useEffect(() => {
+    if (!clientDropOpen) return;
+    const handler = () => setClientDropOpen(false);
+    setTimeout(() => document.addEventListener('click', handler), 0);
+    return () => document.removeEventListener('click', handler);
+  }, [clientDropOpen]);
   const [gcalError,   setGcalError]   = useState('');
   const [assigned,    setAssigned]    = useState<string[]>([]);
   const [clientEmail, setClientEmail] = useState('');
@@ -307,15 +316,36 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
 
             {/* Cliente */}
             {clients.length > 0 && (
-              <div>
+              <div className="relative">
                 <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Cuenta cliente (opcional)</label>
-                <select value={clientId} onChange={e => handleClientChange(e.target.value)}
-                  className="wl-select w-full">
-                  <option value="" style={{ background: '#0f0f14', color: 'rgba(255,255,255,0.7)' }}>Sin cliente</option>
-                  {clients.map(c => (
-                    <option key={c.id} value={c.id} style={{ background: '#0f0f14', color: 'rgba(255,255,255,0.7)' }}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <button type="button"
+                    onClick={() => setClientDropOpen(o => !o)}
+                    className="w-full h-[36px] flex items-center justify-between px-3 rounded-lg border border-white/[0.07] bg-[#0f0f14] text-[13px] text-left outline-none"
+                    style={{ color: clientId ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.30)' }}>
+                    <span className="truncate">
+                      {clientId ? (clients.find(c => c.id === clientId)?.name || 'Sin cliente') : 'Sin cliente'}
+                    </span>
+                    <svg className="w-3.5 h-3.5 text-purple-400 shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  {clientDropOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-white/[0.08] overflow-hidden z-[9999] shadow-xl" style={{ background: '#0f0f14' }}>
+                      <button type="button" onClick={() => { handleClientChange(''); setClientDropOpen(false); }}
+                        className="w-full px-3 py-2 text-left text-[13px] text-white/40 hover:bg-white/[0.05] transition-colors">
+                        Sin cliente
+                      </button>
+                      {clients.map(c => (
+                        <button key={c.id} type="button"
+                          onClick={() => { handleClientChange(c.id); setClientDropOpen(false); }}
+                          className="w-full px-3 py-2 text-left text-[13px] hover:bg-white/[0.05] transition-colors"
+                          style={{ color: clientId === c.id ? '#a78bfa' : 'rgba(255,255,255,0.75)' }}>
+                          {c.name}{c.company ? ` — ${c.company}` : ''}
+                          {clientId === c.id && <span className="float-right text-purple-400">✓</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
