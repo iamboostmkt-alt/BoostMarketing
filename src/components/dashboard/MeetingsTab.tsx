@@ -177,7 +177,15 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setGcalError(data.error || 'Error al crear el evento'); return; }
+      if (!res.ok) {
+        const msg = data.error || 'Error al crear el evento';
+        if (data.code === 'CALENDAR_PERMISSION' || data.code === 'TOKEN_EXPIRED' || data.code === 'CALENDAR_UNAUTHORIZED') {
+          setGcalError(msg + ' ⟶ Cierra sesión y entra con Google.');
+        } else {
+          setGcalError(msg);
+        }
+        return;
+      }
       if (data.meetLink) { setMeetUrl(data.meetLink); setGcalError(''); }
       else { setGcalError('Evento creado pero sin Meet link — verifica Google Calendar'); }
     } catch { setGcalError('Error de conexión'); }

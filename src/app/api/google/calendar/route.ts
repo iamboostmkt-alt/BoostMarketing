@@ -68,6 +68,9 @@ export async function POST(req: NextRequest) {
     const start = new Date(startTime);
     const end = endTime ? new Date(endTime) : new Date(start.getTime() + 60 * 60 * 1000);
 
+    // Log para debug
+    console.log('[Calendar] Creando evento:', { title, startTime: start.toISOString(), attendeeEmails: attendeeEmails.length });
+
     // Crear evento en Google Calendar con Google Meet
     const eventBody = {
       summary: title,
@@ -104,14 +107,31 @@ export async function POST(req: NextRequest) {
 
     if (!calRes.ok) {
       const err = await calRes.json();
-      console.error('Google Calendar API error:', err);
+      console.error('Google Calendar API error:', JSON.stringify(err));
+      
+      if (calRes.status === 401) {
+        return NextResponse.json({
+          error: 'Token de Google expirado. Cierra sesión y vuelve a entrar con Google.',
+          code: 'CALENDAR_UNAUTHORIZED',
+        }, { status: 401 });
+      }
       if (calRes.status === 403) {
         return NextResponse.json({
-          error: 'Sin permisos de Google Calendar. Cierra sesión y vuelve a iniciar con Google (permitiendo el acceso al calendario).',
+          error: 'Sin permisos de Calendar. Ve a Ajustes → cierra sesión → entra con Google y acepta el permiso de Calendar.',
           code: 'CALENDAR_PERMISSION',
         }, { status: 403 });
       }
-      return NextResponse.json({ error: 'Error al crear el evento en Google Calendar', details: err }, { status: 500 });
+      if (calRes.status === 400) {
+        return NextResponse.json({
+          error: 'Datos inválidos para crear el evento. Verifica fecha y título.',
+          code: 'CALENDAR_BAD_REQUEST',
+          details: err,
+        }, { status: 400 });
+      }
+      return NextResponse.json({ 
+        error: `Error ${calRes.status} de Google Calendar: ${err?.error?.message || 'Error desconocido'}`,
+        details: err,
+      }, { status: 500 });
     }
 
     const event = await calRes.json();
