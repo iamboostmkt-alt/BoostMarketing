@@ -1,5 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /invite/
+Disallow: /p/
+Disallow: /billing/
+
+Sitemap: https://weeklink.com.mx/sitemap.xml
+
 User-agent: Googlebot
 Allow: /
+Disallow: /dashboard/
+Disallow: /api/
 
 User-agent: Bingbot
 Allow: /
@@ -8,7 +20,4 @@ User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
 Allow: /

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { SeoSchema } from '@/components/landing/SeoSchema';
 import Link from 'next/link';
 
 // ── Mock UI components ──────────────────────────────────────────────────────
@@ -183,7 +184,9 @@ export default function WeeklinkHome() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#F6F7FB] font-sans antialiased" style={{ background: '#F6F7FB' }}>
+    <>
+      <SeoSchema />
+      <div className="min-h-[100dvh] bg-[#F6F7FB] font-sans antialiased" style={{ background: '#F6F7FB' }}>
 
       {/* ── Navbar ── */}
       <nav className={`fixed left-0 right-0 top-0 z-50 transition-all duration-200 ${scrolled ? 'bg-white/95 shadow-sm' : 'bg-white/95'}`}
@@ -551,5 +554,6 @@ export default function WeeklinkHome() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

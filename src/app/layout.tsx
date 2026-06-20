@@ -22,13 +22,76 @@ export async function generateMetadata(): Promise<Metadata> {
   const { headers } = await import('next/headers');
   const host = headers().get('host') || '';
   const isBoost = host.includes('boostmarketing') || host.includes('boost-marketing');
+  if (isBoost) {
+    return {
+      title: 'BoostMarketing — Agencia de Marketing Digital',
+      description: 'Estrategia, contenido y resultados para tu marca.',
+    };
+  }
+
   return {
-    title: isBoost
-      ? 'BoostMarketing — Agencia de Marketing Digital'
-      : 'Weeklink — Gestión para Agencias',
-    description: isBoost
-      ? 'Estrategia, contenido y resultados para tu marca.'
-      : 'Tareas, chat, proyectos y portal cliente para agencias de marketing.',
+    title: {
+      default: 'Weeklink — Software para Agencias de Marketing en México',
+      template: '%s | Weeklink',
+    },
+    description: 'Weeklink es el software todo-en-uno para agencias de marketing en México. Gestiona tareas, proyectos, chat con clientes, entregas y aprobaciones en un solo lugar.',
+    keywords: [
+      'software para agencias de marketing',
+      'CRM para agencias México',
+      'gestión de proyectos agencias',
+      'portal cliente agencia marketing',
+      'herramienta gestión agencia digital',
+      'software agencia marketing México',
+      'plataforma agencia marketing',
+      'gestión tareas agencia',
+      'chat cliente agencia',
+      'aprobaciones diseño marketing',
+      'weeklink',
+    ],
+    authors: [{ name: 'Weeklink', url: 'https://weeklink.com.mx' }],
+    creator: 'Weeklink',
+    publisher: 'Weeklink',
+    metadataBase: new URL('https://weeklink.com.mx'),
+    alternates: {
+      canonical: '/',
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'es_MX',
+      url: 'https://weeklink.com.mx',
+      siteName: 'Weeklink',
+      title: 'Weeklink — Software para Agencias de Marketing en México',
+      description: 'Gestiona tareas, proyectos, chat con clientes y aprobaciones de entregas en un solo lugar. La plataforma que tu agencia necesita.',
+      images: [
+        {
+          url: '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: 'Weeklink — Software para Agencias de Marketing',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Weeklink — Software para Agencias de Marketing en México',
+      description: 'Gestiona tareas, proyectos, chat con clientes y aprobaciones en un solo lugar.',
+      images: ['/og-image.png'],
+      creator: '@weeklink',
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    verification: {
+      google: process.env.GOOGLE_SEARCH_CONSOLE_ID || '',
+    },
   };
 }
 
