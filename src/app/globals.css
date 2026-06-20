@@ -812,34 +812,40 @@ select.wl-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(139,92,246,0.6)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
-  background-color: rgba(255,255,255,0.03);
+  background-color: #0f0f14 !important;
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 10px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255,255,255,0.75) !important;
   font-size: 13px;
   line-height: 1.4;
   padding: 9px 36px 9px 12px;
   min-height: 38px;
   outline: none;
   cursor: pointer;
-  transition: all 0.15s ease;
-  color-scheme: dark;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  color-scheme: dark !important;
   width: 100%;
 }
 select.wl-select:hover {
   border-color: rgba(139,92,246,0.30);
-  background-color: rgba(255,255,255,0.05);
+  background-color: #141420 !important;
 }
 select.wl-select:focus {
   border-color: rgba(124,58,237,0.50);
   box-shadow: 0 0 0 3px rgba(124,58,237,0.10);
-  background-color: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.90);
+  background-color: #141420 !important;
+  color: rgba(255,255,255,0.90) !important;
 }
-select.wl-select option {
-  background: #0F0F14;
-  color: rgba(255,255,255,0.85);
-  padding: 8px 12px;
+select.wl-select option,
+select.wl-select optgroup {
+  background-color: #0f0f14 !important;
+  background: #0f0f14 !important;
+  color: rgba(255,255,255,0.85) !important;
+}
+select.wl-select option:checked,
+select.wl-select option:hover {
+  background-color: #1e1b2e !important;
+  background: #1e1b2e !important;
 }
 select.wl-select:disabled {
   opacity: 0.4;
