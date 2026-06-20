@@ -499,7 +499,7 @@ export default function WeeklinkHome() {
               <p className="text-[11px] font-semibold text-[rgba(17,24,39,0.35)] uppercase tracking-wider mb-3">Recursos</p>
               <div className="space-y-2">
                 {[
-                  { label: 'Blog', href: '#' },
+                  { label: 'Blog', href: '/blog' },
                   { label: 'Ayuda', href: '#' },
                   { label: 'Roadmap', href: '#' },
                 ].map(l => (
