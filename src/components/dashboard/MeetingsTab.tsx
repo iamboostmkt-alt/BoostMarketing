@@ -93,11 +93,9 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     }
     setCalOpen(false);
     setNotes(meeting?.notes ?? '');
-    // Auto-generar link Google Meet para nuevas reuniones
+    // Para nuevas reuniones: dejar vacío (usar botón Meet para crear link real)
     if (!meeting) {
-      const chars = 'abcdefghijklmnop';
-      const seg = (n: number) => Array.from({length: n}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-      setMeetUrl(`https://meet.google.com/${seg(3)}-${seg(4)}-${seg(3)}`);
+      setMeetUrl('');
     } else {
       setMeetUrl(meeting?.meetUrl ?? '');
     }
@@ -292,7 +290,9 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
             </div>
             {/* Google Meet */}
             <div>
-              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Google Meet</label>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">
+                Google Meet <span style={{ textTransform: 'none', fontWeight: 400, color: 'rgba(255,255,255,0.25)' }}>— usa el botón Meet para crear un link real</span>
+              </label>
               <div className="flex gap-1.5">
                 <input value={meetUrl} onChange={e => setMeetUrl(e.target.value)}
                   placeholder="https://meet.google.com/..."

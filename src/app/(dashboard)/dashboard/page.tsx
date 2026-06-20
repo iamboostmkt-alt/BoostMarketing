@@ -490,26 +490,30 @@ export default function DashboardHome() {
       // Messages se cargan async arriba
       setProjects(projectsR?.projects || []);
 
-      // Admin: clientes + workload + actividad de clientes
+      // Admin: clientes + workload en paralelo
       if (isAdmin) {
-        // Paralelo: clientes + workload (sin activity que es lenta)
         const [clientsR, workloadR] = await Promise.all([
-          fetch('/api/clients?limit=5').then(r => r.json()).catch(() => ({ clients: [] })),
+          fetch('/api/clients?limit=30').then(r => r.json()).catch(() => ({ clients: [] })),
           fetch('/api/team/workload').then(r => r.json()).catch(() => ({ members: [] })),
         ]);
-        setClients(clientsR?.clients || []);
+        const cl = clientsR?.clients || [];
+        setClients(cl.slice(0, 5));
         setTeamLoad(workloadR?.users || workloadR?.members || []);
-        setClientActivity([]); // Se carga de forma diferida
+        setClientActivity([]);
+        // Precargar para MeetingDialog sin delay
+        if (cl.length > 0) setMeetClients(cl.map((c: any) => ({ id: c.id, name: c.name, email: c.email || '', company: c.company || '' })));
       }
 
       // PM: sus clientes + su equipo
       if (isPM) {
         const [clientsR, workloadR] = await Promise.all([
-          fetch('/api/clients?limit=8&myClients=true').then(r => r.json()).catch(() => ({ clients: [] })),
+          fetch('/api/clients?limit=30&myClients=true').then(r => r.json()).catch(() => ({ clients: [] })),
           fetch('/api/team/workload?myTeam=true').then(r => r.json()).catch(() => ({ members: [] })),
         ]);
-        setClients(clientsR?.clients || []);
+        const cl = clientsR?.clients || [];
+        setClients(cl.slice(0, 8));
         setTeamLoad(workloadR?.users || workloadR?.members || []);
+        if (cl.length > 0) setMeetClients(cl.map((c: any) => ({ id: c.id, name: c.name, email: c.email || '', company: c.company || '' })));
       }
 
       // Team: sin fetch de actividad (datos no útiles)
