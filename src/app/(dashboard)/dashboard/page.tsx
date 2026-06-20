@@ -483,7 +483,8 @@ export default function DashboardHome() {
 
       // Inbox en paralelo (no bloquea el render inicial)
       const msgsR = { inbox: [] };
-      fetchWithTimeout('/api/chat/inbox', { inbox: [] }, 2000).then(d => setMessages(d?.inbox || [])).catch(() => {});
+      // Inbox con timeout generoso — no bloquea el render inicial
+      fetch('/api/chat/inbox').then(r => r.json()).then(d => setMessages(d?.inbox || [])).catch(() => {});
       if (statsR) setStats(statsR);
       setTasks(tasksR?.tasks || []);
       setMeetings(meetsR?.meetings || []);

@@ -208,8 +208,7 @@ function ContextForm({
         <select
           value={ctx.industry}
           onChange={e => onChange('industry', e.target.value)}
-          className="w-full rounded-[10px] px-3 py-2 text-[13px] outline-none"
-          style={{ background: 'var(--wl-elevated)', border: '1px solid var(--wl-border)', color: 'var(--wl-text-primary)' }}
+          className="wl-select"
         >
           <option value="">Seleccionar...</option>
           {INDUSTRY_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
@@ -227,8 +226,7 @@ function ContextForm({
         <select
           value={ctx.tone}
           onChange={e => onChange('tone', e.target.value)}
-          className="w-full rounded-[10px] px-3 py-2 text-[13px] outline-none"
-          style={{ background: 'var(--wl-elevated)', border: '1px solid var(--wl-border)', color: 'var(--wl-text-primary)' }}
+          className="wl-select"
         >
           <option value="">Seleccionar...</option>
           {TONE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
