@@ -18,7 +18,7 @@ import { statusLabels } from '@/lib/theme-maps';
 import TaskForm from '@/components/dashboard/TaskForm';
 import ClientForm from '@/components/dashboard/ClientForm';
 import { InviteModal } from '@/components/dashboard/InviteModal';
-import AppointmentEditModal from '@/components/calendar/AppointmentEditModal';
+import { MeetingDialog } from '@/components/dashboard/MeetingsTab';
 
 const MANAGER_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
 
@@ -374,8 +374,7 @@ function TipsPanel({ clients, isManager, onCreateTask, show }: {
         <select
           value={clientId}
           onChange={e => setClientId(e.target.value)}
-          className="flex-1 rounded-[10px] px-3 py-2 text-[12px] outline-none"
-          style={{ background: 'var(--wl-elevated)', border: '1px solid var(--wl-border)', color: 'var(--wl-text-primary)' }}
+          className="wl-select flex-1"
         >
           <option value="">Seleccionar cuenta...</option>
           {clients.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -456,6 +455,8 @@ export default function DashboardHome() {
   const [clientFormOpen, setClientFormOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [meetingOpen, setMeetingOpen] = useState(false);
+  const [meetTeamUsers, setMeetTeamUsers] = useState<any[]>([]);
+  const [meetClients, setMeetClients] = useState<any[]>([]);
   const [tips, setTips] = useState<any[]>([]);
   const [tipsLoading, setTipsLoading] = useState(false);
   const [tipsClient, setTipsClient] = useState<string>('');
@@ -466,19 +467,27 @@ export default function DashboardHome() {
     setLoading(true);
     try {
       // Fetches comunes a todos los roles
-      const basePromises = [
-        fetch('/api/stats').then(r => r.json()).catch(() => null),
-        fetch('/api/tasks?scope=mine&limit=5').then(r => r.json()).catch(() => ({ tasks: [] })),
-        fetch('/api/meetings?limit=3').then(r => r.json()).catch(() => ({ meetings: [] })),
-        fetch('/api/chat/inbox').then(r => r.json()).catch(() => ({ inbox: [] })),
-        fetch('/api/projects?limit=4').then(r => r.json()).catch(() => ({ projects: [] })),
-      ];
+      // Timeout helper para fetches lentos
+      const fetchWithTimeout = (url: string, fallback: any, ms = 3000) => {
+        const timeout = new Promise<any>(res => setTimeout(() => res(fallback), ms));
+        return Promise.race([fetch(url).then(r => r.json()).catch(() => fallback), timeout]);
+      };
 
-      const [statsR, tasksR, meetsR, msgsR, projectsR] = await Promise.all(basePromises);
+      // Fetches críticos: stats + tasks + meetings en paralelo
+      const [statsR, tasksR, meetsR, projectsR] = await Promise.all([
+        fetchWithTimeout('/api/stats', null),
+        fetchWithTimeout('/api/tasks?scope=mine&limit=5', { tasks: [] }),
+        fetchWithTimeout('/api/meetings?limit=3', { meetings: [] }),
+        fetchWithTimeout('/api/projects?limit=4', { projects: [] }),
+      ]);
+
+      // Inbox en paralelo (no bloquea el render inicial)
+      const msgsR = { inbox: [] };
+      fetchWithTimeout('/api/chat/inbox', { inbox: [] }, 2000).then(d => setMessages(d?.inbox || [])).catch(() => {});
       if (statsR) setStats(statsR);
       setTasks(tasksR?.tasks || []);
       setMeetings(meetsR?.meetings || []);
-      setMessages(msgsR?.inbox || []);
+      // Messages se cargan async arriba
       setProjects(projectsR?.projects || []);
 
       // Admin: clientes + workload + actividad de clientes
@@ -616,7 +625,17 @@ export default function DashboardHome() {
         <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))' }}>
           {[
             { icon: Plus,         label: 'Nueva tarea',   fn: () => setTaskFormOpen(true),   always: true },
-            { icon: CalendarPlus, label: 'Nueva reunión', fn: () => setMeetingOpen(true),     always: true },
+            { icon: CalendarPlus, label: 'Nueva reunión', fn: async () => {
+        if (meetTeamUsers.length === 0) {
+          const [tu, cl] = await Promise.all([
+            fetch('/api/team-members').then(r => r.json()).catch(() => ({ members: [] })),
+            fetch('/api/clients?limit=30').then(r => r.json()).catch(() => ({ clients: [] })),
+          ]);
+          setMeetTeamUsers(tu?.members || tu?.users || []);
+          setMeetClients(cl?.clients || []);
+        }
+        setMeetingOpen(true);
+      }, always: true },
             { icon: Building2,    label: 'Nuevo cliente', fn: () => setClientFormOpen(true),  roles: ['ADMIN','PROJECT_MANAGER'] },
             { icon: UserPlus,     label: 'Invitar',       fn: () => setInviteOpen(true),      roles: ['ADMIN','PROJECT_MANAGER'] },
           ]
@@ -904,7 +923,15 @@ export default function DashboardHome() {
 
       {/* Modals */}
       <TaskForm open={taskFormOpen} onOpenChange={setTaskFormOpen} onSuccess={() => { fetchAll(); setTaskFormOpen(false); }} isManager={isManager} />
-      <AppointmentEditModal open={meetingOpen} onOpenChange={setMeetingOpen} appointment={null} onSaved={() => { fetchAll(); setMeetingOpen(false); }} />
+      <MeetingDialog
+        open={meetingOpen}
+        onOpenChange={setMeetingOpen}
+        meeting={null}
+        teamUsers={meetTeamUsers}
+        clients={meetClients.map((c: any) => ({ id: c.id, name: c.name, email: c.email || '', company: c.company || '' }))}
+        userRole={userRole || ''}
+        onSaved={() => { fetchAll(); setMeetingOpen(false); }}
+      />
       <ClientForm open={clientFormOpen} onOpenChange={setClientFormOpen} onSuccess={() => { fetchAll(); setClientFormOpen(false); }} isAdmin={userRole === 'ADMIN'} />
       <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </>

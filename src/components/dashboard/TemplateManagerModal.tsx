@@ -154,14 +154,14 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
         <div className="space-y-1.5">
           <Label className="text-white/70 text-xs">Categoría</Label>
           <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-            className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+            className="wl-select w-full w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
             {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
         </div>
         <div className="space-y-1.5">
           <Label className="text-white/70 text-xs">Prioridad</Label>
           <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-            className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+            className="wl-select w-full w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
             {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
           </select>
         </div>
@@ -172,7 +172,7 @@ function TemplateForm({ initial, onSave, onCancel }: TemplateFormProps) {
         <div className="space-y-1.5">
           <Label className="text-white/70 text-xs">Visibilidad</Label>
           <select value={form.visibility} onChange={e => setForm(f => ({ ...f, visibility: e.target.value }))}
-            className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+            className="wl-select w-full w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
             {VISIBILITIES.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
           </select>
         </div>

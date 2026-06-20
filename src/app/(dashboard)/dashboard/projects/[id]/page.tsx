@@ -150,8 +150,7 @@ function MilestoneModal({ open, onClose, onSaved, projectId, milestone }: {
             </div>
             <div>
               <label className="text-[11px] text-white/40 uppercase tracking-wider mb-1.5 block">Estado</label>
-              <select value={status} onChange={e => setStatus(e.target.value)}
-                className="w-full rounded-xl bg-white/[0.04] border border-white/[0.07] px-3 py-2.5 text-sm text-white outline-none focus:border-violet-500/50">
+              <select value={status} onChange={e => setStatus(e.target.value)} className="wl-select w-full">
                 {Object.entries(MS_STATUS).map(([k, v]) => (
                   <option key={k} value={k}>{v.label}</option>
                 ))}
@@ -428,8 +427,7 @@ export default function ProjectDetailPage() {
               <ProjectShareButton projectId={project.id} projectName={project.name} />
             )}
             {isManager && (
-              <select value={project.status} onChange={e => changeProjectStatus(e.target.value)}
-                className="rounded-xl bg-white/[0.04] border border-white/[0.07] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-violet-500/40 [color-scheme:dark]">
+              <select value={project.status} onChange={e => changeProjectStatus(e.target.value)} className="wl-select w-full">
                 <option value="active">Activo</option>
                 <option value="paused">Pausado</option>
                 <option value="completed">Completado</option>

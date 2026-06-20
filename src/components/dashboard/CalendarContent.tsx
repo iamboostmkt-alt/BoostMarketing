@@ -156,8 +156,7 @@ function CalendarTipsPanel({ isManager }: { isManager: boolean }) {
           <div className="flex gap-2 pt-3">
             <select
               value={clientId} onChange={e => setClientId(e.target.value)}
-              className="flex-1 rounded-[8px] px-2 py-1.5 text-[12px] text-white outline-none"
-              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              className="wl-select flex-1">
               <option value="">Seleccionar cuenta...</option>
               {clients.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>

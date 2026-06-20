@@ -190,7 +190,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
             <div className="space-y-1.5">
               <Label className="text-white/70 text-xs">Cliente (opcional)</Label>
               <select value={clientEmail} onChange={(e) => setClientEmail(e.target.value)}
-                className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+                className="wl-select w-full">
                 <option value="">Sin cliente</option>
                 {clients.map((c) => (
                   <option key={c.id} value={c.email}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
@@ -246,7 +246,7 @@ function AppointmentEditModal({ open, onOpenChange, appointment, onSaved, onDele
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Estado</Label>
             <select value={status} onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-md bg-white/[0.04] border border-white/[0.08] text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand">
+              className="wl-select w-full">
               <option value="pending">Pendiente</option>
               <option value="confirmed">Confirmada</option>
               <option value="cancelled">Cancelada</option>

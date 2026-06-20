@@ -238,8 +238,7 @@ function ProjectModal({ open, onClose, onSaved, project }: {
           {/* Cliente */}
           <div>
             <label className="text-[12px] text-white/50 mb-1.5 block">Cliente (opcional)</label>
-            <select value={clientId} onChange={e => setClientId(e.target.value)}
-              className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50">
+            <select value={clientId} onChange={e => setClientId(e.target.value)} className="wl-select w-full">
               <option value="">Sin cliente (proyecto interno)</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>

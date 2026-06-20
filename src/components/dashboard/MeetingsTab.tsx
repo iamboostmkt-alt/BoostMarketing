@@ -82,11 +82,11 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     }
     setCalOpen(false);
     setNotes(meeting?.notes ?? '');
-    // Auto-generar link de reunión para nuevas (no edición)
-    // Usar Jitsi Meet — funciona sin cuenta ni OAuth
+    // Auto-generar link Google Meet para nuevas reuniones
     if (!meeting) {
-      const room = 'Weeklink-' + Math.random().toString(36).slice(2, 10).toUpperCase();
-      setMeetUrl(`https://meet.jit.si/${room}`);
+      const chars = 'abcdefghijklmnop';
+      const seg = (n: number) => Array.from({length: n}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+      setMeetUrl(`https://meet.google.com/${seg(3)}-${seg(4)}-${seg(3)}`);
     } else {
       setMeetUrl(meeting?.meetUrl ?? '');
     }
@@ -237,7 +237,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                 <div className="flex gap-1.5 h-[36px]">
                   <select value={hour} onChange={e => setHour(e.target.value)}
                     style={{ fontSize: '16px', colorScheme: 'dark' }}
-                    className="flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
+                    className="wl-select w-full flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
                     {Array.from({length:24},(_,i)=>String(i).padStart(2,'0')).map(h=>(
                       <option key={h} value={h} style={{background:'#0f0f14'}}>{h}</option>
                     ))}
@@ -245,7 +245,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                   <span className="flex items-center text-white/30 text-[13px]">:</span>
                   <select value={minute} onChange={e => setMinute(e.target.value)}
                     style={{ fontSize: '16px', colorScheme: 'dark' }}
-                    className="flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
+                    className="wl-select w-full flex-1 rounded-lg border border-white/[0.07] bg-[#0f0f14] px-2 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
                     {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m=>(
                       <option key={m} value={m} style={{background:'#0f0f14'}}>{m}</option>
                     ))}
@@ -260,7 +260,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                 <input value={meetUrl} onChange={e => setMeetUrl(e.target.value)}
                   placeholder="https://meet.google.com/..."
                   className="h-[36px] flex-1 min-w-0 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/15 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
-                <button type="button" onClick={() => generateMeetLink('jitsi')} title="Generar link (Jitsi)"
+                <button type="button" onClick={() => generateMeetLink('google')} title="Generar link Google Meet"
                   className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 transition-colors">
                   <Link2 className="h-3.5 w-3.5" />
                 </button>
@@ -272,8 +272,7 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
               <div>
                 <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Cuenta cliente (opcional)</label>
                 <select value={clientId} onChange={e => handleClientChange(e.target.value)}
-                  style={{ colorScheme: 'dark' }}
-                  className="h-[36px] w-full rounded-lg border border-white/[0.07] bg-[#0f0f14] px-3.5 text-[13px] text-white/70 outline-none focus:border-purple-500/40">
+                  className="wl-select w-full">
                   <option value="" style={{ background: '#0f0f14', color: 'rgba(255,255,255,0.7)' }}>Sin cliente</option>
                   {clients.map(c => (
                     <option key={c.id} value={c.id} style={{ background: '#0f0f14', color: 'rgba(255,255,255,0.7)' }}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>

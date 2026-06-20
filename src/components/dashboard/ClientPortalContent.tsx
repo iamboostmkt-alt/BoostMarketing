@@ -987,7 +987,7 @@ export default function ClientPortalContent() {
               <div className="space-y-1">
                 <p className="text-xs text-white/40">Tipo</p>
                 <select value={milestoneForm.type} onChange={e => setMilestoneForm(f => ({...f, type: e.target.value}))}
-                  className="w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
+                  className="wl-select w-full w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
                   <option value="other">General</option>
                   <option value="inicio_proyecto">Inicio proyecto</option>
                   <option value="grabacion">Grabación</option>
@@ -1002,7 +1002,7 @@ export default function ClientPortalContent() {
               <div className="space-y-1">
                 <p className="text-xs text-white/40">Estado</p>
                 <select value={milestoneForm.status} onChange={e => setMilestoneForm(f => ({...f, status: e.target.value}))}
-                  className="w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
+                  className="wl-select w-full w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
                   <option value="upcoming">Próximo</option>
                   <option value="in_progress">En progreso</option>
                   <option value="review">En revisión</option>
@@ -1020,7 +1020,7 @@ export default function ClientPortalContent() {
               <div className="space-y-1">
                 <p className="text-xs text-white/40">Responsable (PM)</p>
                 <select value={milestoneForm.responsibleId} onChange={e => setMilestoneForm(f => ({...f, responsibleId: e.target.value}))}
-                  className="w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
+                  className="wl-select w-full w-full bg-[#1a1a24] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand/50">
                   <option value="">Sin asignar</option>
                   {meetingTeam.filter((u: any) => u.role === 'PROJECT_MANAGER').map((u: any) => (
                     <option key={u.id} value={u.id}>{u.name || u.email}</option>
