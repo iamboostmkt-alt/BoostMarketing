@@ -58,6 +58,8 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   const [calOpen,     setCalOpen]     = useState(false);
   const [notes,       setNotes]       = useState('');
   const [meetUrl,     setMeetUrl]     = useState('');
+  const [gcalLoading, setGcalLoading] = useState(false);
+  const [gcalError,   setGcalError]   = useState('');
   const [assigned,    setAssigned]    = useState<string[]>([]);
   const [clientEmail, setClientEmail] = useState('');
   const [clientId,    setClientId]    = useState('');
@@ -147,6 +149,32 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error');
     } finally { setSaving(false); }
+  }
+
+  // Crear evento real en Google Calendar
+  async function createGoogleCalendarEvent() {
+    if (!name.trim()) { setGcalError('Escribe el nombre de la reunión primero'); return; }
+    if (!selectedDate) { setGcalError('Selecciona fecha y hora primero'); return; }
+    setGcalLoading(true); setGcalError('');
+    try {
+      const startDt = new Date(selectedDate);
+      startDt.setHours(parseInt(hour), parseInt(minute), 0, 0);
+      const endDt = new Date(startDt.getTime() + 60 * 60 * 1000);
+      const attendeeEmails = teamUsers.filter(u => assigned.includes(u.id) && u.email).map(u => u.email);
+      const res = await fetch('/api/google/calendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: name, startTime: startDt.toISOString(), endTime: endDt.toISOString(),
+          attendeeEmails, description: notes || 'Reunión desde Weeklink',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setGcalError(data.error || 'Error al crear el evento'); return; }
+      if (data.meetLink) { setMeetUrl(data.meetLink); setGcalError(''); }
+      else { setGcalError('Evento creado pero sin Meet link — verifica Google Calendar'); }
+    } catch { setGcalError('Error de conexión'); }
+    finally { setGcalLoading(false); }
   }
 
   function generateMeetLink(service: 'meet' | 'jitsi' | 'zoom' = 'meet') {
@@ -253,18 +281,28 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                 </div>
               </div>
             </div>
-            {/* Meet / Zoom */}
+            {/* Google Meet */}
             <div>
-              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Meet / Zoom</label>
+              <label className="block text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1.5">Google Meet</label>
               <div className="flex gap-1.5">
                 <input value={meetUrl} onChange={e => setMeetUrl(e.target.value)}
                   placeholder="https://meet.google.com/..."
-                  className="h-[36px] flex-1 min-w-0 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/15 outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
-                <button type="button" onClick={() => generateMeetLink('google')} title="Generar link Google Meet"
-                  className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 transition-colors">
-                  <Link2 className="h-3.5 w-3.5" />
+                  className="h-[36px] flex-1 min-w-0 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 text-[12px] text-white/70 placeholder-white/15 outline-none focus:border-purple-500/40" />
+                <button type="button" onClick={createGoogleCalendarEvent} disabled={gcalLoading}
+                  title="Crear evento real en Google Calendar con Meet"
+                  className="h-[36px] px-2.5 shrink-0 flex items-center gap-1 rounded-lg border border-white/[0.07] bg-white/[0.03] hover:bg-purple-500/10 hover:border-purple-500/30 transition-all disabled:opacity-40 text-[10px] font-semibold"
+                  style={{ color: gcalLoading ? 'rgba(139,92,246,0.6)' : '#a78bfa' }}>
+                  {gcalLoading
+                    ? <span className="w-3 h-3 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin block" />
+                    : <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.89 4 3.01 4.9 3.01 6L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+                  }
+                  {gcalLoading ? '' : 'Meet'}
                 </button>
               </div>
+              {gcalError && <p className="text-[10px] text-red-400 mt-1">{gcalError}</p>}
+              {meetUrl.includes('meet.google.com') && !gcalError && (
+                <p className="text-[10px] text-emerald-400 mt-1">✓ Meet real listo</p>
+              )}
             </div>
 
             {/* Cliente */}
