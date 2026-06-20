@@ -151,7 +151,7 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
       </div>
 
       {/* Panel derecho — formulario */}
-      <div className="flex flex-1 flex-col items-center justify-start px-6 overflow-y-auto" style={{ paddingTop: 'max(24px, env(safe-area-inset-top, 24px))', paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
+      <div className="flex flex-1 flex-col items-center justify-center px-6 overflow-y-auto" style={{ paddingTop: 'max(40px, env(safe-area-inset-top, 40px))', paddingBottom: 'max(40px, env(safe-area-inset-bottom, 40px))' }}>
         {/* Mobile logo */}
         <div className="flex items-center gap-2.5 mb-4 lg:hidden">
           {brandLogo
