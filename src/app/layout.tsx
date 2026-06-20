@@ -90,7 +90,7 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     verification: {
-      google: process.env.GOOGLE_SEARCH_CONSOLE_ID || '',
+      google: 'google9161df5b0197df54',
     },
   };
 }
