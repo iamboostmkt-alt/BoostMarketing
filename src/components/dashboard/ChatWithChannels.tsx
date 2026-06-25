@@ -405,7 +405,9 @@ function ChannelList({
                   <button onClick={() => setActiveId(wkRoom)}
                     className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-[13px] transition-colors ${isActive ? 'bg-white/[0.06] text-white' : 'hover:bg-white/[0.03] text-white/50 hover:text-white/80'}`}>
                     <div className="relative shrink-0">
-                      <div className="h-6 w-6 rounded-full overflow-hidden"><img src="/weeklink-icon.png" alt="W" className="h-full w-full object-cover" /></div>
+                      <div className="h-6 w-6 rounded-full overflow-hidden flex-shrink-0">
+                        <img src="/icons/icon-96-maskable.png" alt="Weeklink" className="h-full w-full object-cover" />
+                      </div>
                       <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-[#07070a]" />
                     </div>
                     <span className="truncate font-medium">Weeklink</span>
@@ -1836,7 +1838,7 @@ FORMATO:
                     ) : isSystemMsg ? (
                       // Bot Weeklink — logo real
                       <div className="mt-0.5 shrink-0 h-7 w-7 rounded-full overflow-hidden" style={{ flexShrink: 0 }}>
-                        <img src="/weeklink-icon.png" alt="Weeklink" className="h-full w-full object-cover" />
+                        <img src="/icons/icon-96-maskable.png" alt="Weeklink" className="h-full w-full object-cover" />
                       </div>
                     ) : (
                       <Avatar initials={initials} color={color} size={28} className="mt-0.5 shrink-0" image={(msg.user as any)?.image} />
