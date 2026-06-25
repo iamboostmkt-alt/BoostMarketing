@@ -124,8 +124,10 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
         <div className="flex items-center gap-3">
           {brandLogo
             ? <img src={brandLogo} alt={brandName} className="h-9 w-auto" />
-            : <WeeklinkMark size={36} />}
-          <span className="text-[20px] font-bold tracking-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>{brandName}</span>
+            : isBoost
+              ? <><WeeklinkMark size={36} /><span className="text-[20px] font-bold tracking-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>{brandName}</span></>
+              : <img src="/weeklink-logo.png" alt="Weeklink" style={{ height: 32, width: 'auto', filter: 'brightness(0) invert(1)' }} />}
+          {brandLogo && <span className="text-[20px] font-bold tracking-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>{brandName}</span>}
         </div>
         <div>
           <h2 className="text-[32px] font-bold text-white leading-tight mb-4">{panelTitle}</h2>
@@ -150,9 +152,10 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
         {/* Mobile logo */}
         <div className="flex items-center gap-2.5 mb-4 lg:hidden">
           {brandLogo
-            ? <img src={brandLogo} alt={brandName} className="h-8 w-auto" />
-            : <WeeklinkMark size={32} />}
-          <span className="text-[18px] font-bold" style={{ color: isBoost ? 'rgba(255,255,255,0.9)' : '#111827' }}>{brandName}</span>
+            ? <><img src={brandLogo} alt={brandName} className="h-8 w-auto" /><span className="text-[18px] font-bold" style={{ color: isBoost ? 'rgba(255,255,255,0.9)' : '#111827' }}>{brandName}</span></>
+            : isBoost
+              ? <><WeeklinkMark size={32} /><span className="text-[18px] font-bold text-white">{brandName}</span></>
+              : <img src="/weeklink-logo.png" alt="Weeklink" style={{ height: 28, width: 'auto' }} />}
         </div>
 
         <div className="w-full max-w-[420px]">

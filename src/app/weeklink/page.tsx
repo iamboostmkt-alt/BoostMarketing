@@ -9,8 +9,7 @@ function MockSidebar() {
   return (
     <div className="flex h-full w-[200px] shrink-0 flex-col border-r border-black/[0.05] bg-[#FCFCFD] py-3">
       <div className="flex items-center gap-2 px-4 pb-3">
-        <WeeklinkMark size={22} />
-        <span className="text-[13px] font-semibold text-[#111827]">Weeklink</span>
+        <img src="/weeklink-logo.png" alt="Weeklink" style={{ height: 20, width: 'auto' }} />
       </div>
       <div className="mx-3 mb-2 flex items-center gap-2 rounded-xl bg-white px-2.5 py-2 shadow-sm border border-black/[0.04]">
         <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-violet-100 text-[10px] font-bold text-violet-600">B</div>
@@ -189,8 +188,7 @@ export default function WeeklinkHome() {
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-8">
             <Link href="/weeklink" className="flex items-center gap-2.5">
-              <WeeklinkMark size={30} />
-              <span className="text-[18px] font-bold tracking-tight text-[#111827]">Weeklink</span>
+              <img src="/weeklink-logo.png" alt="Weeklink" style={{ height: 28, width: 'auto' }} />
             </Link>
             <div className="hidden items-center gap-6 md:flex">
               {[['Producto', ''], ['Soluciones', ''], ['Recursos', ''], ['Precios', 'precios'], ['Empresa', '']].map(([l, id]) => (
@@ -264,7 +262,7 @@ export default function WeeklinkHome() {
                   <div className="h-2.5 w-2.5 rounded-full bg-amber-400" />
                   <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
                   <div className="mx-auto flex h-6 items-center gap-1.5 rounded-md bg-white border border-black/[0.06] px-2.5">
-                    <WeeklinkMark size={12} />
+                    <img src="/weeklink-icon.png" alt="W" style={{ width: 12, height: 12, borderRadius: 3, objectFit: 'cover' }} />
                     <span className="text-[10px] text-[#9CA3AF]">app.weeklink.co</span>
                   </div>
                 </div>
