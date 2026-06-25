@@ -904,3 +904,17 @@ model PushSubscription {
   @@index([userId, workspaceId])
   @@map("push_subscriptions")
 }
+
+model WebhookSubscription {
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  url         String
+  secret      String?
+  events      String[]
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("webhook_subscriptions")
+}

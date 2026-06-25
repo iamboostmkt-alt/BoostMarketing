@@ -98,12 +98,7 @@ function MockThread() {
 }
 
 function WeeklinkMark({ size = 32 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <rect width="32" height="32" rx="9" fill="#7C3AED" />
-      <path d="M8 11L13 21L16 15L19 21L24 11" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return <img src="/weeklink-icon.png" alt="Weeklink" width={size} height={size} style={{ borderRadius: size * 0.28, objectFit: 'cover' }} />;
 }
 
 const logos = ['Nómada Studio', 'Peak Performance', 'Café del Mar', 'GymnasTwin', 'FitLab', 'Urbana Mx'];
@@ -539,8 +534,7 @@ export default function WeeklinkHome() {
           {/* Bottom bar */}
           <div className="flex items-center justify-between flex-wrap gap-3 pt-6 border-t border-[rgba(17,24,39,0.06)]">
             <div className="flex items-center gap-2.5">
-              <WeeklinkMark size={20} />
-              <span className="text-[14px] font-semibold text-[#111827]">Weeklink</span>
+              <img src="/weeklink-logo.png" alt="Weeklink" style={{ height: 22, width: 'auto' }} />
               <span className="text-[12px] text-[rgba(17,24,39,0.35)]">© 2026</span>
             </div>
             <div className="flex items-center gap-4">

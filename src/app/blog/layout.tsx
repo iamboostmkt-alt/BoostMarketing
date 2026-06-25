@@ -12,8 +12,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
       {/* Navbar */}
       <nav style={{ background: 'white', borderBottom: '1px solid rgba(17,24,39,0.06)', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
         <Link href="/weeklink" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#7C3AED,#5B21B6)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 16 }}>W</div>
-          <span style={{ fontWeight: 700, color: '#111827', fontSize: 16 }}>Weeklink</span>
+          <img src="/weeklink-logo.png" alt="Weeklink" style={{ height: 28, width: 'auto' }} />
           <span style={{ color: '#9CA3AF', fontSize: 14 }}>/ Blog</span>
         </Link>
         <Link href="/login" style={{ background: '#7C3AED', color: 'white', padding: '8px 20px', borderRadius: 10, textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>

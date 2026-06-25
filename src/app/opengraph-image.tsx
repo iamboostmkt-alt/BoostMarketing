@@ -32,23 +32,16 @@ export default async function Image() {
           transform: 'translateX(-50%)',
         }} />
 
-        {/* Logo + Name */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 40 }}>
-          <div style={{
-            width: 72,
-            height: 72,
-            background: 'linear-gradient(135deg, #7C3AED, #5B21B6)',
-            borderRadius: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 36,
-          }}>
-            W
-          </div>
-          <span style={{ color: 'white', fontSize: 52, fontWeight: 700, letterSpacing: -1 }}>
-            Weeklink
-          </span>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 40 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://weeklink.com.mx/weeklink-logo.png"
+            alt="Weeklink"
+            width={320}
+            height={80}
+            style={{ objectFit: 'contain' }}
+          />
         </div>
 
         {/* Headline */}

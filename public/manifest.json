@@ -1,7 +1,7 @@
 {
-  "name": "Weeklink — CRM para Agencias",
+  "name": "Weeklink",
   "short_name": "Weeklink",
-  "description": "CRM, tareas, chat y portal cliente para agencias de marketing modernas",
+  "description": "Software para agencias de marketing en México",
   "start_url": "/dashboard?source=pwa",
   "display": "standalone",
   "orientation": "portrait-primary",
