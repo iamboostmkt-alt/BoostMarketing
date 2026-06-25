@@ -7,12 +7,7 @@ import { Loader2, Mail, Lock, Eye, EyeOff, ArrowLeft, Sparkles } from 'lucide-re
 import Link from 'next/link';
 
 function WeeklinkMark({ size = 32 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <rect width="32" height="32" rx="9" fill="#7C3AED" />
-      <path d="M8 11L13 21L16 15L19 21L24 11" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return <img src="/weeklink-icon.png" alt="Weeklink" width={size} height={size} style={{ borderRadius: size * 0.28, objectFit: 'cover' }} />;
 }
 
 interface Props {
@@ -227,10 +222,10 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                   <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
                     placeholder="tu@email.com" autoComplete="email"
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-[14px] outline-none transition-all"
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-[14px] outline-none transition-all wl-login-input"
                     style={isBoost
-                      ? { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: '#FFFFFF' }
-                      : { border: '1px solid rgba(17,24,39,0.12)', background: '#fff', color: '#111827' }} />
+                      ? { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: '#FFFFFF', colorScheme: 'dark' }
+                      : { border: '1px solid rgba(17,24,39,0.12)', background: '#FFFFFF', color: '#111827', colorScheme: 'light' }} />
                 </div>
               </div>
               <div>
@@ -239,10 +234,10 @@ export default function LoginPageClient({ isBoost: isBoostProp, brandName: brand
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                   <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
                     placeholder="••••••••" autoComplete="current-password"
-                    className="w-full pl-9 pr-10 py-2.5 rounded-xl border text-[14px] outline-none transition-all"
+                    className="w-full pl-9 pr-10 py-2.5 rounded-xl border text-[14px] outline-none transition-all wl-login-input"
                     style={isBoost
-                      ? { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: '#FFFFFF' }
-                      : { border: '1px solid rgba(17,24,39,0.12)', background: '#fff', color: '#111827' }} />
+                      ? { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: '#FFFFFF', colorScheme: 'dark' }
+                      : { border: '1px solid rgba(17,24,39,0.12)', background: '#FFFFFF', color: '#111827', colorScheme: 'light' }} />
                   <button type="button" onClick={() => setShowPass(!showPass)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#374151]">
                     {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

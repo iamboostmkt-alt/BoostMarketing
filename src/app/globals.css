@@ -872,3 +872,13 @@ input[type="time"].wl-input:focus {
   border-color: rgba(124,58,237,0.50);
   box-shadow: 0 0 0 3px rgba(124,58,237,0.10);
 }
+
+/* ── Fix autofill oscuro en login Weeklink ── */
+.wl-login-input:-webkit-autofill,
+.wl-login-input:-webkit-autofill:hover,
+.wl-login-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #FFFFFF inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  box-shadow: 0 0 0px 1000px #FFFFFF inset !important;
+  background-color: #FFFFFF !important;
+}
