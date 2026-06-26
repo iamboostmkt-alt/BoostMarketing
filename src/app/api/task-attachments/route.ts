@@ -129,7 +129,9 @@ export async function POST(req: NextRequest) {
           await sendMail(
             r.email,
             `📎 Nuevo archivo en tarea: ${task.title}`,
-            templateArchivoSubido(task.title, result.ctx.name ?? 'Un miembro', fileName, fileUrl, parentTitle, b)
+            fileType === 'link'
+                ? `<p>🔗 <strong>${result.ctx.name ?? 'Un miembro'}</strong> agregó un link de entrega en <strong>"${task.title}"</strong>:</p><p><a href="${fileUrl}">${fileUrl}</a></p>`
+                : templateArchivoSubido(task.title, result.ctx.name ?? 'Un miembro', fileName, fileUrl, parentTitle, b)
           );
         }
       }).catch(console.error);
@@ -148,7 +150,9 @@ export async function POST(req: NextRequest) {
 
       sendChatBotMessage({
         workspaceId: result.ctx.workspaceId,
-        message: `${typeLabel} **${uploaderName}** subió entrega en **"${task.title}"**:\n👉 Por favor revísala y aprueba o solicita cambios`,
+        message: fileType === 'link'
+        ? `🔗 **${uploaderName}** agregó un link de entrega en **"${task.title}"**:\n${fileUrl}\n👉 Por favor revísalo y aprueba o solicita cambios`
+        : `${typeLabel} **${uploaderName}** subió entrega en **"${task.title}"**:\n👉 Por favor revísala y aprueba o solicita cambios`,
         clientId: task.clientId,
         assignedUserIds: allAssignedIds,
         senderId: result.ctx.userId,

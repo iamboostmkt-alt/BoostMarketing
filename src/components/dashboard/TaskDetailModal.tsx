@@ -602,14 +602,32 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                         disabled={!deliveryLink.trim()}
                         onClick={async () => {
                           if (!deliveryLink.trim()) return;
-                          // Guardar el link como nota en la tarea
+                          const url = deliveryLink.trim().startsWith('http') ? deliveryLink.trim() : 'https://' + deliveryLink.trim();
+                          // 1. Guardar como TaskAttachment (persiste en la tarea)
+                          try {
+                            await fetch('/api/task-attachments', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                taskId: task!.id,
+                                fileName: url.replace(/^https?:\/\//, '').slice(0, 60),
+                                fileUrl: url,
+                                fileType: 'link',
+                                fileSize: 0,
+                                isInternal: false,
+                              }),
+                            });
+                            // Recargar attachments
+                            fetchAttachments();
+                          } catch {}
+                          // 2. También mandar al chat
                           await fetch('/api/chat', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                               room: (task as any).clientId || 'TEAM',
-                              message: `🔗 Entrega de "${task.title}": ${deliveryLink}`,
-                              isSystem: true, systemName: 'Weeklink',
+                              message: `🔗 Entrega de "${task!.title}": ${url}`,
+                              isSystem: false,
                             }),
                           }).catch(() => {});
                           toast.success('Link de entrega guardado ✓');
@@ -832,11 +850,15 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
                 <div className="space-y-1.5">
                   {attachments.filter(a => !a.fileType.startsWith('image/')).map(a => (
                     <div key={a.id} className="flex items-center gap-3 p-2.5 bg-white/[0.03] border border-white/[0.05] rounded-lg group hover:bg-white/[0.05] transition-colors">
-                      <FileIcon type={a.fileType} />
+                      {a.fileType === 'link'
+                        ? <span className="text-lg shrink-0">🔗</span>
+                        : <FileIcon type={a.fileType} />}
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-white/80 truncate">{a.fileName}</p>
+                        {a.fileType === 'link'
+                          ? <a href={a.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-blue-300 truncate block">{a.fileUrl.replace(/^https?:\/\//, '')}</a>
+                          : <p className="text-xs text-white/80 truncate">{a.fileName}</p>}
                         <p className="text-[10px] text-white/30">
-                          {fmtSize(a.fileSize)} · {a.user.name || 'Usuario'} · {fmtDate(a.createdAt)}
+                          {a.fileType !== 'link' && <>{fmtSize(a.fileSize)} · </>}{a.user.name || 'Usuario'} · {fmtDate(a.createdAt)}
                           {(a as any).task?.parentTaskId === null && (a as any).task?.id !== task?.id && (
                             <span className="ml-1 text-violet-400/60">↳ {(a as any).task?.title}</span>
                           )}
