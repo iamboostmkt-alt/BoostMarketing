@@ -3,10 +3,10 @@ import { requireWorkspace } from '@/core/auth/require-workspace';
 import { db } from '@/lib/db';
 import webpush from 'web-push';
 
-if (process.env.VAPID_PRIVATE_KEY && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+if (process.env.VAPID_PRIVATE_KEY && process.env.NEXT_PUBLIC_VAPID_PUB) {
   webpush.setVapidDetails(
     process.env.VAPID_EMAIL || 'mailto:noreply@weeklink.app',
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.NEXT_PUBLIC_VAPID_PUB,
     process.env.VAPID_PRIVATE_KEY,
   );
 }
