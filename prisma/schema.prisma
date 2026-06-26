@@ -151,8 +151,7 @@ model User {
   activityComments       ActivityComment[]
   appointmentAssignments AppointmentAssignedUser[]
   presence               UserPresence?
-  // tutorialDone se agrega después de ejecutar la migración en Supabase
-  // tutorialDone           Boolean    @default(false) @map("tutorial_done")
+  tutorialDone           Boolean    @default(false) @map("tutorial_done")
   workspace              Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@map("users")
