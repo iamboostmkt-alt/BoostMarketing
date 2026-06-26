@@ -24,13 +24,27 @@ export async function PATCH(req: NextRequest) {
   const data: Record<string, unknown> = {};
   if (parsed.data.image !== undefined) data.image = parsed.data.image;
   if (parsed.data.name  !== undefined) data.name  = parsed.data.name;
-  if ((parsed.data as any).tutorialDone !== undefined) (data as any).tutorialDone = (parsed.data as any).tutorialDone;
+  // tutorialDone — solo incluir si la columna existe en la DB
+  const hasTutorialDone = (parsed.data as any).tutorialDone !== undefined;
 
   if (Object.keys(data).length === 0)
     return NextResponse.json({ error: "Nada que actualizar" }, { status: 400 });
 
+  if (hasTutorialDone) {
+    try { (data as any).tutorialDone = (parsed.data as any).tutorialDone; } catch { /* columna no existe */ }
+  }
   const user = await db.user.update({ where: { id: userId }, data, select: { id: true, name: true, image: true } });
-  return NextResponse.json({ user });
+  // tutorialDone con fallback seguro si la columna no existe aún
+  let tutorialDone = false;
+  try {
+    const extra = await db.user.findFirst({
+      where: { id: userId },
+      select: { tutorialDone: true } as any,
+    });
+    tutorialDone = (extra as any)?.tutorialDone ?? false;
+  } catch { /* columna no existe aún en DB */ }
+
+  return NextResponse.json({ user: { ...user, tutorialDone } });
 }
 
 // GET — obtener datos del usuario actual
@@ -40,7 +54,17 @@ export async function GET(req: NextRequest) {
   const { userId } = result.ctx;
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, image: true, color: true, role: true, tutorialDone: true },
+    select: { id: true, name: true, email: true, image: true, color: true, role: true },
   });
-  return NextResponse.json({ user });
+  // tutorialDone con fallback seguro si la columna no existe aún
+  let tutorialDone = false;
+  try {
+    const extra = await db.user.findFirst({
+      where: { id: userId },
+      select: { tutorialDone: true } as any,
+    });
+    tutorialDone = (extra as any)?.tutorialDone ?? false;
+  } catch { /* columna no existe aún en DB */ }
+
+  return NextResponse.json({ user: { ...user, tutorialDone } });
 }
