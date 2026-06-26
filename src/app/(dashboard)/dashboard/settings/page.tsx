@@ -210,7 +210,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div>
-        <Tabs defaultValue={["profile","preferences","empresa"].includes(urlTab ?? "") ? urlTab! : "profile"} className="space-y-6">
+        <Tabs defaultValue={["profile","preferences",...(userRole === 'ADMIN' ? ["empresa"] : [])].includes(urlTab ?? "") ? urlTab! : "profile"} className="space-y-6">
           <TabsList className="bg-white/[0.04] border border-white/[0.06]">
             <TabsTrigger
               value="profile"
@@ -610,7 +610,7 @@ export default function SettingsPage() {
             </Button>
           </TabsContent>
 
-          <TabsContent value="empresa" className="space-y-6">
+          {userRole === "ADMIN" && (<TabsContent value="empresa" className="space-y-6">
 
             {/* ── CARD SUSCRIPCIÓN ──────────────────────────── */}
             {workspaceData && (() => {
@@ -773,7 +773,7 @@ export default function SettingsPage() {
               </div>
               <Button onClick={handleSaveBrand} disabled={savingBrand || uploading} className="bg-brand hover:bg-brand-dark text-white gap-2">{savingBrand ? <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />&nbsp;Guardando...</> : <><Save className="w-4 h-4" />&nbsp;{savedBrand ? "Guardado!" : "Guardar cambios"}</>}</Button>
             </div>
-          </TabsContent>
+          </TabsContent>)}
         </Tabs>
       </div>
     </div>
