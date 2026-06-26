@@ -19,23 +19,55 @@ function getChecklistKey(userId: string) {
 
 export function useTutorial(userId: string, role: string) {
   const [show, setShow] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!userId || !role) return;
-    const done = localStorage.getItem(getTutorialKey(userId));
-    if (!done) setShow(true);
+    // 1. Checar localStorage primero (instantáneo)
+    const localDone = localStorage.getItem(getTutorialKey(userId));
+    if (localDone) { setLoaded(true); return; }
+    // 2. Checar en la DB (persiste entre reinstalaciones de PWA)
+    fetch('/api/user/profile')
+      .then(r => r.json())
+      .then(data => {
+        const dbDone = data?.user?.tutorialDone;
+        if (dbDone) {
+          localStorage.setItem(getTutorialKey(userId), '1');
+        } else {
+          setShow(true);
+        }
+        setLoaded(true);
+      })
+      .catch(() => {
+        // Si falla la DB, usar solo localStorage
+        setShow(true);
+        setLoaded(true);
+      });
   }, [userId, role]);
 
   const reset = useCallback(() => {
     if (userId) {
       localStorage.removeItem(getTutorialKey(userId));
       localStorage.removeItem(getChecklistKey(userId));
+      fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tutorialDone: false }),
+      }).catch(() => {});
       setShow(true);
     }
   }, [userId]);
 
   const dismiss = useCallback(() => {
-    if (userId) localStorage.setItem(getTutorialKey(userId), '1');
+    if (userId) {
+      localStorage.setItem(getTutorialKey(userId), '1');
+      // Guardar en DB para que persista en reinstalaciones
+      fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tutorialDone: true }),
+      }).catch(() => {});
+    }
     setShow(false);
   }, [userId]);
 

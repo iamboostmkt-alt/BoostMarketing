@@ -24,6 +24,7 @@ export async function PATCH(req: NextRequest) {
   const data: Record<string, unknown> = {};
   if (parsed.data.image !== undefined) data.image = parsed.data.image;
   if (parsed.data.name  !== undefined) data.name  = parsed.data.name;
+  if ((parsed.data as any).tutorialDone !== undefined) (data as any).tutorialDone = (parsed.data as any).tutorialDone;
 
   if (Object.keys(data).length === 0)
     return NextResponse.json({ error: "Nada que actualizar" }, { status: 400 });
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
   const { userId } = result.ctx;
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, image: true, color: true, role: true },
+    select: { id: true, name: true, email: true, image: true, color: true, role: true, tutorialDone: true },
   });
   return NextResponse.json({ user });
 }
