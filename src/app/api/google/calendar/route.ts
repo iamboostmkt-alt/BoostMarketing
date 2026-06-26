@@ -30,12 +30,8 @@ export async function POST(req: NextRequest) {
 
     let accessToken = account.access_token;
 
-    // Refrescar token si está expirado
-    if (account.expires_at && Date.now() / 1000 > account.expires_at - 60) {
-      if (!account.refresh_token) {
-        return NextResponse.json({ error: 'Token expirado y sin refresh token. Reconecta tu cuenta de Google.', code: 'TOKEN_EXPIRED' }, { status: 401 });
-      }
-
+    // Siempre refrescar si hay refresh_token (access_token expira cada hora)
+    if (account.refresh_token) {
       const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -47,21 +43,27 @@ export async function POST(req: NextRequest) {
         }),
       });
       const refreshData = await refreshRes.json();
+      console.log('[Calendar] Refresh result:', refreshData.access_token ? 'OK' : refreshData.error);
 
-      if (!refreshData.access_token) {
-        return NextResponse.json({ error: 'No se pudo refrescar el token de Google. Reconecta tu cuenta.', code: 'REFRESH_FAILED' }, { status: 401 });
+      if (refreshData.access_token) {
+        accessToken = refreshData.access_token;
+        await db.account.updateMany({
+          where: { userId, provider: 'google' },
+          data: {
+            access_token: refreshData.access_token,
+            expires_at: Math.floor(Date.now() / 1000) + (refreshData.expires_in ?? 3600),
+          },
+        });
+      } else {
+        console.error('[Calendar] Refresh failed:', refreshData);
+        return NextResponse.json({
+          error: 'Error al refrescar token de Google: ' + (refreshData.error_description || refreshData.error || 'desconocido'),
+          code: 'REFRESH_FAILED',
+          details: refreshData,
+        }, { status: 401 });
       }
-
-      accessToken = refreshData.access_token;
-
-      // Actualizar token en DB
-      await db.account.updateMany({
-        where: { userId, provider: 'google' },
-        data: {
-          access_token: refreshData.access_token,
-          expires_at: Math.floor(Date.now() / 1000) + (refreshData.expires_in ?? 3600),
-        },
-      });
+    } else if (account.expires_at && Date.now() / 1000 > account.expires_at - 60) {
+      return NextResponse.json({ error: 'Token expirado y sin refresh token. Cierra sesión y reconecta con Google.', code: 'TOKEN_EXPIRED' }, { status: 401 });
     }
 
     // Calcular endTime si no se provee (default: +1 hora)
