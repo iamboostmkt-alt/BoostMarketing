@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   });
   if (!task) return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
 
-  const branding = await getBranding();
+  const branding = await getBranding(workspaceId);
   const pmName = result.ctx.name || result.ctx.email || 'El PM';
 
   // Recopilar emails de asignados

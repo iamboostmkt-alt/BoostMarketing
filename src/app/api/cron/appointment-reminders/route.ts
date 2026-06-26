@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   }
 
   const now = new Date();
-  const branding = await getBranding();
+  const branding = await getBranding(); // cron global — toma el primer workspace
   let sent = 0;
 
   const windows = [

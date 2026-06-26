@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   });
   if (!task) return NextResponse.json({ error: "Tarea no encontrada" }, { status: 404 });
 
-  const branding = await getBranding();
+  const branding = await getBranding(workspaceId);
   const dueDate = task.dueDate ? new Date(task.dueDate).toLocaleDateString("es-MX") : undefined;
 
   const emails = new Set<string>();

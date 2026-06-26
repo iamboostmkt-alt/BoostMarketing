@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
         select: { email: true, name: true },
       });
       if (pm?.email) {
-        const branding = await getBranding();
+        const branding = await getBranding(workspaceId);
         const clientName = result.ctx.name || result.ctx.email;
         await sendMail(
           pm.email,

@@ -8,7 +8,7 @@ export interface Branding {
 
 const DEFAULT: Branding = {
   logoUrl:    '',
-  brandName:  'Weeklink',
+  brandName:  '',    // Se toma de la DB (agencyName del workspace)
   brandColor: '#7c3aed',
 };
 
@@ -45,7 +45,8 @@ export async function getBranding(workspaceId?: string): Promise<Branding> {
 }
 
 export function emailLayout(content: string, branding: Branding): string {
-  const { logoUrl, brandName, brandColor } = branding;
+  const { logoUrl, brandColor } = branding;
+  const brandName = branding.brandName || 'Mi Agencia';
   const logoHtml = logoUrl
     ? `<img src="${logoUrl}" alt="${brandName}" width="150" style="max-height:48px;width:auto;max-width:180px;display:block;margin:0 auto 8px;" />`
     : `<div style="display:inline-block;background:rgba(255,255,255,0.2);border-radius:10px;padding:8px 20px;margin-bottom:8px;"><span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-0.5px;">${brandName}</span></div>`;

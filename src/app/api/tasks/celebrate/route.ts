@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   });
   if (!task) return NextResponse.json({ ok: true });
 
-  const branding = await getBranding();
+  const branding = await getBranding(workspaceId);
   const resolvedPmId = pmId ?? task.userId;
 
   // Siempre notificar al equipo cuando se aprueba — parentCompleted solo afecta el mensaje

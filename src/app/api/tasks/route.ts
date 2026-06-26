@@ -698,7 +698,7 @@ export async function PUT(req: NextRequest) {
     }
     if (task.status === "completed") {
       for (const u of _assignedUsers) {
-        if (u.email) getBranding().then(b => sendMail(u.email!, "Tarea completada - BoostMarketing", templateTareaCompletada(task.title, userName, b))).catch(console.error);
+        if (u.email) getBranding(workspaceId).then(b => sendMail(u.email!, `Tarea completada - ${b.brandName || 'Tu agencia'}`, templateTareaCompletada(task.title, userName, b))).catch(console.error);
       }
       // Notificar al PM que su equipo completó la tarea
       const clienteCompleted = task.clientId
