@@ -574,6 +574,13 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               {/* TEAM: botones de entrega — archivo + link */}
               {!isManager && (
                 <div className="space-y-2">
+                  {/* Hint cuando ya hay archivos/links subidos */}
+                  {attachments.length > 0 && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-white/30">
+                      <span>📎</span>
+                      <span>Puedes agregar más archivos o links en cualquier momento</span>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-2">
                     <label htmlFor="file-upload-input" className="cursor-pointer">
                       <div className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border-2 border-dashed border-violet-500/30 hover:border-violet-500/60 bg-violet-500/[0.04] hover:bg-violet-500/[0.08] transition-all group">
@@ -646,16 +653,22 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               {/* Modal confirmar completar tras subir archivo — solo team */}
               {showCompleteAfterUpload && (
                 <div className="rounded-xl border border-violet-500/30 p-3.5 space-y-3" style={{ background: 'rgba(124,58,237,0.08)' }}>
-                  <p className="text-xs font-medium text-white/80">✅ Archivo subido — ¿marcar tarea como completada?</p>
+                  <p className="text-xs font-medium text-white/80">
+                    {task?.status === 'internal_review' || task?.status === 'changes_requested'
+                      ? '📎 Entregable agregado — ¿notificar al PM?'
+                      : '✅ Archivo subido — ¿enviar a revisión?'}
+                  </p>
                   <div className="flex gap-2">
                     <button onClick={async () => {
                       setShowCompleteAfterUpload(false);
                       if (onStatusChange) await onStatusChange(task!.id, 'internal_review');
-                      toast.success('Tarea enviada a revisión ✓');
+                      toast.success(task?.status === 'internal_review' ? 'PM notificado ✓' : 'Tarea enviada a revisión ✓');
                     }} className="flex-1 py-1.5 rounded-lg text-xs font-medium text-white transition-all" style={{ background: '#7c3aed' }}>
-                      Sí, enviar a revisión
+                      {task?.status === 'internal_review' || task?.status === 'changes_requested'
+                        ? 'Sí, notificar al PM'
+                        : 'Sí, enviar a revisión'}
                     </button>
-                    <button onClick={() => { setShowCompleteAfterUpload(false); toast.success('Archivo subido ✓'); }}
+                    <button onClick={() => { setShowCompleteAfterUpload(false); toast.success('Archivo guardado ✓'); }}
                       className="px-3 py-1.5 rounded-lg text-xs text-white/40 border border-white/[0.08] hover:text-white transition-colors">
                       No por ahora
                     </button>
