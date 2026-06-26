@@ -1,59 +1,37 @@
 'use client';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { getStepsForRole, getChecklistForRole } from './tutorialSteps';
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { X, ChevronRight, ChevronLeft, CheckCircle2, Circle, ArrowRight, Sparkles } from 'lucide-react';
-import { getStepsForRole, getChecklistForRole, TutorialStep, ChecklistItem } from './tutorialSteps';
+// ─── Keys ───────────────────────────────────────────────────
+function getTutorialKey(userId: string) { return `wl_tutorial_done_${userId}`; }
+function getChecklistKey(userId: string) { return `wl_tutorial_checklist_${userId}`; }
 
-interface TutorialOverlayProps {
-  userId: string;
-  role: string;
-  onComplete?: () => void;
-}
-
-function getTutorialKey(userId: string) {
-  return `wl_tutorial_done_${userId}`;
-}
-function getChecklistKey(userId: string) {
-  return `wl_checklist_${userId}`;
-}
-
+// ─── Hook ───────────────────────────────────────────────────
 export function useTutorial(userId: string, role: string) {
   const [show, setShow] = useState(false);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!userId || !role) return;
-    // 1. Checar localStorage primero (instantáneo)
     const localDone = localStorage.getItem(getTutorialKey(userId));
-    if (localDone) { setLoaded(true); return; }
-    // 2. Checar en la DB (persiste entre reinstalaciones de PWA)
+    if (localDone) return;
     fetch('/api/user/profile')
       .then(r => r.json())
       .then(data => {
-        const dbDone = data?.user?.tutorialDone;
-        if (dbDone) {
+        if (data?.user?.tutorialDone) {
           localStorage.setItem(getTutorialKey(userId), '1');
         } else {
           setShow(true);
         }
-        setLoaded(true);
       })
-      .catch(() => {
-        // Si falla la DB, usar solo localStorage
-        setShow(true);
-        setLoaded(true);
-      });
+      .catch(() => setShow(true));
   }, [userId, role]);
 
   const reset = useCallback(() => {
     if (userId) {
       localStorage.removeItem(getTutorialKey(userId));
       localStorage.removeItem(getChecklistKey(userId));
-      fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tutorialDone: false }),
-      }).catch(() => {});
+      fetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tutorialDone: false }) }).catch(() => {});
       setShow(true);
     }
   }, [userId]);
@@ -61,12 +39,7 @@ export function useTutorial(userId: string, role: string) {
   const dismiss = useCallback(() => {
     if (userId) {
       localStorage.setItem(getTutorialKey(userId), '1');
-      // Guardar en DB para que persista en reinstalaciones
-      fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tutorialDone: true }),
-      }).catch(() => {});
+      fetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tutorialDone: true }) }).catch(() => {});
     }
     setShow(false);
   }, [userId]);
@@ -74,425 +47,201 @@ export function useTutorial(userId: string, role: string) {
   return { show, dismiss, reset };
 }
 
-// ─── Spotlight helper ──────────────────────────────────────
-function getElementRect(target: string): DOMRect | null {
-  const el = document.querySelector(`[data-tutorial="${target}"]`);
-  if (!el) return null;
-  return el.getBoundingClientRect();
-}
+// ─── Iconos por paso ────────────────────────────────────────
+const STEP_VISUALS: Record<string, { emoji: string; color: string; bg: string }> = {
+  sidebar:   { emoji: '🏠', color: '#7C3AED', bg: 'rgba(124,58,237,0.15)' },
+  clients:   { emoji: '🏢', color: '#2563EB', bg: 'rgba(37,99,235,0.15)' },
+  tasks:     { emoji: '✅', color: '#059669', bg: 'rgba(5,150,105,0.15)' },
+  chat:      { emoji: '💬', color: '#7C3AED', bg: 'rgba(124,58,237,0.15)' },
+  team:      { emoji: '👥', color: '#0891B2', bg: 'rgba(8,145,178,0.15)' },
+  settings:  { emoji: '⚙️', color: '#64748B', bg: 'rgba(100,116,139,0.15)' },
+  calendar:  { emoji: '📅', color: '#D97706', bg: 'rgba(217,119,6,0.15)' },
+  ai:        { emoji: '✨', color: '#7C3AED', bg: 'rgba(124,58,237,0.15)' },
+  projects:  { emoji: '📁', color: '#059669', bg: 'rgba(5,150,105,0.15)' },
+  portal:    { emoji: '🔗', color: '#2563EB', bg: 'rgba(37,99,235,0.15)' },
+};
 
-// ─── TutorialOverlay ──────────────────────────────────────
-export function TutorialOverlay({ userId, role, onComplete }: TutorialOverlayProps) {
+// ─── TutorialOverlay ────────────────────────────────────────
+export function TutorialOverlay({ userId, role, onComplete }: {
+  userId: string; role: string; onComplete?: () => void;
+}) {
   const { show, dismiss } = useTutorial(userId, role);
-  const [phase, setPhase] = useState<'spotlight' | 'checklist'>('spotlight');
   const [stepIdx, setStepIdx] = useState(0);
-  const [rect, setRect] = useState<DOMRect | null>(null);
-  const [animIn, setAnimIn] = useState(false);
-  const [checklist, setChecklist] = useState<Record<string, boolean>>({});
+  const [animating, setAnimating] = useState(false);
+  const router = useRouter();
 
   const steps = getStepsForRole(role);
-  const items = getChecklistForRole(role);
   const step = steps[stepIdx];
+  const isLast = stepIdx === steps.length - 1;
+  const visual = STEP_VISUALS[step?.id] || { emoji: '💡', color: '#7C3AED', bg: 'rgba(124,58,237,0.15)' };
 
-  // Cargar checklist guardado
-  useEffect(() => {
-    if (!userId) return;
-    try {
-      const saved = localStorage.getItem(getChecklistKey(userId));
-      if (saved) setChecklist(JSON.parse(saved));
-    } catch { /* */ }
-  }, [userId]);
-
-  // Medir el elemento target — abrir sidebar en móvil si es necesario
-  useEffect(() => {
-    if (phase !== 'spotlight' || !step) return;
-    setAnimIn(false);
-
-    const measure = () => {
-      const r = getElementRect(step.target);
-      setRect(r);
-      requestAnimationFrame(() => setAnimIn(true));
-    };
-
-    const isMobile = window.innerWidth < 1024;
-    const isNavTarget = step.target.startsWith('nav-') || step.target === 'sidebar-nav';
-
-    if (isMobile && isNavTarget) {
-      window.dispatchEvent(new CustomEvent('wl:open-sidebar'));
-      // Intentar varias veces hasta encontrar el elemento
-      let attempts = 0;
-      const tryMeasure = () => {
-        attempts++;
-        const r = getElementRect(step.target);
-        if (r && r.width > 0) {
-          setRect(r);
-          requestAnimationFrame(() => setAnimIn(true));
-        } else if (attempts < 8) {
-          setTimeout(tryMeasure, 150);
-        } else {
-          // Si no lo encuentra, mostrar tooltip centrado
-          setRect(null);
-          requestAnimationFrame(() => setAnimIn(true));
-        }
-      };
-      const t = setTimeout(tryMeasure, 400);
-      window.addEventListener('resize', tryMeasure);
-      return () => { clearTimeout(t); window.removeEventListener('resize', tryMeasure); };
+  const next = () => {
+    if (animating) return;
+    if (isLast) {
+      dismiss();
+      onComplete?.();
+      return;
     }
-
-    // Desktop o paso no nav — medir directo
-    const r = getElementRect(step.target);
-    if (r && r.width > 0) {
-      setRect(r);
-    } else {
-      setRect(null); // tooltip centrado si no hay elemento
-    }
-    requestAnimationFrame(() => setAnimIn(true));
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [phase, stepIdx, step]);
-
-  const saveChecklist = (next: Record<string, boolean>) => {
-    setChecklist(next);
-    localStorage.setItem(getChecklistKey(userId), JSON.stringify(next));
-  };
-
-  const toggleItem = (id: string) => {
-    saveChecklist({ ...checklist, [id]: !checklist[id] });
-  };
-
-  const goNext = () => {
-    if (stepIdx < steps.length - 1) {
+    setAnimating(true);
+    setTimeout(() => {
       setStepIdx(i => i + 1);
-    } else {
-      setPhase('checklist');
-    }
+      setAnimating(false);
+    }, 200);
   };
 
-  const goPrev = () => {
-    if (stepIdx > 0) setStepIdx(i => i - 1);
+  const prev = () => {
+    if (animating || stepIdx === 0) return;
+    setAnimating(true);
+    setTimeout(() => {
+      setStepIdx(i => i - 1);
+      setAnimating(false);
+    }, 200);
   };
 
-  const handleComplete = () => {
-    dismiss();
-    onComplete?.();
-  };
-
-  if (!show) return null;
-
-  const PAD = 10; // spotlight padding
-
-  // ─── FASE SPOTLIGHT ────────────────────────────────────
-  if (phase === 'spotlight') {
-    const hasTarget = !!rect;
-
-    // Tooltip posición
-    const tooltipW = typeof window !== 'undefined' && window.innerWidth < 640
-      ? Math.min(300, window.innerWidth - 32)
-      : 300;
-    const tooltipH = 160;
-    let tooltipStyle: React.CSSProperties = {};
-
-    if (rect && step) {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const isMobile = vw < 640;
-      const cx = rect.left + rect.width / 2;
-
-      // En móvil o cuando el elemento está fuera de la zona visible → centrar siempre
-      const isOffscreen = rect.top < 50 || rect.top > vh - 50;
-      if (isMobile || isOffscreen) {
-        tooltipStyle = {
-          left: Math.max(8, (vw - Math.min(tooltipW, vw - 16)) / 2),
-          top: Math.max(80, (vh - tooltipH) / 2 - 40),
-        };
-      } else if (step.placement === 'right') {
-        tooltipStyle = {
-          left: Math.min(rect.right + PAD + 12, vw - tooltipW - 8),
-          top: Math.max(70, Math.min(rect.top, vh - tooltipH - 8)),
-        };
-      } else if (step.placement === 'left') {
-        tooltipStyle = {
-          left: Math.max(8, rect.left - tooltipW - 12),
-          top: Math.max(70, Math.min(rect.top, vh - tooltipH - 8)),
-        };
-      } else if (step.placement === 'bottom') {
-        tooltipStyle = {
-          left: Math.max(8, Math.min(cx - tooltipW / 2, vw - tooltipW - 8)),
-          top: Math.min(rect.bottom + 12, vh - tooltipH - 8),
-        };
-      } else if (step.placement === 'top') {
-        tooltipStyle = {
-          left: Math.max(8, Math.min(cx - tooltipW / 2, vw - tooltipW - 8)),
-          top: Math.max(70, rect.top - tooltipH - 12),
-        };
-      } else {
-        tooltipStyle = {
-          left: Math.max(8, (vw - tooltipW) / 2),
-          top: Math.max(70, (vh - tooltipH) / 2),
-        };
-      }
-    } else {
-      // Sin target — centrar
-      tooltipStyle = {
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
-      };
-    }
-
-    return (
-      <div className="fixed inset-0 z-[99998]" style={{ pointerEvents: 'all' }}>
-        {/* Overlay con hueco para el elemento */}
-        <svg
-          className="absolute inset-0 w-full h-full"
-          style={{ pointerEvents: 'none' }}
-        >
-          <defs>
-            <mask id="spotlight-mask">
-              <rect width="100%" height="100%" fill="white" />
-              {rect && (
-                <rect
-                  x={rect.left - PAD}
-                  y={rect.top - PAD}
-                  width={rect.width + PAD * 2}
-                  height={rect.height + PAD * 2}
-                  rx={10}
-                  fill="black"
-                  style={{ transition: 'x 0.35s ease, y 0.35s ease, width 0.35s ease, height 0.35s ease' }}
-                />
-              )}
-            </mask>
-          </defs>
-          <rect
-            width="100%"
-            height="100%"
-            fill="rgba(0,0,0,0.72)"
-            mask="url(#spotlight-mask)"
-          />
-          {/* Borde de spotlight + halo */}
-          {rect && (
-            <>
-              <rect
-                x={rect.left - PAD - 5}
-                y={rect.top - PAD - 5}
-                width={rect.width + PAD * 2 + 10}
-                height={rect.height + PAD * 2 + 10}
-                rx={14}
-                fill="none"
-                stroke="rgba(139,92,246,0.2)"
-                strokeWidth={3}
-              />
-              <rect
-                x={rect.left - PAD}
-                y={rect.top - PAD}
-                width={rect.width + PAD * 2}
-                height={rect.height + PAD * 2}
-                rx={10}
-                fill="none"
-                stroke="rgba(139,92,246,0.85)"
-                strokeWidth={2}
-                strokeDasharray="0"
-              />
-            </>
-          )}
-        </svg>
-
-        {/* Tooltip flotante */}
-        {step && (
-          <div
-            className="absolute z-10"
-            style={{
-              width: tooltipW,
-              ...tooltipStyle,
-              opacity: animIn ? 1 : 0,
-              transform: animIn
-                ? (tooltipStyle.transform ?? 'translateY(0)')
-                : `${tooltipStyle.transform ?? ''} translateY(6px)`,
-              transition: 'opacity 0.2s ease, transform 0.2s ease',
-            }}
-          >
-            <div
-              className="rounded-2xl p-4 shadow-2xl"
-              style={{
-                background: 'var(--wl-elevated)',
-                border: '1px solid rgba(139,92,246,0.25)',
-                boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 20px 40px rgba(0,0,0,0.6)',
-              }}
-            >
-              {/* Step counter */}
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-medium text-violet-400 uppercase tracking-wider">
-                  Paso {stepIdx + 1} de {steps.length}
-                </span>
-                <button
-                  onClick={handleComplete}
-                  className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors p-0.5"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <p className="text-[14px] font-semibold text-[var(--wl-text-primary)] mb-1">{step.title}</p>
-              <p className="text-[12px] text-[var(--wl-text-primary)]/55 leading-relaxed mb-4">{step.description}</p>
-
-              {/* Dots + nav */}
-              <div className="flex items-center justify-between">
-                <div className="flex gap-1">
-                  {steps.map((_, i) => (
-                    <div
-                      key={i}
-                      className="rounded-full transition-all duration-200"
-                      style={{
-                        width: i === stepIdx ? 16 : 6,
-                        height: 6,
-                        background: i === stepIdx ? '#8B5CF6' : 'rgba(255,255,255,0.15)',
-                      }}
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  {stepIdx > 0 && (
-                    <button
-                      onClick={goPrev}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] text-[var(--wl-text-muted)] hover:text-[var(--wl-text-primary)] transition-colors"
-                      style={{ background: 'rgba(255,255,255,0.05)' }}
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                  <button
-                    onClick={goNext}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[var(--wl-text-primary)] transition-all active:scale-95"
-                    style={{ background: '#7C3AED' }}
-                  >
-                    {stepIdx === steps.length - 1 ? (
-                      <>Ver checklist <ArrowRight className="w-3.5 h-3.5" /></>
-                    ) : (
-                      <>Siguiente <ChevronRight className="w-3.5 h-3.5" /></>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Click en overlay → saltar */}
-        <div
-          className="absolute inset-0"
-          onClick={handleComplete}
-          style={{ zIndex: -1 }}
-        />
-      </div>
-    );
-  }
-
-  // ─── FASE CHECKLIST ────────────────────────────────────
-  const completedCount = items.filter(i => checklist[i.id]).length;
+  if (!show || !step) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <>
+      {/* Overlay oscuro semitransparente */}
       <div
-        className="w-full max-w-sm rounded-3xl overflow-hidden"
         style={{
-          background: 'var(--wl-surface)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          boxShadow: '0 0 0 1px rgba(255,255,255,0.03), 0 30px 80px rgba(0,0,0,0.7)',
+          position: 'fixed', inset: 0, zIndex: 99998,
+          background: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(2px)',
         }}
+        onClick={dismiss}
+      />
+
+      {/* Card estilo Kueski — bottom sheet en móvil, centrado en desktop */}
+      <div
+        style={{
+          position: 'fixed', zIndex: 99999,
+          left: 0, right: 0, bottom: 0,
+          padding: '0 0 env(safe-area-inset-bottom, 0px)',
+          display: 'flex', flexDirection: 'column',
+          animation: 'wl-slide-up 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+        }}
+        onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div
-          className="px-6 pt-6 pb-5"
-          style={{
-            background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(91,33,182,0.08) 100%)',
-            borderBottom: '1px solid rgba(255,255,255,0.05)',
-          }}
-        >
-          <div className="flex items-start justify-between mb-1">
-            <div className="flex items-center gap-2.5">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)' }}
-              >
-                <Sparkles className="w-4.5 h-4.5 text-violet-400" />
-              </div>
-              <div>
-                <p className="text-[15px] font-semibold text-[var(--wl-text-primary)]">¡Ya estás listo!</p>
-                <p className="text-[11px] text-[var(--wl-text-muted)]">Completa estos pasos para empezar</p>
-              </div>
-            </div>
-            <button onClick={handleComplete} className="text-[var(--wl-text-placeholder)] hover:text-[var(--wl-text-secondary)] transition-colors mt-0.5">
-              <X className="w-4 h-4" />
+        <div style={{
+          background: '#13131A',
+          borderRadius: '24px 24px 0 0',
+          padding: '28px 24px 32px',
+          maxWidth: 480,
+          margin: '0 auto',
+          width: '100%',
+          boxShadow: '0 -20px 60px rgba(0,0,0,0.5)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: 'none',
+        }}>
+          {/* Handle */}
+          <div style={{ width: 40, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 100, margin: '0 auto 24px' }} />
+
+          {/* X cerrar */}
+          <button
+            onClick={dismiss}
+            style={{ position: 'absolute', top: 20, right: 20, color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1 }}>
+            ✕
+          </button>
+
+          {/* Ícono grande */}
+          <div style={{
+            width: 80, height: 80, borderRadius: 22,
+            background: visual.bg,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 36, marginBottom: 20,
+            border: `1px solid ${visual.color}30`,
+          }}>
+            {visual.emoji}
+          </div>
+
+          {/* Paso X de Y */}
+          <p style={{ fontSize: 12, fontWeight: 600, color: visual.color, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>
+            PASO {stepIdx + 1} DE {steps.length}
+          </p>
+
+          {/* Título */}
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: '#FFFFFF', margin: '0 0 12px', lineHeight: 1.2 }}>
+            {step.title}
+          </h2>
+
+          {/* Descripción */}
+          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', margin: '0 0 28px', lineHeight: 1.6 }}>
+            {step.description}
+          </p>
+
+          {/* Dots */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 24, justifyContent: 'center' }}>
+            {steps.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setStepIdx(i)}
+                style={{
+                  width: i === stepIdx ? 24 : 8,
+                  height: 8,
+                  borderRadius: 100,
+                  background: i === stepIdx ? visual.color : 'rgba(255,255,255,0.2)',
+                  border: 'none', cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  padding: 0,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Botones */}
+          <div style={{ display: 'flex', gap: 12 }}>
+            {stepIdx > 0 && (
+              <button
+                onClick={prev}
+                style={{
+                  flex: 1, height: 52, borderRadius: 14,
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: 16, fontWeight: 600, cursor: 'pointer',
+                }}>
+                ← Anterior
+              </button>
+            )}
+            <button
+              onClick={next}
+              style={{
+                flex: stepIdx > 0 ? 2 : 1,
+                height: 52, borderRadius: 14,
+                background: isLast
+                  ? 'linear-gradient(135deg, #059669, #047857)'
+                  : `linear-gradient(135deg, ${visual.color}, #5B21B6)`,
+                border: 'none',
+                color: '#FFFFFF',
+                fontSize: 16, fontWeight: 700, cursor: 'pointer',
+                letterSpacing: '-0.01em',
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            >
+              {isLast ? '¡Entendido! →' : 'Siguiente →'}
             </button>
           </div>
 
-          {/* Progress bar */}
-          <div className="mt-4">
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-[11px] text-[var(--wl-text-muted)]">Progreso</span>
-              <span className="text-[11px] font-medium text-violet-400">
-                {completedCount}/{items.length}
-              </span>
-            </div>
-            <div className="h-1.5 rounded-full bg-[var(--wl-hover)] overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${(completedCount / items.length) * 100}%`,
-                  background: 'linear-gradient(90deg, #7C3AED, #A78BFA)',
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Checklist items */}
-        <div className="divide-y divide-white/[0.04] max-h-[55vh] overflow-y-auto">
-          {items.map((item) => {
-            const done = !!checklist[item.id];
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  toggleItem(item.id);
-                  if (item.path) {
-                    handleComplete();
-                    window.location.href = item.path;
-                  }
-                }}
-                className="w-full flex items-center gap-3.5 px-5 py-3.5 text-left transition-colors active:bg-[var(--wl-hover)] hover:bg-[var(--wl-hover)]"
-              >
-                <span className="text-xl shrink-0">{item.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] font-medium transition-colors ${done ? 'text-[var(--wl-text-placeholder)] line-through' : 'text-[var(--wl-text-primary)]'}`}>
-                    {item.label}
-                  </p>
-                  <p className="text-[11px] text-[var(--wl-text-placeholder)] truncate">{item.description}</p>
-                </div>
-                {done
-                  ? <CheckCircle2 className="w-4.5 h-4.5 text-violet-400 shrink-0" />
-                  : <Circle className="w-4.5 h-4.5 text-[var(--wl-text-placeholder)] shrink-0" />
-                }
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Footer */}
-        <div className="px-5 py-4 border-t border-[var(--wl-border-subtle)]">
-          <button
-            onClick={handleComplete}
-            className="w-full py-3 rounded-xl text-[13px] font-medium text-[var(--wl-text-primary)] transition-all active:scale-[0.98]"
-            style={{ background: '#7C3AED' }}
-          >
-            {completedCount === items.length ? '🎉 ¡Todo listo! Empezar' : 'Explorar por mi cuenta'}
-          </button>
-          <p className="text-center text-[10px] text-[var(--wl-text-placeholder)] mt-2">
-            Puedes ver este tutorial de nuevo en Configuración
-          </p>
+          {/* Omitir — solo visible en primeros pasos */}
+          {!isLast && stepIdx < 2 && (
+            <button
+              onClick={dismiss}
+              style={{ display: 'block', width: '100%', marginTop: 14, background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 13, cursor: 'pointer', textAlign: 'center' }}>
+              Omitir tutorial
+            </button>
+          )}
         </div>
       </div>
-    </div>
+
+      <style>{`
+        @keyframes wl-slide-up {
+          from { transform: translateY(100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      `}</style>
+    </>
   );
 }
