@@ -8,7 +8,7 @@ export interface Branding {
 
 const DEFAULT: Branding = {
   logoUrl:    '',
-  brandName:  'BoostMarketing',
+  brandName:  'Weeklink',
   brandColor: '#7c3aed',
 };
 
@@ -35,7 +35,7 @@ export async function getBranding(workspaceId?: string): Promise<Branding> {
     const data: Branding = !settings ? DEFAULT : {
       logoUrl:    settings.logoUrl    || '',
       brandName:  settings.agencyName || DEFAULT.brandName,
-      brandColor: DEFAULT.brandColor,
+      brandColor: (settings as any).brandColor || DEFAULT.brandColor,
     };
     _cache.set(key, { data, ts: Date.now() });
     return data;

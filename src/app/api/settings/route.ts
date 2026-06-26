@@ -30,11 +30,12 @@ export async function PATCH(req: NextRequest) {
     const result = await requireWorkspace({ roles: ['ADMIN'] });
     if (!result.ok) return result.response;
     const body = await req.json();
-    const { logoUrl, brandName } = body;
+    const { logoUrl, brandName, brandColor } = body;
     const existing = await db.siteSettings.findFirst();
     const data: any = {};
     if (logoUrl    !== undefined) data.logoUrl    = logoUrl;
     if (brandName  !== undefined) data.agencyName = brandName;
+    if (brandColor !== undefined) data.brandColor = brandColor;
     const settings = existing
       ? await db.siteSettings.update({ where: { id: existing.id }, data })
       : await db.siteSettings.create({ data });

@@ -513,6 +513,7 @@ model SiteSettings {
   agencyName   String @default("BoostMarketing") @map("agency_name")
   logoUrl      String @default("") @map("logo_url")
   faviconUrl   String @default("") @map("favicon_url")
+  brandColor   String @default("#7c3aed") @map("brand_color")
   heroTitle    String @default("Escala tu marca con contenido y automatización") @map("hero_title")
   heroSubtitle String @default("Impulsamos tu presencia digital con estrategia, creatividad y marketing digital. Creamos contenido, campañas y experiencias que hacen crecer tu marca.") @map("hero_subtitle")
   email        String @default("")
