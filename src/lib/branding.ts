@@ -47,9 +47,13 @@ export async function getBranding(workspaceId?: string): Promise<Branding> {
 export function emailLayout(content: string, branding: Branding): string {
   const { logoUrl, brandColor } = branding;
   const brandName = branding.brandName || 'Mi Agencia';
-  const logoHtml = logoUrl
-    ? `<img src="${logoUrl}" alt="${brandName}" width="150" style="max-height:48px;width:auto;max-width:180px;display:block;margin:0 auto 8px;" />`
-    : `<div style="display:inline-block;background:rgba(255,255,255,0.2);border-radius:10px;padding:8px 20px;margin-bottom:8px;"><span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-0.5px;">${brandName}</span></div>`;
+
+  // Header: Weeklink arriba + logo/nombre del workspace abajo
+  const weekinkLogoUrl = 'https://weeklink.com.mx/weeklink-logo.png';
+
+  const workspaceLogoHtml = logoUrl
+    ? `<img src="${logoUrl}" alt="${brandName}" style="max-height:36px;width:auto;max-width:140px;display:block;margin:0 auto;" />`
+    : `<span style="color:rgba(255,255,255,0.9);font-size:15px;font-weight:700;">${brandName}</span>`;
 
   return `<!DOCTYPE html>
 <html lang="es" xmlns="http://www.w3.org/1999/xhtml">
@@ -76,22 +80,40 @@ export function emailLayout(content: string, branding: Branding): string {
   <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f7" style="background-color:#f4f4f7;padding:32px 16px;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
+
+        <!-- Header morado con logo Weeklink -->
         <tr>
-          <td bgcolor="${brandColor}" style="background:linear-gradient(135deg,${brandColor},#9333ea);padding:28px 32px;text-align:center;">
-            ${logoHtml}
-            <p style="margin:4px 0 0;color:rgba(255,255,255,0.7);font-size:13px;">${brandName}</p>
+          <td bgcolor="${brandColor}" style="background:linear-gradient(135deg,${brandColor},#9333ea);padding:20px 32px 0;text-align:center;">
+            <!-- Logo Weeklink (plataforma) -->
+            <img src="${weekinkLogoUrl}" alt="Weeklink" width="120"
+              style="max-height:28px;width:auto;display:block;margin:0 auto;filter:brightness(0) invert(1);" />
           </td>
         </tr>
+
+        <!-- Franja del workspace -->
+        <tr>
+          <td bgcolor="${brandColor}" style="background:linear-gradient(135deg,${brandColor},#9333ea);padding:12px 32px 24px;text-align:center;">
+            <div style="display:inline-block;background:rgba(0,0,0,0.15);border-radius:10px;padding:8px 20px;">
+              ${workspaceLogoHtml}
+            </div>
+          </td>
+        </tr>
+
+        <!-- Contenido -->
         <tr>
           <td class="content-td" style="padding:32px;background-color:#ffffff!important;color:#18181b!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;">
             ${content}
           </td>
         </tr>
+
+        <!-- Footer -->
         <tr>
           <td class="footer-td" bgcolor="#f9fafb" style="background-color:#f9fafb!important;border-top:1px solid #e4e4e7;padding:16px 32px;text-align:center;">
-            <p style="margin:0;color:#9ca3af;font-size:12px;">${brandName} &copy; ${new Date().getFullYear()} &middot; Mensaje automático</p>
+            <p style="margin:0 0 4px;color:#6b7280;font-size:12px;font-weight:600;">${brandName}</p>
+            <p style="margin:0;color:#9ca3af;font-size:11px;">Enviado desde Weeklink &middot; weeklink.com.mx &middot; ${new Date().getFullYear()}</p>
           </td>
         </tr>
+
       </table>
     </td></tr>
   </table>
