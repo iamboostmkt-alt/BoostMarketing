@@ -382,8 +382,14 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
   }, [task]);
 
   useEffect(() => {
-    if (open && task) fetchAttachments();
-    else setAttachments([]);
+    if (open && task) {
+      fetchAttachments();
+      // Poll cada 8s para detectar nuevos archivos subidos por el team en tiempo real
+      const interval = setInterval(fetchAttachments, 8000);
+      return () => clearInterval(interval);
+    } else {
+      setAttachments([]);
+    }
   }, [open, task, fetchAttachments]);
 
   async function handleDelete(id: string) {
@@ -677,18 +683,43 @@ export default function TaskDetailModal({ task, open, onClose, onEdit, onStatusC
               )}
 
               {/* PM/ADMIN: header con botón adjuntar pequeño */}
+              {/* PM/ADMIN: banner si hay entregas nuevas de links sin revisar */}
+              {isManager && attachments.filter(a => a.fileType === 'link' && !(a as any).reviewStatus).length > 0 && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.2)' }}>
+                  <span className="text-sm">🔗</span>
+                  <p className="text-[12px] text-blue-300 font-medium">
+                    {attachments.filter(a => a.fileType === 'link' && !(a as any).reviewStatus).length} link{attachments.filter(a => a.fileType === 'link' && !(a as any).reviewStatus).length > 1 ? 's' : ''} de entrega pendiente{attachments.filter(a => a.fileType === 'link' && !(a as any).reviewStatus).length > 1 ? 's' : ''} de revisión
+                  </p>
+                </div>
+              )}
+              {isManager && attachments.filter(a => a.fileType !== 'link' && !a.fileType.startsWith('image/') && !(a as any).reviewStatus).length > 0 && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.15)' }}>
+                  <span className="text-sm">📎</span>
+                  <p className="text-[12px] text-violet-300 font-medium">
+                    {attachments.filter(a => a.fileType !== 'link' && !a.fileType.startsWith('image/') && !(a as any).reviewStatus).length} entregable{attachments.filter(a => a.fileType !== 'link' && !a.fileType.startsWith('image/') && !(a as any).reviewStatus).length > 1 ? 's' : ''} pendiente{attachments.filter(a => a.fileType !== 'link' && !a.fileType.startsWith('image/') && !(a as any).reviewStatus).length > 1 ? 's' : ''} de revisión
+                  </p>
+                </div>
+              )}
               {isManager && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Paperclip className="w-3.5 h-3.5 text-white/40" />
                     <p className="text-[10px] text-white/30 uppercase tracking-wider">Archivos adjuntos {attachments.length > 0 && `(${attachments.length})`}</p>
                   </div>
-                  <label htmlFor="file-upload-input" className="cursor-pointer">
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-md text-white/60 hover:text-white text-xs transition-colors">
-                      {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-                      {isUploading ? 'Subiendo...' : 'Adjuntar'}
-                    </div>
-                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <button type="button" onClick={fetchAttachments}
+                      className="flex items-center gap-1 px-2 py-1 rounded text-[11px] text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-colors"
+                      title="Recargar archivos">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                      Actualizar
+                    </button>
+                    <label htmlFor="file-upload-input" className="cursor-pointer">
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] rounded-md text-white/60 hover:text-white text-xs transition-colors">
+                        {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                        {isUploading ? 'Subiendo...' : 'Adjuntar'}
+                      </div>
+                    </label>
+                  </div>
                 </div>
               )}
               {/* TEAM: label archivos pequeño */}
