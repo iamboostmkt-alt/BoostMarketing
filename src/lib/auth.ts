@@ -189,9 +189,12 @@ export const authOptions: NextAuthOptions = {
             // Permitir login vinculando al usuario existente
             return true;
           }
-          // No existe usuario con ese email en el workspace → bloquear
-          // (solo pueden acceder usuarios previamente invitados)
-          return '/login?error=NoWorkspaceAccount';
+          // No existe usuario con ese email → mandarlo al registro
+          // Pre-rellenar nombre y email desde Google para facilitar el proceso
+          const googleName = encodeURIComponent((profile as any)?.name || user.name || '');
+          const googleEmail = encodeURIComponent(user.email || '');
+          const googlePhoto = encodeURIComponent((profile as any)?.picture || '');
+          return `/register?email=${googleEmail}&name=${googleName}&photo=${googlePhoto}&fromGoogle=1`;
         } catch (e) {
           console.error('[OAuth signIn error]', e);
           return false;
