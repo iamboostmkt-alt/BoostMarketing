@@ -16,7 +16,7 @@ export default function Contact() {
         <div className="grid gap-5 md:grid-cols-2">
           {/* WhatsApp card */}
           <a
-            href="https://wa.me/521063469"
+            href="https://wa.me/message/RDOGLXNL6UAUL1"
             target="_blank"
             rel="noopener noreferrer"
             className="glass-card group flex flex-col gap-4 rounded-2xl p-6 transition-all duration-300 hover:border-green-500/20 hover:shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-8 animate-slide-up"

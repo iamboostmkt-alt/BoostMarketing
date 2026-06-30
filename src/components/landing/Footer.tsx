@@ -58,7 +58,7 @@ export default function Footer({
     ? whatsapp.startsWith('http')
       ? whatsapp
       : `https://wa.me/${whatsapp.replace(/\D/g, '')}`
-    : null
+    : 'https://wa.me/message/RDOGLXNL6UAUL1' // fallback al link directo
 
   return (
     <>
