@@ -210,19 +210,30 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   if (!open) return null;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9990, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+      className="sm:items-center sm:p-4">
       {/* Overlay */}
       <div onClick={() => onOpenChange(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(3px)' }} />
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 10 }}
-        transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+        initial={{ opacity: 0, y: 60 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 60 }}
+        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
         onClick={e => e.stopPropagation()}
-        style={{ position: 'relative', zIndex: 9991, width: '100%', maxWidth: 520, maxHeight: 'calc(100dvh - 56px)', overflowY: 'auto', borderRadius: '16px 16px 0 0' }}
-        className="sm:rounded-2xl"
+        style={{
+          position: 'relative', zIndex: 9991, width: '100%', maxWidth: 520,
+          maxHeight: 'calc(100dvh - env(safe-area-inset-top, 44px) - 8px)',
+          overflowY: 'auto',
+          borderRadius: '20px 20px 0 0',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}
+        className="sm:rounded-2xl sm:max-h-[calc(100dvh-48px)]"
       >
+        {/* Handle para móvil */}
+        <div className="sm:hidden flex justify-center pt-3 pb-1">
+          <div style={{ width: 40, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.15)' }} />
+        </div>
         {/* Header flotante */}
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2.5">
