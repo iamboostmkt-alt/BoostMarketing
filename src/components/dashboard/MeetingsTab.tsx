@@ -127,13 +127,14 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !selectedDate) { toast.error('Nombre y fecha requeridos.'); return; }
-    const dateObj = new Date(selectedDate);
-    dateObj.setHours(parseInt(hour) || 10, parseInt(minute) || 0, 0, 0);
+    // Construir fecha local correctamente (evitar bug de timezone UTC)
+    const y = selectedDate.getFullYear();
+    const m = selectedDate.getMonth();
+    const d = selectedDate.getDate();
+    const dateObj = new Date(y, m, d, parseInt(hour) || 10, parseInt(minute) || 0, 0, 0);
     const date = dateObj.toISOString();
     setSaving(true);
     try {
-      // Siempre usar /api/meetings desde el dashboard (evita crear prospectos)
-      // clientId y clientEmail se pasan para notificaciones en el room del cliente
       const body = {
         name, date: new Date(date).toISOString(), notes, meetUrl,
         assignedUserIds: assigned, visibility,
@@ -447,12 +448,18 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                 <button type="button"
                   onClick={() => {
                     const email = guestInput.trim().toLowerCase();
-                    if (email.includes('@') && !guestEmails.includes(email)) {
+                    if (!email.includes('@')) { return; }
+                    if (!guestEmails.includes(email)) {
                       setGuestEmails(prev => [...prev, email]);
-                      setGuestInput('');
                     }
+                    setGuestInput('');
                   }}
-                  className="px-3 py-2 rounded-lg text-[11px] font-medium border border-white/[0.07] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
+                  className="px-3 py-2 rounded-lg text-[11px] font-semibold border transition-colors"
+                  style={{
+                    background: guestInput.includes('@') ? 'rgba(124,58,237,0.15)' : 'rgba(255,255,255,0.03)',
+                    borderColor: guestInput.includes('@') ? 'rgba(124,58,237,0.35)' : 'rgba(255,255,255,0.07)',
+                    color: guestInput.includes('@') ? '#a78bfa' : 'rgba(255,255,255,0.30)',
+                  }}>
                   + Agregar
                 </button>
               </div>
@@ -479,26 +486,34 @@ export function MeetingDialog({ open, onOpenChange, meeting, teamUsers, onSaved,
                 className="w-full rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 py-2.5 text-[13px] text-white/70 placeholder-white/20 outline-none resize-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/10" />
             </div>
 
-            {/* Opciones de videollamada */}
-            {!meetUrl && (
-              <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                <p className="text-[11px] text-white/30 mb-2">Generar link de videollamada:</p>
-                <div className="flex gap-2 flex-wrap">
-                  <button type="button" onClick={() => generateMeetLink('jitsi')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/40 transition-colors">
-                    <Video className="h-3 w-3" /> Jitsi ✓
+            {/* Opciones de videollamada — siempre visible */}
+            <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 space-y-2">
+              <p className="text-[11px] text-white/30">
+                {meetUrl ? 'Cambiar link de videollamada:' : 'Generar link de videollamada:'}
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                <button type="button" onClick={() => generateMeetLink('jitsi')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border transition-colors ${meetUrl?.includes('jit.si') ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400' : 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-400 hover:border-emerald-500/40'}`}>
+                  <Video className="h-3 w-3" /> Jitsi {meetUrl?.includes('jit.si') && '✓'}
+                </button>
+                <button type="button" onClick={() => { setGcalError(''); createGoogleCalendarEvent(); }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border transition-colors ${meetUrl?.includes('meet.google') ? 'border-purple-500/40 bg-purple-500/10 text-purple-400' : 'border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30'}`}>
+                  {gcalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Video className="h-3 w-3" />}
+                  Google Meet {meetUrl?.includes('meet.google') && '✓'}
+                </button>
+                <button type="button" onClick={() => generateMeetLink('zoom')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border transition-colors ${meetUrl?.includes('zoom.us') ? 'border-blue-500/40 bg-blue-500/10 text-blue-400' : 'border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-blue-500/30'}`}>
+                  <Video className="h-3 w-3" /> Zoom {meetUrl?.includes('zoom.us') && '✓'}
+                </button>
+                {meetUrl && (
+                  <button type="button" onClick={() => setMeetUrl('')}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] border border-red-500/20 bg-red-500/[0.04] text-red-400/60 hover:text-red-400 hover:border-red-500/30 transition-colors">
+                    × Quitar link
                   </button>
-                  <button type="button" onClick={() => generateMeetLink('meet')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
-                    <Video className="h-3 w-3" /> Google Meet
-                  </button>
-                  <button type="button" onClick={() => generateMeetLink('zoom')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] border border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white hover:border-purple-500/30 transition-colors">
-                    <Video className="h-3 w-3" /> Zoom
-                  </button>
-                </div>
+                )}
               </div>
-            )}
+              {gcalError && <p className="text-[11px] text-red-400">{gcalError}</p>}
+            </div>
 
             {/* Acciones */}
             <div className="flex gap-2.5 pt-1">
