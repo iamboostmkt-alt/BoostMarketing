@@ -41,6 +41,10 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [phone, setPhone] = useState('');
+  useEffect(() => {
+    if ((profile as any)?.phone) setPhone((profile as any).phone);
+  }, [profile]);
   const [uploading, setUploading] = useState(false);
   const { startUpload: startLogoUpload } = useUploadThing("imageUploader", {
     onClientUploadComplete: (res) => { if (res?.[0]?.url) { setLogoUrl((res[0].ufsUrl ?? res[0].url)); setLogoPreview((res[0].ufsUrl ?? res[0].url)); } },
@@ -340,6 +344,21 @@ export default function SettingsPage() {
                       />
                     )}
                     <p className="text-xs text-white/25">El email no se puede cambiar</p>
+                  </div>
+
+                  {/* Teléfono WhatsApp */}
+                  <div className="space-y-2">
+                    <Label className="text-white/70">
+                      Teléfono / WhatsApp
+                      <span className="text-white/30 font-normal text-[11px] ml-1">(notificaciones)</span>
+                    </Label>
+                    <Input
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      placeholder="+52 55 1234 5678"
+                      className="bg-white/[0.04] border-white/[0.08] text-white/80"
+                    />
+                    <p className="text-xs text-white/25">Recibirás avisos de tareas y reuniones por WhatsApp</p>
                   </div>
 
                   {/* Role (read-only) */}

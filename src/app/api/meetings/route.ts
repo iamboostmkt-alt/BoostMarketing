@@ -1,3 +1,4 @@
+import { notifyUsersWhatsApp, msgNuevaReunion } from "@/lib/whatsapp";
 import { NextRequest, NextResponse } from "next/server";
 import { MeetingCreateSchema, MeetingUpdateSchema, validateBody } from "@/lib/schemas";
 import { rateLimit } from "@/lib/security/rate-limit";
@@ -147,6 +148,27 @@ export async function POST(req: NextRequest) {
     isInternal: true,
     sendDmToAssignees: !clientId, // DM solo cuando no hay cliente
   }).catch(() => {});
+
+  // WhatsApp: notificar a todos los participantes
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://weeklink.com.mx';
+    const dateStr = parsed.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+    const timeStr = parsed.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+    if (allMeetingIds.length > 0) {
+      const participants = await db.user.findMany({
+        where: { id: { in: allMeetingIds }, workspaceId },
+        select: { name: true, phone: true },
+      });
+      notifyUsersWhatsApp(participants, (waName) => msgNuevaReunion({
+        userName: waName,
+        meetingTitle: name.trim(),
+        date: dateStr,
+        time: timeStr,
+        meetUrl: meetUrl || undefined,
+        appUrl,
+      }));
+    }
+  } catch {}
 
   return NextResponse.json({ meeting }, { status: 201 });
 }

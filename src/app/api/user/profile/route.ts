@@ -25,6 +25,7 @@ export async function PATCH(req: NextRequest) {
   if (parsed.data.image !== undefined) data.image = parsed.data.image;
   if (parsed.data.name  !== undefined) data.name  = parsed.data.name;
   if ((parsed.data as any).tutorialDone !== undefined) (data as any).tutorialDone = (parsed.data as any).tutorialDone;
+  if ((parsed.data as any).phone !== undefined) (data as any).phone = (parsed.data as any).phone;
 
   if (Object.keys(data).length === 0)
     return NextResponse.json({ error: "Nada que actualizar" }, { status: 400 });

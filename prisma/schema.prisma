@@ -112,6 +112,7 @@ model User {
   /// PROSPECT: lead desde videollamada; ACTIVE/INACTIVE: gestión admin
   lifecycleStatus UserLifecycleStatus? @map("lifecycle_status")
   color           String               @default("#7c3aed")
+  phone           String?              @map("phone")
   active          Boolean              @default(true)
   customRoleId    String?              @map("custom_role_id")
   workspaceId     String               @map("workspace_id")

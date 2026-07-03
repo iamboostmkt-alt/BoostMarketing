@@ -4,6 +4,7 @@ import { rateLimit } from "@/lib/security/rate-limit";
 import { db } from "@/lib/db";
 import { sendChatBotMessage, buildMentions } from "@/lib/chat-bot";
 import { sendPushToUsers } from "@/lib/push-notifications";
+import { notifyUsersWhatsApp, msgTareaAprobada } from "@/lib/whatsapp";
 import { sendMail, templateFelicitacion, templateCambioEstado } from "@/lib/mailer";
 import { getBranding } from "@/lib/branding";
 
