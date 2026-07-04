@@ -3,145 +3,141 @@ import { stripe } from '@/lib/stripe';
 import { db } from '@/lib/db';
 import Stripe from 'stripe';
 
-// Next.js 14 App Router lee el body como stream automáticamente
 export const dynamic = 'force-dynamic';
 
+// Stripe requiere el body RAW (sin parsear) para verificar la firma
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig  = req.headers.get('stripe-signature');
 
-  if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
-    return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
+  // Log para debug — ver qué llega
+  console.log('[stripe-webhook] recibido:', {
+    hasSig: !!sig,
+    hasSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
+    bodyLength: body.length,
+  });
+
+  if (!sig) {
+    console.error('[stripe-webhook] Sin stripe-signature header');
+    return NextResponse.json({ error: 'Missing stripe-signature' }, { status: 400 });
+  }
+
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('[stripe-webhook] STRIPE_WEBHOOK_SECRET no configurado en Vercel');
+    // Retornar 200 para no causar reintentos — es un problema de config
+    return NextResponse.json({ warning: 'Webhook secret not configured' }, { status: 200 });
   }
 
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err: any) {
-    console.error('[webhook] signature error:', err.message);
+    console.error('[stripe-webhook] Error de firma:', err.message);
     return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
 
-  console.log(`[webhook] evento: ${event.type}`);
+  console.log(`[stripe-webhook] evento: ${event.type}`);
 
   try {
     switch (event.type) {
 
-      // ── Checkout completado — activar suscripción ─────────────────────────
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        const workspaceId = session.metadata?.workspaceId;
-        const plan        = session.metadata?.plan || 'FREE';
-        const billingCycle = session.metadata?.billingCycle || 'monthly';
-        const aiTier      = session.metadata?.aiTier || 'basic';
-        const extraClients = parseInt(session.metadata?.extraClients || '0');
+        const workspaceId   = session.metadata?.workspaceId;
+        const plan          = session.metadata?.plan || 'FREE';
+        const billingCycle  = session.metadata?.billingCycle || 'monthly';
+        const aiTier        = session.metadata?.aiTier || 'basic';
+        const extraClients  = parseInt(session.metadata?.extraClients || '0');
 
-        if (!workspaceId) break;
+        if (!workspaceId) {
+          console.warn('[stripe-webhook] checkout sin workspaceId en metadata');
+          break;
+        }
 
         await db.workspace.update({
           where: { id: workspaceId },
           data: {
-            plan,
-            billingCycle,
-            aiTier,
-            extraClients,
+            plan, billingCycle, aiTier, extraClients,
             stripeSubId:      session.subscription as string,
             stripeCustomerId: session.customer as string,
           },
         });
-
-        console.log(`[webhook] workspace ${workspaceId} checkout completado — plan ${plan}`);
+        console.log(`[stripe-webhook] checkout OK — workspace ${workspaceId} → ${plan}`);
         break;
       }
 
-      // ── Pago exitoso — workspace ACTIVE ──────────────────────────────────
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice    = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-
         const ws = await db.workspace.findFirst({ where: { stripeCustomerId: customerId } });
-        if (!ws) break;
+        if (!ws) { console.warn('[stripe-webhook] invoice: workspace no encontrado para customer', customerId); break; }
 
-        // Actualizar plan desde metadata de la suscripción
         const invoiceAny = invoice as any;
         const sub = invoiceAny.subscription
           ? await stripe.subscriptions.retrieve(invoiceAny.subscription as string)
           : null;
 
-        const plan       = sub?.metadata?.plan        || ws.plan;
-        const aiTier     = sub?.metadata?.aiTier      || ws.aiTier;
-        const extraClients = parseInt(sub?.metadata?.extraClients || String(ws.extraClients));
-
-        await db.workspace.update({
-          where: { id: ws.id },
-          data: { plan, aiTier, extraClients },
-        });
-
-        console.log(`[webhook] pago exitoso — workspace ${ws.id}`);
-        break;
-      }
-
-      // ── Pago fallido — PAST_DUE ──────────────────────────────────────────
-      case 'invoice.payment_failed': {
-        const invoice    = event.data.object as Stripe.Invoice;
-        const customerId = invoice.customer as string;
-
-        const ws = await db.workspace.findFirst({ where: { stripeCustomerId: customerId } });
-        if (!ws) break;
-
-        console.log(`[webhook] pago fallido — workspace ${ws.id}`);
-        // El estado PAST_DUE lo maneja Stripe automáticamente
-        // después de los reintentos → subscription.deleted
-        break;
-      }
-
-      // ── Suscripción cancelada — SUSPENDED ────────────────────────────────
-      case 'customer.subscription.deleted': {
-        const sub        = event.data.object as Stripe.Subscription;
-        const customerId = sub.customer as string;
-
-        const ws = await db.workspace.findFirst({ where: { stripeCustomerId: customerId } });
-        if (!ws) break;
-
         await db.workspace.update({
           where: { id: ws.id },
           data: {
-            plan:       'FREE',
-            stripeSubId: null,
+            plan:         sub?.metadata?.plan        || ws.plan,
+            aiTier:       sub?.metadata?.aiTier      || ws.aiTier,
+            extraClients: parseInt(sub?.metadata?.extraClients || String(ws.extraClients)),
           },
         });
-
-        console.log(`[webhook] suscripción cancelada — workspace ${ws.id} → FREE`);
+        console.log(`[stripe-webhook] pago OK — workspace ${ws.id}`);
         break;
       }
 
-      // ── Suscripción actualizada ───────────────────────────────────────────
+      case 'invoice.payment_failed': {
+        const invoice    = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+        const ws = await db.workspace.findFirst({ where: { stripeCustomerId: customerId } });
+        if (!ws) break;
+        console.warn(`[stripe-webhook] pago fallido — workspace ${ws.id}`);
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const sub        = event.data.object as Stripe.Subscription;
+        const customerId = sub.customer as string;
+        const ws = await db.workspace.findFirst({ where: { stripeCustomerId: customerId } });
+        if (!ws) break;
+        await db.workspace.update({
+          where: { id: ws.id },
+          data: { plan: 'FREE', stripeSubId: null },
+        });
+        console.log(`[stripe-webhook] suscripción cancelada — workspace ${ws.id} → FREE`);
+        break;
+      }
+
       case 'customer.subscription.updated': {
         const sub        = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
-
         const ws = await db.workspace.findFirst({ where: { stripeCustomerId: customerId } });
         if (!ws) break;
-
-        const plan       = sub.metadata?.plan        || ws.plan;
-        const aiTier     = sub.metadata?.aiTier      || ws.aiTier;
-        const extraClients = parseInt(sub.metadata?.extraClients || String(ws.extraClients));
-
         await db.workspace.update({
           where: { id: ws.id },
-          data:  { plan, aiTier, extraClients, stripeSubId: sub.id },
+          data: {
+            plan:         sub.metadata?.plan        || ws.plan,
+            aiTier:       sub.metadata?.aiTier      || ws.aiTier,
+            extraClients: parseInt(sub.metadata?.extraClients || String(ws.extraClients)),
+            stripeSubId:  sub.id,
+          },
         });
-
-        console.log(`[webhook] suscripción actualizada — workspace ${ws.id} → ${plan}`);
+        console.log(`[stripe-webhook] suscripción actualizada — workspace ${ws.id} → ${sub.metadata?.plan || ws.plan}`);
         break;
       }
 
       default:
-        console.log(`[webhook] evento no manejado: ${event.type}`);
+        // Siempre retornar 200 para eventos no manejados
+        console.log(`[stripe-webhook] evento no manejado (OK): ${event.type}`);
     }
   } catch (err: any) {
-    console.error('[webhook] error procesando evento:', err);
-    return NextResponse.json({ error: 'Error procesando evento' }, { status: 500 });
+    console.error('[stripe-webhook] error procesando evento:', err.message, err.stack);
+    // Retornar 200 de todas formas para evitar reintentos indefinidos
+    // El error ya está logueado en Vercel
+    return NextResponse.json({ received: true, warning: err.message }, { status: 200 });
   }
 
   return NextResponse.json({ received: true });
