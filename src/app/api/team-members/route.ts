@@ -29,6 +29,7 @@ export async function GET() {
         color: true,
         image: true,
         role: true,
+        phone: true,
       },
       orderBy: { name: 'asc' },
     });

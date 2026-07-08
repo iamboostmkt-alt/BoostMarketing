@@ -74,9 +74,11 @@ function MemberCard({ member, onRoleChange, isAdmin, onPhoneSave }: {
   isAdmin: boolean;
   onPhoneSave: (id: string, phone: string) => Promise<void>;
 }) {
-  const [showTasks,  setShowTasks]  = useState(false);
-  const [editPhone,  setEditPhone]  = useState(false);
-  const [phoneVal,   setPhoneVal]   = useState(member.phone || '');
+  const [showTasks,   setShowTasks]   = useState(false);
+  const [showMenu,    setShowMenu]    = useState(false);
+  const [editPhone,   setEditPhone]   = useState(false);
+  const [phoneVal,    setPhoneVal]    = useState((member.phone || '').replace(/^\+\d{1,3}/, ''));
+  const [countryCode, setCountryCode] = useState('+52');
   const [savingPhone, setSavingPhone] = useState(false);
   const meta  = ROLE_META[member.role] ?? ROLE_META['TEAM_MEMBER'];
   const Icon  = meta.icon;
@@ -123,19 +125,32 @@ function MemberCard({ member, onRoleChange, isAdmin, onPhoneSave }: {
           )}
           {isAdmin && editPhone && (
             <div className="flex items-center gap-1.5 mt-1.5">
+              <select
+                value={countryCode}
+                onChange={e => setCountryCode(e.target.value)}
+                className="rounded-md border border-white/[0.1] bg-white/[0.04] px-1.5 py-1 text-[11px] text-white/80 outline-none focus:border-green-500/40"
+                style={{ minWidth: 60 }}>
+                <option value="+52">🇲🇽 +52</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+34">🇪🇸 +34</option>
+                <option value="+57">🇨🇴 +57</option>
+                <option value="+54">🇦🇷 +54</option>
+                <option value="+56">🇨🇱 +56</option>
+              </select>
               <input
                 type="tel"
                 value={phoneVal}
-                onChange={e => setPhoneVal(e.target.value)}
-                placeholder="+52 55 1234 5678"
+                onChange={e => setPhoneVal(e.target.value.replace(/\D/g, ''))}
+                placeholder="5512345678"
                 autoFocus
                 className="flex-1 min-w-0 rounded-md border border-white/[0.1] bg-white/[0.04] px-2 py-1 text-[11px] text-white/80 outline-none focus:border-green-500/40"
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
+                    const fullPhone = countryCode + phoneVal;
                     setSavingPhone(true);
-                    onPhoneSave(member.id, phoneVal).finally(() => { setSavingPhone(false); setEditPhone(false); });
+                    onPhoneSave(member.id, fullPhone).finally(() => { setSavingPhone(false); setEditPhone(false); });
                   }
-                  if (e.key === 'Escape') { setPhoneVal(member.phone || ''); setEditPhone(false); }
+                  if (e.key === 'Escape') { setPhoneVal((member.phone || '').replace(/^\+\d{1,3}/, '')); setEditPhone(false); }
                 }}
               />
               <button
@@ -144,7 +159,12 @@ function MemberCard({ member, onRoleChange, isAdmin, onPhoneSave }: {
                   onPhoneSave(member.id, phoneVal).finally(() => { setSavingPhone(false); setEditPhone(false); });
                 }}
                 disabled={savingPhone}
-                className="shrink-0 px-2 py-1 rounded-md text-[10px] font-medium text-green-400 border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 transition-colors disabled:opacity-50">
+                className="shrink-0 px-2 py-1 rounded-md text-[10px] font-medium text-green-400 border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                onClick={() => {
+                  const fullPhone = countryCode + phoneVal;
+                  setSavingPhone(true);
+                  onPhoneSave(member.id, fullPhone).finally(() => { setSavingPhone(false); setEditPhone(false); });
+                }}>
                 {savingPhone ? '...' : '✓'}
               </button>
               <button onClick={() => { setPhoneVal(member.phone || ''); setEditPhone(false); }}
@@ -153,12 +173,36 @@ function MemberCard({ member, onRoleChange, isAdmin, onPhoneSave }: {
           )}
         </div>
         {isAdmin && (
-          <button
-            onClick={() => onRoleChange(member.id, member.role)}
-            className="shrink-0 p-1.5 rounded-lg text-white/20 hover:text-white/60 hover:bg-white/[0.05] transition-colors"
-          >
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
+          <div className="relative shrink-0">
+            <button
+              onClick={() => setShowMenu(v => !v)}
+              className="p-1.5 rounded-lg text-white/20 hover:text-white/60 hover:bg-white/[0.05] transition-colors"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            {showMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 top-8 z-20 min-w-[180px] rounded-xl border border-white/[0.08] shadow-xl py-1"
+                  style={{ background: '#13131A' }}>
+                  {/* Editar teléfono WhatsApp */}
+                  <button
+                    onClick={() => { setShowMenu(false); setEditPhone(true); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:text-white hover:bg-white/[0.05] transition-colors text-left">
+                    <span className="text-base">📱</span>
+                    {member.phone ? 'Editar WhatsApp' : 'Agregar WhatsApp'}
+                  </button>
+                  {/* Cambiar rol */}
+                  <button
+                    onClick={() => { setShowMenu(false); onRoleChange(member.id, member.role); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:text-white hover:bg-white/[0.05] transition-colors text-left">
+                    <span className="text-base">🎭</span>
+                    Cambiar rol
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         )}
       </div>
 
@@ -277,7 +321,9 @@ export default function TeamPage() {
   );
 
   function handleRoleChange(userId: string, currentRole: string) {
-    router.push('/dashboard/admin');
+    // Abrir selector de rol inline — no redirigir a admin
+    setRoleEditId(userId);
+    setRoleEditCurrent(currentRole);
   }
 
   async function handlePhoneSave(userId: string, phone: string) {
@@ -380,7 +426,51 @@ export default function TeamPage() {
         </div>
       )}
     </div>
-    <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+      <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+
+      {/* Modal cambio de rol inline */}
+      {roldEditId && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setRoleEditId(null)} />
+          <div className="fixed inset-x-4 bottom-8 z-50 max-w-sm mx-auto rounded-2xl border border-white/[0.08] shadow-2xl p-5"
+            style={{ background: '#13131A' }}>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[14px] font-medium text-white">Cambiar rol</p>
+              <button onClick={() => setRoleEditId(null)} className="text-white/30 hover:text-white text-lg">✕</button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {(['ADMIN','PROJECT_MANAGER','DESIGNER','MARKETING','TEAM_MEMBER','SALES_REP'] as const).map(r => {
+                const meta = ROLE_META[r];
+                const Icon = meta?.icon;
+                const isSel = r === roleEditCurrent;
+                return (
+                  <button key={r} onClick={() => setRoleEditCurrent(r)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all text-left"
+                    style={{
+                      borderColor: isSel ? (meta?.color || '#7c3aed') + '60' : 'rgba(255,255,255,0.06)',
+                      background: isSel ? (meta?.color || '#7c3aed') + '15' : 'rgba(255,255,255,0.02)',
+                    }}>
+                    {Icon && <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: meta?.color }} />}
+                    <span className="text-[12px]" style={{ color: isSel ? meta?.color : 'rgba(255,255,255,0.5)' }}>{meta?.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setRoleEditId(null)}
+                className="flex-1 py-2 rounded-xl border border-white/[0.07] text-[13px] text-white/40 hover:text-white transition-colors">
+                Cancelar
+              </button>
+              <button onClick={() => handleRoleSave(roldEditId, roleEditCurrent)}
+                disabled={savingRole}
+                className="flex-2 px-6 py-2 rounded-xl text-[13px] font-medium text-white disabled:opacity-50"
+                style={{ background: '#7c3aed', flex: 2 }}>
+                {savingRole ? 'Guardando...' : 'Guardar rol'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
