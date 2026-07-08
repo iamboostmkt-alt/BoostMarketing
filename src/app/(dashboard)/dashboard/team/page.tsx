@@ -371,7 +371,7 @@ export default function TeamPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {g.members.map(m => (
-                    <MemberCard key={m.id} member={m} onRoleChange={handleRoleChange} isAdmin={isAdmin} />
+                    <MemberCard key={m.id} member={m} onRoleChange={handleRoleChange} isAdmin={isAdmin || isPM} onPhoneSave={handlePhoneSave} />
                   ))}
                 </div>
               </div>
