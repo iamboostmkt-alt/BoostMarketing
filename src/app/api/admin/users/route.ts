@@ -126,7 +126,7 @@ export async function PATCH(req: NextRequest) {
   const { userId: adminId, workspaceId } = result.ctx;
 
   const body = await req.json();
-  const { userId, role, name, email, active, color, customRoleId, image, lifecycleStatus } = body;
+  const { userId, role, name, email, active, color, customRoleId, image, lifecycleStatus, phone } = body;
 
   if (!userId) return NextResponse.json({ error: "userId es requerido." }, { status: 400 });
 
@@ -183,6 +183,7 @@ export async function PATCH(req: NextRequest) {
 
   if (customRoleId !== undefined) updateData.customRoleId = customRoleId || null;
   if (image !== undefined) updateData.image = image || null;
+  if (phone !== undefined) updateData.phone = phone || null;
 
   if (Object.keys(updateData).length === 0) {
     return NextResponse.json({ error: "No hay campos para actualizar." }, { status: 400 });

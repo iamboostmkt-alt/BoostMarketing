@@ -29,6 +29,7 @@ interface TeamMember {
   image?: string | null;
   role: string;
   color: string;
+  phone?: string | null;
   customRole?: { label: string; color: string } | null;
   activeTasks: ActiveTask[];
 }
@@ -67,12 +68,16 @@ function workloadColor(pct: number): string {
   return '#22c55e';
 }
 
-function MemberCard({ member, onRoleChange, isAdmin }: {
+function MemberCard({ member, onRoleChange, isAdmin, onPhoneSave }: {
   member: TeamMember;
   onRoleChange: (id: string, role: string) => void;
   isAdmin: boolean;
+  onPhoneSave: (id: string, phone: string) => Promise<void>;
 }) {
-  const [showTasks, setShowTasks] = useState(false);
+  const [showTasks,  setShowTasks]  = useState(false);
+  const [editPhone,  setEditPhone]  = useState(false);
+  const [phoneVal,   setPhoneVal]   = useState(member.phone || '');
+  const [savingPhone, setSavingPhone] = useState(false);
   const meta  = ROLE_META[member.role] ?? ROLE_META['TEAM_MEMBER'];
   const Icon  = meta.icon;
   const pct   = workloadPct(member.activeTasks.length);
@@ -106,6 +111,46 @@ function MemberCard({ member, onRoleChange, isAdmin }: {
             <span className="text-[11px] truncate" style={{ color: badge }}>{label}</span>
           </div>
           <p className="text-[11px] text-white/25 truncate mt-0.5">{member.email}</p>
+          {/* Teléfono WhatsApp — editable por admin/pm */}
+          {isAdmin && !editPhone && (
+            <button onClick={() => setEditPhone(true)}
+              className="flex items-center gap-1 mt-1 text-[11px] transition-colors"
+              style={{ color: member.phone ? '#4ade80' : 'rgba(255,255,255,0.2)' }}>
+              <span>📱</span>
+              <span>{member.phone || 'Agregar WhatsApp'}</span>
+              <span className="ml-1 opacity-50">✏</span>
+            </button>
+          )}
+          {isAdmin && editPhone && (
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <input
+                type="tel"
+                value={phoneVal}
+                onChange={e => setPhoneVal(e.target.value)}
+                placeholder="+52 55 1234 5678"
+                autoFocus
+                className="flex-1 min-w-0 rounded-md border border-white/[0.1] bg-white/[0.04] px-2 py-1 text-[11px] text-white/80 outline-none focus:border-green-500/40"
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    setSavingPhone(true);
+                    onPhoneSave(member.id, phoneVal).finally(() => { setSavingPhone(false); setEditPhone(false); });
+                  }
+                  if (e.key === 'Escape') { setPhoneVal(member.phone || ''); setEditPhone(false); }
+                }}
+              />
+              <button
+                onClick={() => {
+                  setSavingPhone(true);
+                  onPhoneSave(member.id, phoneVal).finally(() => { setSavingPhone(false); setEditPhone(false); });
+                }}
+                disabled={savingPhone}
+                className="shrink-0 px-2 py-1 rounded-md text-[10px] font-medium text-green-400 border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 transition-colors disabled:opacity-50">
+                {savingPhone ? '...' : '✓'}
+              </button>
+              <button onClick={() => { setPhoneVal(member.phone || ''); setEditPhone(false); }}
+                className="shrink-0 text-white/30 hover:text-white/60 text-[13px] transition-colors">×</button>
+            </div>
+          )}
         </div>
         {isAdmin && (
           <button
@@ -233,6 +278,19 @@ export default function TeamPage() {
 
   function handleRoleChange(userId: string, currentRole: string) {
     router.push('/dashboard/admin');
+  }
+
+  async function handlePhoneSave(userId: string, phone: string) {
+    try {
+      await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, phone: phone.trim() || null }),
+      });
+      setMembers((prev: any[]) => prev.map((m: any) => m.id === userId ? { ...m, phone: phone.trim() || null } : m));
+    } catch (err) {
+      console.error('Error guardando teléfono:', err);
+    }
   }
 
   return (
