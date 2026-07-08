@@ -188,3 +188,91 @@ export async function notifyUsersWhatsApp(
     )
   );
 }
+
+export function msgTareaAtrasada(params: {
+  userName: string;
+  taskTitle: string;
+  dueDate: string;
+  role: string;
+  appUrl: string;
+}) {
+  const { userName, taskTitle, dueDate, role, appUrl } = params;
+
+  // Mensaje diferenciado por rol
+  if (role === 'PROJECT_MANAGER' || role === 'ADMIN') {
+    return `⚠️ *Atención ${userName}*
+
+Una tarea de tu equipo lleva tiempo vencida y necesita revisión:
+
+📋 *${taskTitle}*
+📅 Venció el ${dueDate}
+
+Revisa con tu equipo el estado y toma acción:
+${appUrl}/dashboard/tasks
+
+_Weeklink_`;
+  }
+
+  if (role === 'DESIGNER') {
+    return `🎨 *Hola ${userName}*
+
+Tienes una entrega pendiente que ya venció:
+
+📋 *${taskTitle}*
+📅 Venció el ${dueDate}
+
+Súbela o actualiza su estado cuanto antes:
+${appUrl}/dashboard/tasks
+
+_Weeklink_`;
+  }
+
+  if (role === 'MARKETING') {
+    return `📣 *Hola ${userName}*
+
+Tienes una tarea de marketing vencida:
+
+📋 *${taskTitle}*
+📅 Venció el ${dueDate}
+
+Actualiza su estado o avisa a tu PM:
+${appUrl}/dashboard/tasks
+
+_Weeklink_`;
+  }
+
+  // TEAM_MEMBER y resto
+  return `🚨 *Hola ${userName}*
+
+Tienes una tarea atrasada que necesita tu atención:
+
+📋 *${taskTitle}*
+📅 Venció el ${dueDate}
+
+Revísala y actualiza su estado lo antes posible:
+${appUrl}/dashboard/tasks
+
+_Weeklink_`;
+}
+
+export function msgEscalacionPM(params: {
+  pmName: string;
+  assigneeNames: string;
+  taskTitle: string;
+  dueDate: string;
+  diasVencida: number;
+  appUrl: string;
+}) {
+  const { pmName, assigneeNames, taskTitle, dueDate, diasVencida, appUrl } = params;
+  return `⚠️ *${pmName}, requiere tu atención*
+
+*${assigneeNames}* lleva *${diasVencida} ${diasVencida === 1 ? 'día' : 'días'}* sin completar:
+
+📋 *${taskTitle}*
+📅 Venció el ${dueDate}
+
+Revisa con tu equipo y toma acción:
+${appUrl}/dashboard/tasks
+
+_Weeklink_`;
+}

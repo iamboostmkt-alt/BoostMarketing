@@ -1,3 +1,4 @@
+import { sendWhatsAppMessage, msgTareaAtrasada, msgEscalacionPM } from '@/lib/whatsapp';
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { TASK_STATUS } from "@/lib/constants/status";
@@ -130,6 +131,16 @@ export async function GET(req: NextRequest) {
             data: { userId: u.id, workspaceId: task.workspaceId, message: `🚨 Tu tarea "${task.title}" está vencida`, type: "task", read: false, link: "/dashboard/tasks" },
           }).catch(() => {});
           await sendMail(u.email, `🚨 Tarea vencida: ${task.title}`, templateTareaVencida(task.title, dueStr, branding, u.name ?? undefined));
+          // WhatsApp: mensaje diferenciado por rol
+          if ((u as any).phone) {
+            sendWhatsAppMessage((u as any).phone, msgTareaAtrasada({
+              userName: u.name?.split(' ')[0] || 'equipo',
+              taskTitle: task.title,
+              dueDate: dueStr,
+              role: (u as any).role || 'TEAM_MEMBER',
+              appUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://weeklink.com.mx',
+            })).catch(() => {});
+          }
         }
         // UN SOLO mensaje al chat con todos los asignados — evita duplicados
         if (eligibleUsers.length > 0) {
@@ -159,6 +170,17 @@ export async function GET(req: NextRequest) {
             `⚠️ ${assigneeNames} no ha completado: ${task.title}`,
             templateEscalacionPM(pm.name ?? "PM", assigneeNames, task.title, dueStr, task.overdueCount, branding)
           );
+          // WhatsApp al PM
+          if ((pm as any).phone) {
+            sendWhatsAppMessage((pm as any).phone, msgEscalacionPM({
+              pmName: pm.name?.split(' ')[0] || 'PM',
+              assigneeNames,
+              taskTitle: task.title,
+              dueDate: dueStr,
+              diasVencida: task.overdueCount,
+              appUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://weeklink.com.mx',
+            })).catch(() => {});
+          }
           // Mensaje en canal TEAM alertando al PM
           sendChatBotMessage({
             workspaceId: task.workspaceId,
