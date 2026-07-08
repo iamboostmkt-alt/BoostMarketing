@@ -154,10 +154,6 @@ function MemberCard({ member, onRoleChange, isAdmin, onPhoneSave }: {
                 }}
               />
               <button
-                onClick={() => {
-                  setSavingPhone(true);
-                  onPhoneSave(member.id, phoneVal).finally(() => { setSavingPhone(false); setEditPhone(false); });
-                }}
                 disabled={savingPhone}
                 className="shrink-0 px-2 py-1 rounded-md text-[10px] font-medium text-green-400 border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 transition-colors disabled:opacity-50"
                 onClick={() => {
