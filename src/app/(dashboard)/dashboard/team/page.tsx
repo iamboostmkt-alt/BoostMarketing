@@ -325,6 +325,25 @@ export default function TeamPage() {
     setRoleEditCurrent(currentRole);
   }
 
+  async function handleRoleSave(userId: string, newRole: string) {
+    setSavingRole(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, role: newRole }),
+      });
+      if (res.ok) {
+        setMembers((prev: any[]) => prev.map((m: any) => m.id === userId ? { ...m, role: newRole } : m));
+        setRoleEditId(null);
+      }
+    } catch (err) {
+      console.error('Error cambiando rol:', err);
+    } finally {
+      setSavingRole(false);
+    }
+  }
+
   async function handlePhoneSave(userId: string, phone: string) {
     try {
       await fetch('/api/admin/users', {
