@@ -271,6 +271,9 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true);
   const [search,  setSearch]  = useState('');
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [roleEditId, setRoleEditId] = useState<string | null>(null);
+  const [roleEditCurrent, setRoleEditCurrent] = useState<string>('');
+  const [savingRole, setSavingRole] = useState(false);
 
   useEffect(() => {
     // Esperar a que la sesión cargue antes de evaluar el rol
@@ -425,7 +428,7 @@ export default function TeamPage() {
       <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
 
       {/* Modal cambio de rol inline */}
-      {roldEditId && (
+      {roleEditId && (
         <>
           <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setRoleEditId(null)} />
           <div className="fixed inset-x-4 bottom-8 z-50 max-w-sm mx-auto rounded-2xl border border-white/[0.08] shadow-2xl p-5"
@@ -457,7 +460,7 @@ export default function TeamPage() {
                 className="flex-1 py-2 rounded-xl border border-white/[0.07] text-[13px] text-white/40 hover:text-white transition-colors">
                 Cancelar
               </button>
-              <button onClick={() => handleRoleSave(roldEditId, roleEditCurrent)}
+              <button onClick={() => handleRoleSave(roleEditId, roleEditCurrent)}
                 disabled={savingRole}
                 className="flex-2 px-6 py-2 rounded-xl text-[13px] font-medium text-white disabled:opacity-50"
                 style={{ background: '#7c3aed', flex: 2 }}>
